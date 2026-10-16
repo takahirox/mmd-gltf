@@ -1,5 +1,16 @@
 # mmd-gltf
 
+## Repository structure
+
+- `extensions/`: runtime-independent MMD glTF extension proposals and future
+  schemas, starting with `MMD_materials_toon/` and `MMD_materials_outline/`.
+- `packages/`: future runtime integrations, such as Three.js loader/exporter plugins.
+- `tools/`: future PMD/PMX/VMD/VPD conversion utilities.
+- `examples/`: future demonstration assets and code.
+- `tests/`: future validation and conformance tests.
+
+These directories currently contain only empty `.gitkeep` placeholders.
+
 ## Contributing
 
 - [Development flow and English collaboration convention](docs/development-flow.md)
