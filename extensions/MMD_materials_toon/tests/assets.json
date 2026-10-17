@@ -1,0 +1,95 @@
+[
+  {"name": "material-only", "asset": "material-only.gltf", "changes": []},
+  {"name": "subtexture", "asset": "subtexture.gltf", "changes": []},
+  {
+    "name": "baseTexture-out-of-bounds",
+    "asset": "subtexture.gltf",
+    "changes": [
+      {
+        "path": ["materials", 0, "extensions", "MMD_materials_toon", "baseTexture", "index"],
+        "value": 3
+      }
+    ],
+    "expectedError": "texture index"
+  },
+  {
+    "name": "toonTexture-out-of-bounds",
+    "asset": "subtexture.gltf",
+    "changes": [
+      {
+        "path": ["materials", 0, "extensions", "MMD_materials_toon", "toonTexture", "index"],
+        "value": 3
+      }
+    ],
+    "expectedError": "texture index"
+  },
+  {
+    "name": "sphereTexture-out-of-bounds",
+    "asset": "subtexture.gltf",
+    "changes": [
+      {
+        "path": ["materials", 0, "extensions", "MMD_materials_toon", "sphereTexture", "index"],
+        "value": 3
+      }
+    ],
+    "expectedError": "texture index"
+  },
+  {
+    "name": "unused-sphere-still-invalid",
+    "asset": "subtexture.gltf",
+    "changes": [
+      {
+        "path": ["materials", 0, "extensions", "MMD_materials_toon"],
+        "value": {"sphereMode": "none", "sphereTexture": {"index": 3}}
+      }
+    ],
+    "expectedError": "texture index"
+  },
+  {
+    "name": "missing-additional-uv1",
+    "asset": "subtexture.gltf",
+    "changes": [
+      {
+        "path": ["meshes", 0, "primitives", 0, "attributes"],
+        "value": {"POSITION": 0, "NORMAL": 1, "TEXCOORD_0": 2}
+      }
+    ],
+    "expectedError": "TEXCOORD_1"
+  },
+  {
+    "name": "missing-base-uv-set",
+    "asset": "subtexture.gltf",
+    "changes": [
+      {
+        "path": ["materials", 0, "extensions", "MMD_materials_toon", "baseTexture", "texCoord"],
+        "value": 2
+      }
+    ],
+    "expectedError": "TEXCOORD_2"
+  },
+  {
+    "name": "missing-image",
+    "asset": "subtexture.gltf",
+    "changes": [{"path": ["textures", 0, "source"], "value": 99}],
+    "expectedError": "image index"
+  },
+  {
+    "name": "transform-overrides-base-set",
+    "asset": "subtexture.gltf",
+    "changes": [
+      {
+        "path": ["materials", 0, "extensions", "MMD_materials_toon", "baseTexture"],
+        "value": {
+          "index": 0,
+          "texCoord": 99,
+          "extensions": {"KHR_texture_transform": {"texCoord": 1}}
+        }
+      },
+      {
+        "path": ["extensionsUsed"],
+        "value": ["MMD_materials_toon", "KHR_texture_transform"]
+      }
+    ],
+    "expectedError": null
+  }
+]

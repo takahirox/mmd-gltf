@@ -1,0 +1,115 @@
+{
+  "valid": [
+    {"name": "defaults", "value": {}},
+    {"name": "shared-first", "value": {"sharedToonIndex": 0}},
+    {"name": "shared-last", "value": {"sharedToonIndex": 9}},
+    {"name": "custom-toon", "value": {"toonTexture": {"index": 0}}},
+    {"name": "explicit-none", "value": {"sphereMode": "none"}},
+    {"name": "unused-sphere", "value": {"sphereTexture": {"index": 0}}},
+    {
+      "name": "unrestricted-factors",
+      "value": {
+        "diffuseFactor": [-2, 3, 0.5, -0.5],
+        "ambientFactor": [2, -1, 0],
+        "specularFactor": [-1, 2, 3],
+        "shininessFactor": 0.5
+      }
+    },
+    {
+      "name": "base-texture-transform",
+      "value": {
+        "baseTexture": {
+          "index": 0,
+          "texCoord": 2,
+          "extensions": {"KHR_texture_transform": {"offset": [0.25, 0.5], "texCoord": 1}},
+          "extras": {"note": "retained"}
+        }
+      }
+    },
+    {
+      "name": "gltf-metadata",
+      "value": {"extensions": {"VENDOR_metadata": {}}, "extras": ["anything"]}
+    },
+    {
+      "name": "sphere-multiply",
+      "value": {"sphereMode": "multiply", "sphereTexture": {"index": 1}}
+    },
+    {
+      "name": "sphere-add",
+      "value": {"sphereMode": "add", "sphereTexture": {"index": 1}}
+    },
+    {
+      "name": "sphere-subtexture",
+      "value": {"sphereMode": "subTexture", "sphereTexture": {"index": 1}}
+    }
+  ],
+  "invalid": [
+    {"name": "root-array", "value": []},
+    {
+      "name": "both-selectors",
+      "value": {"sharedToonIndex": 0, "toonTexture": {"index": 0}}
+    },
+    {"name": "shared-negative", "value": {"sharedToonIndex": -1}},
+    {"name": "shared-ten", "value": {"sharedToonIndex": 10}},
+    {"name": "shared-fraction", "value": {"sharedToonIndex": 0.5}},
+    {"name": "shared-string", "value": {"sharedToonIndex": "0"}},
+    {"name": "negative-shininess", "value": {"shininessFactor": -1}},
+    {"name": "string-shininess", "value": {"shininessFactor": "1"}},
+    {"name": "diffuse-short", "value": {"diffuseFactor": [1, 1, 1]}},
+    {"name": "diffuse-long", "value": {"diffuseFactor": [1, 1, 1, 1, 1]}},
+    {"name": "diffuse-nonnumeric", "value": {"diffuseFactor": [1, 1, 1, "1"]}},
+    {"name": "ambient-long", "value": {"ambientFactor": [1, 1, 1, 1]}},
+    {"name": "specular-short", "value": {"specularFactor": [1, 1]}},
+    {"name": "null-texture", "value": {"baseTexture": null}},
+    {"name": "null-factor", "value": {"diffuseFactor": null}},
+    {"name": "mode-enum", "value": {"sphereMode": "sph"}},
+    {"name": "mode-number", "value": {"sphereMode": 1}},
+    {"name": "unknown-property", "value": {"diffuse": [1, 1, 1, 1]}},
+    {"name": "extensions-shape", "value": {"extensions": {"VENDOR_data": 1}}},
+    {"name": "baseTexture-missing-index", "value": {"baseTexture": {}}},
+    {"name": "baseTexture-negative-index", "value": {"baseTexture": {"index": -1}}},
+    {"name": "baseTexture-fraction-index", "value": {"baseTexture": {"index": 0.5}}},
+    {"name": "baseTexture-string-index", "value": {"baseTexture": {"index": "0"}}},
+    {"name": "toonTexture-missing-index", "value": {"toonTexture": {}}},
+    {"name": "toonTexture-negative-index", "value": {"toonTexture": {"index": -1}}},
+    {"name": "toonTexture-fraction-index", "value": {"toonTexture": {"index": 0.5}}},
+    {"name": "toonTexture-string-index", "value": {"toonTexture": {"index": "0"}}},
+    {"name": "sphereTexture-missing-index", "value": {"sphereTexture": {}}},
+    {"name": "sphereTexture-negative-index", "value": {"sphereTexture": {"index": -1}}},
+    {"name": "sphereTexture-fraction-index", "value": {"sphereTexture": {"index": 0.5}}},
+    {"name": "sphereTexture-string-index", "value": {"sphereTexture": {"index": "0"}}},
+    {
+      "name": "toonTexture-texcoord",
+      "value": {"toonTexture": {"index": 0, "texCoord": 1}}
+    },
+    {
+      "name": "toonTexture-transform",
+      "value": {"toonTexture": {"index": 0, "extensions": {"KHR_texture_transform": {}}}}
+    },
+    {
+      "name": "sphereTexture-texcoord",
+      "value": {"sphereTexture": {"index": 0, "texCoord": 1}}
+    },
+    {
+      "name": "sphereTexture-transform",
+      "value": {"sphereTexture": {"index": 0, "extensions": {"KHR_texture_transform": {}}}}
+    },
+    {"name": "sphere-missing-multiply", "value": {"sphereMode": "multiply"}},
+    {"name": "sphere-missing-add", "value": {"sphereMode": "add"}},
+    {"name": "sphere-missing-subTexture", "value": {"sphereMode": "subTexture"}},
+    {
+      "name": "negative-texcoord",
+      "value": {"baseTexture": {"index": 0, "texCoord": -1}}
+    },
+    {
+      "name": "fraction-texcoord",
+      "value": {"baseTexture": {"index": 0, "texCoord": 0.5}}
+    }
+  ],
+  "invalidNumericJSON": [
+    "{\"shininessFactor\": 1e400}",
+    "{\"ambientFactor\": [1e400,0,0]}",
+    "{\"diffuseFactor\": [0,0,0,1e400]}",
+    "{\"specularFactor\": [0,0,1e400]}"
+  ]
+}
