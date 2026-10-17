@@ -9,7 +9,9 @@
 - `examples/`: future demonstration assets and code.
 - `tests/`: future validation and conformance tests.
 
-These directories currently contain only empty `.gitkeep` placeholders.
+The [MMD_materials_toon v0.1 draft](extensions/MMD_materials_toon/README.md)
+includes a material specification, JSON Schema, examples, and synthetic conformance
+fixtures. The other directories currently contain empty `.gitkeep` placeholders.
 
 ## Contributing
 
