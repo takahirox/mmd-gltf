@@ -1,4 +1,59 @@
-# Issue #7 validation record
+# Validation record
+
+## Issue #9: direct PMX comparison and occlusion correction
+
+Local pre-merge validation on 2026-10-20, Node.js 24.12.0, macOS,
+Google Chrome headless with SwiftShader. This covers the built static preview,
+not a deployment.
+
+- `npm ci` installs the published, integrity-locked
+  `@takahirox/three-mmd@0.1.0`; `npm ls three` confirms one shared `0.186.1`.
+- `npm run typecheck` passes.
+- `npm test` passes all eight converter/plugin tests and the original independent
+  checker: 43 shading vectors, ten shared mappings, 56 schema cases, ten
+  whole-asset cases, two complete example assets. Both generated GLBs have
+  zero Khronos Validator errors; the expected draft `UNSUPPORTED_EXTENSION`
+  notice remains. The new regression checks opaque versus blended Gene
+  materials and synthetic alpha/material/subtexture/sphere cases.
+- `npm run build` passes and re-verifies all 13 source files. The generated
+  source directory is rebuilt from its allowlist; tests verify its exact file
+  set and source hashes. The static artifact includes the original PMX, ten
+  PNGs, both unchanged notices, derivative GLB, manifest and conversion record.
+  No full Gene, unrelated/private images, motions or conformance page ships.
+  Vite reports its existing large-renderer-bundle warning (now about 1,173 kB,
+  341 kB gzip including the reference loader).
+- `UPDATE_COMPARISON_EVIDENCE=1 npm run test:browser` passes three tests with
+  one native-WebGPU capability skip (no adapter). All 43 production GPU numeric
+  vectors still pass on WebGL2. Built-preview tests cover both loaders, visible
+  model silhouettes, aligned world bounds and pixel extents, synchronized orbit
+  and zoom from opposite panes, fixed front/side/back views, PBR/toon switching
+  with an unchanged PMX reference, every served source hash and notice, equal
+  stacked mobile views, and a clear error when a PMX image is missing. Normal
+  operation has no console, network, shader or runtime errors.
+- Six committed WebGL2 screenshots were actually opened and visually reviewed:
+  matched front/side/back pairs before and after. The
+  [investigation record](comparison.md) identifies the unconditional BLEND
+  defect, its correction and remaining independently implemented shading
+  differences. No normative material math or conformance expectation changed.
+- `npm run check:links` and `git diff --check` pass.
+
+Generic corrected GLB: 4,767,640 bytes, SHA-256
+`fe4e0b54174e3083ac400b0b8a9f3a256fcb8b0b0e896d953a98b5e48e198a85`.
+Attributed example GLB: 4,770,504 bytes, SHA-256
+`b6e8318feda9738e1fc29ad7fefdbe66d7c1cceb4414eed86d799f56ad3efb00`.
+The conversion record includes source commit, derivative bytes/hash and 0.08
+meters per PMX unit. Every original PMX/image/notice hash remains unchanged.
+
+During implementation, the first browser invocation exposed a JSON-import
+attribute requirement in the runner; the import was corrected. The next run
+exposed residual orbit damping after a fixed-view reset, which changed the
+reference pixels during material switching. View presets now clear residual
+damping before applying the exact camera. The final suite passes.
+
+## Historical Issue #7 validation
+
+The following describes the original one-model implementation before Issue #9.
+Its artifact sizes and source-asset exclusions are historical.
 
 Local validation on 2026-10-20, Node.js 24.12.0, macOS, Google Chrome headless.
 This record covers the pre-merge worktree, not a published deployment.
@@ -51,9 +106,12 @@ the upstream animated MMD demo was not performed.
 while implementing this node. After merging and the Pages workflow completes:
 
 1. Record the deployed commit, workflow run URL/result, deployment URL and date.
-2. Open `https://takahirox.github.io/mmd-gltf/` and confirm the character is visible,
-   orbit/zoom works, and toon/PBR/toon switching succeeds.
-3. Confirm `gene-light/model.glb`, both original notices, `source-manifest.json`
+2. Open `https://takahirox.github.io/mmd-gltf/` and confirm
+   both correctly labeled models are visible in the same base pose, orbit/zoom
+   stays synchronized, Front/Side/Back presets work, narrow layouts stack, and
+   glTF toon/PBR/toon switching succeeds without changing the PMX reference.
+3. Confirm `gene-light/model.glb`, `gene-light/Gene_light.pmx`, all ten original
+   `gene-light/light/` PNGs, both original notices, `source-manifest.json`
    and `conversion.json` load under `/mmd-gltf/`, with the displayed attribution,
    usage terms, adaptation notice and matching artifact hash.
 4. Inspect browser console/network for asset, shader and runtime errors. Verify

@@ -1,9 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, mkdtemp, rm } from 'node:fs/promises';
+import { readFile, writeFile, readdir, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { PNG } from 'pngjs';
 import { NodeIO } from '@gltf-transform/core';
 import { validateBytes } from 'gltf-validator';
 import { fetchGene } from '../tools/fetch-gene';
@@ -57,6 +58,7 @@ test('pinned Gene conversion is deterministic, valid, attributed and has complet
     assert.ok(m.pbrMetallicRoughness.baseColorTexture);
     assert.equal(ext.baseTexture!.index, m.pbrMetallicRoughness.baseColorTexture.index, 'share source texture bytes');
     assert.equal(m.doubleSided ?? false, !!(pmx.materials[i].flag & 1));
+    assert.equal(m.alphaMode ?? 'OPAQUE', [5, 8, 9, 10, 11, 12].includes(i) ? 'BLEND' : 'OPAQUE', 'opaque Gene surfaces must occlude rear triangles');
   }
   assert.notDeepEqual(json.materials[12].extensions[EXTENSION_NAME].diffuseFactor, json.materials[12].pbrMetallicRoughness.baseColorFactor);
   const sourceBytes = await readFile(`${directory}/Gene_light.pmx`);
@@ -77,7 +79,15 @@ test('pinned Gene conversion is deterministic, valid, attributed and has complet
   }
   assert.equal(deployedJSON.extras.sourceManifest.commit, manifest.commit);
   assert.match(deployedJSON.extras.attribution, /Nagoya Institute of Technology/);
-  for (const name of ['README.md', 'README.ja.md']) assert.deepEqual(await readFile(`public/gene-light/${name}`), await readFile(`${directory}/${name}`));
+  for (const file of manifest.files) {
+    const bytes = await readFile(`public/gene-light/${file.path}`);
+    assert.equal(bytes.length, file.size);
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), file.sha256);
+  }
+  const expectedFiles = [...manifest.files.map((file) => file.path), 'model.glb', 'source-manifest.json', 'conversion.json'].sort();
+  const actualFiles = (await readdir('public/gene-light', { recursive: true, withFileTypes: true }))
+    .filter((file) => file.isFile()).map((file) => join(file.parentPath, file.name).replace(/^public\/gene-light\//, '')).sort();
+  assert.deepEqual(actualFiles, expectedFiles, 'publish only the reviewed allowlist and generated records');
 });
 
 test('generic PMX material conversion preserves all supported sphere/toon modes and UV1', async () => {
@@ -121,5 +131,29 @@ test('CLI output supports unpacked glTF resources and rejects invalid geometry/i
     await assert.rejects(convertModel(pmx, directory), /indices/);
     pmx.materials[0].textureIndex = 100;
     await assert.rejects(convertModel(pmx, directory), /texture index/);
+  } finally { await rm(temporary, { recursive: true, force: true }); }
+});
+
+test('alpha classification uses decoded image bytes, diffuse alpha and only alpha-bearing texture slots', async () => {
+  const directory = await fetchGene(), temporary = await mkdtemp(join(tmpdir(), 'mmd-alpha-test-'));
+  try {
+    const png = new PNG({ width: 2, height: 1 });
+    png.data.set([255, 255, 255, 255, 255, 255, 255, 255]);
+    await writeFile(join(temporary, 'opaque.png'), PNG.sync.write(png));
+    png.data[7] = 128;
+    await writeFile(join(temporary, 'blend.png'), PNG.sync.write(png));
+    const model = parsePMX(await readFile(`${directory}/Gene_light.pmx`));
+    model.textures = ['opaque.png', 'blend.png'];
+    const source = model.materials[0];
+    model.materials = Array.from({ length: 7 }, (_, i) => ({ ...source, faceCount: 1,
+      diffuse: [1, 1, 1, i === 3 ? 0.5 : 1], textureIndex: i === 1 ? 1 : i === 2 ? -1 : 0,
+      envFlag: i === 4 || i === 5 ? 3 : i === 6 ? 1 : 0,
+      envTextureIndex: i >= 4 ? i === 5 ? 0 : 1 : -1, toonIndex: -1 }));
+    model.faces = Array.from({ length: 7 }, () => ({ indices: [0, 1, 2] }));
+    model.vertices = model.vertices.slice(0, 3).map((v) => ({ ...v, auvs: [[0, 0, 0, 0]] }));
+    const { document, io } = await convertModel(model, temporary);
+    const json = glbJSON(await io.writeBinary(document));
+    assert.deepEqual(json.materials.map((m: any) => m.alphaMode ?? 'OPAQUE'),
+      ['OPAQUE', 'BLEND', 'OPAQUE', 'BLEND', 'BLEND', 'OPAQUE', 'OPAQUE']);
   } finally { await rm(temporary, { recursive: true, force: true }); }
 });

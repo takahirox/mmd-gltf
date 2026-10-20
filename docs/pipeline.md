@@ -42,9 +42,12 @@ source sRGB components to linear baseColorFactor, metalness is zero, and
 roughness approximates shininess as `sqrt(2/(q+2))`, bounded to `[0.15,1]`.
 The base image is shared with the extension where possible. PBR viewers interpret
 it as sRGB; MMD views sample encoded components. PMX's double-sided flag maps to
-`doubleSided`. Diffuse alpha below one, a base image, or a subtexture conservatively
-selects `BLEND` (depth writes disabled by the plugin); otherwise the material is
-`OPAQUE`. This preserves fractional texture opacity without guessing a cutoff.
+`doubleSided`. Diffuse alpha below one, any nonopaque base-image texel, or any
+nonopaque subtexture texel selects `BLEND` (depth writes disabled by the plugin);
+otherwise the material is `OPAQUE` with depth writes. PNG alpha is decoded with
+pinned `pngjs`; JPEG is opaque. Toon and multiply/add sphere RGB do not contribute
+alpha. Classification covers the entire image, conservatively including unused
+texels, and preserves fractional opacity without guessing a cutoff.
 The converter does not infer alpha-mask intent. The plugin also supports authored
 core `MASK` and `alphaCutoff`.
 
@@ -59,8 +62,11 @@ tests exercise those modes using synthetic source material configurations.
 ## Three.js integration
 
 Use the pinned Three.js version in this repository. The reusable TypeScript
-source is [the plugin](../packages/three-mmd-toon/index.ts); no upstream loader
-modifications or legacy `MMDLoader`/Phong shaders are used.
+source is [the plugin](../packages/three-mmd-toon/index.ts); it uses no upstream
+loader modifications or legacy shaders.
+The comparison independently loads the original PMX with the released
+`@takahirox/three-mmd@0.1.0` TSL `MMDLoader`, sharing Three.js `0.186.1` via
+its peer dependency (verify with `npm ls three`).
 
 ```ts
 import { Vector3, WebGPURenderer } from 'three/webgpu';
@@ -115,13 +121,41 @@ no resolver. Applications should dispose loaded materials/geometries, call the
 plugin's asynchronous `dispose()` for its texture views, and dispose any
 resolver-owned originals themselves.
 
+## Direct PMX comparison
+
+The two scenes share one scissored `WebGPURenderer`, one perspective camera and
+one `OrbitControls` instance. Equal view rectangles sit side by side on desktop
+and stack at 700 CSS pixels or less. Drag/pan/zoom in either view moves both;
+Front, Side and Back reset a fixed camera and target (including residual damping).
+Only the right view switches between extension toon and independent core PBR.
+WebGL2 is the default for reproducible diagnostics; `?backend=webgpu` opts in to
+WebGPU when available. Both scenes have the same dark blue background, white
+0.8 directional source toward normalized `(-0.3, 0.8, 1)`, no ambient scene light,
+no shadows, sRGB output and no tone mapping. The extension gets that same direction
+and source RGB through its explicit adapter; the PMX/PBR materials use the scene
+light. Their distinct equations do not imply identical output.
+
+`MMDLoader.loadAsync` loads the hash-verified original PMX. Its `LoadingManager`
+also waits for all original images before reporting ready. The loader already
+reflects Z/winding, so only a uniform `0.08` scale is applied. Neither model is
+independently centered, rotated or fitted to hide differences. The camera uses
+the converted model's bounds for both views. No animation helper, IK/physics
+stepping, morph updates or outline effect is used; reference outline flags are
+also disabled. See the [visual investigation](comparison.md) for captures,
+remaining shading differences and reproduction steps. The direct PMX reference
+is not proof of equivalence to the MikuMikuDance executable.
+
 ## Building and Pages
 
 `npm run build` re-verifies all source hashes, regenerates the derivative GLB,
-copies both original notices, then builds only `examples/index.html` into
-`dist/`. It ships one GLB, notices, manifest, conversion record and application
-bundle; no source PMX, duplicate PNGs, conformance runner or original model
-archive is needed. `npm run preview` serves the prefixed static build.
+copies the reviewed source allowlist, then builds only `examples/index.html`
+into `dist/`. It ships one GLB, the original `Gene_light.pmx`, ten `light/` PNGs,
+both notices, manifest, conversion record and application bundle. The generated
+`public/gene-light/` directory is cleaned before packaging so stale files cannot
+leak into the site. No full Gene, unused textures, motions, conformance runner or
+model archive is included. The source manifest records all original byte hashes;
+the conversion record records the derivative SHA-256 and 0.08 scale.
+`npm run preview` serves the prefixed static build.
 
 The [Pages workflow](../.github/workflows/pages.yml) tests pull requests and
 builds/deploys a push to `main`, using GitHub's Pages artifact workflow. Enable

@@ -1,6 +1,7 @@
 # Gene Light provenance and distribution review
 
-Reviewed 2026-10-20 for Issue #7, before preparing a distributable static artifact.
+Reviewed 2026-10-20 for Issue #7; extended for Issue #9 to serve the original
+PMX and ten images in the public comparison, in addition to the derivative GLB.
 Source: [mmdagent-ex/gene at c7eace43dffaccff6ad0597433ef85fa57c91e03](https://github.com/mmdagent-ex/gene/tree/c7eace43dffaccff6ad0597433ef85fa57c91e03).
 The exact source allowlist, sizes, Git blob SHA-1s and SHA-256s are preserved in
 [the acquisition manifest](../tools/gene-light-manifest.json), copied from
@@ -44,9 +45,24 @@ outline data, and a separate PBR approximation. Texture image bytes are unchange
 The derivative remains subject to Gene's terms; neither model nor GLB is
 relicensed as repository code. No MMD shared toon image bytes are distributed.
 
-The generated GLB and notices may be served together in `dist/` for this reviewed
-purpose. The original PMX and duplicate source PNGs are excluded from the static
-artifact. Generated outputs and source downloads are ignored by Git. Hashes are
+For Issue #9, both pinned original notices and the upstream scope confirmation
+were read again. Serving the **unchanged original PMX and ten original images**
+for the same maintainer's personal noncommercial comparison is within the same
+reviewed attributed redistribution purpose. This is an inference from the
+published terms and stated purpose, not additional rights-holder permission or
+a legal opinion. No new use category is asserted.
+
+The generated GLB, original PMX, ten original PNGs and both notices may be served
+together in `dist/gene-light/` only for this specifically reviewed comparison.
+Packaging copies exactly the 13-file hash-verified allowlist plus the derivative,
+source manifest and conversion record, cleaning the generated directory first.
+Tests check the complete output allowlist and every original file hash, including
+through the built static server. No full Gene, unused images or unrelated motions
+are included. The page identifies the PMX/images as unchanged and the GLB as a
+static adaptation, with full credit and direct access to the original notices.
+The [paired screenshots](comparison.md) are derived scene presentations of the
+same source, retain the same model terms and are covered by the credit above.
+Generated outputs and source downloads are ignored by Git. Hashes are
 rechecked whenever the site is built, including in Pages CI.
 
 Publication and its verification remain pending until merge/deployment. This
