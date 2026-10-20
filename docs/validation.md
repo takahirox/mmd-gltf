@@ -1,5 +1,45 @@
 # Validation record
 
+## Issue #11: three-mmd 0.1.1 reference upgrade
+
+Local pre-merge validation on 2026-10-21, Node.js 24.12.0, npm 11.6.2, macOS,
+Google Chrome headless with SwiftShader. This covers the built static preview,
+not the deployed Pages site.
+
+- `npm view @takahirox/three-mmd@0.1.1` confirms the published version and
+  `three: ~0.186.0` peer dependency. `npm ci` succeeds with its registry tarball
+  and integrity locked in `package-lock.json`. `npm ls three @takahirox/three-mmd`
+  reports `@takahirox/three-mmd@0.1.1` and one shared `three@0.186.1`, with the
+  reference's peer deduplicated to that installation.
+- `npm run typecheck` passes without compatibility changes to the demo.
+- `npm test` passes all eight converter/plugin tests and the independent
+  extension checker: 43 shading vectors, ten shared mappings, 56 schema cases,
+  ten whole-asset cases and two complete glTF examples. Generated GLBs have zero
+  Khronos Validator errors; the expected draft-extension notices remain.
+- `npm run build` passes, verifies all 13 pinned source files and retains the
+  original PMX/images/notices and attributed derivative. The example GLB remains
+  4,770,504 bytes with SHA-256
+  `b6e8318feda9738e1fc29ad7fefdbe66d7c1cceb4414eed86d799f56ad3efb00`.
+  The existing large-bundle warning remains (1,174.10 kB, 340.82 kB gzip).
+- `npm run test:browser` passes three tests; the optional native-WebGPU case is
+  explicitly skipped because no adapter is available. All 43 production TSL
+  numeric vectors pass on WebGL2. The built comparison loads both models and
+  checks aligned bounds/silhouettes, static pose/scale, synchronized orbit and
+  zoom, Front/Side/Back presets, toon/PBR/toon switching with an unchanged PMX
+  reference, served source/notice hashes, mobile layout and the missing-PMX-image
+  error path. Normal operation has no asset/network/console/runtime/shader errors.
+- Real front, side and back captures were opened and inspected alongside the
+  historical 0.1.0 captures. The reference has darker scarf/trousers and clearer
+  texture detail, with remaining independent brightness/highlight differences.
+  No obvious new geometry, material, texture, alpha or orientation defects were
+  found. The [comparison record](comparison.md) includes all three updated paired
+  captures and retains the historical evidence. No converter, plugin, normative
+  material equations, conformance fixtures or model rights notices changed.
+- `npm run check:links` and `git diff --check` pass.
+
+`npm ci` also reports two audit findings (one low, one high); unrelated dependency
+updates were not included in this reference-loader upgrade.
+
 ## Issue #9: direct PMX comparison and occlusion correction
 
 Local pre-merge validation on 2026-10-20, Node.js 24.12.0, macOS,
@@ -106,6 +146,8 @@ the upstream animated MMD demo was not performed.
 while implementing this node. After merging and the Pages workflow completes:
 
 1. Record the deployed commit, workflow run URL/result, deployment URL and date.
+   Confirm that commit's manifest and lockfile resolve
+   `@takahirox/three-mmd@0.1.1` for the direct PMX reference.
 2. Open `https://takahirox.github.io/mmd-gltf/` and confirm
    both correctly labeled models are visible in the same base pose, orbit/zoom
    stays synchronized, Front/Side/Back presets work, narrow layouts stack, and

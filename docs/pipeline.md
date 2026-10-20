@@ -65,7 +65,7 @@ Use the pinned Three.js version in this repository. The reusable TypeScript
 source is [the plugin](../packages/three-mmd-toon/index.ts); it uses no upstream
 loader modifications or legacy shaders.
 The comparison independently loads the original PMX with the released
-`@takahirox/three-mmd@0.1.0` TSL `MMDLoader`, sharing Three.js `0.186.1` via
+`@takahirox/three-mmd@0.1.1` TSL `MMDLoader`, sharing Three.js `0.186.1` via
 its peer dependency (verify with `npm ls three`).
 
 ```ts

@@ -1,4 +1,46 @@
-# Gene Light PMX/glTF visual investigation (Issue #9)
+# Gene Light PMX/glTF visual comparison
+
+## three-mmd 0.1.1 upgrade (Issue #11)
+
+The direct PMX reference now uses the published `@takahirox/three-mmd@0.1.1`
+`MMDLoader.loadAsync`, sharing the existing Three.js `0.186.1` installation.
+No demo integration changes were necessary. The converter, GLB, glTF plugin and
+`MMD_materials_toon` specification are unchanged.
+
+These built-site Chromium/WebGL2 captures were opened and visually inspected on
+2026-10-21 with the same viewport, camera, scale, pose and light settings recorded
+below. Each capture has direct PMX on the left and converted GLB on the right.
+The historical 0.1.0 evidence is retained for comparison.
+
+| View | Updated 0.1.1 reference | Historical 0.1.0 reference |
+| --- | --- | --- |
+| Front | [Paired front, 0.1.1](comparison/three-mmd-0.1.1-front.png) | [Paired front, 0.1.0](comparison/after-front.png) |
+| Side | [Paired side, 0.1.1](comparison/three-mmd-0.1.1-side.png) | [Paired side, 0.1.0](comparison/after-side.png) |
+| Back | [Paired back, 0.1.1](comparison/three-mmd-0.1.1-back.png) | [Paired back, 0.1.0](comparison/after-back.png) |
+
+![Front with three-mmd 0.1.1: direct PMX left, glTF right](comparison/three-mmd-0.1.1-front.png)
+
+The reference's scarf and trousers are now dark rather than flat gray, with
+texture detail and highlights more visible. This agrees with the installed
+0.1.1 material implementation: ambient is now a separate source color, scaled
+by 0.5, multiplied by the base texture and toon ramp, rather than the untextured
+emissive contribution described for 0.1.0 below. The reference still uses
+linear-light Lambert diffuse and Phong specular; the PMX jacket, face and hair
+remain dimmer than the glTF side. Independent shading differences remain;
+pixel-identical output is not expected.
+
+Front, side and back retain aligned silhouettes, closed cuffs, intact hair,
+correctly occluded boots and the closed-mouth base face. No obvious new geometry,
+material-region, missing-texture, alpha or orientation regression was observed.
+The decoded pixels in the glTF half are unchanged from the historical corrected
+captures in all three views.
+Browser checks also pass matched world bounds and pixel extents, synchronized
+orbit/zoom, all three presets, PBR/toon switching with an unchanged PMX reference,
+stacked mobile views and all served source/notice hashes. Normal loading and
+rendering produce no asset, console, runtime or shader errors. Native WebGPU was
+capability-skipped because no adapter was available; WebGL2 was exercised.
+
+## Historical 0.1.0 investigation (Issue #9)
 
 These are actual Chromium/WebGL2 renders from the built `/mmd-gltf/` site,
 visually inspected on 2026-10-20. Left: original PMX loaded with
@@ -69,13 +111,13 @@ opaque, fractional texture alpha, material alpha, absent texture, opaque/alpha
 subtexture and non-alpha sphere cases. Browser tests require visible silhouettes
 in both panes and aligned pixel extents, in addition to geometric bounds.
 
-## Remaining visible differences
+## Historical shading differences with 0.1.0
 
 The direct PMX is darker and lower contrast, especially black clothing, and
 cloth/hair highlights differ. These differences remain visible and intentional
 in this comparison; pixel equality is not the acceptance criterion.
 
-The released reference uses a linear-light Lambert diffuse BRDF and Phong
+The 0.1.0 reference uses a linear-light Lambert diffuse BRDF and Phong
 specular. Its loader decodes source ambient to linear emissive and multiplies
 that emissive by 0.2 for textured materials, adding it independently of the base
 texture. Gene's ambient RGB is approximately 0.753: this creates an untextured
@@ -98,17 +140,23 @@ this change does not claim order-independent transparency.
 ```sh
 npm ci
 npm run build
-UPDATE_COMPARISON_EVIDENCE=1 npm run test:browser
+npm run test:browser
+cp test-results/gene-webgl-front.png docs/comparison/three-mmd-0.1.1-front.png
+cp test-results/gene-webgl-side.png docs/comparison/three-mmd-0.1.1-side.png
+cp test-results/gene-webgl-back.png docs/comparison/three-mmd-0.1.1-back.png
 ```
 
-This regenerates the three committed `after-*.png` files from the static preview,
-with the fixed viewport above (Chrome by default; use
+This regenerates the three committed `three-mmd-0.1.1-*.png` files from the static
+preview, with the fixed viewport above (Chrome by default; use
 `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium` after installing Playwright Chromium).
-Without the update variable, captures remain in ignored `test-results/`.
+Without the copy commands, captures remain in ignored `test-results/`.
 Tests also orbit from the PMX pane, zoom from the GLB pane, check both camera
 states, reset viewpoints, switch PBR/toon, check the unchanged reference image,
 verify all 13 served source hashes and check the stacked narrow layout. To
-reproduce **before**, use a disposable copy of this implementation, replace
+reproduce the historical 0.1.0 **after** captures, use a disposable checkout of
+`25a0e24f0cbaff1e28cca5b150d45630cef17017`, install/build, and run
+`UPDATE_COMPARISON_EVIDENCE=1 npm run test:browser`. To reproduce **before**,
+use that disposable checkout, replace
 `tools/pmx-to-gltf.ts` with the file from the upstream checkpoint above, build,
 and run the browser test; capture output precedes any later assertions about
 the corrected material state. Do not use the old converter for publication.

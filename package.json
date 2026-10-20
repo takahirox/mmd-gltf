@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@gltf-transform/core": "4.5.1",
-    "@takahirox/three-mmd": "0.1.0",
+    "@takahirox/three-mmd": "0.1.1",
     "mmd-parser": "1.1.4",
     "pngjs": "7.0.0",
     "three": "0.186.1"
