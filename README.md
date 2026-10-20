@@ -4,7 +4,7 @@ A static PMX → glTF pipeline and Three.js loader plugin for the
 [MMD_materials_toon v0.1 draft](extensions/MMD_materials_toon/README.md).
 The converter uses `mmd-parser` and glTF Transform, without Three.js scene
 serialization. The Gene Light example shows the original PMX loaded directly
-with pinned `@takahirox/three-mmd@0.1.0` beside the generated GLB loaded through
+with pinned `@takahirox/three-mmd@0.1.1` beside the generated GLB loaded through
 `GLTFLoader.register()`. Orbit and zoom stay synchronized; Front/Side/Back presets
 use the same camera, scale, static base pose, lighting and renderer. The right
 pane also offers the independent PBR fallback.
