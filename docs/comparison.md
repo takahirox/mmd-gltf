@@ -120,4 +120,4 @@ The screenshots are derived scene presentations, subject to Gene's
 [original usage guidelines/trademark-design rights](https://github.com/mmdagent-ex/gene/tree/c7eace43dffaccff6ad0597433ef85fa57c91e03),
 for this personal noncommercial technical comparison. No endorsement is implied.
 They are not MIT-licensed code. See the [distribution review](gene-light.md)
-and [validation record](validation.md) for the scope and pending public checks.
+and [validation record](validation.md) for the scope and public verification results.

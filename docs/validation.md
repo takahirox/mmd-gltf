@@ -102,20 +102,49 @@ the upstream animated MMD demo was not performed.
 
 ## Required post-merge verification
 
-**Pending.** No push, PR, merge, GitHub comment, or publication was performed
-while implementing this node. After merging and the Pages workflow completes:
+**Completed on 2026-10-20 after merge.** Issue #9 was freshly read and confirmed
+open immediately before the merge request. GitHub merged PR #10 using the exact
+reviewed head `ef56fc2b118ec1c39a03c93ad42e9256260cf4b2` and the merge method
+`merge`, without overriding checks or reviews. The resulting merge commit is
+`25a0e24f0cbaff1e28cca5b150d45630cef17017`; GitHub subsequently closed Issue #9.
 
-1. Record the deployed commit, workflow run URL/result, deployment URL and date.
-2. Open `https://takahirox.github.io/mmd-gltf/` and confirm
-   both correctly labeled models are visible in the same base pose, orbit/zoom
-   stays synchronized, Front/Side/Back presets work, narrow layouts stack, and
-   glTF toon/PBR/toon switching succeeds without changing the PMX reference.
-3. Confirm `gene-light/model.glb`, `gene-light/Gene_light.pmx`, all ten original
-   `gene-light/light/` PNGs, both original notices, `source-manifest.json`
-   and `conversion.json` load under `/mmd-gltf/`, with the displayed attribution,
-   usage terms, adaptation notice and matching artifact hash.
-4. Inspect browser console/network for asset, shader and runtime errors. Verify
-   WebGL2 with `?backend=webgl`; check native WebGPU when an adapter is available.
+- [Pages workflow 39406851711](https://github.com/takahirox/mmd-gltf/actions/runs/39406851711)
+  completed successfully for that merge commit, including all build, typecheck,
+  unit, browser, link and whitespace checks and the Pages deployment job.
+  GitHub Pages deployment `7197192759` reports success at
+  `2026-10-20T10:19:22Z` for the same commit and
+  [public comparison URL](https://takahirox.github.io/mmd-gltf/).
+- The built-site comparison tests were adapted in an ignored temporary harness
+  to target the public HTTPS URL, without starting local servers or updating
+  committed evidence. Headless Chrome/SwiftShader WebGL2 passed; optional native
+  WebGPU was skipped because no adapter was available. Both labeled models
+  loaded with 13 materials, matching world bounds and synchronized cameras.
+  Orbit from the PMX pane, zoom from the glTF pane, Front/Side/Back presets,
+  toon/PBR/toon switching with unchanged PMX pixels, and the stacked 600-pixel
+  layout all passed. Console, page errors, failed requests and HTTP error
+  responses were monitored; none occurred during the passing WebGL2 test.
+- All 13 original PMX/image/notice files loaded publicly and matched their
+  pinned SHA-256 values. The served source manifest exactly matched the checked-in
+  manifest. English/Japanese notice links, attribution, CC BY 4.0, noncommercial
+  scope and adaptation text were visible. The GLB and conversion record loaded;
+  their byte count and hash agreed, with the expected pinned source commit.
+- Public front, side and back browser captures were opened and visually reviewed.
+  All three are byte-identical to the committed
+  [after captures](comparison.md#before-and-after). Hair, face, scarf, sleeves,
+  boots and rear jacket retain the corrected occlusion; silhouette and texture
+  landmarks align. The documented independent shading differences remain,
+  including the grayer PMX and brighter, higher-contrast glTF.
 
-These are required publication checks after merge; local checks do not prove
-that deployment succeeds.
+The published GLB is 4,770,504 bytes with SHA-256
+`ff7a3fd2b3c81a91fc201d4b83ca495ca8fb31a98af0ae933f1aee14229087b2`.
+An initial extra assertion against the macOS-local hash above failed. Investigation
+rebuilt locally and compared both GLBs: their entire 4,755,680-byte binary payloads
+are identical, and the only JSON value difference is material 12's core PBR
+`baseColorFactor[0]`, `0.0908417000288922` locally versus
+`0.09084170002889219` in the Linux CI artifact. This last-digit floating-point
+variation means whole-file hashes are not identical across these environments;
+it does not change geometry, images or the normative toon values. The final
+public test verifies the published bytes against their own conversion record
+rather than assuming the macOS artifact hash. It passed, including the remaining
+attribution, mobile-layout and error checks. Local `npm run build` also passed
+during this investigation, with the existing bundle-size warning.
