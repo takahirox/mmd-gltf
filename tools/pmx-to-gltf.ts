@@ -1,5 +1,6 @@
 import { Document, Extension, NodeIO, TextureInfo, type Material, type Texture, type WriterContext } from '@gltf-transform/core';
 import { Parser } from 'mmd-parser';
+import { PNG } from 'pngjs';
 import { readFile, mkdir } from 'node:fs/promises';
 import { dirname, extname, resolve, relative, isAbsolute } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -77,6 +78,7 @@ export async function convertModel(model: PMXModel, textureDirectory: string, sc
     return v.auvs[0].slice(0, 2);
   })) : null;
   const textures = new Map<number, Texture>();
+  const hasAlpha = new Map<Texture, boolean>();
   async function texture(index: number) {
     if (!Number.isInteger(index) || index < 0 || index >= model.textures.length) throw new Error(`Invalid PMX texture index ${index}`);
     if (textures.has(index)) return textures.get(index)!;
@@ -88,6 +90,10 @@ export async function convertModel(model: PMXModel, textureDirectory: string, sc
       : bytes[0] === 255 && bytes[1] === 216 ? 'image/jpeg' : null;
     if (!mime) throw new Error(`Unsupported texture format: ${model.textures[index]}; transcode to PNG/JPEG first (including BMP/TGA sphere/toon images).`);
     const value = doc.createTexture(model.textures[index]).setImage(bytes).setMimeType(mime);
+    // A texture reference alone does not imply transparency. Opaque surfaces need
+    // depth writes, otherwise unsorted triangles show through hair, skin and clothes.
+    const rgba = mime === 'image/png' ? PNG.sync.read(bytes).data : null;
+    hasAlpha.set(value, rgba ? rgba.some((alpha, i) => i % 4 === 3 && alpha !== 255) : false);
     textures.set(index, value);
     return value;
   }
@@ -99,7 +105,7 @@ export async function convertModel(model: PMXModel, textureDirectory: string, sc
     // Independent linear-light approximation for ordinary glTF viewers, never used by toon shading.
     const material = doc.createMaterial(m.name).setBaseColorFactor([...m.diffuse.slice(0, 3).map((v) => decode(clamp(v))), clamp(m.diffuse[3])] as [number, number, number, number])
       .setMetallicFactor(0).setRoughnessFactor(Math.max(0.15, Math.min(1, Math.sqrt(2 / (m.shininess + 2)))))
-      .setDoubleSided(!!(m.flag & 1)).setAlphaMode(m.diffuse[3] < 1 || m.textureIndex >= 0 || m.envFlag === 3 ? 'BLEND' : 'OPAQUE')
+      .setDoubleSided(!!(m.flag & 1))
       .setExtras({ pmxFlags: m.flag, edgeColor: m.edgeColor, edgeSize: m.edgeSize, pmxSphereMode: m.envFlag });
     const refs: Partial<Record<Slot, Texture>> = {};
     if (m.textureIndex >= 0) {
@@ -119,6 +125,10 @@ export async function convertModel(model: PMXModel, textureDirectory: string, sc
       refs.sphereTexture = await texture(m.envTextureIndex);
       payload.sphereMode = (['none', 'multiply', 'add', 'subTexture'] as const)[m.envFlag];
     } else if (m.envFlag !== 0) warnings.push(`${m.name}: sphere mode ${m.envFlag} has no source texture (-1); disabled.`);
+    // Sphere multiply/add and toon RGB do not contribute alpha in this extension.
+    const translucent = m.diffuse[3] < 1 || !!(refs.baseTexture && hasAlpha.get(refs.baseTexture))
+      || payload.sphereMode === 'subTexture' && !!(refs.sphereTexture && hasAlpha.get(refs.sphereTexture));
+    material.setAlphaMode(translucent ? 'BLEND' : 'OPAQUE');
     extension.records.set(material, { payload, textures: refs });
     const faces = model.faces.slice(faceOffset, faceOffset + m.faceCount);
     if (faces.length !== m.faceCount) throw new Error('Material face range exceeds PMX faces');
