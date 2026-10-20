@@ -8,18 +8,23 @@ base-level sampler; it is not a runtime, converter, or shader package.
 
 ## Running the checks
 
-Use Node.js 22 or later. The repository has no package manifest or installed
-dependencies. Install validation tools in a temporary directory, outside the
-worktree, and expose that directory to the test process:
+Use Node.js 22.12 or later. Install the repository's pinned dependencies and run:
 
 ```sh
-validation_dir=$(mktemp -d)
-npm install --prefix "$validation_dir" --no-audit --no-fund --ignore-scripts \
-  ajv@8.20.0 gltf-validator@2.0.0-dev.3.10
-NODE_PATH="$validation_dir/node_modules" \
-  node extensions/MMD_materials_toon/tests/check.cjs
+npm ci
+npm run example:assets
+npm test
+npm run build
+npm run test:browser
 git diff --check
 ```
+
+`npm test` runs this reference checker plus converter/plugin tests. The browser
+suite executes the production TSL graph against all 43 independent numerical
+fixtures on WebGL2, then loads/renders the generated Gene GLB and toggles its PBR
+fallback. See the [setup guide](../../../README.md) for browser installation and
+native WebGPU capability skips. Expectations below remain independent of the
+runtime implementation.
 
 Run from the repository root. Ajv validates the actual JSON Schema, including
 negative cases; its strict numeric checking also rejects JSON numbers such as
