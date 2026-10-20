@@ -47,17 +47,39 @@ the upstream animated MMD demo was not performed.
 
 ## Required post-merge verification
 
-**Pending.** No push, PR, merge, GitHub comment, or publication was performed
-while implementing this node. After merging and the Pages workflow completes:
+Verified on 2026-10-20 at 09:49 UTC after merging PR #8 with a merge commit.
+Issue #7 was re-read and confirmed open immediately before the merge; GitHub
+enforced the approved PR head `e5044c080d618853398c457a909ecd4602227d45`.
 
-1. Record the deployed commit, workflow run URL/result, deployment URL and date.
-2. Open `https://takahirox.github.io/mmd-gltf/` and confirm the character is visible,
-   orbit/zoom works, and toon/PBR/toon switching succeeds.
-3. Confirm `gene-light/model.glb`, both original notices, `source-manifest.json`
-   and `conversion.json` load under `/mmd-gltf/`, with the displayed attribution,
-   usage terms, adaptation notice and matching artifact hash.
-4. Inspect browser console/network for asset, shader and runtime errors. Verify
-   WebGL2 with `?backend=webgl`; check native WebGPU when an adapter is available.
+- Deployed commit: `fbda16657e9db445414f824e381a14326e08437c`.
+- [Workflow run 39403163895](https://github.com/takahirox/mmd-gltf/actions/runs/39403163895):
+  **success**, including build and deploy. Deployment 7196605822 reports success.
+  Pages was initially disabled; GitHub Actions was enabled as its source before
+  the deployment job ran. No workflow bypass or rerun was needed.
+- [Public example](https://takahirox.github.io/mmd-gltf/) returns HTTP 200.
+  Chrome 155.0.8059.85 headless with SwiftShader verified the actual public
+  `?backend=webgl` page: 13 mesh primitives rendered, toon/PBR/toon switching
+  changed the rendered image, and drag orbit and wheel zoom changed the view.
+  The full-page toon screenshot was inspected and the character is visible.
+- The generated GLB, both original notices, source manifest and conversion
+  record all return HTTP 200 under `/mmd-gltf/gene-light/`. Both notice hashes
+  match the pinned source manifest exactly; the published manifest matches the
+  repository manifest. Attribution, usage terms, original-notice links and the
+  adaptation notice are present in the page footer.
+- Published GLB: 4,770,644 bytes, SHA-256
+  `c88172af4754af87aa309b1c7504c0f224a9c1308f24ba4dd9b06a139a2896cf`,
+  matching the published conversion record and pinned source commit.
+- No asset, shader, console or JavaScript runtime errors occurred. Screenshot
+  readback produced GPU-stall performance warnings. Native WebGPU was skipped
+  after the browser reported no available adapter; WebGL2 passed.
+- Browser script, JSON report and screenshots are retained in ignored
+  `test-results/` in this worktree. This checked-in record preserves the outcome
+  independently of those local artifacts.
 
-These are required publication checks after merge; local checks do not prove
-that deployment succeeds.
+Cross-platform reproducibility limitation: regenerating the example on macOS
+with the same lockfile reproduces the earlier macOS hash above, while Linux CI
+produces the published hash. Comparing the GLBs found identical binary chunk
+headers/payloads and only one JSON value difference: material 12's PBR base-color
+red factor is `0.0908417000288922` on macOS and `0.09084170002889219` on Linux.
+The extension values are identical. Conversion is repeatable within the tested
+environment, but byte-identical output across these platforms is not established.
