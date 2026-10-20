@@ -32,10 +32,11 @@ updates affected documentation. Review evidence for the changed files and actual
 available tooling. Check that validation claims match checks actually performed,
 including failures, skipped checks, and unperformed checks with reasons.
 
-There are currently no configured build/test commands. For templates/documentation
-changes, check template metadata, Markdown syntax, links, anchors, whitespace, and
-consistency. Do not require unrelated runtime suites or introduce tooling solely
-to review documentation. Follow the [validation guidance](development-flow.md#2-implement-and-validate).
+Use the configured checks in [README](../README.md) for converter, plugin and
+example changes. For templates/documentation changes, check template metadata,
+Markdown syntax, links, anchors, whitespace, and consistency. Do not require
+unrelated runtime suites or introduce tooling solely to review documentation.
+Follow the [validation guidance](development-flow.md#2-implement-and-validate).
 
 Require mandatory pre-merge acceptance to be achievable and verifiable before
 merge. Keep optional validation separate. Human confirmation, physical-device

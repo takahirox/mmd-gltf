@@ -49,10 +49,9 @@ Inspect the current repository and its instructions before editing. Keep changes
 within the Issue's scope and choose validation appropriate to the changed files
 and actual repository tooling.
 
-The repository currently has no application files, dependencies, CI, or configured
-build/test commands. Do not invent commands or add application scaffolding,
-dependencies, CI, or build/test tooling merely to document a process. If tooling is
-added by a future Issue, use its actual documented commands for relevant changes.
+The repository has a TypeScript converter, Three.js plugin, browser example and
+Pages CI. Use the setup and relevant check commands in [README](../README.md).
+Do not add scaffolding, dependencies or tooling merely to document a process.
 
 For templates/documentation changes, inspect template metadata and Markdown syntax,
 verify relative links and heading anchors, and check consistency across the
