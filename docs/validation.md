@@ -142,22 +142,45 @@ the upstream animated MMD demo was not performed.
 
 ## Required post-merge verification
 
-**Pending.** No push, PR, merge, GitHub comment, or publication was performed
-while implementing this node. After merging and the Pages workflow completes:
+**Completed for Issue #11 on 2026-10-21 JST (2026-10-20 UTC).** PR #12
+was merged with a merge commit after a fresh read confirmed Issue #11 was open.
+GitHub accepted the expected PR head
+`10c3ae09eae8bd9dd79dd914a5a3cb85baf1d244`.
 
-1. Record the deployed commit, workflow run URL/result, deployment URL and date.
-   Confirm that commit's manifest and lockfile resolve
-   `@takahirox/three-mmd@0.1.1` for the direct PMX reference.
-2. Open `https://takahirox.github.io/mmd-gltf/` and confirm
-   both correctly labeled models are visible in the same base pose, orbit/zoom
-   stays synchronized, Front/Side/Back presets work, narrow layouts stack, and
-   glTF toon/PBR/toon switching succeeds without changing the PMX reference.
-3. Confirm `gene-light/model.glb`, `gene-light/Gene_light.pmx`, all ten original
-   `gene-light/light/` PNGs, both original notices, `source-manifest.json`
-   and `conversion.json` load under `/mmd-gltf/`, with the displayed attribution,
-   usage terms, adaptation notice and matching artifact hash.
-4. Inspect browser console/network for asset, shader and runtime errors. Verify
-   WebGL2 with `?backend=webgl`; check native WebGPU when an adapter is available.
+- Deployed merge commit: `b7df74479af0f0ad6e3e4dd264ceba93b93d5c98`.
+  Its two parents are the prior `main` and the reviewed PR head, preserving the
+  checkpoint history. The deployed commit's manifest and lockfile resolve
+  `@takahirox/three-mmd@0.1.1` with `three@0.186.1`.
+- [Validate and deploy Gene Light, run 39505253257](https://github.com/takahirox/mmd-gltf/actions/runs/39505253257)
+  completed successfully, including both build and deploy jobs. GitHub Pages
+  deployment `7212211911` reports success for that commit at
+  `2026-10-20T22:05:44Z` and
+  [the public demo](https://takahirox.github.io/mmd-gltf/).
+- A temporary copy of the existing paired-model browser tests targeted that
+  public URL with Google Chrome headless and SwiftShader. The WebGL2 test passed
+  in a 46.6-second run; native WebGPU was explicitly skipped because no adapter
+  was available. No local preview or development server was used for these checks.
+- Both labeled models rendered with 13 materials/mesh primitives, static pose,
+  scale 0.08 and aligned bounds. Synchronized orbit and zoom from opposite panes,
+  Front/Side/Back presets, toon/PBR/toon switching with an unchanged PMX reference,
+  and equal stacked mobile views passed. Attribution, CC BY 4.0 and retained
+  trademark/design-rights text remained visible. There were no asset/network,
+  console, runtime or shader errors during normal operation.
+- All 13 original PMX/image/notice files returned HTTP 200 and matched the pinned
+  source SHA-256 values. Both source manifest and conversion record loaded.
+  The deployed GLB returned HTTP 200, contained 4,770,504 bytes and matched its
+  published conversion record's SHA-256:
+  `ff7a3fd2b3c81a91fc201d4b83ca495ca8fb31a98af0ae933f1aee14229087b2`.
+- This deployment hash differs from the earlier local hash. Comparing the
+  deployed GLB with a fresh local generation found identical binary chunks and
+  exactly one JSON-number difference: material 12's PBR base-color red factor is
+  `0.09084170002889219` deployed versus `0.0908417000288922` locally. This tiny
+  numeric difference does not indicate changed model/image bytes or a visible
+  regression; the earlier local hash must not be used as the deployment hash.
+- Real deployed [front](comparison/deployed-front.png) and
+  [side](comparison/deployed-side.png) captures were opened and inspected. Both
+  show aligned models without obvious new geometry, texture, alpha or orientation
+  defects. The documented independent shading/brightness differences remain.
 
-These are required publication checks after merge; local checks do not prove
-that deployment succeeds.
+This publication record and its two captures are saved in the merge node's
+worktree checkpoint; they are not part of the deployed merge commit.
