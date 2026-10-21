@@ -1,5 +1,52 @@
 # Validation record
 
+## Issue #17: three-mmd 0.1.2 reference upgrade
+
+Local pre-merge validation on 2026-10-22, Node.js 24.12.0, npm 11.6.2,
+Darwin ARM64, Google Chrome 156.0.8078.48 headless with SwiftShader. This covers
+the built static preview; publication remains pending after merge.
+
+- `npm view @takahirox/three-mmd@0.1.2` confirms the published package,
+  `three: ~0.186.0` peer and npm `gitHead`
+  `5ae203246ccffd86a3e8fb7be0e34b9559c33a46`. Reviewed the runtime source diff
+  from published 0.1.1, release record and shading notes; the
+  [comparison report](comparison.md) records the relevant lighting/morph changes.
+  No demo loader compatibility changes were needed; scene settings remain fixed.
+- `npm ci` passes with exact 0.1.2 tarball/integrity in the lockfile.
+  `npm ls three @takahirox/three-mmd` reports 0.1.2 with its peer deduplicated
+  to the one `three@0.186.1` runtime. The existing two audit findings (one low,
+  one high) remain; no unrelated dependency upgrade was included.
+- `npm run typecheck` passes. `npm test` passes all eight converter/plugin tests,
+  43 toon shading vectors, ten shared mappings, 56 toon schema cases, ten toon
+  asset cases and two toon glTF examples. The outline checker also passes its
+  35 position vectors, 20 fragment vectors, 23 schema cases, 30 asset cases,
+  flag/default/skip/draw-order checks and three glTF examples. Validated GLBs
+  have zero errors; existing draft-extension notices remain.
+- `npm run build` passes, verifying all 13 pinned source files. The attributed
+  GLB remains 4,770,504 bytes, SHA-256
+  `b6e8318feda9738e1fc29ad7fefdbe66d7c1cceb4414eed86d799f56ad3efb00`.
+  The existing large-bundle warning remains (1,174.26 kB, 340.91 kB gzip).
+- `UPDATE_COMPARISON_EVIDENCE=1 npm run test:browser` passes three tests; optional
+  native WebGPU is explicitly skipped because no adapter is available. All 43
+  production TSL numeric vectors pass on WebGL2. The built-site tests cover both
+  labeled models, matched bounds/silhouettes, static pose/scale, synchronized
+  orbit/zoom, all presets, toon/PBR/toon switching with an unchanged PMX reference,
+  restored toon pixels, all served source/notice hashes, mobile layout and the
+  missing-PMX-image error path. Normal operation reports no asset/network,
+  console, runtime or shader errors. The built footer identifies version 0.1.2.
+- Opened and visually inspected all three new version-labeled captures alongside
+  0.1.1. The PMX reference is brighter, especially jacket/face/hair/boots; no
+  obvious new geometry, alpha, texture or orientation regression was observed.
+  An independent decoded-pixel comparison confirms zero changed glTF-half pixels
+  in every view. Historical evidence is retained. The capture-update switch now
+  writes only the 0.1.2 filenames, preserving the historical 0.1.0 files.
+- `npm run check:links` passes all 95 local links/anchors and built asset links;
+  `git diff --check` passes.
+
+The converter, local glTF plugin, PBR fallback, normative equations, color-space
+rules, conformance vectors, original assets and rights notices are unchanged.
+No original-MMD fidelity claim follows from the closer visual brightness.
+
 ## Issue #13: original-MMD research checkpoint
 
 Local checks on 2026-10-21, Node.js 24.12.0, npm 11.6.2, Darwin ARM64,
@@ -226,7 +273,7 @@ records above. After merging and the Pages workflow completes:
 
 1. Record the deployed commit, workflow run URL/result, deployment URL and date.
    Confirm that commit's manifest and lockfile resolve
-   `@takahirox/three-mmd@0.1.1` for the direct PMX reference.
+   `@takahirox/three-mmd@0.1.2` for the direct PMX reference (Issue #17).
 2. Open `https://takahirox.github.io/mmd-gltf/` and confirm
    both correctly labeled models are visible in the same base pose, orbit/zoom
    stays synchronized, Front/Side/Back presets work, narrow layouts stack, and

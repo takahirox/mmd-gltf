@@ -48,6 +48,7 @@ for (const backend of ['webgl', 'webgpu']) {
     await expect(page.locator('#status')).toContainText('Ready', { timeout: 90000 });
     await page.waitForFunction(() => (window as any).mmdExample?.frames > 4);
     for (const label of ['Direct PMX reference', 'MMD glTF']) await expect(page.getByRole('heading', { name: label, exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: '@takahirox/three-mmd@0.1.2', exact: true })).toBeVisible();
     for (const id of ['pmx', 'gltf']) await expect(page.locator(`#${id}-status`)).toContainText('Ready');
     const info = await page.evaluate(() => (window as any).mmdExample);
     expect(info.meshes).toBe(13);
@@ -89,7 +90,7 @@ for (const backend of ['webgl', 'webgpu']) {
       for (let i = 0; i < 4; i++) expect(Math.abs(left.bounds[i] - right.bounds[i])).toBeLessThanOrEqual(3);
       if (process.env.UPDATE_COMPARISON_EVIDENCE === '1' && backend === 'webgl') {
         await mkdir('docs/comparison', { recursive: true });
-        await copyFile(path, `docs/comparison/after-${view}.png`);
+        await copyFile(path, `docs/comparison/three-mmd-0.1.2-${view}.png`);
       }
     }
     expect(captures[0].equals(captures[1])).toBe(false);
@@ -106,6 +107,8 @@ for (const backend of ['webgl', 'webgpu']) {
     expect((await page.locator('#pmx-pane').screenshot()).equals(pmxBefore)).toBe(true);
     await page.selectOption('#material', 'toon');
     await expect(page.locator('#status')).toContainText('MMD toon');
+    await page.waitForTimeout(600);
+    expect((await page.locator('#gltf-pane').screenshot()).equals(toon)).toBe(true);
     for (const file of manifest.files) {
       const response = await page.request.get(`http://127.0.0.1:43180/mmd-gltf/gene-light/${file.path}`);
       expect(response.status()).toBe(200);

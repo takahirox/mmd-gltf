@@ -17,9 +17,66 @@ are still unavailable. Normative shading and the glTF side remain unchanged
 pending that evidence; there is no corrected-MMD capture to report. Issue #13
 must remain open. Historical captures below retain their original provenance.
 
-## three-mmd 0.1.1 upgrade (Issue #11)
+## three-mmd 0.1.2 upgrade (Issue #17)
 
-The direct PMX reference now uses the published `@takahirox/three-mmd@0.1.1`
+The direct PMX reference now uses the published `@takahirox/three-mmd@0.1.2`
+`MMDLoader.loadAsync`, sharing the existing Three.js `0.186.1` installation.
+No loader integration changes were necessary. The converted GLB, local
+`MMDToonPlugin`, independent PBR fallback, material specification, color-space
+rules and conformance vectors are unchanged.
+
+The [upstream source comparison](https://github.com/takahirox/three-mmd-loader/compare/deea1f4f475af94a796f4402bc23fc4f568a9429...5ae203246ccffd86a3e8fb7be0e34b9559c33a46)
+uses the two published packages' npm `gitHead` values. The relevant runtime
+changes are in `MMDToonMaterial`, `MMDMaterialMorphController` and the loader's
+material-morph alpha classification; geometry construction and the loader API
+are unchanged. The [upstream release record](https://github.com/takahirox/three-mmd-loader/blob/5ae203246ccffd86a3e8fb7be0e34b9559c33a46/docs/releases/0.1.2.md)
+and [shading notes](https://github.com/takahirox/three-mmd-loader/blob/5ae203246ccffd86a3e8fb7be0e34b9559c33a46/docs/material-shading.md)
+describe these changes:
+
+- Direct diffuse no longer has Three's Lambert `1 / pi` factor. Direct specular
+  uses authored RGB and an unnormalized half-vector power lobe, without the
+  previous Fresnel/normalized Phong terms. The ambient coefficient remains 0.5.
+- Material morphs accumulate multiply/add contributions independently. Base,
+  sphere and toon sampler controls reconstruct source-space RGB while keeping
+  sampled alpha separate from control alpha. This demo does not update morphs;
+  Gene has no sphere/toon images, so those controls are not exercised here.
+- Upstream Examples lighting changes are outside the npm runtime. This comparison
+  retains its own white directional light at intensity 0.8, direction, background,
+  camera and base pose; no lighting adjustment was made to force a match.
+
+These built-site Chrome 156.0.8078.48/SwiftShader WebGL2 captures were opened and
+visually inspected on 2026-10-22 alongside the historical 0.1.1 captures. They
+use the fixed viewport, scale, camera and lighting documented below. Direct PMX
+is on the left and converted GLB on the right.
+
+| View | Current 0.1.2 reference | Historical 0.1.1 reference |
+| --- | --- | --- |
+| Front | [Paired front, 0.1.2](comparison/three-mmd-0.1.2-front.png) | [Paired front, 0.1.1](comparison/three-mmd-0.1.1-front.png) |
+| Side | [Paired side, 0.1.2](comparison/three-mmd-0.1.2-side.png) | [Paired side, 0.1.1](comparison/three-mmd-0.1.1-side.png) |
+| Back | [Paired back, 0.1.2](comparison/three-mmd-0.1.2-back.png) | [Paired back, 0.1.1](comparison/three-mmd-0.1.1-back.png) |
+
+![Front with three-mmd 0.1.2: direct PMX left, glTF right](comparison/three-mmd-0.1.2-front.png)
+
+The PMX jacket, face, hair and boots are significantly brighter than in 0.1.1;
+white clothing has stronger bright regions, and highlights on dark clothing
+also change. This is consistent with the upstream direct-light changes. The
+two panes now appear closer in brightness, but independent shading differences
+remain, and neither is evidence of original-MMD correctness.
+
+Front, side and back retain aligned silhouettes, the closed-mouth base face,
+intact hair, closed cuffs and correctly occluded boots. No obvious new geometry,
+material-region, missing-texture, alpha or orientation defect was observed.
+Decoded RGBA comparisons against 0.1.1 at 1392×748 find 60,080 changed PMX pixels
+in front, 33,551 in side and 59,845 in back; the entire glTF half has **zero
+changed pixels in all three views**. Historical 0.1.0 and 0.1.1 captures remain
+intact. Browser checks pass matched bounds/pixel extents, synchronized orbit/zoom,
+presets, toon/PBR/toon switching, source/notice hashes and mobile layout without
+normal-operation network, console, runtime or shader errors. Native WebGPU was
+capability-skipped because no adapter was available; WebGL2 was exercised.
+
+## Historical three-mmd 0.1.1 upgrade (Issue #11)
+
+The direct PMX reference used the published `@takahirox/three-mmd@0.1.1`
 `MMDLoader.loadAsync`, sharing the existing Three.js `0.186.1` installation.
 No demo integration changes were necessary. The converter, GLB, glTF plugin and
 `MMD_materials_toon` specification are unchanged.
@@ -157,20 +214,20 @@ this change does not claim order-independent transparency.
 ```sh
 npm ci
 npm run build
-npm run test:browser
-cp test-results/gene-webgl-front.png docs/comparison/three-mmd-0.1.1-front.png
-cp test-results/gene-webgl-side.png docs/comparison/three-mmd-0.1.1-side.png
-cp test-results/gene-webgl-back.png docs/comparison/three-mmd-0.1.1-back.png
+UPDATE_COMPARISON_EVIDENCE=1 npm run test:browser
 ```
 
-This regenerates the three committed `three-mmd-0.1.1-*.png` files from the static
+This regenerates the three committed `three-mmd-0.1.2-*.png` files from the static
 preview, with the fixed viewport above (Chrome by default; use
 `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium` after installing Playwright Chromium).
-Without the copy commands, captures remain in ignored `test-results/`.
+Without `UPDATE_COMPARISON_EVIDENCE=1`, captures remain in ignored `test-results/`.
 Tests also orbit from the PMX pane, zoom from the GLB pane, check both camera
 states, reset viewpoints, switch PBR/toon, check the unchanged reference image,
-verify all 13 served source hashes and check the stacked narrow layout. To
-reproduce the historical 0.1.0 **after** captures, use a disposable checkout of
+verify the restored toon pixels, verify all 13 served source hashes and check
+the stacked narrow layout. To reproduce historical 0.1.1, use a disposable
+checkout of `90c592ba3e0e9c4c1a3c07fcc48c9dc739d36f77`, install/build and run
+`npm run test:browser`; its captures are in `test-results/gene-webgl-*.png`.
+To reproduce the historical 0.1.0 **after** captures, use a disposable checkout of
 `25a0e24f0cbaff1e28cca5b150d45630cef17017`, install/build, and run
 `UPDATE_COMPARISON_EVIDENCE=1 npm run test:browser`. To reproduce **before**,
 use that disposable checkout, replace
