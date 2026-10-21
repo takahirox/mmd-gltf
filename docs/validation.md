@@ -268,8 +268,44 @@ the upstream animated MMD demo was not performed.
 
 ## Required post-merge verification
 
-**Pending.** No merge or publication is established by the local validation
-records above. After merging and the Pages workflow completes:
+**Issue #17 completed on 2026-10-21 UTC (2026-10-22 JST).** PR #18 was
+merged with merge commit `8f45b17c5cba0aa2418a5d216fcaedb46bc558db`, preserving
+the reviewed head `16d749abb3787bd98af96292c695365f180e9d31` as its second
+parent. Issue #17 was read immediately before the merge and confirmed open.
+The [Validate and deploy Gene Light workflow](https://github.com/takahirox/mmd-gltf/actions/runs/39686894024)
+completed successfully for that merge commit, including both build and Pages
+deployment. The merged lockfile pins three-mmd 0.1.2 and contains one
+Three.js runtime, 0.186.1.
+
+The existing built-site browser test was run against
+<https://takahirox.github.io/mmd-gltf/> instead of localhost, with additional
+attribution and published GLB/conversion-record hash checks: **1 passed,
+1 optional native WebGPU check skipped because no adapter was available**.
+WebGL2 rendered both correctly labeled panes; matched bounds, cameras and base
+pose, synchronized orbit/zoom, Front/Side/Back presets, toon/PBR/toon switching
+with an unchanged PMX pane, and stacked mobile layout passed. All 13 original
+PMX/image/notice files matched their source hashes; the source manifest and
+conversion record loaded. Attribution, license, usage terms and adaptation
+notice were visible. No console errors, failed requests, HTTP errors, shader
+errors or runtime errors were observed during the completed WebGL2 test.
+
+Fresh front/side/back screenshots of the published site were opened and visually
+inspected. Each has zero changed pixels against its committed
+`docs/comparison/three-mmd-0.1.2-*.png` counterpart, confirming the documented
+appearance without adding duplicate screenshots.
+
+The published 4,770,504-byte GLB has SHA-256
+`ff7a3fd2b3c81a91fc201d4b83ca495ca8fb31a98af0ae933f1aee14229087b2`,
+matching its published `conversion.json`. An initial check against the local
+historical hash failed and was investigated: a fresh local conversion retains
+`b6e8318feda9738e1fc29ad7fefdbe66d7c1cceb4414eed86d799f56ad3efb00`.
+The GLB binary chunks are byte-identical; the only JSON value difference is
+`materials[12].pbrMetallicRoughness.baseColorFactor[0]`, serialized as
+`0.09084170002889219` on Pages versus `0.0908417000288922` locally.
+The live test therefore checks the deployed bytes against the deployed
+conversion record. No converter or material equations were changed.
+
+The publication checklist used for this verification was:
 
 1. Record the deployed commit, workflow run URL/result, deployment URL and date.
    Confirm that commit's manifest and lockfile resolve
