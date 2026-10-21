@@ -1,0 +1,169 @@
+{
+  "valid": [
+    {
+      "name": "defaults",
+      "value": {}
+    },
+    {
+      "name": "explicit",
+      "value": {
+        "colorFactor": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "sizeFactor": 1
+      }
+    },
+    {
+      "name": "zero",
+      "value": {
+        "sizeFactor": 0
+      }
+    },
+    {
+      "name": "above-one",
+      "value": {
+        "sizeFactor": 2.5
+      }
+    },
+    {
+      "name": "source-color-domain",
+      "value": {
+        "colorFactor": [
+          -1,
+          2,
+          0.5,
+          -0.2
+        ]
+      }
+    },
+    {
+      "name": "metadata",
+      "value": {
+        "extensions": {
+          "VENDOR_test": {}
+        },
+        "extras": [
+          1,
+          "a"
+        ]
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "null",
+      "value": null
+    },
+    {
+      "name": "array",
+      "value": []
+    },
+    {
+      "name": "size-null",
+      "value": {
+        "sizeFactor": null
+      }
+    },
+    {
+      "name": "negative-size",
+      "value": {
+        "sizeFactor": -0.1
+      }
+    },
+    {
+      "name": "size-string",
+      "value": {
+        "sizeFactor": "1"
+      }
+    },
+    {
+      "name": "size-bool",
+      "value": {
+        "sizeFactor": true
+      }
+    },
+    {
+      "name": "short-color",
+      "value": {
+        "colorFactor": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "name": "long-color",
+      "value": {
+        "colorFactor": [
+          0,
+          0,
+          0,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "name": "color-null",
+      "value": {
+        "colorFactor": null
+      }
+    },
+    {
+      "name": "color-string",
+      "value": {
+        "colorFactor": [
+          0,
+          "0",
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "name": "color-bool",
+      "value": {
+        "colorFactor": [
+          0,
+          0,
+          0,
+          true
+        ]
+      }
+    },
+    {
+      "name": "enabled",
+      "value": {
+        "enabled": true
+      }
+    },
+    {
+      "name": "misspelling",
+      "value": {
+        "size": 1
+      }
+    },
+    {
+      "name": "bad-extensions",
+      "value": {
+        "extensions": []
+      }
+    },
+    {
+      "name": "non-object-extension",
+      "value": {
+        "extensions": {
+          "VENDOR_test": 1
+        }
+      }
+    }
+  ],
+  "invalidNumericJSON": [
+    "{\"sizeFactor\":1e400}",
+    "{\"colorFactor\":[0,0,0,-1e400]}"
+  ]
+}

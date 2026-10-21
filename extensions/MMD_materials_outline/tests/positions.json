@@ -1,0 +1,1460 @@
+{
+  "tolerance": 1e-09,
+  "defaults": {
+    "position": [
+      0,
+      0,
+      -3
+    ],
+    "normal": [
+      1,
+      0,
+      0
+    ],
+    "viewport": [
+      800,
+      600
+    ],
+    "projection": [
+      [
+        0.75,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        -1.25,
+        -2.25
+      ],
+      [
+        0,
+        0,
+        -1,
+        0
+      ]
+    ]
+  },
+  "cases": [
+    {
+      "name": "defaults-absent-attribute",
+      "expected": {
+        "clip": [
+          0.0075,
+          0,
+          1.5,
+          3
+        ],
+        "ndc": [
+          0.0025,
+          0,
+          0.5
+        ],
+        "pixel": [
+          401,
+          300
+        ],
+        "tEffective": 1,
+        "reflected": false
+      }
+    },
+    {
+      "name": "perspective-double-distance",
+      "position": [
+        0,
+        0,
+        -6
+      ],
+      "expected": {
+        "clip": [
+          0.015,
+          0,
+          5.25,
+          6
+        ],
+        "ndc": [
+          0.0025,
+          0,
+          0.875
+        ],
+        "pixel": [
+          401,
+          300
+        ]
+      }
+    },
+    {
+      "name": "perspective-off-axis",
+      "position": [
+        1,
+        1,
+        -3
+      ],
+      "expected": {
+        "clip": [
+          0.7575,
+          1,
+          1.5,
+          3
+        ],
+        "ndc": [
+          0.2525,
+          0.3333333333333333,
+          0.5
+        ],
+        "pixel": [
+          501,
+          400
+        ]
+      }
+    },
+    {
+      "name": "fov-change",
+      "position": [
+        1,
+        1,
+        -3
+      ],
+      "projection": [
+        [
+          1.5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          -1.25,
+          -2.25
+        ],
+        [
+          0,
+          0,
+          -1,
+          0
+        ]
+      ],
+      "expected": {
+        "clip": [
+          1.5075,
+          2,
+          1.5,
+          3
+        ],
+        "pixel": [
+          601,
+          500
+        ]
+      }
+    },
+    {
+      "name": "aspect-and-resize",
+      "viewport": [
+        1200,
+        600
+      ],
+      "projection": [
+        [
+          0.5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          -1.25,
+          -2.25
+        ],
+        [
+          0,
+          0,
+          -1,
+          0
+        ]
+      ],
+      "expected": {
+        "clip": [
+          0.005,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          601,
+          300
+        ]
+      }
+    },
+    {
+      "name": "double-resolution",
+      "viewport": [
+        1600,
+        1200
+      ],
+      "expected": {
+        "clip": [
+          0.00375,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          801,
+          600
+        ]
+      }
+    },
+    {
+      "name": "subviewport-origin",
+      "origin": [
+        120,
+        30
+      ],
+      "expected": {
+        "pixel": [
+          521,
+          330
+        ]
+      }
+    },
+    {
+      "name": "diagonal",
+      "normal": [
+        0.6,
+        0.8,
+        0
+      ],
+      "expected": {
+        "clip": [
+          0.0045,
+          0.008,
+          1.5,
+          3
+        ],
+        "pixel": [
+          400.6,
+          300.8
+        ]
+      }
+    },
+    {
+      "name": "nonuniform-scale",
+      "position": [
+        0,
+        0,
+        -6
+      ],
+      "normal": [
+        0.6,
+        0.8,
+        0
+      ],
+      "world": [
+        [
+          2,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0.5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "expected": {
+        "clip": [
+          0.00263342581191294,
+          0.009363291775690445,
+          1.5,
+          3
+        ],
+        "pixel": [
+          400.3511234415884,
+          300.93632917756906
+        ],
+        "reflected": false
+      }
+    },
+    {
+      "name": "negative-nonuniform-scale",
+      "position": [
+        0,
+        0,
+        -6
+      ],
+      "normal": [
+        0.6,
+        0.8,
+        0
+      ],
+      "world": [
+        [
+          -2,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0.5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "expected": {
+        "clip": [
+          -0.00263342581191294,
+          0.009363291775690445,
+          1.5,
+          3
+        ],
+        "pixel": [
+          399.6488765584116,
+          300.93632917756906
+        ],
+        "reflected": true
+      }
+    },
+    {
+      "name": "orthographic",
+      "position": [
+        1,
+        0,
+        -3
+      ],
+      "projection": [
+        [
+          0.5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          -0.25,
+          -1.25
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "expected": {
+        "clip": [
+          0.5025,
+          0,
+          -0.5,
+          1
+        ],
+        "pixel": [
+          601,
+          300
+        ]
+      }
+    },
+    {
+      "name": "orthographic-far",
+      "position": [
+        1,
+        0,
+        -7
+      ],
+      "projection": [
+        [
+          0.5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          -0.25,
+          -1.25
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "expected": {
+        "clip": [
+          0.5025,
+          0,
+          0.5,
+          1
+        ],
+        "pixel": [
+          601,
+          300
+        ]
+      }
+    },
+    {
+      "name": "explicit-size-scale-product",
+      "material": {
+        "sizeFactor": 2
+      },
+      "edgeScale": 0.5,
+      "expected": {
+        "clip": [
+          0.0075,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          401,
+          300
+        ]
+      }
+    },
+    {
+      "name": "above-one-scale",
+      "edgeScale": 2.5,
+      "expected": {
+        "clip": [
+          0.01875,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          402.5,
+          300
+        ]
+      }
+    },
+    {
+      "name": "fractional-size",
+      "material": {
+        "sizeFactor": 0.25
+      },
+      "expected": {
+        "pixel": [
+          400.25,
+          300
+        ],
+        "tEffective": 0.25
+      }
+    },
+    {
+      "name": "zero-size",
+      "material": {
+        "sizeFactor": 0
+      },
+      "expected": {
+        "clip": [
+          0,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          400,
+          300
+        ],
+        "tEffective": 0
+      }
+    },
+    {
+      "name": "zero-scale",
+      "edgeScale": 0,
+      "expected": {
+        "clip": [
+          0,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          400,
+          300
+        ],
+        "tEffective": 0
+      }
+    },
+    {
+      "name": "axis-normal",
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "expected": {
+        "clip": [
+          0,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          400,
+          300
+        ],
+        "tEffective": 0
+      }
+    },
+    {
+      "name": "zero-morphed-normal",
+      "normalDelta": [
+        -1,
+        0,
+        0
+      ],
+      "expected": {
+        "clip": [
+          0,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          400,
+          300
+        ],
+        "tEffective": 0
+      }
+    },
+    {
+      "name": "below-direction-threshold",
+      "normal": [
+        1e-13,
+        0,
+        1
+      ],
+      "expected": {
+        "clip": [
+          0,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          400,
+          300
+        ],
+        "tEffective": 0
+      }
+    },
+    {
+      "name": "singular-skin",
+      "expected": {
+        "clip": [
+          0,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          400,
+          300
+        ],
+        "tEffective": 0
+      },
+      "joints": [
+        {
+          "weight": 1,
+          "world": [
+            [
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "above-direction-threshold",
+      "normal": [
+        1e-11,
+        0,
+        1
+      ],
+      "expected": {
+        "pixel": [
+          401,
+          300
+        ],
+        "tEffective": 1
+      }
+    },
+    {
+      "name": "near-plane-outside",
+      "position": [
+        0,
+        0,
+        -0.5
+      ],
+      "expected": {
+        "clip": [
+          0.00125,
+          0,
+          -1.625,
+          0.5
+        ],
+        "ndc": [
+          0.0025,
+          0,
+          -3.25
+        ]
+      }
+    },
+    {
+      "name": "at-eye",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "expected": {
+        "clip": [
+          0,
+          0,
+          -2.25,
+          0
+        ],
+        "ndc": null,
+        "pixel": null,
+        "tEffective": 0
+      }
+    },
+    {
+      "name": "behind-eye",
+      "position": [
+        0,
+        0,
+        1
+      ],
+      "expected": {
+        "clip": [
+          0,
+          0,
+          -3.5,
+          -1
+        ],
+        "ndc": null,
+        "pixel": null,
+        "tEffective": 0
+      }
+    },
+    {
+      "name": "view-rotation",
+      "view": [
+        [
+          0,
+          -1,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "expected": {
+        "clip": [
+          0,
+          0.01,
+          1.5,
+          3
+        ],
+        "pixel": [
+          400,
+          301
+        ]
+      }
+    },
+    {
+      "name": "morph-then-joint-world-bind",
+      "positionDelta": [
+        0.5,
+        0,
+        0
+      ],
+      "normalDelta": [
+        -1,
+        1,
+        0
+      ],
+      "expected": {
+        "clip": [
+          0.7425,
+          0.5,
+          1.5,
+          3
+        ],
+        "pixel": [
+          499,
+          350
+        ]
+      },
+      "position": [
+        0,
+        0,
+        -6
+      ],
+      "world": [
+        [
+          2,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0.5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "joints": [
+        {
+          "weight": 1,
+          "world": [
+            [
+              0,
+              -2,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0.5,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ],
+          "inverseBind": [
+            [
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              -0.5
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "view-translation",
+      "view": [
+        [
+          1,
+          0,
+          0,
+          -1
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "expected": {
+        "clip": [
+          -0.7425,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          301,
+          300
+        ]
+      }
+    },
+    {
+      "name": "singular-node",
+      "world": [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "expected": {
+        "skipped": true
+      }
+    },
+    {
+      "name": "foreshortened-normal-still-unit-direction",
+      "normal": [
+        0.6,
+        0,
+        0.8
+      ],
+      "expected": {
+        "clip": [
+          0.0075,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          401,
+          300
+        ],
+        "tEffective": 1
+      }
+    },
+    {
+      "name": "skinned-identity-mesh-node",
+      "world": [
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "joints": [
+        {
+          "weight": 1,
+          "world": [
+            [
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ],
+          "inverseBind": [
+            [
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      ],
+      "expected": {
+        "clip": [
+          0.0075,
+          0,
+          1.5,
+          3
+        ],
+        "ndc": [
+          0.0025,
+          0,
+          0.5
+        ],
+        "pixel": [
+          401,
+          300
+        ],
+        "tEffective": 1,
+        "reflected": false,
+        "skipped": false
+      },
+      "expectedFaces": {
+        "ccw": true,
+        "cw": false
+      }
+    },
+    {
+      "name": "skinned-reflected-mesh-node",
+      "world": [
+        [
+          -1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "joints": [
+        {
+          "weight": 1,
+          "world": [
+            [
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ],
+          "inverseBind": [
+            [
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      ],
+      "expected": {
+        "clip": [
+          0.0075,
+          0,
+          1.5,
+          3
+        ],
+        "ndc": [
+          0.0025,
+          0,
+          0.5
+        ],
+        "pixel": [
+          401,
+          300
+        ],
+        "tEffective": 1,
+        "reflected": false,
+        "skipped": false
+      },
+      "expectedFaces": {
+        "ccw": true,
+        "cw": false
+      }
+    },
+    {
+      "name": "skinned-singular-mesh-node",
+      "world": [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "joints": [
+        {
+          "weight": 1,
+          "world": [
+            [
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ],
+          "inverseBind": [
+            [
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      ],
+      "expected": {
+        "clip": [
+          0.0075,
+          0,
+          1.5,
+          3
+        ],
+        "ndc": [
+          0.0025,
+          0,
+          0.5
+        ],
+        "pixel": [
+          401,
+          300
+        ],
+        "tEffective": 1,
+        "reflected": false,
+        "skipped": false
+      },
+      "expectedFaces": {
+        "ccw": true,
+        "cw": false
+      }
+    },
+    {
+      "name": "skinned-reflected-joint",
+      "joints": [
+        {
+          "weight": 1,
+          "world": [
+            [
+              -1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      ],
+      "expected": {
+        "clip": [
+          -0.0075,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          399,
+          300
+        ],
+        "tEffective": 1,
+        "reflected": false,
+        "skipped": false
+      },
+      "expectedFaces": {
+        "ccw": true,
+        "cw": false
+      }
+    },
+    {
+      "name": "weighted-joint-world-bind",
+      "joints": [
+        {
+          "weight": 0.25,
+          "world": [
+            [
+              1,
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ],
+          "inverseBind": [
+            [
+              1,
+              0,
+              0,
+              -0.5
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        },
+        {
+          "weight": 0.75,
+          "world": [
+            [
+              1,
+              0,
+              0,
+              -1
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      ],
+      "expected": {
+        "clip": [
+          -0.46125,
+          0,
+          1.5,
+          3
+        ],
+        "pixel": [
+          338.5,
+          300
+        ],
+        "tEffective": 1,
+        "reflected": false
+      }
+    }
+  ]
+}
