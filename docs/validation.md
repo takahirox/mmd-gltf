@@ -68,6 +68,17 @@ Reviewed the complete local diff for Markdown and consistency with the partial
 scope; `git diff --check` passes. No links or runtime files changed, so build,
 type, unit and browser checks were not repeated for this metadata/log revision.
 
+Publication persistence revision on 2026-10-21: a subsequent publication restored
+the closing reference in the live PR body. Corrected PR #14 again to use
+`Related to #13`, removed the contradictory publication explanation, and saved
+the complete corrected body in [the PR publication artifact](../.github/pr-14-body.md).
+Subsequent publication must use that body and preserve the non-closing reference:
+the remaining implementation scope is still open under Issue #13. Live readback
+matches the saved body, contains no closing keyword for Issue #13, and retains
+PR head `3b2e421846b201ec9e6cd3182777c7e195833231`. Reviewed the complete diff,
+Markdown headings and links; `git diff --cached --check` passes. No runtime files
+changed, so type, unit, build and browser suites were not repeated.
+
 ## Issue #11: three-mmd 0.1.1 reference upgrade
 
 Local pre-merge validation on 2026-10-21, Node.js 24.12.0, npm 11.6.2, macOS,
