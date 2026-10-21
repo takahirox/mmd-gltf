@@ -36,6 +36,6 @@ These pending checks do not gate this research checkpoint's merge or Issue compl
 
 ## Related Issues
 
-Closes #13
+Related to #13
 
 This PR remains a draft: evidence-supported spec/plugin/adapter corrections, independent measured fixtures and GPU comparisons are outstanding.
