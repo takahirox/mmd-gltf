@@ -71,7 +71,13 @@ remains pending until merge.
 - `extensions/`: runtime-independent proposals, schemas and numerical fixtures.
 - `tests/`: converter, resource, plugin and browser integration checks.
 
-The current scope excludes animation, skins, IK, grants, physics, morphs and
+The independent [MMD_materials_outline v0.1 draft](extensions/MMD_materials_outline/README.md)
+defines material edges and `_MMD_EDGE_SCALE`, with embedded glTF examples and
+CPU conformance fixtures (`npm run test:outline`). Its pixel normalization is a
+proposal; original-MMD pixel equivalence is unverified. The current converter,
+plugin and browser example do not implement outlines.
+
+The current runtime scope excludes animation, skins, IK, grants, physics, morphs and
 outlines. Source models and derivatives retain their own rights. Gene Light is
 **CC BY 4.0 with additional usage guidelines and retained trademark/design
 rights**, for academic/personal noncommercial scope; contact the authors for

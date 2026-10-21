@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "material.MMD_materials_outline.schema.json",
+  "title": "MMD_materials_outline v0.1 draft",
+  "description": "Independent outline on a glTF 2.0 material. Presence enables it. Defaults are annotations, applied by consumers on omission.",
+  "type": "object",
+  "properties": {
+    "colorFactor": {
+      "description": "Finite source-component RGBA, unrestricted on input; clamped to [0,1] on evaluation. RGB is sRGB, alpha is linear opacity.",
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 4,
+      "maxItems": 4,
+      "default": [0, 0, 0, 1]
+    },
+    "sizeFactor": {
+      "description": "Nonnegative finite material edge size. One unit displaces a vertex one framebuffer pixel when its edge scale is 1.",
+      "type": "number",
+      "minimum": 0,
+      "default": 1
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": { "type": "object" }
+    },
+    "extras": {}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,410 @@
+{
+  "cases": [
+    {
+      "name": "defaults-black",
+      "expected": {
+        "discard": false,
+        "premultipliedRGB": [
+          0,
+          0,
+          0
+        ],
+        "alpha": 1,
+        "depthWrite": false
+      }
+    },
+    {
+      "name": "independent-mask-hole",
+      "material": {
+        "colorFactor": [
+          1,
+          0,
+          0,
+          1
+        ]
+      },
+      "baseMaterial": {
+        "alphaMode": "MASK",
+        "alphaCutoff": 0.9,
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "baseTextureAlpha": 0,
+      "expected": {
+        "discard": false,
+        "premultipliedRGB": [
+          1,
+          0,
+          0
+        ],
+        "alpha": 1
+      }
+    },
+    {
+      "name": "independent-blend-zero",
+      "material": {
+        "colorFactor": [
+          1,
+          0,
+          0,
+          1
+        ]
+      },
+      "baseMaterial": {
+        "alphaMode": "BLEND"
+      },
+      "baseTextureAlpha": 0,
+      "expected": {
+        "discard": false,
+        "premultipliedRGB": [
+          1,
+          0,
+          0
+        ],
+        "alpha": 1
+      }
+    },
+    {
+      "name": "half-red-over-blue",
+      "material": {
+        "colorFactor": [
+          1,
+          0,
+          0,
+          0.5
+        ]
+      },
+      "destination": {
+        "premultipliedRGB": [
+          0,
+          0,
+          1
+        ],
+        "alpha": 1
+      },
+      "expected": {
+        "discard": false,
+        "premultipliedRGB": [
+          0.5,
+          0,
+          0.5
+        ],
+        "alpha": 1,
+        "encodedRGB": [
+          0.7353569830524495,
+          0,
+          0.7353569830524495
+        ]
+      }
+    },
+    {
+      "name": "source-components-decoded-before-blend",
+      "material": {
+        "colorFactor": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "expected": {
+        "premultipliedRGB": [
+          0.10702057024111628,
+          0.10702057024111628,
+          0.10702057024111628
+        ],
+        "encodedRGB": [
+          0.3607802138332792,
+          0.3607802138332792,
+          0.3607802138332792
+        ]
+      }
+    },
+    {
+      "name": "component-clamp",
+      "material": {
+        "colorFactor": [
+          2,
+          -1,
+          0.5,
+          2
+        ]
+      },
+      "expected": {
+        "premultipliedRGB": [
+          1,
+          0,
+          0.21404114048223255
+        ],
+        "alpha": 1,
+        "encodedRGB": [
+          1,
+          0,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "transparent-destination",
+      "material": {
+        "colorFactor": [
+          1,
+          0,
+          0,
+          0.5
+        ]
+      },
+      "destination": {
+        "premultipliedRGB": [
+          0,
+          0,
+          0.5
+        ],
+        "alpha": 0.5
+      },
+      "expected": {
+        "premultipliedRGB": [
+          0.5,
+          0,
+          0.25
+        ],
+        "alpha": 0.75,
+        "straightRGB": [
+          0.6666666666666666,
+          0,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "name": "srgb-linear-branch",
+      "material": {
+        "colorFactor": [
+          0.01292,
+          0.01292,
+          0.01292,
+          1
+        ]
+      },
+      "expected": {
+        "premultipliedRGB": [
+          0.001,
+          0.001,
+          0.001
+        ],
+        "encodedRGB": [
+          0.01292,
+          0.01292,
+          0.01292
+        ]
+      }
+    },
+    {
+      "name": "depth-equal-survives",
+      "ndcDepth": 0,
+      "sceneDepth": 0.5,
+      "expected": {
+        "discard": false
+      }
+    },
+    {
+      "name": "zero-opacity",
+      "material": {
+        "colorFactor": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "expected": {
+        "discard": true,
+        "reason": "alpha"
+      }
+    },
+    {
+      "name": "negative-opacity",
+      "material": {
+        "colorFactor": [
+          0,
+          0,
+          0,
+          -1
+        ]
+      },
+      "expected": {
+        "discard": true,
+        "reason": "alpha"
+      }
+    },
+    {
+      "name": "zero-effective-displacement",
+      "tEffective": [
+        0,
+        0,
+        0
+      ],
+      "expected": {
+        "discard": true,
+        "reason": "scale"
+      }
+    },
+    {
+      "name": "ordinary-front-face",
+      "ccw": true,
+      "expected": {
+        "discard": true,
+        "reason": "cull"
+      }
+    },
+    {
+      "name": "reflected-front-face",
+      "ccw": false,
+      "reflected": true,
+      "expected": {
+        "discard": true,
+        "reason": "cull"
+      }
+    },
+    {
+      "name": "behind-opaque-depth",
+      "ndcDepth": 0.2,
+      "sceneDepth": 0.5,
+      "expected": {
+        "discard": true,
+        "reason": "depth"
+      }
+    },
+    {
+      "name": "near-clipped-fragment",
+      "ndcDepth": -1.2,
+      "expected": {
+        "discard": true,
+        "reason": "clip"
+      }
+    },
+    {
+      "name": "far-clipped-fragment",
+      "ndcDepth": 1.2,
+      "expected": {
+        "discard": true,
+        "reason": "clip"
+      }
+    },
+    {
+      "name": "reflected-back-face",
+      "ccw": true,
+      "reflected": true,
+      "expected": {
+        "discard": false
+      }
+    },
+    {
+      "name": "perspective-correct-mixed-scales",
+      "barycentric": [
+        0.25,
+        0.25,
+        0.5
+      ],
+      "clipW": [
+        1,
+        2,
+        4
+      ],
+      "tEffective": [
+        0,
+        2,
+        4
+      ],
+      "expected": {
+        "interpolatedScale": 1.5,
+        "discard": false
+      }
+    },
+    {
+      "name": "overlap-half-blue-after-half-red",
+      "material": {
+        "colorFactor": [
+          0,
+          0,
+          1,
+          0.5
+        ]
+      },
+      "destination": {
+        "premultipliedRGB": [
+          0.5,
+          0,
+          0
+        ],
+        "alpha": 1
+      },
+      "expected": {
+        "discard": false,
+        "premultipliedRGB": [
+          0.25,
+          0,
+          0.5
+        ],
+        "alpha": 1,
+        "depthWrite": false
+      }
+    }
+  ],
+  "ordering": {
+    "triangles": [
+      {
+        "node": 2,
+        "primitive": 0,
+        "triangle": 0,
+        "viewZ": [
+          -2,
+          -4,
+          -6
+        ]
+      },
+      {
+        "node": 0,
+        "primitive": 1,
+        "triangle": 1,
+        "viewZ": [
+          -5,
+          -5,
+          -5
+        ]
+      },
+      {
+        "node": 0,
+        "primitive": 0,
+        "triangle": 1,
+        "viewZ": [
+          -5,
+          -5,
+          -5
+        ]
+      },
+      {
+        "node": 0,
+        "primitive": 0,
+        "triangle": 0,
+        "viewZ": [
+          -5,
+          -5,
+          -5
+        ]
+      }
+    ],
+    "expectedIndices": [
+      3,
+      2,
+      1,
+      0
+    ]
+  }
+}
