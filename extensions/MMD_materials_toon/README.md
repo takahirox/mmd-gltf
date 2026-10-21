@@ -9,6 +9,16 @@ an assertion that the unpublished MMD executable uses these exact equations.
 The draft may change before release; breaking changes after a stable release
 require a new major version. There is no per-material version or profile selector.
 
+**Original-MMD verification is blocked (Issue #13).** The existing equations,
+including ambient coefficient 1 and source-component RGB/linear-framebuffer
+blending, have not been validated against the original executable. They remain
+draft conformance requirements, not established historical MMD behavior.
+The [primary-evidence investigation and capture protocol](../../docs/original-mmd-research.md)
+identify the inspected 9.32 x64 build, embedded-effect findings, unresolved
+rules and reproducible probe inputs. Neither compatibility-renderer agreement
+nor this draft's tests resolves those gaps. No mathematical semantics change
+is made pending primary evidence; there is no new version selector.
+
 The extension is applied to `materials[i].extensions.MMD_materials_toon`.
 No other extension is required. `KHR_texture_transform` is optional on
 `baseTexture`. The words MUST, MUST NOT, SHOULD, and MAY express normative
@@ -451,4 +461,6 @@ PMX data semantics take precedence for mapping source fields. The equations and
 conventions in this draft take precedence for evaluation. PMX 2.1 leaves some
 vertex-color computation implementation-defined; this draft specifies its own
 material equation and excludes those vertex colors. It claims no numerical
-comparison with the original executable.
+comparison with the original executable. Such comparison is required to resolve
+Issue #13 and establish the promised fidelity; it is currently blocked as
+documented in the [research report](../../docs/original-mmd-research.md).

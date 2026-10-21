@@ -9,6 +9,12 @@ with pinned `@takahirox/three-mmd@0.1.1` beside the generated GLB loaded through
 use the same camera, scale, static base pose, lighting and renderer. The right
 pane also offers the independent PBR fallback.
 
+Original-MMD fidelity is unverified. [Issue #13's research report](docs/original-mmd-research.md)
+records the inspected original 9.32 x64 distribution, unresolved shading rules,
+synthetic PMX probes and the blocker: original-renderer execution and measured
+reference output are unavailable in this runner. Neither browser pane is the
+original MikuMikuDance renderer.
+
 Use Node.js 22.12 or later:
 
 ```sh

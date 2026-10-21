@@ -120,6 +120,9 @@ missing base UV attribute. The runner also rejects missing UV1 directly in the
 evaluator. These targeted checks supplement, rather than replace, a full glTF
 validator; local JSON Schema cannot check top-level array bounds or mesh use.
 
-No screenshot comparison with MikuMikuDance has been performed. That comparison
-is optional for this draft. These checks establish arithmetic/asset consistency,
-not executable equivalence, GPU rasterization, or rights to shared resources.
+No comparison with original MikuMikuDance has been performed. Original-renderer
+observations are required to resolve Issue #13; that verification is blocked,
+not waived by these tests. See the [research report and capture protocol](../../../docs/original-mmd-research.md)
+and [synthetic PMX probe generator](../../../tools/generate-mmd-probes.ts).
+These checks establish arithmetic/asset consistency with the draft, not original
+executable equivalence, GPU rasterization, or rights to shared resources.
