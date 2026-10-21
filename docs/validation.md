@@ -59,6 +59,15 @@ resolved it. Reviewed the complete documentation diff for Markdown and
 consistent gate/status wording. Type, unit and browser suites were not repeated
 for this documentation-only revision; their earlier results above are historical.
 
+PR linkage revision on 2026-10-21: updated PR #14's Related Issues section to
+`Related to #13` and removed the contradictory intended-closing statement.
+The description explicitly leaves Issue #13 open for the remaining implementation.
+Read back the live PR body, confirmed the saved text matches the correction and
+contains no closing reference to Issue #13, and confirmed the PR head is unchanged.
+Reviewed the complete local diff for Markdown and consistency with the partial
+scope; `git diff --check` passes. No links or runtime files changed, so build,
+type, unit and browser checks were not repeated for this metadata/log revision.
+
 ## Issue #11: three-mmd 0.1.1 reference upgrade
 
 Local pre-merge validation on 2026-10-21, Node.js 24.12.0, npm 11.6.2, macOS,
