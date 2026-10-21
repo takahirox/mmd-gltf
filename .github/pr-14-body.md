@@ -10,7 +10,7 @@ The agent-verifiable research checkpoint is complete: evidence provenance and li
 
 Per [Issue #13's verification follow-up](https://github.com/takahirox/mmd-gltf/issues/13#issuecomment-6307160015), manual original-MMD verification is pending after merge. It is not an Issue completion criterion or a merge gate for this checkpoint.
 
-This is partial progress toward Issue #13, which remains open for remaining implementation. No original-MMD execution, controlled captures, measured reference pixels or active no-shadow D3D9 state trace was available. Neither ambient coefficient 1 nor 0.5 is established. Equations, schema defaults, production plugin behavior, converter mappings and numerical expectations remain unchanged. Evidence-dependent spec/plugin/adapter corrections, independent measured fixtures and GPU comparisons remain implementation work once primary observations support them. Deferring manual verification does not establish corrected fidelity. Existing Gene Light captures remain secondary diagnostics.
+This is partial progress toward Issue #13, with implementation still outstanding. No original-MMD execution, controlled captures, measured reference pixels or active no-shadow D3D9 state trace was available. Neither ambient coefficient 1 nor 0.5 is established. Equations, schema defaults, production plugin behavior, converter mappings and numerical expectations remain unchanged. Evidence-dependent spec/plugin/adapter corrections, independent measured fixtures and GPU comparisons remain implementation work once primary observations support them. Deferring manual verification does not establish corrected fidelity. Existing Gene Light captures remain secondary diagnostics.
 
 ## Validation
 
@@ -36,6 +36,6 @@ These pending checks do not gate this research checkpoint's merge or Issue compl
 
 ## Related Issues
 
-Related to #13
+Closes #13
 
-This partial research checkpoint leaves Issue #13 open for evidence-supported spec/plugin/adapter corrections, independent measured fixtures and GPU comparisons.
+This PR remains a draft: evidence-supported spec/plugin/adapter corrections, independent measured fixtures and GPU comparisons are outstanding.
