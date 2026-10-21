@@ -1,6 +1,6 @@
 # Original MMD material investigation (Issue #13)
 
-**Blocked on original-renderer observations; Issue #13 must remain open.**
+**Research checkpoint complete; original-renderer verification pending post-merge.**
 Research performed on 2026-10-21. No original MMD frame, measured pixel, saved
 MMD scene, or D3D9 state trace has been obtained. No shading equation, schema
 default, converter mapping, light adapter, or numerical expectation is changed
@@ -237,12 +237,24 @@ rows, including alpha/color transfer, before claiming corrected fidelity.
 ## Completion and follow-up
 
 Research, input preparation and explicit fidelity-status corrections are
-complete for this checkpoint. Original-MMD captures, measured fixtures,
-normative corrections and corresponding plugin/converter changes remain
-blocked. Existing Gene Light captures are secondary diagnostics and are not
-relabeled as MMD or as evidence of a shading correction. See the
-[comparison](comparison.md) and [validation record](validation.md).
-Issue #13's pre-merge fidelity acceptance is **not satisfied**. Do not close
-the issue or describe this checkpoint as implementing a corrected MMD model.
-Its required deployed-commit/workflow and public-example verification remains
-post-merge work; no publication was attempted.
+complete for this checkpoint. Its agent-verifiable pre-merge acceptance covers
+the primary/secondary evidence distinction and provenance, the scope audit,
+reproducible validated probe inputs with uncaptured observations, and applicable
+automated checks in the [validation record](validation.md).
+
+Per [Issue #13's verification follow-up](https://github.com/takahirox/mmd-gltf/issues/13#issuecomment-6307160015),
+manual original-MMD execution, captures, measurements and state observations
+described in the [capture protocol](#capture-request-and-blocker) are pending
+post-merge verification. They are not Issue completion criteria or a merge gate
+for this research checkpoint. The absence of these observations still limits
+what can be claimed about fidelity; deferral supplies no evidence for an
+ambient coefficient or any other equation.
+
+Evidence-dependent normative corrections, independent measured fixtures and
+corresponding plugin/converter/adapter changes and GPU comparisons remain
+implementation work once primary observations support them. This checkpoint
+does not implement those corrections or complete Issue #13; keep the Issue
+open for that remaining implementation. Existing Gene Light captures remain
+secondary diagnostics, as recorded in the [comparison](comparison.md).
+Deployed-commit/workflow and public-example verification also remain pending
+post-merge work; no publication was attempted during this investigation.

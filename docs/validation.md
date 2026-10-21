@@ -1,13 +1,14 @@
 # Validation record
 
-## Issue #13: original-MMD research checkpoint (blocked)
+## Issue #13: original-MMD research checkpoint
 
 Local checks on 2026-10-21, Node.js 24.12.0, npm 11.6.2, Darwin ARM64,
 Google Chrome headless with SwiftShader. This is partial research/input
 preparation, **not completion of Issue #13**. See the
 [primary-evidence report, audit matrix and capture request](original-mmd-research.md).
 
-- Read the live issue and comments (none). Downloaded the author's Japanese
+- Read the live issue before the later verification follow-up (no comments at
+  that time). Downloaded the author's Japanese
   9.32 x64 archive, hashed the executable and inspected its readme and embedded
   effect resources. Re-executed the report's local inspection recipe and
   obtained the recorded hashes. No original MMD executable was run and no
@@ -35,10 +36,28 @@ preparation, **not completion of Issue #13**. See the
   explicit. Existing captures retain their historical provenance; no corrected
   shading capture, numerical oracle or normative equation is invented.
 
-Remaining pre-merge work: actual original-MMD execution/captures and independent
-measurements, then evidence-supported spec/plugin/adapter changes and GPU
-comparisons. Issue #13 must remain open. Required deployed-site verification
-remains pending after a future merge/deployment; no remote writes were made.
+Pre-merge acceptance for this research checkpoint covers the agent-verifiable
+research/provenance report, reproducible validated probe inputs, explicit
+fidelity limitations and applicable automated checks recorded above. Per
+[Issue #13's verification follow-up](https://github.com/takahirox/mmd-gltf/issues/13#issuecomment-6307160015),
+manual original-MMD observations are pending post-merge verification, not Issue
+completion criteria or a merge gate for this checkpoint.
+
+Remaining implementation work is evidence-supported spec/plugin/adapter
+corrections, independent measured fixtures and GPU comparisons, once primary
+observations support them. Those corrections are not implemented or claimed by
+this partial checkpoint; Issue #13 remains open for that work. No original-MMD
+fidelity result is inferred from deferring manual verification.
+
+Verification-gate revision on 2026-10-21: reviewed the cited Issue follow-up and
+aligned this record, the research report and PR description.
+`npm ci --no-audit --no-fund` succeeds. `npm run build` passes with the existing large-bundle
+warning; `npm run check:links` passes all 74 local links/anchors and built asset
+links, and `git diff --check` passes. The first link-check attempt found missing
+local dependencies; installing the lockfile and building the static output
+resolved it. Reviewed the complete documentation diff for Markdown and
+consistent gate/status wording. Type, unit and browser suites were not repeated
+for this documentation-only revision; their earlier results above are historical.
 
 ## Issue #11: three-mmd 0.1.1 reference upgrade
 
@@ -182,8 +201,8 @@ the upstream animated MMD demo was not performed.
 
 ## Required post-merge verification
 
-**Pending.** No push, PR, merge, GitHub comment, or publication was performed
-while implementing this node. After merging and the Pages workflow completes:
+**Pending.** No merge or publication is established by the local validation
+records above. After merging and the Pages workflow completes:
 
 1. Record the deployed commit, workflow run URL/result, deployment URL and date.
    Confirm that commit's manifest and lockfile resolve
@@ -201,3 +220,11 @@ while implementing this node. After merging and the Pages workflow completes:
 
 These are required publication checks after merge; local checks do not prove
 that deployment succeeds.
+
+Issue #13's manual original-MMD verification is also **pending post-merge**, per
+the linked follow-up. Follow the [capture protocol](original-mmd-research.md#capture-request-and-blocker)
+to record build/settings, lossless frames, interior pixel measurements and
+relevant D3D9 states, specifically discriminating ambient 0.5 versus 1 and
+RGB/alpha color-domain behavior. Record actual results and resulting correction
+work when available; these observations do not gate this checkpoint's merge or
+Issue completion.
