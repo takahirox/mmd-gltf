@@ -42,8 +42,13 @@ const determinant = (m) => dot(m[0], cofactor(m)[0]);
 function project(input) {
   const v = { ...positions.defaults, ...input };
   const w = v.world ?? identity;
-  if (determinant(mat3(w)) === 0) return { skipped: true };
-  const t = mm(mm(v.view ?? identity, w), v.skin ?? identity);
+  const skinned = v.joints !== undefined;
+  if (!skinned && determinant(mat3(w)) === 0) return { skipped: true };
+  const deformation = skinned ? v.joints.reduce((sum, joint) => {
+    const transform = mm(joint.world, joint.inverseBind ?? identity);
+    return sum.map((row, i) => row.map((x, j) => x + joint.weight * transform[i][j]));
+  }, identity.map((row) => row.map(() => 0))) : w;
+  const t = mm(v.view ?? identity, deformation);
   const p = add(v.position, v.positionDelta ?? [0, 0, 0]);
   const n = add(v.normal, v.normalDelta ?? [0, 0, 0]);
   const q = mv(t, [...p, 1]);
@@ -62,7 +67,8 @@ function project(input) {
   const ndc = c[3] > 0 ? clip.slice(0, 3).map((x) => x / clip[3]) : null;
   const origin = v.origin ?? [0, 0];
   const pixel = ndc ? [(ndc[0] + 1) * b / 2 + origin[0], (ndc[1] + 1) * h / 2 + origin[1]] : null;
-  return { clip, ndc, pixel, tEffective, reflected: determinant(mat3(w)) < 0 };
+  return { clip, ndc, pixel, tEffective, skipped: false,
+    reflected: !skinned && determinant(mat3(w)) < 0 };
 }
 
 const decode = (x) => x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
@@ -177,6 +183,13 @@ async function main() {
   for (const c of positions.cases) {
     const actual = project(c);
     for (const [key, value] of Object.entries(c.expected)) close(actual[key], value, `${c.name}.${key}`);
+    if (c.expectedFaces) {
+      assert.equal(actual.skipped, false, `${c.name}: faces must be drawn`);
+      for (const [winding, discard] of Object.entries(c.expectedFaces)) {
+        assert.equal(fragment({ reflected: actual.reflected, ccw: winding === 'ccw' }).discard,
+          discard, `${c.name}.${winding} discard`);
+      }
+    }
   }
   const fragments = load('tests/fragments.json');
   for (const c of fragments.cases) {

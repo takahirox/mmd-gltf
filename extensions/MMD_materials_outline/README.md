@@ -124,12 +124,23 @@ permit a defined core glTF view matrix; an undefined core camera view is not
 given a substitute interpretation by this extension.
 
 First apply core glTF morph target POSITION/NORMAL deltas with their current
-weights, then ordinary glTF joint skinning, then the node and camera transforms.
-More explicitly, let `p` and `n` be the morphed mesh-local position and normal.
-Let `S` be the weighted sum of the core joint matrices in mesh-local space
-(including inverse bind matrices and the inverse node world transform), or
-identity without skinning. Define `T = V W S`, with affine bottom row `(0,0,0,1)`.
-Use the inverse transpose of its upper-left 3x3 for the normal:
+weights. Let `p` and `n` be the morphed mesh-local position and normal. Define
+the effective mesh-to-world transform `D` separately for each vertex:
+
+- For an unskinned primitive, `D = W`.
+- For a skinned primitive, `D = sum_i(weight_i * jointWorld_i * inverseBind_i)`
+  over all nonzero core glTF joint influences, with identity inverse bind
+  matrices when omitted. Use the core decoded joint weights. As required by
+  [core glTF skinning](https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/Specification.adoc#skinned-mesh-primitives),
+  the instantiating mesh node's `W` is ignored: do not multiply by or invert it.
+  Changing that node's transform while joint-world matrices remain unchanged
+  MUST NOT change the skinned outline's positions, normals, culling or draw
+  suppression. Node/ancestor transforms still contribute through `jointWorld_i`
+  when they affect joints. A primitive without skinning attributes is unskinned
+  even if its node references a skin.
+
+Define `T = V D`, with affine bottom row `(0,0,0,1)`. Use the inverse transpose
+of its upper-left 3x3 for the normal:
 
 ```text
 q = T * vec4(p, 1)
@@ -141,17 +152,20 @@ c = P * q
 No intermediate normalization of morphed normals is necessary. The normal
 matrix is essential under nonuniform scaling; transforming normals as positions
 is incorrect. If `mat3(T)` is singular or `a` is zero, define `nView=(0,0,0)`
-for that vertex. If the node world matrix itself is singular, skip the node's
-outline. This supplies deterministic degeneracy behavior, not a different
-skinning profile. MMD SDEF/QDEF/IK/physics are not introduced here. If converted
+for that vertex. If `W` is singular, skip only unskinned primitives; a singular
+mesh-node transform MUST NOT suppress skinned outlines. This supplies
+deterministic degeneracy behavior, not a different skinning profile.
+MMD SDEF/QDEF/IK/physics are not introduced here. If converted
 to core glTF animation/skins/morphs, the resulting core deformation is used.
 
 Do not flip vertex normals on back faces or multiply them by a determinant sign.
-Use the core glTF winding correction for a negative determinant of `mat3(W)`
-when determining front/back faces. Cull front faces of the **expanded** triangles,
-regardless of source material `doubleSided`. Negative joint transforms and local
-skin folds may invert individual triangles; their actual deformed winding is
-used, without per-joint winding repairs. Triangle vertices shared across material
+For unskinned primitives, use the core glTF winding correction for a negative
+determinant of `mat3(W)` when determining front/back faces. For skinned primitives,
+use counterclockwise front-face winding without a mesh-node determinant
+correction. Negative joint transforms and local skin folds may invert individual
+triangles; their actual deformed winding is used, without per-joint or per-vertex
+determinant repairs. Cull front faces of the **expanded** triangles, regardless
+of source material `doubleSided`. Triangle vertices shared across material
 groups get the same deformation/scale but a separate extrusion for each draw.
 
 ## Expansion equation
@@ -266,22 +280,26 @@ validate material payloads and whole-asset attribute/accessor constraints
 draw scene with ordinary base materials; finish base-scene exposure/tone mapping
 retain display-linear scene color and scene depth
 triangles = []
-for each nonsingular mesh node and primitive with this extension:
+for each mesh node and primitive with this extension:
+    skinned = node references a skin and primitive has core skinning attributes
+    if not skinned and determinant(mat3(W)) == 0: continue
+    reflected = not skinned and determinant(mat3(W)) < 0
     m = apply defaults to extension
     A = clamp(m.colorFactor.a, 0, 1)
     e[] = decode accessor including sparse, or array filled with 1
     if m.sizeFactor == 0 or A == 0 or every e == 0: continue
     for each vertex:
         p,n = core morph result
-        T = V * W * coreSkinMatrixOrIdentity
+        D = sum(weight_i * jointWorld_i * inverseBind_i) if skinned else W
+        T = V * D
         q,c,nView = transform as specified above
         u = normalize(nView.xy) if length(nView.xy) > 1e-12 else (0,0)
         tEffective = m.sizeFactor * e if c.w > 0 and u != (0,0) else 0
         cOutline = c + (2*tEffective*u.x*c.w/B,
                         2*tEffective*u.y*c.w/H, 0, 0)
     assemble triangles; omit those with all tEffective == 0
-    append triangles with centroid sort key and node/primitive/triangle indices
-sort triangles as specified; correct reflected node winding
+    append triangles with centroid sort key, reflected flag and node/primitive/triangle indices
+sort triangles as specified; correct winding only where reflected is true
 for each triangle:
     clip expanded positions; cull front faces; rasterize back faces
     depth test LEQUAL, depth writes off

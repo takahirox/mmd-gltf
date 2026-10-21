@@ -51,11 +51,16 @@ floating-point tolerance.
 Matrices in the **fixtures** are row arrays for readability. This differs from
 the column-major serialized matrix arrays in glTF. Both use column vectors and
 the normative multiplication order. `defaults` are merged with each case.
-Morph deltas are already multiplied by their weights; `skin` is the already
-weighted core mesh-local skin matrix. This checker tests their application,
-not joint hierarchy evaluation. Omitted `world`, `view` and `skin` are identity;
-omitted deltas are zero, material is `{}`, edge scale is 1, viewport origin is
-`[0,0]`. No lighting or rasterization is involved in these position tests.
+Morph deltas are already multiplied by their weights. `joints`, when present,
+contains the vertex's influences with decoded `weight`, joint `world` matrix
+and optional `inverseBind` matrix (identity when omitted). The checker sums
+`weight * world * inverseBind` directly; it does not evaluate joint hierarchies.
+Without `joints`, the primitive is unskinned and uses the mesh-node `world`
+matrix. Omitted mesh-node `world` and `view` are identity; omitted deltas are
+zero, material is `{}`, edge scale is 1, viewport origin is `[0,0]`. No lighting
+or rasterization is involved in these position tests. `expectedFaces`, when
+present, checks fragment culling with the position evaluator's winding correction;
+`ccw` and `cw` give the expected discard decision for each projected winding.
 
 The default camera has FOV 90 degrees, aspect 4/3, near 1 and far 9:
 
@@ -82,10 +87,13 @@ For `p=(0,0,-3)`, `n=(1,0,0)`, and viewport 800x600, base clip position is
 | Orthographic near/far | Orthographic X coefficient `.5`, Z coefficient `-.25`, Z translation `-1.25`, W=1. For p.X=1, clip X=`.5+.0025=.5025`. Z=-3/-7 gives clip Z=-.5/+.5; both have pixel `(601,300)`. |
 | Size/scale product | Size 2 times scale .5 gives the default one-pixel result. Scale 2.5 gives X displacement `.01875` in clip space and 2.5 pixels. Size .25 gives .25 pixels. |
 | Zero and degenerate cases | Zero size/scale, axis normal, zero morphed normal, singular skin, and normalized XY magnitude <=`1e-12` all give zero displacement and effective thickness 0. A `1e-11` XY component instead becomes unit +X. |
-| Singular node / foreshortened normal | A node matrix with zero X scale is skipped altogether. A unit normal `(.6,0,.8)` still gives XY direction `(1,0)` and the full one-pixel displacement. |
+| Singular node / foreshortened normal | An unskinned primitive with zero mesh-node X scale is skipped. A unit normal `(.6,0,.8)` still gives XY direction `(1,0)` and the full one-pixel displacement. |
 | Near plane / eye | At Z=-.5, clip Z=`.625-2.25=-1.625`, W=.5, clip X offset `.00125`. NDC Z=-3.25 is outside the clip volume; the vertex calculation does not force it onto the near plane. At/behind the eye W<=0 and extrusion is zero; NDC/pixel fields are null. |
 | View rotation/translation | A 90-degree Z rotation maps normal +X to +Y, hence clip Y=.01 and pixel Y=301. A view translation -1 in X changes base clip X to -.75, plus .0075 gives -.7425 and pixel X=301. |
-| Morph then skin then world | Start at `(0,0,-6)`. Morph adds .5 in X and changes normal +X into +Y; skin rotates 90 degrees around Z and translates .5 in X. World scale `(2,1,.5)` then gives q=`(1,.5,-3)` and normal direction -X. Base clip XY=`(.75,.5)`; subtract .0075 in X to give pixel `(499,350)`. Changing the operation order gives a different result. |
+| Morph then joint world/bind | Start at `(0,0,-6)`. Morph adds .5 in X and changes normal +X into +Y. The inverse bind translates -.5 in Y; the joint world rotates 90 degrees around Z, then scales `(2,1,.5)`. Thus q=`(1,.5,-3)` and normal direction -X. Base clip XY=`(.75,.5)`; subtract .0075 in X to give pixel `(499,350)`. The mesh-node scale is ignored. Changing the bind/joint order gives a different result. |
+| Skinned identity/reflected/singular mesh nodes | With one identity joint and identity inverse bind, `D=I` for mesh-node X scales 1, -1 and 0 alike. All three give default clip `(.0075,0,1.5,3)`, pixel `(401,300)` and thickness 1; none is skipped or has a winding correction. CCW faces are culled and CW faces survive in all three cases. These regressions catch both incorrect mesh-node multiplication and determinant-based culling/suppression. |
+| Reflected joint | A joint with X scale -1 changes the normal to -X, giving clip X=-.0075 and pixel X=399. The projected triangle winding determines culling without a determinant repair: CCW is still culled and CW survives. |
+| Weighted joint world/bind | Joint 1 translates +1 in X and its inverse bind translates -.5; joint 2 translates -1 with identity bind. Weights .25/.75 give effective translation `.25*(1-.5)+.75*(-1)=-.625`. Base clip X=`-.625*.75=-.46875`; add .0075 for clip X=-.46125 and pixel X=`400-62.5+1=338.5`. |
 
 ## Fragment, flag and asset fixtures
 
@@ -161,7 +169,8 @@ Executed on 2026-10-21 with Node.js 24.12.0 and the repository lockfile:
 | Check | Actual result |
 | --- | --- |
 | `npm ci --no-audit --no-fund` | Passed; no dependency changes |
-| `npm run test:outline` | Passed: 30 position vectors, 20 fragment vectors, 23 schema cases, 30 asset cases, flags/defaults/skip behavior and triangle ordering |
+| Outline checker (included in `npm test`) | Passed: 35 position vectors, 20 fragment vectors, 23 schema cases, 30 asset cases, flags/defaults/skip behavior and triangle ordering |
+| Skinning regression sensitivity | Passed: temporarily restoring mesh-node determinant culling or singular-node suppression independently fails the corresponding new regression fixture |
 | Embedded example validation | All three examples: zero Khronos core errors; expected unsupported-extension/unused-material notices as described above |
 | `npm test` | Passed: existing toon conformance checker, outline checker and all 8 converter/plugin tests |
 | `npm run typecheck` | Passed |
