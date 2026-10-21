@@ -1,5 +1,45 @@
 # Validation record
 
+## Issue #13: original-MMD research checkpoint (blocked)
+
+Local checks on 2026-10-21, Node.js 24.12.0, npm 11.6.2, Darwin ARM64,
+Google Chrome headless with SwiftShader. This is partial research/input
+preparation, **not completion of Issue #13**. See the
+[primary-evidence report, audit matrix and capture request](original-mmd-research.md).
+
+- Read the live issue and comments (none). Downloaded the author's Japanese
+  9.32 x64 archive, hashed the executable and inspected its readme and embedded
+  effect resources. Re-executed the report's local inspection recipe and
+  obtained the recorded hashes. No original MMD executable was run and no
+  reference pixels, original scene defaults or D3D9 state trace were obtained.
+- `npm ci` succeeds with the existing lockfile. Its two audit findings (one
+  low, one high) remain; no dependency changes were made.
+- `npx tsx tools/generate-mmd-probes.ts` succeeds: 80 newly authored PMX files
+  reparse with checked source factors/selectors; all 80 corresponding GLBs
+  pass the Khronos Validator with zero errors. Six synthetic PNGs and a
+  manifest record requested inputs, 166 asset hashes and null MMD observations.
+  An independent file/hash check matches the manifest. Inputs use UTF-16LE
+  for compatibility with the pinned parser. MMD acceptance/rendering is untested.
+- `npm run typecheck` and `npm test` pass: eight converter/plugin tests,
+  43 draft shading vectors, ten shared mappings, 56 schema cases, ten asset
+  cases and two complete glTF examples. These are draft consistency checks.
+- `npm run build` passes with the existing large-bundle warning. The attributed
+  Gene GLB is unchanged: 4,770,504 bytes, SHA-256
+  `b6e8318feda9738e1fc29ad7fefdbe66d7c1cceb4414eed86d799f56ad3efb00`.
+- `npm run test:browser` passes three tests, including all 43 production TSL
+  vectors on WebGL2 and the built Gene comparison/navigation/toon-PBR switching,
+  source hashes, mobile layout and missing-image path. Native WebGPU is skipped
+  because no adapter is available. No original-MMD GPU comparison is claimed.
+- `npm run check:links` and `git diff --check` pass. The spec, fixture guide,
+  README, comparison report and demo now make the primary-verification gap
+  explicit. Existing captures retain their historical provenance; no corrected
+  shading capture, numerical oracle or normative equation is invented.
+
+Remaining pre-merge work: actual original-MMD execution/captures and independent
+measurements, then evidence-supported spec/plugin/adapter changes and GPU
+comparisons. Issue #13 must remain open. Required deployed-site verification
+remains pending after a future merge/deployment; no remote writes were made.
+
 ## Issue #11: three-mmd 0.1.1 reference upgrade
 
 Local pre-merge validation on 2026-10-21, Node.js 24.12.0, npm 11.6.2, macOS,

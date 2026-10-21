@@ -1,5 +1,22 @@
 # Gene Light PMX/glTF visual comparison
 
+## Original-MMD verification status (Issue #13)
+
+**Neither pane nor any capture in this report is original MikuMikuDance.**
+The direct PMX pane uses three-mmd; it is a secondary diagnostic. Its documented
+linear-light arithmetic, ambient coefficient, light normalization, fallback
+toon and specular behavior differ from this draft. The observed brightness
+difference does not identify which historical MMD rule needs correction.
+The earlier absence of a demonstrated spec error is not evidence of fidelity.
+
+The [original-MMD investigation](original-mmd-research.md) identifies and hashes
+the author's 9.32 x64 archive, examines its embedded effects, traces the
+conflicting secondary ambient paths and supplies synthetic PMX/GLB probes.
+Original-renderer execution, scene settings, state traces and measured pixels
+are still unavailable. Normative shading and the glTF side remain unchanged
+pending that evidence; there is no corrected-MMD capture to report. Issue #13
+must remain open. Historical captures below retain their original provenance.
+
 ## three-mmd 0.1.1 upgrade (Issue #11)
 
 The direct PMX reference now uses the published `@takahirox/three-mmd@0.1.1`
