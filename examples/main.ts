@@ -26,7 +26,7 @@ async function start() {
   const scenes = [new Scene(), new Scene()];
   const direction = new Vector3(-0.3, 0.8, 1).normalize();
   for (const scene of scenes) {
-    scene.background = new Color(0x202b3b);
+    scene.background = new Color(0xd0d0d0);
     const light = new DirectionalLight(0xffffff, 0.8);
     light.position.copy(direction);
     scene.add(light);

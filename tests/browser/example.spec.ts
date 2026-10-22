@@ -28,12 +28,45 @@ function silhouette(bytes: Buffer, half: number) {
   let count = 0, minX = width, maxX = 0, minY = png.height, maxY = 0;
   for (let y = 85; y < png.height - 45; y++) for (let x = 2; x < width - 2; x++) {
     const i = (y * png.width + half * width + x) * 4;
-    if (Math.abs(png.data[i] - 32) + Math.abs(png.data[i + 1] - 43) + Math.abs(png.data[i + 2] - 59) > 24) {
+    if (Math.abs(png.data[i] - 208) + Math.abs(png.data[i + 1] - 208) + Math.abs(png.data[i + 2] - 208) > 24) {
       count++; minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y);
     }
   }
   return { count, bounds: [minX, maxX, minY, maxY] };
 }
+function expectLightGrayBackground(bytes: Buffer, stacked = false) {
+  const png = PNG.sync.read(bytes);
+  // Empty corners inside each pane, away from borders, text and the model.
+  for (const [x, y] of [[8, 8], stacked ? [8, png.height / 2 + 8] : [png.width / 2 + 8, 8]]) {
+    const i = (Math.floor(y) * png.width + Math.floor(x)) * 4;
+    expect([...png.data.subarray(i, i + 4)]).toEqual([208, 208, 208, 255]);
+  }
+}
+
+test('built comparison keeps the light-gray fallback while assets load', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  const errors = errorsFrom(page);
+  let releaseAssets!: () => void;
+  const assetsReady = new Promise<void>((resolve) => { releaseAssets = resolve; });
+  await page.route('**/gene-light/**', async (route) => {
+    await assetsReady;
+    await route.continue();
+  });
+  try {
+    await page.goto('http://127.0.0.1:43180/mmd-gltf/?backend=webgl');
+    await expect(page.locator('canvas')).toBeVisible();
+    await expect(page.locator('#viewport')).toHaveCSS('background-color', 'rgb(208, 208, 208)');
+    for (const id of ['pmx', 'gltf']) await expect(page.locator(`#${id}-status`)).toContainText('Loading');
+    expectLightGrayBackground(await page.locator('#viewport').screenshot());
+    await page.setViewportSize({ width: 600, height: 1000 });
+    expectLightGrayBackground(await page.locator('#viewport').screenshot(), true);
+  } finally {
+    releaseAssets();
+  }
+  await expect(page.locator('#status')).toContainText('Ready', { timeout: 90000 });
+  expect(errors).toEqual([]);
+});
+
 for (const backend of ['webgl', 'webgpu']) {
   test(`matched PMX and glTF load, render, navigate and toggle on built ${backend} site`, async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1100 });
@@ -83,6 +116,7 @@ for (const backend of ['webgl', 'webgpu']) {
       await page.waitForTimeout(600);
       const path = `test-results/gene-${backend}-${view}.png`;
       const capture = await page.locator('#viewport').screenshot({ path });
+      expectLightGrayBackground(capture);
       captures.push(capture);
       const left = silhouette(capture, 0), right = silhouette(capture, 1);
       expect(left.count).toBeGreaterThan(10000);
@@ -100,7 +134,10 @@ for (const backend of ['webgl', 'webgpu']) {
     const outlineOn = await page.locator('#viewport').screenshot();
     await page.selectOption('#outlines', 'off');
     await page.waitForTimeout(300);
-    expect((await page.locator('#viewport').screenshot()).equals(outlineOn)).toBe(false);
+    const outlineOff = await page.locator('#viewport').screenshot({ path: `test-results/gene-${backend}-front-outline-off.png` });
+    expectLightGrayBackground(outlineOff);
+    // Require a visible contour change in each pane, excluding labels and hints.
+    for (const half of [0, 1]) expect(silhouette(outlineOn, half).count).toBeGreaterThan(silhouette(outlineOff, half).count);
     expect(await page.evaluate(() => (window as any).mmdExample.reference.outlines)).toBe(false);
     await page.selectOption('#outlines', 'on');
     await page.waitForTimeout(300);
@@ -111,6 +148,7 @@ for (const backend of ['webgl', 'webgpu']) {
     await expect(page.locator('#status')).toContainText('PBR fallback');
     await page.waitForTimeout(600);
     const pbr = await page.locator('#gltf-pane').screenshot();
+    expectLightGrayBackground(await page.locator('#viewport').screenshot());
     expect(pbr.equals(toon)).toBe(false);
     expect((await page.locator('#pmx-pane').screenshot()).equals(pmxBefore)).toBe(true);
     await page.selectOption('#material', 'toon');
@@ -133,6 +171,7 @@ for (const backend of ['webgl', 'webgpu']) {
     expect(left.x).toBe(right.x); expect(right.y).toBeGreaterThanOrEqual(left.y + left.height);
     cameras = await page.evaluate(() => (window as any).mmdExample.cameras);
     expect(cameras[0]).toEqual(cameras[1]);
+    expectLightGrayBackground(await page.locator('#viewport').screenshot(), true);
     expect(errors).toEqual([]);
   });
 }
