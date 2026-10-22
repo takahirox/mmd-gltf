@@ -1,5 +1,33 @@
 # Validation record
 
+## Issue #21: outline review fixes
+
+Local checks on 2026-10-22 with Node.js 24.12.0, npm 11.6.2, Darwin ARM64,
+Three.js 0.186.1 and Google Chrome headless/SwiftShader passed:
+`npm run typecheck`, `npm test` (including `test:outline` and all 13
+converter/plugin tests), `npm run build`, `npm run test:browser`,
+`npm run check:links` and `git diff --check`. The browser suite passed four tests;
+two optional native-WebGPU tests skipped because no adapter was available.
+The existing bundle-size warning remains. No push or merge was performed;
+required deployed-site verification remains pending after merge.
+
+The production WebGL2 outline suite now performs **109 checks**. New real
+GLTFLoader regressions load `EXT_mesh_gpu_instancing` with single/multiple
+primitives, reused mesh nodes, signed/zero vertex scales, enabled/disabled
+outline materials and custom instance attributes that clone geometry. Outline
+records reach each applicable instance, preserve core PBR materials and detach
+on plugin disposal. Single-primitive readback is `[127,0,0,255]`; ordered red/blue
+primitives produce `[64,0,127,255]`.
+
+Double-sided `MeshPhysicalMaterial` cases compare transmission 0 and 1 over
+opaque black across two frames. Both produce `[127,0,0,255]` for a red edge with
+alpha 0.5, confirming one hull contribution rather than the reported duplicate
+191/255. Three ordered groups using material indices `[0,1,0]` produce
+`[159,0,64,255]`, matching encoded RGB `[0.625,0,0.25]` within the existing
+`2/255` tolerance. Distinct groups sharing a material still contribute separately.
+The encoded midgray discriminator remains `[64,64,64,255]`. Rendering settings
+and the independent normative fixtures remain as recorded below.
+
 ## Issue #21: outline pipeline
 
 Local pre-merge checks on 2026-10-22, Node.js 24.12.0, npm 11.6.2, Darwin

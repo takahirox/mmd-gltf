@@ -1,6 +1,6 @@
 import { WebGPURenderer, Scene, OrthographicCamera, PerspectiveCamera, Mesh, BufferGeometry, Float32BufferAttribute, MeshBasicMaterial,
   NodeMaterial, RenderTarget, FloatType, NoBlending, QuadMesh, Vector2, Vector3, Vector4, Matrix4, Color, SRGBColorSpace,
-  Bone, Skeleton, SkinnedMesh, InstancedMesh, Uint16BufferAttribute } from 'three/webgpu';
+  Bone, Skeleton, SkinnedMesh, InstancedMesh, Uint16BufferAttribute, MeshPhysicalMaterial, DoubleSide } from 'three/webgpu';
 import { uniform, vec3, vec4, texture, float } from 'three/tsl';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MMDOutlinePlugin, MMDOutlineEffect, setOutlineRecords, getOutlineRecords } from '../packages/three-mmd-outline';
@@ -168,6 +168,36 @@ async function run() {
   scene.add(grouped); effect.render(scene, camera);
   [0.25, 0, 0.5].forEach((x, i) => close(read()[i], x, `material group layering ${i}`)); checked++;
   scene.remove(grouped); groupedGeometry.dispose(); groupedMaterials.forEach(m => m.dispose());
+  // Transmission submits DoubleSide groups twice. Each group must contribute only
+  // once, in ordinary list order, including distinct groups reusing material 0.
+  const transmissionPixels: number[][] = [];
+  for (const transmission of [0, 1]) for (const multipleGroups of [false, true]) {
+    clear(); renderer.setClearColor(0, 1);
+    const g = geometry();
+    const materials = [0, 1].map(() => {
+      const m = new MeshPhysicalMaterial({ transmission, side: DoubleSide });
+      m.colorWrite = m.depthWrite = false;
+      return m;
+    });
+    if (multipleGroups) {
+      g.setIndex([0, 2, 1, 0, 2, 1, 0, 2, 1]);
+      [0, 1, 0].forEach((materialIndex, i) => g.addGroup(i * 3, 3, materialIndex));
+    }
+    const mesh = new Mesh(g, multipleGroups ? materials : materials[0]);
+    setOutlineRecords(mesh, [
+      { payload: { colorFactor: [1, 0, 0, 0.5] }, materialIndex: 0, getDiffuseAlpha: () => 1 },
+      { payload: { colorFactor: [0, 0, 1, 0.5] }, materialIndex: 1, getDiffuseAlpha: () => 1 },
+    ]);
+    scene.add(mesh);
+    // Repeat to ensure per-render state cannot suppress later frames.
+    for (let frame = 0; frame < 2; frame++) {
+      effect.render(scene, camera);
+      const pixel = read(), expected = multipleGroups ? [0.625, 0, 0.25, 1] : [0.5, 0, 0, 1];
+      expected.forEach((x, i) => close(pixel[i], x, `transmission ${transmission} groups ${multipleGroups} frame ${frame} channel ${i}`));
+      transmissionPixels.push(pixel); checked++;
+    }
+    scene.remove(mesh); g.dispose(); materials.forEach(m => m.dispose());
+  }
   // Nonuniform inverse-transpose normals verified through actual silhouette coverage.
   const ng = geometry();
   ng.setAttribute('position', new Float32BufferAttribute([-0.2, -0.2, 0, 0.2, -0.2, 0, 0.2, 0.2, 0, -0.2, 0.2, 0], 3));
@@ -219,6 +249,64 @@ async function run() {
     checked++;
     plugins.at(-1)!.dispose();
     if (meshes.some(mesh => getOutlineRecords(mesh).length)) throw new Error('stale plugin metadata');
+  }
+  // Real EXT_mesh_gpu_instancing loading: r186 drops primitive associations on
+  // replacement InstancedMeshes. Cover single/grouped meshes, reused nodes and
+  // custom instance attributes that shallow-clone the source geometry.
+  const loadedInstancePixels: number[][] = [];
+  for (const multiplePrimitives of [false, true]) for (const customAttribute of [false, true]) {
+    clear(); renderer.setClearColor(0, 1);
+    const json = JSON.parse(signed);
+    const original = Uint8Array.from(atob(json.buffers[0].uri.split(',')[1]), c => c.charCodeAt(0));
+    const first = original.slice(0, 12); original.copyWithin(0, 12, 24); original.set(first, 12);
+    const translations = new Float32Array([0, 0, 0, 5, 0, 0]);
+    const bytes = new Uint8Array(original.length + translations.byteLength);
+    bytes.set(original); bytes.set(new Uint8Array(translations.buffer), original.length);
+    const bufferView = json.bufferViews.length, accessor = json.accessors.length;
+    json.bufferViews.push({ buffer: 0, byteOffset: original.length, byteLength: translations.byteLength });
+    json.accessors.push({ bufferView, componentType: 5126, type: 'VEC3', count: 2 });
+    json.buffers = [{ byteLength: bytes.length, uri: 'data:application/octet-stream;base64,' + btoa(String.fromCharCode(...bytes)) }];
+    json.extensionsUsed.push('EXT_mesh_gpu_instancing');
+    const attributes = customAttribute ? { TRANSLATION: accessor, _CUSTOM: accessor } : { TRANSLATION: accessor };
+    json.nodes = [
+      { mesh: 0, extensions: { EXT_mesh_gpu_instancing: { attributes } } },
+      { mesh: 0, translation: [5, 0, 0], extensions: { EXT_mesh_gpu_instancing: { attributes } } },
+    ];
+    json.scenes = [{ nodes: [0, 1] }];
+    json.materials[0].extensions.MMD_materials_outline = { colorFactor: [1, 0, 0, 0.5] };
+    if (multiplePrimitives) {
+      json.materials.push(structuredClone(json.materials[0]), structuredClone(json.materials[0]));
+      json.materials[1].extensions.MMD_materials_outline = { colorFactor: [0, 0, 1, 0.5] };
+      delete json.materials[2].extensions.MMD_materials_outline;
+      const primitive = json.meshes[0].primitives[0];
+      json.meshes[0].primitives.push({ ...primitive, material: 1 }, { ...primitive, material: 2 });
+    }
+    let plugin!: MMDOutlinePlugin;
+    const asset = await new GLTFLoader().register(parser => (plugin = new MMDOutlinePlugin(parser))).parseAsync(JSON.stringify(json), '');
+    const meshes: InstancedMesh[] = [];
+    asset.scene.traverse(object => { if ((object as InstancedMesh).isInstancedMesh) meshes.push(object as InstancedMesh); });
+    if (meshes.length !== (multiplePrimitives ? 6 : 2)) throw new Error('loaded GPU instance count');
+    meshes.forEach((mesh, i) => {
+      if (mesh.count !== 2) throw new Error('loaded hardware instance count');
+      const record = getOutlineRecords(mesh)[0], primitiveIndex = multiplePrimitives ? i % 3 : 0;
+      if (primitiveIndex === 2) {
+        if (record) throw new Error('outline attached to a disabled primitive');
+      } else {
+        const expected = primitiveIndex === 0 ? [1, 0, 0, 0.5] : [0, 0, 1, 0.5];
+        if (JSON.stringify(record?.payload.colorFactor) !== JSON.stringify(expected)) throw new Error('loaded GPU primitive association lost');
+      }
+      const scales = mesh.geometry.getAttribute('_mmd_edge_scale');
+      if (scales.getX(0) !== -1 || scales.getX(1) !== 0 || scales.getX(2) !== 2) throw new Error('loaded GPU signed scales lost');
+      const m = mesh.material as MeshPhysicalMaterial;
+      if (!m.isMeshStandardMaterial) throw new Error('outline replaced core material');
+      m.colorWrite = m.depthWrite = false;
+    });
+    scene.add(asset.scene); effect.render(scene, camera);
+    const pixel = read(), expected = multiplePrimitives ? [0.25, 0, 0.5, 1] : [0.5, 0, 0, 1];
+    expected.forEach((x, i) => close(pixel[i], x, `loaded GPU instances multi ${multiplePrimitives} custom ${customAttribute} channel ${i}`));
+    loadedInstancePixels.push(pixel); checked++;
+    plugin.dispose();
+    if (meshes.some(mesh => getOutlineRecords(mesh).length)) throw new Error('stale GPU instance metadata');
   }
   // GLTFLoader normalizes WEIGHTS_0 for its base material. The outline retains raw
   // decoded factors and all influence sets: .25*translation(-1) + .75*translation(1) = .5.
@@ -281,6 +369,6 @@ async function run() {
   skin.morphTargetInfluences![0] = 1; effect.render(scene, camera); close(read()[0], 0, 'nonzero core position morph'); checked++;
   skin.morphTargetInfluences![0] = 0; bone.position.x = 3; effect.render(scene, camera); close(read()[0], 0, 'joint-world animation'); checked++;
   clear(); g.dispose(); effect.dispose(); renderer.dispose();
-  Object.assign(window, { outlineConformance: { passed: checked, gray, tolerance: 2 / 255, clipTolerance: 3e-6, backend: ('isWebGPUBackend' in renderer.backend && renderer.backend.isWebGPUBackend) ? 'WebGPU' : 'WebGL2' } });
+  Object.assign(window, { outlineConformance: { passed: checked, gray, transmissionPixels, loadedInstancePixels, tolerance: 2 / 255, clipTolerance: 3e-6, backend: ('isWebGPUBackend' in renderer.backend && renderer.backend.isWebGPUBackend) ? 'WebGPU' : 'WebGL2' } });
 }
 run().catch(error => { console.error(error); Object.assign(window, { outlineConformanceError: String(error) }); });

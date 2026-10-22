@@ -1,4 +1,4 @@
-import { Float32BufferAttribute, Uint16BufferAttribute, Mesh, type Material, type MeshStandardMaterial } from 'three';
+import { Float32BufferAttribute, Uint16BufferAttribute, Mesh, type InstancedMesh, type Object3D, type Material, type MeshStandardMaterial } from 'three';
 import type { GLTF, GLTFLoaderPlugin, GLTFParser } from 'three/addons/loaders/GLTFLoader.js';
 import { EXTENSION_NAME } from './payload';
 import { decodeAccessor, validateAsset } from './validation';
@@ -19,11 +19,30 @@ export class MMDOutlinePlugin implements GLTFLoaderPlugin {
   private alphaMetadata = new Set<Material>();
   constructor(private readonly parser: GLTFParser, private readonly options: OutlinePluginOptions = {}) {}
   async beforeRoot() { await validateAsset(this.parser); }
+  private primitiveAssociation(mesh: Mesh) {
+    const association = this.parser.associations.get(mesh);
+    if (association?.meshes !== undefined && association.primitives !== undefined) return association;
+    if (!(mesh as InstancedMesh).isInstancedMesh) return undefined;
+    // r186 EXT_mesh_gpu_instancing replaces primitive meshes without copying their
+    // associations. The node association survives on the mesh or enclosing group.
+    for (let node: Object3D | null = mesh; node; node = node.parent) {
+      const nodeIndex = this.parser.associations.get(node)?.nodes;
+      const def = nodeIndex === undefined ? undefined : this.parser.json.nodes[nodeIndex];
+      if (def?.mesh === undefined || !def.extensions?.EXT_mesh_gpu_instancing) continue;
+      // The loader preserves primitive order in the multi-primitive mesh group,
+      // even when geometries/materials are shared or instance attributes clone geometry.
+      const primitives = this.parser.json.meshes[def.mesh].primitives;
+      const primitive = primitives.length === 1 ? 0 : mesh.parent!.children.indexOf(mesh);
+      if (primitive < 0 || primitive >= primitives.length) throw new Error(`${EXTENSION_NAME}: node ${nodeIndex}: cannot resolve instanced primitive`);
+      return { meshes: def.mesh as number, primitives: primitive };
+    }
+    return undefined;
+  }
   async afterRoot(result: GLTF) {
     const meshes = new Set<Mesh>();
     for (const scene of result.scenes) scene.traverse(object => { if ((object as Mesh).isMesh) meshes.add(object as Mesh); });
     for (const mesh of meshes) {
-      const association = this.parser.associations.get(mesh);
+      const association = this.primitiveAssociation(mesh);
       if (association?.meshes === undefined || association.primitives === undefined) continue;
       const primitive = this.parser.json.meshes[association.meshes].primitives[association.primitives];
       const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];

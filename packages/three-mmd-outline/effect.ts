@@ -190,7 +190,10 @@ export class MMDOutlineEffect {
         culled.set(mesh, mesh.frustumCulled);
         mesh.frustumCulled = false; // Expansion precedes homogeneous clipping.
       });
-      renderer.setRenderObjectFunction((object, scene, camera, geometry, source, group, lights, clipping) => {
+      renderer.setRenderObjectFunction((object, scene, camera, geometry, source, group, lights, clipping, passId) => {
+        // Double-sided transmission has an auxiliary back-side submission before
+        // the ordinary list. Draw hulls only in that list to retain group ordering.
+        if (passId === 'backSide') return;
         const mesh = object as Mesh;
         if (!mesh.isMesh || !source.visible) return;
         for (const record of getOutlineRecords(mesh)) {
