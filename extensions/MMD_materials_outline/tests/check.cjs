@@ -59,7 +59,7 @@ function project(input) {
   const nView = len === 0 ? [0, 0, 0] : a.map((x) => x / len);
   const len2 = Math.hypot(nView[0], nView[1]);
   const u = len2 > 1e-12 ? nView.slice(0, 2).map((x) => x / len2) : [0, 0];
-  const tEffective = c[3] > 0 && len2 > 1e-12
+  const tEffective = len2 > 1e-12
     ? (v.material?.sizeFactor ?? 1) * (v.edgeScale ?? 1) : 0;
   const [b, h] = v.viewport;
   const clip = [c[0] + 2 * tEffective * u[0] * c[3] / b,
@@ -71,26 +71,32 @@ function project(input) {
     reflected: !skinned && determinant(mat3(w)) < 0 };
 }
 
-const decode = (x) => x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
-const encode = (x) => x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055;
+// The fixture names an active material model explicitly, as a renderer's
+// material system would. Inactive/unsupported payloads do not select a model.
+function diffuseAlpha(material = {}, integration = {}) {
+  const active = integration.activeMaterial ?? 'core';
+  const alpha = active === 'core' ? (material.pbrMetallicRoughness?.baseColorFactor?.[3] ?? 1)
+    : active === 'toon' ? (material.extensions?.MMD_materials_toon?.diffuseFactor?.[3] ?? 1)
+      : integration.diffuseAlpha;
+  assert.ok(Number.isFinite(alpha), 'unsupported material-alpha integration');
+  return alpha;
+}
 
 function fragment(v) {
   const color = (v.material?.colorFactor ?? [0, 0, 0, 1]).map(clamp);
-  const bary = v.barycentric ?? [1 / 3, 1 / 3, 1 / 3];
-  const weights = bary.map((x, i) => x / (v.clipW ?? [1, 1, 1])[i]);
-  const interpolatedScale = dot(weights, v.tEffective ?? [1, 1, 1]) / weights.reduce((a, b) => a + b);
+  const baseAlpha = diffuseAlpha(v.baseMaterial, v.integration);
   const z = v.ndcDepth ?? 0;
-  const reason = color[3] === 0 ? 'alpha' : interpolatedScale <= 0 ? 'scale'
+  const reason = color[3] === 0 ? 'alpha' : baseAlpha === 0 ? 'base-alpha'
     : z < -1 || z > 1 ? 'clip' : (v.ccw ?? false) !== (v.reflected ?? false) ? 'cull'
       : (z + 1) / 2 > (v.sceneDepth ?? 1) ? 'depth' : null;
-  if (reason) return { discard: true, reason, depthWrite: false, interpolatedScale };
+  if (reason) return { discard: true, reason, depthWrite: false };
   const dst = v.destination ?? { premultipliedRGB: [0, 0, 0], alpha: 1 };
   const alpha = color[3] + (1 - color[3]) * dst.alpha;
   const premultipliedRGB = color.slice(0, 3).map((x, i) =>
-    color[3] * decode(x) + (1 - color[3]) * dst.premultipliedRGB[i]);
+    color[3] * x + (1 - color[3]) * dst.premultipliedRGB[i]);
   const straightRGB = premultipliedRGB.map((x) => alpha === 0 ? 0 : x / alpha);
-  return { discard: false, depthWrite: false, interpolatedScale, alpha,
-    premultipliedRGB, straightRGB, encodedRGB: straightRGB.map(encode) };
+  return { discard: false, depthWrite: true, depth: (z + 1) / 2, alpha,
+    premultipliedRGB, straightRGB };
 }
 
 // Read only the accessor forms needed for the reserved FLOAT SCALAR semantic.
@@ -126,7 +132,6 @@ function edgeValues(asset, accessor) {
   }
   for (const value of values) {
     assert.ok(Number.isFinite(value), 'edge scale must be finite');
-    assert.ok(value >= 0, 'edge scale must be nonnegative');
   }
   return values;
 }
@@ -167,10 +172,11 @@ function checkAsset(asset) {
 }
 const nameOfScale = '_MMD_EDGE_SCALE';
 
-function shouldDraw(material, scales) {
+function shouldDraw(material, scales, integration) {
   const m = material.extensions?.[name];
-  return m !== undefined && (m.sizeFactor ?? 1) > 0
-    && clamp((m.colorFactor ?? [0, 0, 0, 1])[3]) > 0 && scales.some((x) => x > 0);
+  return m !== undefined && (m.sizeFactor ?? 1) !== 0
+    && clamp((m.colorFactor ?? [0, 0, 0, 1])[3]) > 0
+    && diffuseAlpha(material, integration) !== 0 && scales.some((x) => x !== 0);
 }
 
 async function main() {
@@ -193,19 +199,37 @@ async function main() {
   }
   const fragments = load('tests/fragments.json');
   for (const c of fragments.cases) {
+    if (c.expectedError) {
+      assert.throws(() => fragment(c), new RegExp(c.expectedError), c.name);
+      continue;
+    }
     const actual = fragment(c);
     for (const [key, value] of Object.entries(c.expected)) close(actual[key], value, `${c.name}.${key}`);
   }
-  const ordering = fragments.ordering;
-  const sorted = ordering.triangles.map((t, i) => ({ ...t, i, depth: -t.viewZ.reduce((a, b) => a + b) / 3 }))
-    .sort((a, b) => b.depth - a.depth || a.node - b.node || a.primitive - b.primitive || a.triangle - b.triangle);
-  assert.deepEqual(sorted.map((t) => t.i), ordering.expectedIndices, 'triangle draw order');
+  // Exercise ordinary depth/blend state in the supplied primitive order.
+  for (const c of fragments.sequences) {
+    let sceneDepth = c.sceneDepth;
+    let destination = c.destination;
+    const discarded = [];
+    for (const sample of c.samples) {
+      const actual = fragment({ ...sample, sceneDepth, destination });
+      discarded.push(actual.discard);
+      if (!actual.discard) {
+        if (actual.depthWrite) sceneDepth = actual.depth;
+        destination = { premultipliedRGB: actual.premultipliedRGB, alpha: actual.alpha };
+      }
+    }
+    close(discarded, c.expected.discarded, c.name);
+    close(sceneDepth, c.expected.depth, c.name);
+    close(destination.premultipliedRGB, c.expected.premultipliedRGB, c.name);
+    close(destination.alpha, c.expected.alpha, c.name);
+  }
   const flags = load('tests/flags.json');
   // Mapping assertions only: these do not implement a PMX/PMD converter.
   for (const c of flags.pmx) assert.equal((c.flag & 0x10) !== 0, c.enabled, 'PMX edge flag');
   for (const c of flags.pmdMaterial) assert.equal(c.flag === 1, c.enabled, 'PMD edge flag');
   for (const c of flags.pmdVertex) assert.equal(c.invisible === 1 ? 0 : 1, c.scale, 'PMD scale');
-  for (const c of flags.draws) assert.equal(shouldDraw(c.material, c.scales), c.draw, c.name);
+  for (const c of flags.draws) assert.equal(shouldDraw(c.material, c.scales, c.integration), c.draw, c.name);
 
   const assets = load('tests/assets.json');
   for (const c of assets) {
@@ -235,7 +259,7 @@ async function main() {
   const example = [...readme.matchAll(/```json\n([\s\S]*?)\n```/g)];
   assert.equal(example.length, 1, 'one complete material-only README example');
   assert.deepEqual(JSON.parse(example[0][1]), load('examples/material-only.gltf'));
-  for (const file of ['material-only.gltf', 'edge-scale.gltf', 'default-scale.gltf']) {
+  for (const file of ['material-only.gltf', 'edge-scale.gltf', 'default-scale.gltf', 'signed-scale.gltf']) {
     const asset = load(`examples/${file}`);
     checkAsset(asset);
     const report = await gltfValidator.validateString(JSON.stringify(asset), { uri: file });
@@ -245,7 +269,7 @@ async function main() {
   }
   console.log(`PASS: ${positions.cases.length} position vectors, ${fragments.cases.length} fragment vectors, `
     + `${schemaCases.valid.length + schemaCases.invalid.length + schemaCases.invalidNumericJSON.length} schema cases, `
-    + `${assets.length} asset cases, flag/default/skip checks, draw ordering and 3 glTF examples.`);
+    + `${assets.length} asset cases, flag/default/skip checks, ${fragments.sequences.length} depth/blend sequences and 4 glTF examples.`);
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

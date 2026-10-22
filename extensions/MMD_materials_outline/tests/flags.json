@@ -130,6 +130,230 @@
         0
       ],
       "draw": true
+    },
+    {
+      "name": "all-negative-scales",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        "extensions": {
+          "MMD_materials_outline": {}
+        }
+      },
+      "scales": [
+        -1,
+        -2,
+        -3
+      ],
+      "draw": true
+    },
+    {
+      "name": "negative-material-size",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        "extensions": {
+          "MMD_materials_outline": {
+            "sizeFactor": -1
+          }
+        }
+      },
+      "scales": [
+        1,
+        1,
+        1
+      ],
+      "draw": true
+    },
+    {
+      "name": "signed-mixed-scales",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        "extensions": {
+          "MMD_materials_outline": {}
+        }
+      },
+      "scales": [
+        -1,
+        0,
+        1
+      ],
+      "draw": true
+    },
+    {
+      "name": "core-zero-factor-even-opaque",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            1,
+            1,
+            1,
+            0
+          ]
+        },
+        "extensions": {
+          "MMD_materials_outline": {}
+        },
+        "alphaMode": "OPAQUE"
+      },
+      "scales": [
+        1,
+        1,
+        1
+      ],
+      "draw": false
+    },
+    {
+      "name": "core-partial-factor",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            1,
+            1,
+            1,
+            0.2
+          ]
+        },
+        "extensions": {
+          "MMD_materials_outline": {}
+        }
+      },
+      "scales": [
+        1,
+        1,
+        1
+      ],
+      "draw": true
+    },
+    {
+      "name": "core-tiny-factor",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            1,
+            1,
+            1,
+            1e-10
+          ]
+        },
+        "extensions": {
+          "MMD_materials_outline": {}
+        }
+      },
+      "scales": [
+        1,
+        1,
+        1
+      ],
+      "draw": true
+    },
+    {
+      "name": "active-toon-zero",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        "extensions": {
+          "MMD_materials_outline": {},
+          "MMD_materials_toon": {
+            "diffuseFactor": [
+              1,
+              1,
+              1,
+              0
+            ]
+          }
+        }
+      },
+      "scales": [
+        1,
+        1,
+        1
+      ],
+      "draw": false,
+      "integration": {
+        "activeMaterial": "toon"
+      }
+    },
+    {
+      "name": "inactive-toon-zero-core-active",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        "extensions": {
+          "MMD_materials_outline": {},
+          "MMD_materials_toon": {
+            "diffuseFactor": [
+              1,
+              1,
+              1,
+              0
+            ]
+          }
+        }
+      },
+      "scales": [
+        1,
+        1,
+        1
+      ],
+      "draw": true
+    },
+    {
+      "name": "other-morphed-factor-zero",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        "extensions": {
+          "MMD_materials_outline": {}
+        }
+      },
+      "scales": [
+        1,
+        1,
+        1
+      ],
+      "draw": false,
+      "integration": {
+        "activeMaterial": "custom",
+        "diffuseAlpha": 0
+      }
     }
   ]
 }

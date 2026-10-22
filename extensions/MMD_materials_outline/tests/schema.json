@@ -50,6 +50,12 @@
           "a"
         ]
       }
+    },
+    {
+      "name": "negative-size",
+      "value": {
+        "sizeFactor": -0.1
+      }
     }
   ],
   "invalid": [
@@ -65,12 +71,6 @@
       "name": "size-null",
       "value": {
         "sizeFactor": null
-      }
-    },
-    {
-      "name": "negative-size",
-      "value": {
-        "sizeFactor": -0.1
       }
     },
     {
@@ -164,6 +164,7 @@
   ],
   "invalidNumericJSON": [
     "{\"sizeFactor\":1e400}",
-    "{\"colorFactor\":[0,0,0,-1e400]}"
+    "{\"colorFactor\":[0,0,0,-1e400]}",
+    "{\"sizeFactor\":-1e400}"
   ]
 }
