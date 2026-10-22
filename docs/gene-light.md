@@ -40,8 +40,8 @@ the GLB. It also copies the manifest and writes a conversion record containing
 the generated GLB's SHA-256, size, pinned source commit, and conversion warnings.
 The GLB embeds source provenance, attribution, rights, original PMX comments and
 an adaptation notice. Changes: static PMX geometry/material conversion,
-right-handed coordinates and meter scale, omitted animation/skin/morph/physics/
-outline data, and a separate PBR approximation. Texture image bytes are unchanged.
+right-handed coordinates and meter scale, optional PMX edge payloads and signed
+vertex scales, omitted animation/skin/morph/physics data, and a separate PBR approximation. Texture image bytes are unchanged.
 The derivative remains subject to Gene's terms; neither model nor GLB is
 relicensed as repository code. No MMD shared toon image bytes are distributed.
 

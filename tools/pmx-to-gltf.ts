@@ -5,12 +5,13 @@ import { readFile, mkdir } from 'node:fs/promises';
 import { dirname, extname, resolve, relative, isAbsolute } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { EXTENSION_NAME, validatePayload, type ToonPayload } from '../packages/three-mmd-toon/payload';
+import { EXTENSION_NAME as OUTLINE, EDGE_ATTRIBUTE, validatePayload as validateOutline, type OutlinePayload } from '../packages/three-mmd-outline/payload';
 
-interface Vertex { position: number[]; normal: number[]; uv: number[]; auvs: number[][] }
+interface Vertex { edgeRatio?: number; position: number[]; normal: number[]; uv: number[]; auvs: number[][] }
 interface PMXMaterial {
   name: string; diffuse: number[]; ambient: number[]; specular: number[]; shininess: number;
   flag: number; textureIndex: number; envTextureIndex: number; envFlag: number;
-  toonFlag: number; toonIndex: number; faceCount: number; edgeColor: number[]; edgeSize: number;
+  toonFlag: number; toonIndex: number; faceCount: number; edgeColor?: number[]; edgeSize?: number;
 }
 export interface PMXModel {
   metadata: { modelName: string; comment: string; englishComment: string };
@@ -43,6 +44,21 @@ class ToonWriter extends Extension {
     return this;
   }
 }
+/** Independent writer: outlines remain optional alongside Toon and core PBR. */
+class OutlineWriter extends Extension {
+  static EXTENSION_NAME = OUTLINE;
+  readonly extensionName = OUTLINE;
+  records = new Map<Material, OutlinePayload>();
+  read(): this { throw new Error('OutlineWriter is a converter-only writer'); }
+  write(context: WriterContext): this {
+    for (const [material, payload] of this.records) {
+      validateOutline(payload);
+      const def = context.jsonDoc.json.materials![context.materialIndexMap.get(material)!];
+      def.extensions = { ...def.extensions, [OUTLINE]: structuredClone(payload) };
+    }
+    return this;
+  }
+}
 export function parsePMX(bytes: Uint8Array): PMXModel {
   // mmd-parser reflects position/normal Z and reverses triangle order together.
   // PMX and glTF both use top-left UVs, so no V flip is applied.
@@ -54,16 +70,19 @@ export async function convertModel(model: PMXModel, textureDirectory: string, sc
   if (!Number.isFinite(scale) || scale <= 0) throw new Error('scale must be finite and positive');
   if (!model.vertices.length || !model.faces.length) throw new Error('PMX has no geometry');
   const warnings = [`Static base pose only: omitting ${model.bones.length} bones, ${model.morphs.length} morphs, ${model.rigidBodies.length} bodies, ${model.constraints.length} joints; no skinning, IK, grants or animation.`,
-    'Outline/edge and shadow flags are retained in material extras, but are not rendered. Additional UV ZW and unused additional UV channels are omitted.'];
+    'Shadow flags are retained in material extras, but are not rendered. Additional UV ZW and unused additional UV channels are omitted.'];
   const doc = new Document();
   const buffer = doc.createBuffer();
   const extension = doc.createExtension(ToonWriter);
+  const outline = model.materials.some(m => m.flag & 0x10) ? doc.createExtension(OutlineWriter) : null;
   const mesh = doc.createMesh(model.metadata.modelName);
   const scene = doc.createScene('Static PMX base pose').addChild(doc.createNode(model.metadata.modelName).setMesh(mesh));
-  doc.getRoot().setDefaultScene(scene).setExtras({ sourceComment: model.metadata.comment, sourceEnglishComment: model.metadata.englishComment, conversion: 'Static PMX to glTF; reflected Z and winding; no animation, skin, physics, morphs or outlines.', warnings });
-  const accessor = (name: string, type: 'VEC2' | 'VEC3', values: number[]) => {
+  doc.getRoot().setDefaultScene(scene).setExtras({ sourceComment: model.metadata.comment, sourceEnglishComment: model.metadata.englishComment, conversion: 'Static PMX to glTF; reflected Z and winding; no animation, skin, physics or morphs.', warnings });
+  const accessor = (name: string, type: 'SCALAR' | 'VEC2' | 'VEC3', values: number[]) => {
     if (!values.every(Number.isFinite)) throw new Error(`Non-finite ${name}`);
-    return doc.createAccessor(name).setBuffer(buffer).setType(type).setArray(new Float32Array(values));
+    const array = new Float32Array(values);
+    if (!array.every(Number.isFinite)) throw new Error(`Unsupported numeric range for ${name}`);
+    return doc.createAccessor(name).setBuffer(buffer).setType(type).setArray(array);
   };
   const positions = accessor('positions', 'VEC3', model.vertices.flatMap((v) => v.position.map((x) => x * scale)));
   const normals = accessor('normals', 'VEC3', model.vertices.flatMap((v) => {
@@ -77,6 +96,8 @@ export async function convertModel(model: PMXModel, textureDirectory: string, sc
     if (!v.auvs[0]) throw new Error('subTexture requires PMX Additional UV1');
     return v.auvs[0].slice(0, 2);
   })) : null;
+  const scales = model.vertices.map(v => v.edgeRatio === undefined ? 1 : v.edgeRatio);
+  const edgeScales = outline && scales.some(x => x !== 1) ? accessor('PMX edge ratios', 'SCALAR', scales) : null;
   const textures = new Map<number, Texture>();
   const hasAlpha = new Map<Texture, boolean>();
   async function texture(index: number) {
@@ -130,6 +151,11 @@ export async function convertModel(model: PMXModel, textureDirectory: string, sc
       || payload.sphereMode === 'subTexture' && !!(refs.sphereTexture && hasAlpha.get(refs.sphereTexture));
     material.setAlphaMode(translucent ? 'BLEND' : 'OPAQUE');
     extension.records.set(material, { payload, textures: refs });
+    if (m.flag & 0x10) {
+      const edge = { colorFactor: m.edgeColor ?? [0, 0, 0, 1], sizeFactor: m.edgeSize ?? 1 };
+      validateOutline(edge);
+      outline!.records.set(material, edge);
+    }
     const faces = model.faces.slice(faceOffset, faceOffset + m.faceCount);
     if (faces.length !== m.faceCount) throw new Error('Material face range exceeds PMX faces');
     faceOffset += m.faceCount;
@@ -138,11 +164,12 @@ export async function convertModel(model: PMXModel, textureDirectory: string, sc
     if (!indices.length) continue;
     const primitive = doc.createPrimitive().setAttribute('POSITION', positions).setAttribute('NORMAL', normals).setAttribute('TEXCOORD_0', uv).setMaterial(material)
       .setIndices(doc.createAccessor(`${m.name} indices`).setBuffer(buffer).setType('SCALAR').setArray(model.vertices.length <= 65535 ? new Uint16Array(indices) : new Uint32Array(indices)));
+    if (m.flag & 0x10 && edgeScales) primitive.setAttribute(EDGE_ATTRIBUTE, edgeScales);
     if (m.envFlag === 3 && m.envTextureIndex >= 0) primitive.setAttribute('TEXCOORD_1', uv1!);
     mesh.addPrimitive(primitive);
   }
   if (faceOffset !== model.faces.length) throw new Error('Material face counts do not cover all PMX faces');
-  return { document: doc, io: new NodeIO().registerExtensions([ToonWriter]), warnings };
+  return { document: doc, io: new NodeIO().registerExtensions([ToonWriter, OutlineWriter]), warnings };
 }
 export async function convertPMX(input: string, output: string, options: { textureDirectory?: string; scale?: number } = {}) {
   if (!['.glb', '.gltf'].includes(extname(output))) throw new Error('Output must end in .glb or .gltf');

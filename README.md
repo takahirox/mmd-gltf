@@ -1,13 +1,15 @@
 # mmd-gltf
 
-A static PMX → glTF pipeline and Three.js loader plugin for the
-[MMD_materials_toon v0.1 draft](extensions/MMD_materials_toon/README.md).
+A static PMX → glTF pipeline, Three.js loader plugins and outline effect for
+the [MMD_materials_toon](extensions/MMD_materials_toon/README.md) and
+[MMD_materials_outline](extensions/MMD_materials_outline/README.md) v0.1 drafts.
 The converter uses `mmd-parser` and glTF Transform, without Three.js scene
 serialization. The Gene Light example shows the original PMX loaded directly
 with pinned `@takahirox/three-mmd@0.1.2` beside the generated GLB loaded through
 `GLTFLoader.register()`. Orbit and zoom stay synchronized; Front/Side/Back presets
 use the same camera, scale, static base pose, lighting and renderer. The right
-pane also offers the independent PBR fallback.
+pane also offers the independent PBR fallback. The Outline menu toggles both
+implementations; their different thickness laws are labeled in the example.
 
 Original-MMD fidelity is unverified. [Issue #13's research report](docs/original-mmd-research.md)
 records the inspected original 9.32 x64 distribution, unresolved shading rules,
@@ -53,7 +55,7 @@ The example defaults to WebGL2; append `?backend=webgpu` to try native WebGPU,
 which tests explicitly skip without an adapter. Views stack on narrow screens.
 The direct PMX is a practical reference, not a bit-identical MikuMikuDance oracle;
 independent ambient/toon/specular models produce documented shading differences.
-Neither view animates or steps IK/physics/morphs/outlines.
+Neither view animates or steps IK/physics/morphs.
 The browser runner owns a Vite conformance server on port 43179 and a static
 preview on port 43180. Both browser tests and
 build use the repository prefix `/mmd-gltf/`.
@@ -67,6 +69,7 @@ remains pending until merge.
 
 - `tools/`: generic PMX converter and verified example acquisition/generation.
 - `packages/three-mmd-toon/`: reusable TypeScript GLTFLoader plugin and TSL material.
+- `packages/three-mmd-outline/`: independent loader plugin, metadata integration and TSL outline effect.
 - `examples/`: static Vite example; its conformance entry is development-only.
 - `extensions/`: runtime-independent proposals, schemas and numerical fixtures.
 - `tests/`: converter, resource, plugin and browser integration checks.
@@ -74,11 +77,13 @@ remains pending until merge.
 The independent [MMD_materials_outline v0.1 draft](extensions/MMD_materials_outline/README.md)
 defines material edges and `_MMD_EDGE_SCALE`, with embedded glTF examples and
 CPU conformance fixtures (`npm run test:outline`). Its pixel normalization is a
-proposal; original-MMD pixel equivalence is unverified. The current converter,
-plugin and browser example do not implement outlines.
+proposal; original-MMD pixel equivalence is unverified. The converter emits optional outline payloads and signed vertex scales; the
+independent plugin/effect works with core PBR, active Toon or an explicit
+other-material alpha binding. See the [outline API and lifecycle](docs/pipeline.md#outline-plugin-and-effect).
 
-The current runtime scope excludes animation, skins, IK, grants, physics, morphs and
-outlines. Source models and derivatives retain their own rights. Gene Light is
+The PMX converter exports a static base pose, omitting animation, skins, IK,
+grants, physics and morphs. The outline effect also accepts core glTF skin and
+POSITION/NORMAL morph deformation from other assets. Source models and derivatives retain their own rights. Gene Light is
 **CC BY 4.0 with additional usage guidelines and retained trademark/design
 rights**, for academic/personal noncommercial scope; contact the authors for
 other commercial use. It is not licensed as repository code.

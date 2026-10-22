@@ -17,6 +17,45 @@ are still unavailable. Normative shading and the glTF side remain unchanged
 pending that evidence; there is no corrected-MMD capture to report. Issue #13
 must remain open. Historical captures below retain their original provenance.
 
+## Outline pipeline (Issue #21)
+
+New Chrome/SwiftShader WebGL2 captures on 2026-10-22 show outlines enabled on
+both panes: the released three-mmd 0.1.2 effect on the left and this repository's
+normative v0.1 effect on the right. The right pane uses Toon here; PBR is also
+checked with outlines. Reproduce with `npm run build` followed by
+`UPDATE_COMPARISON_EVIDENCE=1 npm run test:browser`. Source hashes, rights notices,
+static pose, camera, lighting, scale and navigation remain the same.
+
+| View | Outlines enabled |
+| --- | --- |
+| Front | [Front comparison](comparison/outline-v0.1-front.png) |
+| Side | [Side comparison](comparison/outline-v0.1-side.png) |
+| Back | [Back comparison](comparison/outline-v0.1-back.png) |
+
+![Outlines enabled: PMX reference left, glTF v0.1 right](comparison/outline-v0.1-front.png)
+
+All three captures were opened and actually inspected. Both silhouettes remain
+complete and aligned. The right outline is a fine dark contour around the hair,
+cuffs, trousers and boots, and appears thinner than the PMX reference in places.
+The side view exposes fine hair seams; the back view retains visible strands and
+cuff/boot contours without large black patches or gross overdraw. Tiny dark
+segments at hair seams and clothing boundaries remain visible: the draft hull
+and source normals do not guarantee continuous contour width. No obvious
+view-dependent missing limbs/silhouettes or large black blotches were found.
+The first single-sample prototype had noticeably jagged contours; the current
+effect preserves the renderer's MSAA sample count and the captures above use it.
+The depth copy uses resolved base depth at coverage boundaries, a documented
+sampling limitation. Synthetic conformance disables MSAA for exact covered-sample
+measurements.
+
+The Outline menu was toggled off/on and both panes changed and returned to the
+same pixels; Toon/PBR/Toon switching, orbit/zoom and stacked mobile layout were
+checked separately. The glTF pass follows the draft viewport equation and
+encoded-domain blending. The PMX reference uses its own legacy thickness law
+and material-specific draw state. Differences are expected and labeled; these
+captures establish neither exact three-mmd matching nor original-MMD fidelity.
+Historical no-outline images below remain unchanged.
+
 ## three-mmd 0.1.2 upgrade (Issue #17)
 
 The direct PMX reference now uses the published `@takahirox/three-mmd@0.1.2`

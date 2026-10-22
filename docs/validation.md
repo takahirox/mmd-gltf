@@ -1,5 +1,104 @@
 # Validation record
 
+## Issue #21: outline review fixes
+
+Local checks on 2026-10-22 with Node.js 24.12.0, npm 11.6.2, Darwin ARM64,
+Three.js 0.186.1 and Google Chrome headless/SwiftShader passed:
+`npm run typecheck`, `npm test` (including `test:outline` and all 13
+converter/plugin tests), `npm run build`, `npm run test:browser`,
+`npm run check:links` and `git diff --check`. The browser suite passed four tests;
+two optional native-WebGPU tests skipped because no adapter was available.
+The existing bundle-size warning remains. No push or merge was performed;
+required deployed-site verification remains pending after merge.
+
+The production WebGL2 outline suite now performs **109 checks**. New real
+GLTFLoader regressions load `EXT_mesh_gpu_instancing` with single/multiple
+primitives, reused mesh nodes, signed/zero vertex scales, enabled/disabled
+outline materials and custom instance attributes that clone geometry. Outline
+records reach each applicable instance, preserve core PBR materials and detach
+on plugin disposal. Single-primitive readback is `[127,0,0,255]`; ordered red/blue
+primitives produce `[64,0,127,255]`.
+
+Double-sided `MeshPhysicalMaterial` cases compare transmission 0 and 1 over
+opaque black across two frames. Both produce `[127,0,0,255]` for a red edge with
+alpha 0.5, confirming one hull contribution rather than the reported duplicate
+191/255. Three ordered groups using material indices `[0,1,0]` produce
+`[159,0,64,255]`, matching encoded RGB `[0.625,0,0.25]` within the existing
+`2/255` tolerance. Distinct groups sharing a material still contribute separately.
+The encoded midgray discriminator remains `[64,64,64,255]`. Rendering settings
+and the independent normative fixtures remain as recorded below.
+
+## Issue #21: outline pipeline
+
+Local pre-merge checks on 2026-10-22, Node.js 24.12.0, npm 11.6.2, Darwin
+ARM64, pinned Three.js 0.186.1 and Google Chrome headless with SwiftShader.
+No push, PR, merge, deployment or original-MMD execution was performed.
+
+| Check | Actual result |
+| --- | --- |
+| `npm ci` | Passed with the existing lockfile; no dependency changes |
+| `npm run test:outline` (also included in `npm test`) | Passed: 39 position, 28 fragment, 24 schema and 33 asset cases, flags/skips, four depth/blend sequences, four core-valid examples |
+| `npm run typecheck` | Passed |
+| `npm test` | Passed: unchanged Toon CPU expectations plus 13 converter/plugin tests, including the independent outline schema/asset corpus and sparse data |
+| Khronos glTF Validator 2.0.0-dev.3.10 | Zero core errors for generated Gene and synthetic GLB/glTF outputs; expected `UNSUPPORTED_EXTENSION` notices |
+| `npm run build` | Passed; all 13 original source file hashes retained; Vite's existing large-bundle warning remains |
+| `UPDATE_COMPARISON_EVIDENCE=1 npm run test:browser` | Four passed, two optional native-WebGPU tests skipped because no adapter was available |
+| `npm run check:links` | Passed; local documentation links/anchors and built asset links only |
+| `git diff --check` | Passed |
+
+The WebGL2 outline run performs **97 checks** against the production effect and
+its shared TSL equation. It uses `antialias:false`, default linear-sRGB working
+space, sRGB output, no tone mapping, no scene lighting/shadows/postprocessing,
+float probe targets and actual 8-bit canvas readback. Numerical clip tolerance is
+`3e-6`; derived fixture pixel positions allow `3e-4` pixels; raster silhouette
+bounds use exact integer expectations; covered RGB/alpha allow `2/255`; retained
+depth allows `2e-6`. Half-float intermediate attachments are part of the production
+path. No independent fixture expectations were changed or generated from the
+implementation.
+
+Measured encoded gray `.5` with edge alpha `.5` over opaque black was
+`[64,64,64,255] / 255`, or RGB **0.2509803922**, rather than conventional
+linear-light compositing near 0.36. All independent fragment cases and ordered
+sequences were exercised, including colored and transparent destinations, exact
+zero versus partial core/active-Toon/custom factor alpha, clamping at evaluation,
+front-face rejection, clipping, depth equality, retained base occlusion and
+partial-edge depth writes. Sequence depth was also copied back to an application
+render target and sampled numerically.
+
+GPU checks additionally cover perspective/orthographic signed/default/zero scales
+in active sub-viewports, exact displacement in render-target pixels, nonuniform
+normal transforms through raster coverage, material group layering, reflected
+and singular hardware instances, core skinning with reflected/singular mesh-node
+transforms ignored, nonzero core morphs and joint animation. A loaded two-joint,
+two-influence-set asset proves raw `.25/.75` weights survive GLTFLoader's
+base-material normalization. Owned float palettes avoid shared-geometry attribute
+mutation and have explicit disposal. Loader/browser checks cover active Toon and
+core PBR coexistence, correct instance/group metadata, custom alpha integration,
+disposal and renderer-hook/state restoration.
+
+The complete built example was checked for both loaders, outline off/on,
+Toon/PBR/Toon switching, synchronized orbit/zoom, front/side/back presets, mobile
+layout, source/notice hashes and a clear missing-image failure. Normal runs had
+no asset/network/shader/runtime/console errors. The three new browser captures
+were opened and reviewed; [findings and remaining sampling/appearance differences](comparison.md#outline-pipeline-issue-21)
+are recorded separately, preserving historical no-outline captures.
+
+Generic Gene GLB: 4,768,156 bytes; SHA-256
+`8f859b023dec5f2ba9c6d54cfc57233e9d626a3a16edbc4b0fe15bb4cb2e5dc1`.
+Attributed demo GLB: 4,771,032 bytes; SHA-256
+`607bc699f22279cecd0b52a3a4e6ba93abca2ce7faac1098d6be2c8d99598569`.
+Both extensions are optional, geometry remains shared and unexpanded, and original
+source bytes/notices remain unchanged. The converter still exports a static pose.
+The [integration guide](pipeline.md#outline-plugin-and-effect) documents numeric
+limits, full-scene rendering, factor updates, MSAA resolved-depth boundaries and
+lifecycle. Native WebGPU has the same graph but no real-adapter validation here.
+
+Initial development runs exposed lost callback metadata during loader cloning,
+sub-viewport/scissor state, first-use depth initialization and test-harness path/
+fixture issues. Those were corrected before the passing runs above. npm's two
+existing audit findings (one low, one high) and the bundle-size warning were not
+changed. The draft itself and the existing Toon numerical expectations are intact.
+
 ## Issue #17: three-mmd 0.1.2 reference upgrade
 
 Local pre-merge validation on 2026-10-22, Node.js 24.12.0, npm 11.6.2,
@@ -278,6 +377,8 @@ records above. After merging and the Pages workflow completes:
    both correctly labeled models are visible in the same base pose, orbit/zoom
    stays synchronized, Front/Side/Back presets work, narrow layouts stack, and
    glTF toon/PBR/toon switching succeeds without changing the PMX reference.
+   Toggle Outlines off/on and verify that both panes change and return, with the
+   two different algorithms labeled (Issue #21).
 3. Confirm `gene-light/model.glb`, `gene-light/Gene_light.pmx`, all ten original
    `gene-light/light/` PNGs, both original notices, `source-manifest.json`
    and `conversion.json` load under `/mmd-gltf/`, with the displayed attribution,

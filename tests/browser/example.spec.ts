@@ -52,7 +52,7 @@ for (const backend of ['webgl', 'webgpu']) {
     for (const id of ['pmx', 'gltf']) await expect(page.locator(`#${id}-status`)).toContainText('Ready');
     const info = await page.evaluate(() => (window as any).mmdExample);
     expect(info.meshes).toBe(13);
-    expect(info.reference).toMatchObject({ loader: 'MMDLoader', materials: 13, scale: 0.08, outlines: false, morphsActive: false });
+    expect(info.reference).toMatchObject({ loader: 'MMDLoader', materials: 13, scale: 0.08, outlines: true, morphsActive: false });
     expect(info.backend).toBe(backend === 'webgl' ? 'WebGL2' : 'WebGPU');
     for (const edge of ['min', 'max']) for (let axis = 0; axis < 3; axis++) {
       expect(info.reference.bounds[edge][axis]).toBeCloseTo(info.gltf.bounds[edge][axis], 6);
@@ -90,13 +90,21 @@ for (const backend of ['webgl', 'webgpu']) {
       for (let i = 0; i < 4; i++) expect(Math.abs(left.bounds[i] - right.bounds[i])).toBeLessThanOrEqual(3);
       if (process.env.UPDATE_COMPARISON_EVIDENCE === '1' && backend === 'webgl') {
         await mkdir('docs/comparison', { recursive: true });
-        await copyFile(path, `docs/comparison/three-mmd-0.1.2-${view}.png`);
+        await copyFile(path, `docs/comparison/outline-v0.1-${view}.png`);
       }
     }
     expect(captures[0].equals(captures[1])).toBe(false);
     expect(captures[0].equals(captures[2])).toBe(false);
     await page.selectOption('#viewpoint', 'front');
     await page.waitForTimeout(600);
+    const outlineOn = await page.locator('#viewport').screenshot();
+    await page.selectOption('#outlines', 'off');
+    await page.waitForTimeout(300);
+    expect((await page.locator('#viewport').screenshot()).equals(outlineOn)).toBe(false);
+    expect(await page.evaluate(() => (window as any).mmdExample.reference.outlines)).toBe(false);
+    await page.selectOption('#outlines', 'on');
+    await page.waitForTimeout(300);
+    expect((await page.locator('#viewport').screenshot()).equals(outlineOn)).toBe(true);
     const pmxBefore = await page.locator('#pmx-pane').screenshot();
     const toon = await page.locator('#gltf-pane').screenshot();
     await page.selectOption('#material', 'pbr');

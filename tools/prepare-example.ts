@@ -12,7 +12,7 @@ document.getRoot().setExtras({ ...document.getRoot().getExtras(),
   sourceManifest: manifest,
   attribution: 'CG-CA Gene (c) 2023 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society',
   rights: 'CC BY 4.0 plus original usage guidelines and retained trademark/design rights. Academic/personal noncommercial use; contact authors for other commercial use. See accompanying English/Japanese notices.',
-  changes: 'Static base-pose PMX converted to glTF geometry and MMD_materials_toon; independent core PBR approximation; source textures unchanged. No animation, morphs, physics, or outlines.',
+  changes: 'Static base-pose PMX converted to glTF geometry and MMD_materials_toon and MMD_materials_outline; independent core PBR approximation; source textures unchanged. No animation, morphs or physics.',
 });
 // Rebuild the reviewed allowlist; stale/private files must never survive packaging.
 await rm('public/gene-light', { recursive: true, force: true });

@@ -29,6 +29,10 @@ export function createToonMaterial(m: ToonPayload, state: MaterialState, maps: T
   if (state.alphaCutoff !== undefined && (!Number.isFinite(state.alphaCutoff) || state.alphaCutoff < 0)) throw new Error('Invalid alphaCutoff');
   const material = new MeshBasicNodeMaterial();
   material.name = state.name ?? '';
+  // Active material-factor integration; independent of texture alpha and alphaMode.
+  // JSON-compatible fields survive GLTFLoader's final material clones.
+  material.userData.mmdMaterialModel = 'MMD_materials_toon';
+  material.userData.mmdDiffuseFactor = m.diffuseFactor ?? [1, 1, 1, 1];
   material.side = state.doubleSided ? DoubleSide : FrontSide;
   material.transparent = state.alphaMode === 'BLEND';
   material.depthWrite = !material.transparent;
