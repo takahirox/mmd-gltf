@@ -1,0 +1,114 @@
+{
+  "issue": "https://github.com/takahirox/mmd-gltf/issues/23",
+  "pr": {
+    "number": 24,
+    "url": "https://github.com/takahirox/mmd-gltf/pull/24",
+    "head_sha": "aac299df04234fac22ddb44eafff4e068eb70ab1"
+  },
+  "merged": true,
+  "merge_commit": "9cb2bfc078a20a9e84e66dea1443aac5e4eac8b7",
+  "merge_parents": [
+    "b1e8a64c1621bd15369c163ad1ad60cd5986ff19",
+    "aac299df04234fac22ddb44eafff4e068eb70ab1"
+  ],
+  "source_issue_open_confirmed_immediately_before_merge": true,
+  "merge_method": "merge",
+  "deployment": {
+    "workflow": "Validate and deploy Gene Light",
+    "run_id": 39761155831,
+    "url": "https://github.com/takahirox/mmd-gltf/actions/runs/39761155831",
+    "event": "push",
+    "head_sha": "9cb2bfc078a20a9e84e66dea1443aac5e4eac8b7",
+    "status": "completed",
+    "conclusion": "success",
+    "build": "success",
+    "deploy": "success",
+    "browser_tests": {
+      "passed": 5,
+      "skipped": 2,
+      "skip_reason": "Native WebGPU adapter unavailable"
+    }
+  },
+  "publication": {
+    "url": "https://takahirox.github.io/mmd-gltf/",
+    "verifiedAt": "2026-10-22T10:13:57.468Z",
+    "browser": "156.0.8078.48",
+    "backend": "WebGL2",
+    "background": "rgb(208, 208, 208)",
+    "on": [
+      {
+        "corner": [
+          208,
+          208,
+          208,
+          255
+        ],
+        "silhouette": 59490,
+        "dark": 25902
+      },
+      {
+        "corner": [
+          208,
+          208,
+          208,
+          255
+        ],
+        "silhouette": 58631,
+        "dark": 26469
+      }
+    ],
+    "off": [
+      {
+        "corner": [
+          208,
+          208,
+          208,
+          255
+        ],
+        "silhouette": 57655,
+        "dark": 25102
+      },
+      {
+        "corner": [
+          208,
+          208,
+          208,
+          255
+        ],
+        "silhouette": 56867,
+        "dark": 25290
+      }
+    ],
+    "restored": [
+      {
+        "corner": [
+          208,
+          208,
+          208,
+          255
+        ],
+        "silhouette": 59490,
+        "dark": 25902
+      },
+      {
+        "corner": [
+          208,
+          208,
+          208,
+          255
+        ],
+        "silhouette": 58631,
+        "dark": 26469
+      }
+    ],
+    "errors": [],
+    "result": "passed",
+    "method": "Playwright, headless Chrome with SwiftShader, default published URL, front view at 1440x1100. Screenshot corner samples and silhouette/dark pixel counts exclude pane labels and hints. Outline on/off/on restores matching counts in both panes. Runtime, console, failed-request and HTTP error listeners remained empty.",
+    "visual_inspection": "Both panes have the same light-gray background. Dark contours along arms, hands, clothing and hair are visible with Outline on and disappear with Outline off. Pane labels, statuses and navigation hint are readable.",
+    "screenshots": {
+      "on": "issue-23-published-outline-on.png",
+      "off": "issue-23-published-outline-off.png"
+    },
+    "limitation": "Published-site check used WebGL2; native WebGPU was not verified."
+  }
+}
