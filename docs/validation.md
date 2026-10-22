@@ -1,5 +1,46 @@
 # Validation record
 
+## Issue #21: post-merge Pages verification
+
+Completed on 2026-10-22 against the [live Pages site](https://takahirox.github.io/mmd-gltf/).
+Issue #21 was read directly from GitHub and confirmed open immediately before
+merging PR #22. GitHub accepted a merge commit with the expected PR head
+`1c1db846b16a2d24dd6c7360c2b51765cf1e5d6e`, without bypassing checks or reviews.
+The actual merge and deployed commit is
+`b1e8a64c1621bd15369c163ad1ad60cd5986ff19`.
+[Workflow run 39744386221](https://github.com/takahirox/mmd-gltf/actions/runs/39744386221)
+completed successfully, including build and deployment. GitHub's `github-pages`
+deployment 7246960473 reports success for that exact commit at
+2026-10-22T08:02:17Z.
+
+The existing matched-comparison browser test in `tests/browser/example.spec.ts`
+was copied into ignored `test-results/deployed/`, replacing its preview origin
+with `https://takahirox.github.io/mmd-gltf/`. A temporary Playwright configuration
+used the same headless Chrome/SwiftShader launch settings and no local servers.
+Running only the `built webgl site` test passed (one test, 45.6 seconds): both
+loaders and labeled models, matching rest-pose bounds, synchronized orbit/zoom,
+front/side/back presets, outline off/on, Toon/PBR/Toon switching, stacked mobile
+layout, all 13 pinned source/notice hashes and manifest/conversion availability.
+No asset, network, shader, runtime or console errors were reported.
+
+The three live-site front/side/back captures were opened and visually inspected.
+Both models render, with no obvious missing silhouette, gross overdraw or large
+view-dependent outline artifacts. Fine edge sampling and the algorithms' visible
+appearance differences remain as described in the existing comparison record;
+this establishes no original-MMD fidelity claim.
+
+A separate live-page check compared each pane's screenshots with outlines on,
+off and on again: both panes changed independently and returned exactly to their
+initial screenshot. It also fetched the deployed GLB and verified its byte count
+and SHA-256 against the deployed conversion record: 4,771,032 bytes,
+`2adc744ce32b4845043d50208bafc4d2c5533396224cfcb40f20cce19cf03327`.
+This check reported no browser/network errors. Native WebGPU adapter detection
+returned false, so optional native-WebGPU verification remains skipped.
+
+The post-merge checks required by Issue #21 are complete. This checkpoint adds
+only this verification record; it has not been published back to `main`.
+Issue #13's independent original-MMD verification below remains pending.
+
 ## Issue #21: outline review fixes
 
 Local checks on 2026-10-22 with Node.js 24.12.0, npm 11.6.2, Darwin ARM64,
@@ -367,8 +408,8 @@ the upstream animated MMD demo was not performed.
 
 ## Required post-merge verification
 
-**Pending.** No merge or publication is established by the local validation
-records above. After merging and the Pages workflow completes:
+**Completed for Issue #21:** see the post-merge Pages verification record above.
+The following publication procedure can be repeated for subsequent deployments:
 
 1. Record the deployed commit, workflow run URL/result, deployment URL and date.
    Confirm that commit's manifest and lockfile resolve
