@@ -6,7 +6,7 @@
   "type": "object",
   "properties": {
     "colorFactor": {
-      "description": "Finite source-component RGBA, unrestricted on input; clamped to [0,1] on evaluation. RGB is sRGB, alpha is linear opacity.",
+      "description": "Finite PMX source edge RGBA, preserved without compensation; runtime clamping and provisional encoded RGB semantics are defined in the rendering chapter. Alpha is linear coverage.",
       "type": "array",
       "items": { "type": "number" },
       "minItems": 4,
@@ -14,9 +14,8 @@
       "default": [0, 0, 0, 1]
     },
     "sizeFactor": {
-      "description": "Nonnegative finite material edge size. One unit displaces a vertex one framebuffer pixel when its edge scale is 1.",
+      "description": "Finite signed PMX source material edge size, preserved unchanged; not inherently a pixel width. The provisional rendering equation converts its product with vertex scale to displacement.",
       "type": "number",
-      "minimum": 0,
       "default": 1
     },
     "extensions": {

@@ -29,7 +29,7 @@ The build downloads the repository's separately documented example assets into
 ignored directories; it is unnecessary for the standalone outline checker.
 There is no outline web example or GPU implementation in this Issue.
 
-The validator checks all three complete glTF examples, including buffer bytes,
+The validator checks all four complete glTF examples, including buffer bytes,
 and positive mutated assets (including sparse accessors). Expected notices are
 `UNSUPPORTED_EXTENSION`, since the core validator does not implement this draft,
 and `UNUSED_OBJECT` for the material-only example. **Zero core errors** is the
@@ -71,7 +71,9 @@ P = [ .75  0      0      0    ]
     [ 0    0     -1      0    ]
 ```
 
-For `p=(0,0,-3)`, `n=(1,0,0)`, and viewport 800x600, base clip position is
+These pixel results follow from the provisional coefficient 1.0, not a pixel
+unit intrinsic to PMX `sizeFactor`. For `p=(0,0,-3)`, `n=(1,0,0)`, and viewport
+800x600, base clip position is
 `(0,0,1.5,3)`; one pixel adds `2*3/800=.0075` to clip X. NDC is
 `(.0025,0,.5)`, and pixel coordinates are `(401,300)`.
 
@@ -86,100 +88,143 @@ For `p=(0,0,-3)`, `n=(1,0,0)`, and viewport 800x600, base clip position is
 | Negative nonuniform transform | X scale -2 changes the above normal X sign and makes the world determinant negative. Expected pixel X=`400-3/sqrt(73)`. Normal Y and clip Z/W stay unchanged; corrected winding is marked reflected. |
 | Orthographic near/far | Orthographic X coefficient `.5`, Z coefficient `-.25`, Z translation `-1.25`, W=1. For p.X=1, clip X=`.5+.0025=.5025`. Z=-3/-7 gives clip Z=-.5/+.5; both have pixel `(601,300)`. |
 | Size/scale product | Size 2 times scale .5 gives the default one-pixel result. Scale 2.5 gives X displacement `.01875` in clip space and 2.5 pixels. Size .25 gives .25 pixels. |
-| Zero and degenerate cases | Zero size/scale, axis normal, zero morphed normal, singular skin, and normalized XY magnitude <=`1e-12` all give zero displacement and effective thickness 0. A `1e-11` XY component instead becomes unit +X. |
+| Signed product | Scale -2 gives clip X=-.015 and pixel X=398. Size -2 with scale .5 gives clip X=-.0075 and pixel X=399. Both negative (size -2, scale -.5) give pixel X=401. No absolute value or clamp is applied. |
+| Zero and degenerate cases | Zero size/scale, axis normal, zero morphed normal, singular skin, and normalized XY magnitude <=`1e-12` all give zero displacement and effective thickness 0. The equality case at the threshold also gives zero. A `1e-11` XY component instead becomes unit +X. |
 | Singular node / foreshortened normal | An unskinned primitive with zero mesh-node X scale is skipped. A unit normal `(.6,0,.8)` still gives XY direction `(1,0)` and the full one-pixel displacement. |
-| Near plane / eye | At Z=-.5, clip Z=`.625-2.25=-1.625`, W=.5, clip X offset `.00125`. NDC Z=-3.25 is outside the clip volume; the vertex calculation does not force it onto the near plane. At/behind the eye W<=0 and extrusion is zero; NDC/pixel fields are null. |
+| Near plane / eye | At Z=-.5, clip Z=`.625-2.25=-1.625`, W=.5, clip X offset `.00125`. NDC Z=-3.25 is outside the clip volume; the vertex calculation does not force it onto the near plane. At the eye W=0, the clip offset is zero. Behind the eye at Z=1, W=-1 gives clip X=-.0025; expand before clipping. NDC/pixel fields are null for W<=0. |
 | View rotation/translation | A 90-degree Z rotation maps normal +X to +Y, hence clip Y=.01 and pixel Y=301. A view translation -1 in X changes base clip X to -.75, plus .0075 gives -.7425 and pixel X=301. |
 | Morph then joint world/bind | Start at `(0,0,-6)`. Morph adds .5 in X and changes normal +X into +Y. The inverse bind translates -.5 in Y; the joint world rotates 90 degrees around Z, then scales `(2,1,.5)`. Thus q=`(1,.5,-3)` and normal direction -X. Base clip XY=`(.75,.5)`; subtract .0075 in X to give pixel `(499,350)`. The mesh-node scale is ignored. Changing the bind/joint order gives a different result. |
 | Skinned identity/reflected/singular mesh nodes | With one identity joint and identity inverse bind, `D=I` for mesh-node X scales 1, -1 and 0 alike. All three give default clip `(.0075,0,1.5,3)`, pixel `(401,300)` and thickness 1; none is skipped or has a winding correction. CCW faces are culled and CW faces survive in all three cases. These regressions catch both incorrect mesh-node multiplication and determinant-based culling/suppression. |
 | Reflected joint | A joint with X scale -1 changes the normal to -X, giving clip X=-.0075 and pixel X=399. The projected triangle winding determines culling without a determinant repair: CCW is still culled and CW survives. |
 | Weighted joint world/bind | Joint 1 translates +1 in X and its inverse bind translates -.5; joint 2 translates -1 with identity bind. Weights .25/.75 give effective translation `.25*(1-.5)+.75*(-1)=-.625`. Base clip X=`-.625*.75=-.46875`; add .0075 for clip X=-.46125 and pixel X=`400-62.5+1=338.5`. |
 
+`tEffective` is a fixture-only diagnostic: the signed source product when the
+normal direction is nonzero, otherwise zero. It is not a fragment varying or
+an opacity/coverage input. At the eye it can be nonzero while the clip offset,
+which multiplies W=0, is zero. The exact equation also applies behind the eye;
+homogeneous clipping, rather than a pre-expansion W test, handles visibility.
+
 ## Fragment, flag and asset fixtures
 
-[fragments.json](fragments.json) tests independently selected **covered back-face
-samples**, with an NDC depth and a retained scene depth in [0,1]. It does not
-pretend to implement hardware triangle coverage. Default NDC depth 0 maps to
-depth .5, scene depth defaults to 1, barycentrics are equal thirds, W values and
-effective thicknesses are 1, face winding is clockwise without reflection, and
-destination is opaque linear black. `ccw` is the actual projected winding before
-core negative-node correction. `baseMaterial` and `baseTextureAlpha` deliberately
-have no effect in the outline evaluator.
+[fragments.json](fragments.json) tests selected **covered back-face samples**,
+with NDC depth and a retained depth in [0,1]. It does not implement hardware
+triangle coverage. Default NDC depth 0 maps to depth .5, scene depth is 1,
+face winding is clockwise without reflection, and destination is opaque encoded
+black. `ccw` is actual projected winding before core negative-node correction.
+All RGB arrays, including `premultipliedRGB`, are in the selected sRGB encoded
+component domain; there is no transfer around the blend.
 
-- Default black is opaque. Red with alpha .5 over linear blue gives
-  premultiplied RGB `(.5,0,.5)`, alpha 1; sRGB encoding .5 yields
-  `.7353569830524495` in red/blue.
-- Source gray .5 decodes to `.21404114048223255`. Alpha .5 over black gives
-  `.10702057024111628`, encoded `.3607802138332792`. This distinguishes
-  decode-before-blend from blending source sRGB components.
-- Source `(2,-1,.5,2)` clamps to `(1,0,.5,1)` before decoding. Source `.01292`
-  exercises the linear sRGB branch: `.01292/12.92=.001`.
-- Half-red over destination premultiplied blue `(0,0,.5)`, alpha .5 gives
-  `(.5,0,.25)`, alpha `.5+.5*.5=.75`; straight RGB is `(2/3,0,1/3)`.
-  Half-blue drawn after half-red over opaque black gives `(.25,0,.5)`, alpha 1;
-  neither outline writes depth to block the other.
-- Depth equality survives LEQUAL; NDC .2 maps to depth .6 and fails against
-  .5. Samples outside [-1,1] are clipped. No surviving sample writes depth.
-- Base MASK holes, base opacity zero and base texture alpha zero do not discard
-  outline samples. Zero/negative outline alpha does. Corrected front faces are
-  culled, for both reflected and ordinary nodes.
-- Mixed effective thicknesses `(0,2,4)`, W `(1,2,4)` and screen barycentrics
-  `(.25,.25,.5)` give perspective weights `(.25,.125,.125)`. Interpolated
-  thickness is `(0+.25+.5)/(.25+.125+.125)=1.5`, so the sample survives.
-- The order fixture has centroid depths 4,5,5,5. Depth 5 draws first; node,
-  primitive and triangle indices settle ties. The required index order is
-  `[3,2,1,0]`.
+The checker receives the active material binding through fixture `integration`:
+`activeMaterial` defaults to `core`, can select `toon`, or names a custom model
+whose binding returns `diffuseAlpha`. These are test inputs, not new glTF fields.
+`baseMaterial` supplies the current factor payload after any external material
+updates. `baseTextureAlpha` does not enter the factor-level suppression rule.
+
+| Cases | Independent calculation / decision |
+| --- | --- |
+| Half red over blue | `.5*(1,0,0)+.5*(0,0,1)=(.5,0,.5)`, alpha 1. |
+| Gray over black | `.5*.5=.25` encoded in each RGB channel; decode/blend/encode would disagree. |
+| Unrestricted stored color | `(2,-1,.5,2)` clamps at evaluation to `(1,0,.5,1)`. Small encoded `.01292` stays `.01292`. |
+| Transparent destination | Half red over premultiplied blue `(0,0,.5)`, alpha .5, gives premultiplied `(.5,0,.25)`, alpha `.5+.5*.5=.75`, straight `(2/3,0,1/3)`. |
+| Alpha zero vs nonzero | Current core or Toon factor 0 suppresses the outline, including core OPAQUE. Core .25 or tiny `1e-12` leaves edge alpha .4 unchanged, giving red .4 over black. Per-texel alpha 0 with nonzero factor does not suppress it. |
+| Material independence | Active Toon uses its own alpha/default 1 even when core factor is 0. Inactive Toon alpha 0 does not override active core. Custom bindings provide current alpha or model-defined default 1; a missing binding errors. Finite negative nonzero custom factor is compared directly, without clamping. |
+| Depth/culling/clipping | Depth equality passes LESS_EQUAL and writes depth. NDC .2 maps to .6, failing against .5. Outside [-1,1] is clipped. Corrected front faces are culled. Suppressed/failed samples do not write depth. |
+
+The four `sequences` describe ordinary primitive/sample submission order, with
+updated destination color and depth passed from each surviving sample to the
+next. They do not sort geometry:
+
+- Half red at NDC -.2 writes depth `.5*(-.2+1)=.4`; half blue at NDC .2
+  would have depth .6 and fails. The result stays `(.5,0,0)`.
+- Half red followed by half blue at equal depth .5 both pass. The second
+  gives `.5*(0,0,1)+.5*(.5,0,0)=(.25,0,.5)` and writes .5 again.
+- Zero edge alpha contributes no depth, so later blue at .6 survives.
+- Zero base factor alpha likewise contributes no depth; later blue survives.
 
 [flags.json](flags.json) contains the PMX `0x10` truth table (including unrelated
-bits), PMD material/vertex flag polarity, extension presence/absence and whole
-draw suppression for zero size/alpha/all-zero scales. These are mapping contract
-assertions, not a converter implementation.
+bits), retained PMD flag polarity, extension presence/absence and draw suppression
+for zero size/edge alpha/base alpha/all-zero scales. Signed nonzero sizes/scales
+still submit the draw. These are source mapping assertions, not a converter.
 
-[schema.json](schema.json) covers omission, explicit defaults, zero/fractional
-sizes, unrestricted source RGBA, metadata, prohibited `enabled`/unknown fields,
-wrong types/lengths, negative sizes and non-finite machine numbers. The actual
-schema is compiled by Ajv with strict numeric validation; a duplicated hand-coded
-schema substitute is not used.
+[schema.json](schema.json) covers omission/defaults, zero/fractional/signed sizes,
+unrestricted source RGBA, metadata, prohibited `enabled`/unknown fields, wrong
+types/lengths and non-finite machine numbers. Ajv compiles the real schema with
+strict numeric validation; defaults are checked without insertion.
 
-[assets.json](assets.json) applies explicit mutations to a fresh copy of an
-example, then checks the real binary accessors. Negative cases cover integer,
-normalized/vector accessors, mismatched counts, absent normals, attribute morph
-targets, missing extension declarations, bad references/bounds, negative and
-non-finite values, and sparse index order/bounds. One invalid attribute occurs
-on a zero-size material to prevent skipping validation along with rendering.
+[assets.json](assets.json) mutates fresh copies of complete examples, then reads
+the real binary accessors. Negative cases cover integer, normalized/vector
+accessors, mismatched counts, missing normals, attribute morph targets, missing
+extension declarations, bad references/bounds, non-finite values and sparse index
+order/bounds. Invalid data on a zero-size material are still rejected.
+Signed values in both ordinary and sparse accessors are positive validation cases.
 
 For ordinary edge data, `edgeValues` patches three float32 values at byte 72.
-The special string `"Infinity"` is intentionally converted to non-finite binary
-float32 to test rejection; no invalid JSON numbers are committed. Sparse cases
-store an index byte at offset 72 (or 84 after a base scale array), align values
-to four bytes and store replacement 2. Index 1 with no base gives `[0,2,0]`;
-with base `[1,1,1]` it gives `[1,2,1]`. This independently distinguishes missing
-attribute default **1** from sparse zero initialization. Positive cases also
-cover explicit `normalized:false`, scales above 1, required-extension support,
-triangle strips/fans and optional unsupported-extension fallback data.
+The string `"Infinity"` deliberately produces non-finite float32 for rejection;
+no invalid JSON numbers are committed. Sparse cases store an index byte at offset
+72 (or 84 after a base scale array), align values to four bytes and replace index
+1. Without a base, replacement 2 gives `[0,2,0]`, replacement -1 gives `[0,-1,0]`;
+with base `[1,1,1]`, replacement 2 gives `[1,2,1]`. This distinguishes the missing
+attribute default 1 from core sparse zero initialization. Complete examples
+include `[0,1,2]`, omitted scales (all 1), and `[-1,0,2]`. Positive asset cases
+also cover zero/large scales, signed material size, explicit `normalized:false`,
+triangle strip/fan modes, required-extension declaration and optional fallback.
 
-This minimal extension checker does not replace a full core validator or test
-every possible glTF binary layout. It covers the normative branches used by the
-fixtures and validates complete positive assets with the Khronos validator.
+The test-only checker does not replace full core validation or test every binary
+layout. All complete examples and positive mutated assets are separately checked
+with the Khronos validator. No renderer, converter or runtime API is supplied.
+
+## Reproducing an independent numerical audit
+
+The following uses Python standard-library rational arithmetic and literal
+closed-form calculations, independently of the checker. It checks the changed
+position/blend expectations without generating them from an evaluator:
+
+```sh
+python3 - <<'PY_AUDIT'
+import json
+from fractions import Fraction as F
+from pathlib import Path
+root = Path('extensions/MMD_materials_outline/tests')
+pos = {c['name']: c for c in json.loads((root/'positions.json').read_text())['cases']}
+frag = {c['name']: c for c in json.loads((root/'fragments.json').read_text())['cases']}
+# Perspective clip W=3; +X direction; viewport width 800.
+for name, product in [('negative-vertex-scale', -2),
+                      ('negative-material-size', -1),
+                      ('both-size-and-scale-negative', 1)]:
+    clip_x = F(2 * 3 * product, 800)
+    assert pos[name]['expected']['clip'][0] == float(clip_x)
+    assert pos[name]['expected']['pixel'][0] == 400 + product
+assert pos['behind-eye']['expected']['clip'][0] == float(F(2 * -1, 800))
+assert frag['encoded-gray-over-black']['expected']['straightRGB'] == [float(F(1,4))]*3
+assert frag['transparent-destination']['expected']['alpha'] == float(F(1,2)+F(1,2)**2)
+assert frag['transparent-destination']['expected']['straightRGB'] == [float(F(2,3)),0,float(F(1,3))]
+assert frag['partial-base-does-not-multiply-edge-alpha']['expected']['premultipliedRGB'] == [float(F(2,5)),0,0]
+seq = json.loads((root/'fragments.json').read_text())['sequences']
+assert seq[0]['expected']['depth'] == float((1-F(1,5))/2)
+assert seq[0]['expected']['premultipliedRGB'] == [float(F(1,2)),0,0]
+assert seq[1]['expected']['premultipliedRGB'] == [float(F(1,2)**2),0,float(F(1,2))]
+print('PASS: independent rational position, encoded blend, alpha and depth audit')
+PY_AUDIT
+```
 
 ## Validation record
 
-Executed on 2026-10-21 with Node.js 24.12.0 and the repository lockfile:
+Executed on 2026-10-22 with Node.js 24.12.0 and the repository lockfile:
 
 | Check | Actual result |
 | --- | --- |
 | `npm ci --no-audit --no-fund` | Passed; no dependency changes |
-| Outline checker (included in `npm test`) | Passed: 35 position vectors, 20 fragment vectors, 23 schema cases, 30 asset cases, flags/defaults/skip behavior and triangle ordering |
-| Skinning regression sensitivity | Passed: temporarily restoring mesh-node determinant culling or singular-node suppression independently fails the corresponding new regression fixture |
-| Embedded example validation | All three examples: zero Khronos core errors; expected unsupported-extension/unused-material notices as described above |
-| `npm test` | Passed: existing toon conformance checker, outline checker and all 8 converter/plugin tests |
-| `npm run typecheck` | Passed |
-| `npm run build` | Passed; Vite reports the existing bundle-size warning for a chunk larger than 500 kB |
-| `npm run check:links` | Passed: 87 local documentation links, anchors and built-example asset links |
-| `git diff --cached --check` | Passed |
+| `npm run test:outline` | Passed: 39 position vectors, 28 fragment cases, 24 schema cases, 33 asset cases, source flags/draw suppression and 4 depth/blend sequences |
+| Embedded asset validation | Four examples and all positive asset mutations: zero Khronos core errors; expected unsupported-extension/unused-material notices |
+| Independent rational audit above | Passed; no checker/evaluator was used to calculate expectations |
+| Regression sensitivity | Six in-memory checker mutations were rejected: negative-scale rejection, disabled depth writes, linear-light blending, multiplying edge alpha by the base factor, omitting zero-base suppression and discarding negative draw scales |
+| `npm test` | Passed: Toon checker, outline checker and all 8 converter/plugin tests |
+| `npm run build` | Passed; existing Vite warning for a chunk larger than 500 kB |
+| `npm run check:links` | Passed: 95 local documentation links, anchors and built-example asset links |
+| `git diff --check` | Passed |
 
-Original-MMD screenshots/state captures were not performed; the original
-Windows application was not executed. No pixel-equivalence claim follows from
-these checks. Browser/GPU tests were not run for this specification-only change;
-no runtime or rendering implementation was modified. The link checker does not
-test external URL availability. No post-merge verification is required.
+Original-MMD execution, screenshots/state captures and browser/GPU tests were
+not performed. The original executable was not available for rendering here;
+original-MMD comparison is optional for this specification revision. No runtime
+implementation changed. The link checker checks local paths/anchors and built
+assets, not external URL availability. No post-merge verification is required.

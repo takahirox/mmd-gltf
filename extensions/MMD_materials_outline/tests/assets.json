@@ -193,7 +193,11 @@
       1,
       2
     ],
-    "expectedError": "nonnegative"
+    "expectedScales": [
+      -1,
+      1,
+      2
+    ]
   },
   {
     "name": "nonfinite-scale",
@@ -609,7 +613,11 @@
         }
       }
     ],
-    "expectedError": "nonnegative"
+    "expectedScales": [
+      0,
+      -1,
+      0
+    ]
   },
   {
     "name": "sparse-index-bounds",
@@ -814,5 +822,51 @@
       }
     ],
     "expectedError": "finite"
+  },
+  {
+    "name": "signed-example",
+    "asset": "signed-scale.gltf",
+    "changes": [],
+    "expectedScales": [
+      -1,
+      0,
+      2
+    ]
+  },
+  {
+    "name": "signed-size",
+    "asset": "signed-scale.gltf",
+    "changes": [
+      {
+        "path": [
+          "materials",
+          0,
+          "extensions",
+          "MMD_materials_outline",
+          "sizeFactor"
+        ],
+        "value": -2
+      }
+    ],
+    "expectedScales": [
+      -1,
+      0,
+      2
+    ]
+  },
+  {
+    "name": "zero-scales",
+    "asset": "edge-scale.gltf",
+    "changes": [],
+    "edgeValues": [
+      0,
+      0,
+      0
+    ],
+    "expectedScales": [
+      0,
+      0,
+      0
+    ]
   }
 ]
