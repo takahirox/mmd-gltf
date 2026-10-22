@@ -51,10 +51,14 @@ texels, and preserves fractional opacity without guessing a cutoff.
 The converter does not infer alpha-mask intent. The plugin also supports authored
 core `MASK` and `alphaCutoff`.
 
-The extension is used, never required, so ordinary glTF viewers can load the
+Both extensions are used, never required, so ordinary glTF viewers can load the
 fallback. Geometry is the stored base pose, without bones/skins, SDEF evaluation,
-IK, grants, physics, animations or morphs. Outline/edge and shadow flags are kept
-in extras but not rendered. Additional UV ZW/unused sets and PMX-specific runtime
+IK, grants, physics, animations or morphs. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
+copied unchanged (defaults `[0,0,0,1]` and `1`). Signed per-vertex `edgeRatio`
+becomes a shared FLOAT/SCALAR `_MMD_EDGE_SCALE`, attached only to outlined
+primitives, omitted when every stored ratio is exactly one. Zero stays zero.
+Material size is never baked into geometry or ratios. Edge fields and shadow
+flags remain in extras; shadow flags have no runtime effect. Additional UV ZW/unused sets and PMX-specific runtime
 features are omitted with a conversion report. PMD, VMD and VPD are unsupported.
 Gene Light contains no shared/custom toon or sphere image; the generic conversion
 tests exercise those modes using synthetic source material configurations.
@@ -121,6 +125,114 @@ no resolver. Applications should dispose loaded materials/geometries, call the
 plugin's asynchronous `dispose()` for its texture views, and dispose any
 resolver-owned originals themselves.
 
+## Outline plugin and effect
+
+```ts
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MMDOutlinePlugin, MMDOutlineEffect } from './packages/three-mmd-outline';
+
+let outlinePlugin: MMDOutlinePlugin;
+const loader = new GLTFLoader();
+loader.register(parser => outlinePlugin = new MMDOutlinePlugin(parser));
+// Optionally also register MMDToonPlugin; outlines do not require Toon shading.
+const gltf = await loader.loadAsync('model.glb');
+scene.add(gltf.scene);
+const effect = new MMDOutlineEffect(renderer);
+renderer.setAnimationLoop(() => effect.render(scene, camera));
+// effect.enabled = false renders the ordinary base scene.
+// Before unloading: effect.release(gltf.scene); outlinePlugin!.dispose();
+// Dispose application-owned geometry/materials/textures as usual.
+// When finished with the effect: effect.dispose();
+```
+
+The [outline plugin](../packages/three-mmd-outline/index.ts) uses `beforeRoot`
+to validate declarations, payloads, triangle modes, POSITION/NORMAL, decoded
+FLOAT edge data (including unused vertices), buffer bounds/stride/alignment,
+sparse replacements and their strictly increasing indices. Suppression never
+bypasses validation. `afterRoot` uses GLTFLoader's final primitive/material
+associations, including cloned node instances and material groups. The custom
+semantic is preserved by GLTFLoader as `_mmd_edge_scale`; no source geometry or
+PBR material is replaced. The plugin accepts required outlines when declared
+in both arrays; omission of an optional plugin still leaves Toon/PBR independent.
+
+The [effect](../packages/three-mmd-outline/effect.ts) targets Three.js r186
+`WebGPURenderer`, both its WebGL2 TSL backend and native WebGPU. Initialize the
+renderer before calling `render`. Use default linear-sRGB working space and
+sRGB canvas output. It renders a complete base scene with `autoClear=true` on
+each call; viewport/scissor panes are supported. XR, logarithmic/reversed depth,
+external custom render pipelines and accumulation into an existing destination
+(`autoClear=false`) are outside this integration. Use an ordinary 2D linear
+render target if rendering offscreen. Dispose the effect before the renderer.
+Disposal restores no global hooks because hooks are scoped to each call and
+restored even on exceptions. `release(root)` frees hull materials for an unloaded
+subtree; `dispose()` frees all hull materials, targets and resolve materials.
+Plugin disposal removes loaded-scene outline records and its core alpha metadata.
+Application-owned resources remain application-owned.
+
+Hull vertices use original geometry, core POSITION/NORMAL morphs, and the
+inverse-transpose of the weighted joint-world/inverse-bind transform for skinning.
+Raw weights (including additional core joint/weight sets) are kept independently
+of GLTFLoader's base-material weight normalization and sampled from owned float
+palettes. A skinned mesh's node transform is ignored, including reflected/singular node
+transforms. Unskinned reflected nodes use corrected winding; hardware instances
+also handle reflected and singular instance transforms. Mixed reflected hardware
+instances use equivalent fragment front-face rejection because GPU fixed-function
+winding is per draw. Other hulls use fixed-function front-face culling. There is
+no face-normal flip, triangle sorting, texture-alpha discard or depth bias.
+LESS_EQUAL and depth writes apply even to partial edge alpha. Source material
+visibility and geometry groups remain in force. The exact draft expansion uses
+the active viewport's render-target pixel width/height, never CSS dimensions or
+the full canvas size. Signed/zero scales and the `1e-12` direction threshold are
+preserved. The current supported numeric envelope is FLOAT attribute magnitudes up to
+`1e8`, size/product magnitudes up to `1e8`, and transform entries/morph weights
+up to `1e4`. Owned palettes are at most 1024 by 2048 texels. Larger ranges report unsupported numeric range; storage is never
+clamped. Normal evaluation uses scaled cofactors (equivalent to normalized
+inverse-transpose) to avoid tiny-determinant division and length overflow.
+
+Material-factor alpha comes from the **active** model. For core OPAQUE materials,
+GLTFLoader discards the source opacity; the plugin preserves it in
+`material.userData.mmdBaseFactorAlpha`. Update that field when changing its
+factor. For core MASK/BLEND, update `material.opacity` as usual. Active
+MMDToonPlugin materials expose their current factor through the JSON-compatible
+`userData.mmdMaterialModel` / `mmdDiffuseFactor` binding, which survives loader
+cloning. Unsupported/inactive Toon JSON never overrides core alpha. Edge alpha
+is independent; exactly zero diffuse factor suppresses it, while nonzero partial
+factors do not multiply it. Texture opacity and alphaMode coverage do not enter
+this test.
+
+For another material model, register
+`new MMDOutlinePlugin(parser, { getDiffuseAlpha: material => currentFactor(material) })`.
+The callback must return the current finite factor before texture/coverage
+handling; return `1` if the model defines no factor. Missing integration reports
+an error. For procedural geometry or application-created groups, use exported
+`setOutlineRecords(mesh, [{ payload: { colorFactor, sizeFactor }, materialIndex: 0,
+getDiffuseAlpha: material => currentFactor(material) }])`; remove these with
+`removeOutlineRecords(mesh)`. The geometry must have finite POSITION/NORMAL and
+triangle indices; optional scalar scales use `_MMD_EDGE_SCALE` (or loader's lower
+case spelling). `payload` factors can be updated without expanding geometry.
+
+Encoded RGB compositing uses scoped offscreen/resolve passes:
+
+1. Render ordinary base materials into a linear half-float target, preserving
+   the renderer's sample count. Base shaders and Toon arithmetic remain unchanged.
+2. Unpremultiply, apply the ordinary base output tone/color transfer once, and
+   premultiply in sRGB encoded components into a **NoColorSpace** half-float target.
+   Copy the retained depth with an ALWAYS fullscreen depth write.
+3. Draw unlit hulls with straight clamped source RGBA, normal source-over,
+   LESS_EQUAL and depth writes. Neither edge RGB nor destination RGB is sRGB
+   decoded for blending. This target bypasses automatic sRGB framebuffer blending.
+4. Resolve encoded color/depth to the caller's viewport. Unpremultiply and decode
+   RGB once, then premultiply for Three's output boundary, whose normal transfer
+   preserves the encoded result. Alpha never receives a color transfer.
+
+MSAA uses the renderer's sample count on both internal targets. The base depth
+copy uses its resolved depth; sample-specific base depth at coverage boundaries
+is not retained. Focused conformance uses one sample (`antialias:false`) to avoid
+coverage/resolve ambiguity. Backend floating-point precision and transparent
+primitive submission order remain ordinary rasterization limits. Native WebGPU
+uses the same TSL graph; it is an explicit validation skip without an adapter.
+See the [actual GPU and browser measurements](validation.md#issue-21-outline-pipeline).
+
 ## Direct PMX comparison
 
 The two scenes share one scissored `WebGPURenderer`, one perspective camera and
@@ -140,8 +252,10 @@ also waits for all original images before reporting ready. The loader already
 reflects Z/winding, so only a uniform `0.08` scale is applied. Neither model is
 independently centered, rotated or fitted to hide differences. The camera uses
 the converted model's bounds for both views. No animation helper, IK/physics
-stepping, morph updates or outline effect is used; reference outline flags are
-also disabled. See the [visual investigation](comparison.md) for captures,
+stepping or morph updates are used. The Outline menu toggles the published
+three-mmd outline effect on the PMX pane and the v0.1 effect on the glTF pane.
+The former uses its legacy thickness law; the latter uses the draft viewport
+equation and encoded blending. Differences are labeled, not compensated away. See the [visual investigation](comparison.md) for captures,
 remaining shading differences and reproduction steps. The direct PMX reference
 is not proof of equivalence to the MikuMikuDance executable.
 

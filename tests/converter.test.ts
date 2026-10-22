@@ -10,6 +10,7 @@ import { validateBytes } from 'gltf-validator';
 import { fetchGene } from '../tools/fetch-gene';
 import { convertModel, convertPMX, parsePMX } from '../tools/pmx-to-gltf';
 import { validatePayload, EXTENSION_NAME } from '../packages/three-mmd-toon/payload';
+import { validatePayload as validateOutline } from '../packages/three-mmd-outline/payload';
 import manifest from '../tools/gene-light-manifest.json';
 
 export function glbJSON(bytes: Uint8Array) {
@@ -58,6 +59,15 @@ test('pinned Gene conversion is deterministic, valid, attributed and has complet
     assert.ok(m.pbrMetallicRoughness.baseColorTexture);
     assert.equal(ext.baseTexture!.index, m.pbrMetallicRoughness.baseColorTexture.index, 'share source texture bytes');
     assert.equal(m.doubleSided ?? false, !!(pmx.materials[i].flag & 1));
+    const outline = m.extensions.MMD_materials_outline;
+    assert.equal(outline !== undefined, !!(pmx.materials[i].flag & 0x10));
+    if (outline) {
+      validateOutline(outline);
+      assert.deepEqual(outline.colorFactor, pmx.materials[i].edgeColor);
+      assert.equal(outline.sizeFactor, pmx.materials[i].edgeSize);
+      const attribute = primitives[i].getAttribute('_MMD_EDGE_SCALE');
+      if (attribute) assert.deepEqual([...attribute.getArray()!], pmx.vertices.map(v => v.edgeRatio ?? 1));
+    }
     assert.equal(m.alphaMode ?? 'OPAQUE', [5, 8, 9, 10, 11, 12].includes(i) ? 'BLEND' : 'OPAQUE', 'opaque Gene surfaces must occlude rear triangles');
   }
   assert.notDeepEqual(json.materials[12].extensions[EXTENSION_NAME].diffuseFactor, json.materials[12].pbrMetallicRoughness.baseColorFactor);

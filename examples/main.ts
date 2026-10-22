@@ -2,10 +2,13 @@ import { WebGPURenderer, Scene, Color, PerspectiveCamera, DirectionalLight, Box3
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MMDLoader } from '@takahirox/three-mmd/loaders/MMDLoader.js';
+import { MMDOutlineEffect as ReferenceOutlineEffect } from '@takahirox/three-mmd/effects/MMDOutlineEffect.js';
+import { MMDOutlinePlugin, MMDOutlineEffect } from '../packages/three-mmd-outline';
 import { MMDToonPlugin, createToonLighting } from '../packages/three-mmd-toon';
 
 const status = document.querySelector<HTMLParagraphElement>('#status')!;
 const select = document.querySelector<HTMLSelectElement>('#material')!;
+const outlines = document.querySelector<HTMLSelectElement>('#outlines')!;
 const viewpoint = document.querySelector<HTMLSelectElement>('#viewpoint')!;
 const viewport = document.querySelector<HTMLElement>('#viewport')!;
 const panes = ['pmx', 'gltf'].map((id) => document.querySelector<HTMLElement>(`#${id}-pane`)!);
@@ -19,6 +22,7 @@ async function start() {
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.autoClear = true;
   viewport.prepend(renderer.domElement);
+  const effects = [new ReferenceOutlineEffect(renderer), new MMDOutlineEffect(renderer)];
   const scenes = [new Scene(), new Scene()];
   const direction = new Vector3(-0.3, 0.8, 1).normalize();
   for (const scene of scenes) {
@@ -55,9 +59,8 @@ async function start() {
     const [reference] = await Promise.all([new MMDLoader(manager).loadAsync(`${base}Gene_light.pmx`), imagesReady]);
     // MMDLoader already reflects PMX Z and winding, exactly as the converter's parser does.
     reference.scale.setScalar(0.08);
-    // No helper, mixer, IK, physics or morph updates. No MMDOutlineEffect is instantiated.
+    // Static reference: no helper, mixer, IK, physics or morph updates.
     reference.material.forEach((material) => {
-      material.userData.outlineParameters.visible = false;
       material.toneMapped = false;
     });
     scenes[0].add(reference);
@@ -66,7 +69,8 @@ async function start() {
   const gltfPromise = tracked(1, async () => {
     const loader = new GLTFLoader();
     loader.register((parser) => new MMDToonPlugin(parser, { lighting }));
-    const [toon, fallback] = await Promise.all([loader.loadAsync(`${base}model.glb`), new GLTFLoader().loadAsync(`${base}model.glb`)]);
+    loader.register((parser) => new MMDOutlinePlugin(parser));
+    const [toon, fallback] = await Promise.all([loader.loadAsync(`${base}model.glb`), new GLTFLoader().register(parser => new MMDOutlinePlugin(parser)).loadAsync(`${base}model.glb`)]);
     fallback.scene.visible = false;
     scenes[1].add(toon.scene, fallback.scene);
     return { toon, fallback };
@@ -94,7 +98,7 @@ async function start() {
   new ResizeObserver(resize).observe(viewport);
   resize();
   for (const scene of scenes) await renderer.compileAsync(scene, camera);
-  select.disabled = viewpoint.disabled = false;
+  select.disabled = viewpoint.disabled = outlines.disabled = false;
   const backend = ('isWebGPUBackend' in renderer.backend && renderer.backend.isWebGPUBackend) ? 'WebGPU' : 'WebGL2';
   const describeBounds = (object: Object3D) => {
     const box = new Box3().setFromObject(object);
@@ -102,13 +106,17 @@ async function start() {
   };
   const info = { backend, frames: 0, mode: 'toon', meshes: 0, ready: true,
     reference: { loader: 'MMDLoader', materials: reference.material.length, scale: reference.scale.x, bounds: describeBounds(reference),
-      outlines: false, morphsActive: reference.morphTargetInfluences?.some((value) => value !== 0) ?? false },
+      outlines: true, morphsActive: reference.morphTargetInfluences?.some((value) => value !== 0) ?? false },
     gltf: { bounds: describeBounds(toon.scene) }, cameras: [] as number[][] };
   toon.scene.traverse((object: Object3D) => { if ((object as Mesh).isMesh) info.meshes++; });
   Object.assign(window, { mmdExample: info });
   function report() { status.textContent = `Ready · ${backend} · ${select.value === 'toon' ? 'MMD toon' : 'PBR fallback'}`; }
   report();
   statuses.forEach((element) => { element.textContent = 'Ready · Static base pose'; });
+  outlines.addEventListener('change', () => {
+    effects.forEach(effect => { effect.enabled = outlines.value === 'on'; });
+    info.reference.outlines = outlines.value === 'on';
+  });
   select.addEventListener('change', () => {
     toon.scene.visible = select.value === 'toon';
     fallback.scene.visible = !toon.scene.visible;
@@ -122,12 +130,12 @@ async function start() {
     info.cameras = [];
     panes.forEach((pane, index) => {
       const rect = pane.getBoundingClientRect();
-      const x = rect.left - container.left, y = container.bottom - rect.bottom;
+      const x = rect.left - container.left, y = rect.top - container.top;
       camera.aspect = rect.width / rect.height;
       camera.updateProjectionMatrix();
       renderer.setViewport(x, y, rect.width, rect.height);
       renderer.setScissor(x, y, rect.width, rect.height);
-      renderer.render(scenes[index], camera);
+      effects[index].render(scenes[index], camera);
       info.cameras.push([...camera.position.toArray(), ...controls.target.toArray(), camera.aspect, camera.fov]);
     });
     renderer.setScissorTest(false);
