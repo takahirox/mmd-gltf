@@ -2,7 +2,7 @@
 <html lang="en">
 <head><link rel="icon" href="data:,"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Synthetic BDEF rig · MMD glTF</title><link rel="stylesheet" href="./style.css"></head>
 <body><main>
-  <header><div><span class="eyebrow">PMX → CORE glTF</span><h1>VPD bone-offset poses</h1></div><a href="./">Gene Light comparison</a></header>
+  <header><div><span class="eyebrow">PMX → CORE glTF</span><h1>VPD poses and VMD bone motion</h1></div><a href="./">Gene Light comparison</a></header>
   <p id="status" role="status">Loading converter-produced rig…</p>
   <div class="menus">
     <label>Rig <select id="rig-model" disabled><option value="box">Box · parent/child chain · 0.2 m/unit</option><option value="wedge">Sheared wedge · branched hierarchy · 0.125 m/unit</option></select></label>
@@ -16,9 +16,22 @@
   </div>
   <label>Explicit binding map: JSON object from zero-based VPD record ordinal to PMX bone index (required for duplicate names)
     <textarea id="rig-map" rows="2" disabled>{"2": 0, "3": 259}</textarea></label>
+  <fieldset><legend>Solver-free VMD bone motion</legend><div class="menus">
+    <label>Motion <select id="motion-sample"><option value="a">Motion A · nonlinear chain</option><option value="b">Motion B · branched motion</option><option value="local">Local VMD</option></select></label>
+    <label>Source <select id="motion-source"><option value="bytes">VMD bytes</option><option value="glb">Retained-curve GLB</option><option value="gltf">Retained-curve glTF</option></select></label>
+    <label>Local VMD <input id="motion-file" type="file" accept=".vmd"></label>
+    <label>Unmatched tracks <select id="motion-unmatched"><option value="error">Fail (default)</option><option value="ignore">Ignore explicitly</option></select></label>
+    <button id="motion-load">Load motion</button><button id="motion-play">Play</button><button id="motion-pause">Pause</button><button id="motion-reset">Reset motion to rest</button>
+    <label>Time (seconds) <input id="motion-time" type="number" min="0" max="1" step="0.0001" value="0"></label>
+    <label><input id="motion-loop" type="checkbox">Loop</label>
+  </div><label>Explicit VMD binding: hex byte-name key → source PMX bone index
+    <textarea id="motion-map" rows="2">{"93af96bc2e8d9c205b6475706c6963":0,"7469705f626f756e646172795f3135":259}</textarea></label>
+    <p id="motion-state">No motion</p>
+  </fieldset>
   <p id="rig-state">Rest state</p><section id="rig-viewport" aria-label="Interactive synthetic BDEF rig"></section>
-  <footer><p>Original synthetic PMX rigs and VPD poses by mmd-gltf contributors; authored in this repository, no third-party assets. Both rigs retain BDEF1/2/4, duplicate exact names, forward parents, two materials and joint 259. The wedge has different geometry and hierarchy. Apply replaces all joints relative to original rest; omitted bones return to rest. Reapplication never accumulates offsets. Reset also works after loading a posed GLB with the reusable API.</p>
-    <p>Solver-free bone offsets only. SDEF/QDEF, deformation-layer ordering, IK/append, physics, morphs and VMD remain unsupported. Raw offsets do not reproduce full MMD poses. Original-MMD fidelity has not been measured. A pose's parent filename is informational and is never fetched.</p>
+  <footer><p>Original synthetic PMX rigs, VPD poses and VMD motions by mmd-gltf contributors; authored in this repository, no third-party assets. Both rigs retain BDEF1/2/4, duplicate exact names, forward parents, two materials and joint 259. The wedge has different geometry and hierarchy. Apply replaces all joints relative to original rest; omitted bones return to rest. Reapplication never accumulates offsets. Reset also works after loading a posed GLB with the reusable API.</p>
+    <p>Solver-free bone offsets only. SDEF/QDEF, deformation-layer ordering, IK/append, physics, morphs and non-bone VMD execution remain unsupported. VMD uses continuous destination-key curves, including adjacent frames; original-MMD equivalence of this project profile is unresolved. Applying VPD pauses motion; playing or seeking motion restores original-rest ownership. Converted files include approximate core TRS animation for ordinary loaders. A pose's parent filename and motion's model name are informational and never fetched.</p>
+    <p><a href="./vmd/motion-a.vmd">Motion A VMD</a> · <a href="./vmd/motion-b.vmd">Motion B VMD</a> · <a href="./vmd/box/a.glb">Motion box GLB</a> · <a href="./vmd/wedge/b.gltf">Motion wedge glTF</a> · <a href="./vmd/conversion.json">Motion conversion report</a></p>
     <p><a href="./vpd/box/source.pmx">Box PMX</a> · <a href="./vpd/wedge/source.pmx">Wedge PMX</a> · <a href="./vpd/pose-a.vpd">Pose A</a> · <a href="./vpd/pose-b.vpd">Pose B</a> · <a href="./vpd/box/a.glb">Posed box GLB</a> · <a href="./vpd/wedge/b.gltf">Posed wedge glTF</a> · <a href="./vpd/conversion.json">Conversion report</a></p>
   </footer>
 </main><script type="module" src="./rig.ts"></script></body>

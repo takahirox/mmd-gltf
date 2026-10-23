@@ -1,3 +1,4 @@
+import { releaseMotion } from './ownership';
 import { Matrix4, Quaternion, Vector3, type Object3D, type SkinnedMesh } from 'three';
 import { bindPose, resolvePose, validatePoseModel, type PoseModel, type RestBone, type VPD, type BindingOptions, type PoseBinding } from '../mmd-vpd';
 export { parseVPD, VPD_QUATERNION_TOLERANCE } from '../mmd-vpd';
@@ -60,8 +61,22 @@ export function bindVPD(rig: VPDRig, pose: VPD, options: BindingOptions = {}): B
   const result = Object.freeze({ unmatched: Object.freeze([...binding.unmatched]), appliedRecords: binding.assignments.length });
   bindings.set(result, { rig, pose: binding }); return result;
 }
-function write(rig: VPDRig, binding?: PoseBinding) {
-  const s = state(rig), resolved = resolvePose(s.model, binding);
+/** Snapshot of validated ORIGINAL rest metadata; current transforms are never captured. */
+export function getVPDModel(rig: VPDRig): PoseModel { return structuredClone(state(rig).model); }
+/** Shared validated local-pose writer for solver-free VPD/VMD. */
+export function applyResolvedPose(rig: VPDRig, resolved: RestBone[], motion = false) {
+  const s = state(rig);
+  if (
+    resolved.length !== s.model.bones.length ||
+    new Set(resolved.map(b => b.index)).size !== resolved.length ||
+    resolved.some(b =>
+      !s.nodes.has(b.index) || b.translation.length !== 3 || b.rotation.length !== 4 ||
+      b.scale.length !== 3 || b.scale.some(v => v !== 1) ||
+      Math.abs(Math.hypot(...b.rotation) - 1) > 1e-5 ||
+      [...b.translation, ...b.rotation, ...b.scale].some(v => !Number.isFinite(v) || !Number.isFinite(Math.fround(v)))
+    )
+  ) throw new Error('VPD/VMD: invalid resolved pose');
+  if (!motion) releaseMotion(rig.root);
   // All validation and resolution finishes before the first mutation.
   for (const b of resolved) {
     const node = s.nodes.get(b.index)!;
@@ -73,6 +88,6 @@ function write(rig: VPDRig, binding?: PoseBinding) {
 export function applyVPD(rig: VPDRig, binding: BoundVPD) {
   const bound = bindings.get(binding);
   if (!bound || bound.rig !== rig) throw new Error('VPD: binding belongs to a different model instance; bind again for this rig');
-  write(rig, bound.pose);
+  applyResolvedPose(rig, resolvePose(state(rig).model, bound.pose));
 }
-export function resetVPD(rig: VPDRig) { write(rig); }
+export function resetVPD(rig: VPDRig) { applyResolvedPose(rig, resolvePose(state(rig).model)); }

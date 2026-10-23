@@ -72,3 +72,20 @@ for (const [name, source, scale] of [['box', 'bdef.pmx', 0.2], ['wedge', 'vpd-we
 }
 await writeFile('public/vpd/conversion.json', JSON.stringify({ attribution: 'Original synthetic assets by mmd-gltf contributors; authored in this repository.', cases: poseEvidence }, null, 2) + '\n');
 console.log('Generated two VPD rigs × rest/two poses in GLB and unpacked glTF.');
+
+// Original VMD byte fixtures and both GLB/unpacked glTF curve-preserving conversions.
+await rm('public/vmd', { recursive: true, force: true });
+await mkdir('public/vmd', { recursive: true });
+const motionEvidence: object[] = [];
+for (const motion of ['a','b']) for (const suffix of ['.vmd','-map.json']) await copyFile(`tests/fixtures/motion-${motion}${suffix}`,`public/vmd/motion-${motion}${suffix}`);
+for (const [name,source,scale] of [['box','bdef.pmx',0.2],['wedge','vpd-wedge.pmx',0.125]] as const) {
+  await mkdir(`public/vmd/${name}`,{recursive:true});
+  for(const motion of ['a','b']) {
+    const result=await convertModel(parsePMX(await readFile(`tests/fixtures/${source}`)),'.',{mode:'bdef',scale,vmd:await readFile(`tests/fixtures/motion-${motion}.vmd`),vmdBinding:{mapping:JSON.parse(await readFile(`tests/fixtures/motion-${motion}-map.json`,'utf8'))}});
+    result.document.getRoot().setExtras({...result.document.getRoot().getExtras(),attribution:'Original synthetic rigs and VMD motions by mmd-gltf contributors, Issue #29; no third-party assets.',changes:'Solver-free bone motion with retained curves and approximate core TRS fallback; original rest and binds retained. No original-MMD parity claim.'});
+    for(const extension of ['glb','gltf']) await result.io.write(`public/vmd/${name}/${motion}.${extension}`,result.document);
+    motionEvidence.push({rig:name,motion,scale,warnings:result.warnings,sha256:createHash('sha256').update(await readFile(`public/vmd/${name}/${motion}.glb`)).digest('hex')});
+  }
+}
+await writeFile('public/vmd/conversion.json',JSON.stringify({attribution:'Original synthetic fixtures by mmd-gltf contributors; no third-party assets.',cases:motionEvidence},null,2)+'\n');
+console.log('Generated two VMD motions × two rigs, retaining curves with approximate core TRS fallback.');
