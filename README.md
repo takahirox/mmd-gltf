@@ -1,6 +1,6 @@
 # mmd-gltf
 
-A static or BDEF PMX → glTF pipeline, Three.js loader plugins and outline effect for
+A static, BDEF or mixed SDEF PMX → glTF pipeline, Three.js loader plugins and outline effect for
 the [MMD_materials_toon](extensions/MMD_materials_toon/README.md) and
 [MMD_materials_outline](extensions/MMD_materials_outline/README.md) v0.1 drafts.
 The converter uses `mmd-parser` and glTF Transform, without Three.js scene
@@ -86,8 +86,12 @@ other-material alpha binding. See the [outline API and lifecycle](docs/pipeline.
 
 The PMX converter defaults to a static base pose. Opt in with `--mode bdef`
 to preserve BDEF1/2/4 through core glTF skins, including exact source bone identity.
+Use `--mode sdef` for mixed BDEF/SDEF and register `MMDSDEFPlugin` for accurate
+deformation; ordinary loaders use an approximate BDEF2 fallback. See the
+[SDEF draft](extensions/MMD_skinning_sdef/README.md) and
+[runtime/export API](docs/pipeline.md#mixed-sdef-conversion-and-runtime).
 The [synthetic rig](examples/rig.html) demonstrates the converter output with
-Toon, core PBR and Outline. SDEF/QDEF, deformation layers, IK/append, physics,
+Toon, core PBR and Outline. QDEF/PMX 2.1, deformation layers, IK/append, physics,
 non-vertex morph evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs convert in static and BDEF modes; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
 see the [VPD contract and APIs](docs/pipeline.md#vpd-bone-offsets). The outline effect
 also accepts core POSITION/NORMAL morph deformation from other assets.

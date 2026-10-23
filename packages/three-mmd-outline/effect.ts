@@ -2,13 +2,14 @@ import {
   WebGPURenderer, NodeMaterial, RenderTarget, DepthTexture, QuadMesh, BackSide, DoubleSide, DataTexture, RGBAFormat, FloatType,
   LessEqualDepth, AlwaysDepth, NoBlending, NormalBlending, NoToneMapping, SRGBColorSpace,
   NoColorSpace, HalfFloatType, NearestFilter, Vector2, Vector3, Vector4, Matrix4, Quaternion,
-  type Scene, type Camera, type Object3D, type Mesh, type SkinnedMesh, type InstancedMesh, type NodeBuilder, type UniformNode, type Node, type ArrayNode,
+  type Scene, type Camera, type Object3D, type Mesh, type SkinnedMesh, type InstancedMesh, type NodeBuilder, type UniformNode, type Node,
 } from 'three/webgpu';
 import { Fn, If, Discard, equal, determinant, mat3, mat4, frontFacing, float, vec4, texture, uniform, positionLocal, normalLocal, attribute, morphReference,
-  buffer, element, cameraProjectionMatrix, textureLoad, int, ivec2, uvec4, vertexIndex, instanceIndex, sRGBTransferEOTF, renderOutput } from 'three/tsl';
+  cameraProjectionMatrix, textureLoad, int, ivec2, uvec4, vertexIndex, instanceIndex, reference, sRGBTransferEOTF, renderOutput } from 'three/tsl';
 import { getOutlineRecords, type OutlineRecord } from './metadata';
 import { outlineClip } from './nodes';
 import { validatePayload } from './payload';
+import { sdefSkinning, boneMatrices } from '../three-mmd-sdef/nodes';
 
 /** Core morphs only; the draft requires inverse-transpose of the weighted skin transform,
  * whereas Three's ordinary skin-normal path multiplies normals by the skin matrix. */
@@ -43,7 +44,8 @@ function createHull(mesh: Mesh, record: OutlineRecord, viewport: UniformNode<'ve
   material.toneMapped = material.fog = false;
   material.name = 'MMD_materials_outline hull';
   const skinned = (mesh as SkinnedMesh).isSkinnedMesh && mesh.geometry.hasAttribute('skinIndex') && mesh.geometry.hasAttribute('skinWeight');
-  const world = uniform(mesh.matrixWorld);
+  const world = uniform(mesh.matrixWorld.clone());
+  const sdef = skinned && mesh.geometry.hasAttribute('mmdSkinningType');
   const instancePalette = (mesh as InstancedMesh).isInstancedMesh ? palette((mesh as InstancedMesh).instanceMatrix.array) : null;
   const instance = instancePalette ? mat4(...[0, 1, 2, 3].map(i => instancePalette.load(instanceIndex.mul(4).add(i))) as [Node<'vec4'>, Node<'vec4'>, Node<'vec4'>, Node<'vec4'>]) : null;
   const sets = record.skinAttributes ?? [];
@@ -65,28 +67,37 @@ function createHull(mesh: Mesh, record: OutlineRecord, viewport: UniformNode<'ve
     material.side = DoubleSide;
     material.forceSinglePass = true;
   }
-  material.vertexNode = Fn(() => {
+  material.vertexNode = Fn((builder) => {
     let deformation: Node<'mat4'> = world;
     if (skinned) {
-      // r186 typings omit BufferNode's array-element interface.
-      const bones = buffer((mesh as SkinnedMesh).skeleton.boneMatrices, 'mat4', (mesh as SkinnedMesh).skeleton.bones.length) as unknown as ArrayNode<'mat4'>;
+      const bones = boneMatrices(builder, mesh as SkinnedMesh);
       const influences = skinPalette ? sets.map((_, i) => ({
         joints: uvec4(skinPalette!.load(vertexIndex.mul(sets.length * 2).add(i * 2))),
         weights: skinPalette!.load(vertexIndex.mul(sets.length * 2).add(i * 2 + 1)),
       })) : [{ joints: attribute('skinIndex', 'uvec4'), weights: attribute('skinWeight', 'vec4') }];
       let weighted: Node<'mat4'> = mat4(vec4(0), vec4(0), vec4(0), vec4(0));
       for (const { joints, weights } of influences) {
-        weighted = weighted.add((element(bones, joints.x) as Node<'mat4'>).mul(weights.x))
-          .add((element(bones, joints.y) as Node<'mat4'>).mul(weights.y))
-          .add((element(bones, joints.z) as Node<'mat4'>).mul(weights.z))
-          .add((element(bones, joints.w) as Node<'mat4'>).mul(weights.w));
+        weighted = weighted.add(bones.element(joints.x).mul(weights.x))
+          .add(bones.element(joints.y).mul(weights.y))
+          .add(bones.element(joints.z).mul(weights.z))
+          .add(bones.element(joints.w).mul(weights.w));
       }
-      deformation = weighted;
+      deformation = weighted.mul(reference('bindMatrix', 'mat4', undefined));
     } else if (instance) {
       deformation = world.mul(instance);
     }
     const scale = mesh.geometry.hasAttribute('_mmd_edge_scale') ? attribute('_mmd_edge_scale', 'float')
       : mesh.geometry.hasAttribute('_MMD_EDGE_SCALE') ? attribute('_MMD_EDGE_SCALE', 'float') : float(1);
+    if (sdef) {
+      const clip = vec4().toVar();
+      If(attribute('mmdSkinningType', 'float').equal(1), () => {
+        sdefSkinning();
+        clip.assign(outlineClip(positionLocal, normalLocal, view.mul(world), cameraProjectionMatrix, size, scale, viewport));
+      }).Else(() => {
+        clip.assign(outlineClip(positionLocal, normalLocal, view.mul(deformation), cameraProjectionMatrix, size, scale, viewport));
+      });
+      return clip;
+    }
     return outlineClip(positionLocal, normalLocal, view.mul(deformation), cameraProjectionMatrix, size, scale, viewport);
   })();
   // Raw encoded straight source; NoColorSpace target disables sRGB framebuffer blending.
@@ -96,7 +107,7 @@ function createHull(mesh: Mesh, record: OutlineRecord, viewport: UniformNode<'ve
     }
     return color;
   })();
-  return { material, size, color, skinned, record, instancePalette, textures: [instancePalette?.map, skinPalette?.map].filter((t): t is DataTexture => !!t), instanceVersion: -1, geometry: mesh.geometry };
+  return { material, world, size, color, skinned, record, instancePalette, textures: [instancePalette?.map, skinPalette?.map].filter((t): t is DataTexture => !!t), instanceVersion: -1, geometry: mesh.geometry };
 }
 
 /** Base in linear light → encoded premultiplied destination → straight-alpha hulls → output resolve.
@@ -243,6 +254,7 @@ export class MMDOutlineEffect {
           // Core skin matrices already contain jointWorld * inverseBind; mesh M is ignored,
           // including the renderer's mesh determinant winding correction.
           const savedWorld = mesh.matrixWorld.clone();
+          entry.world.value.copy(savedWorld);
           try {
             if (skinned) { (mesh as SkinnedMesh).skeleton.update(); mesh.matrixWorld.identity(); }
             renderer.renderObject(object, scene, camera, geometry, entry.material, group, lights, clipping, 'mmd-outline');

@@ -7,18 +7,18 @@ import type { PMXModel } from './pmx-to-gltf';
 export const BDEF_WEIGHT_TOLERANCE = 1e-6;
 
 export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, meshNode: Node,
-  model: PMXModel, scale: number, warnings: string[]) {
+  model: PMXModel, scale: number, warnings: string[], allowSDEF = false) {
   const { bones, vertices } = model;
   if (!bones.length || bones.length > 65536) throw new Error('BDEF requires 1..65536 bones (core unsigned-short joint indices)');
   const unsupported = new Map<string, number[]>();
   vertices.forEach((v, i) => {
-    if (![0, 1, 2].includes(v.type!)) {
+    if (![0, 1, 2, ...(allowSDEF ? [3] : [])].includes(v.type!)) {
       const mode = v.type === 3 ? 'SDEF (3)' : v.type === 4 ? 'QDEF (4)' : `unknown (${v.type})`;
       if (!unsupported.has(mode)) unsupported.set(mode, []);
       unsupported.get(mode)!.push(i);
     }
   });
-  if (unsupported.size) throw new Error(`BDEF mode rejects unsupported skinning: ${[...unsupported].map(([mode, indices]) => `${mode}: ${indices.length} vertices [${indices.slice(0, 32).join(', ')}${indices.length > 32 ? ', …' : ''}]`).join('; ')}`);
+  if (unsupported.size) throw new Error(`${allowSDEF ? 'SDEF' : 'BDEF'} mode rejects unsupported skinning: ${[...unsupported].map(([mode, indices]) => `${mode}: ${indices.length} vertices [${indices.slice(0, 32).join(', ')}${indices.length > 32 ? ', …' : ''}]`).join('; ')}`);
 
   const positions = bones.map((bone, i) => {
     if (bone.position.length !== 3 || !bone.position.every(Number.isFinite)) throw new Error(`Bone ${i}: non-finite or invalid position`);
@@ -53,7 +53,7 @@ export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, mesh
       pmxRest: { ...rest[i], modelId, metersPerPMXUnit: scale },
     });
   });
-  const skin = doc.createSkin('PMX BDEF').setSkeleton(root);
+  const skin = doc.createSkin(allowSDEF ? 'PMX mixed BDEF/SDEF' : 'PMX BDEF').setSkeleton(root);
   const inverseBinds: number[] = [];
   bones.forEach((bone, i) => {
     (bone.parentIndex < 0 ? root : nodes[bone.parentIndex]).addChild(nodes[i]);
@@ -67,9 +67,18 @@ export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, mesh
   const joints = new Uint16Array(vertices.length * 4), weights = new Float32Array(vertices.length * 4);
   const adjusted: number[] = [];
   vertices.forEach((vertex, i) => {
-    const count = [1, 2, 4][vertex.type!];
+    const count = [1, 2, 4, 2][vertex.type!];
     const indices = vertex.skinIndices, values = vertex.skinWeights;
     if (!indices || !values || indices.length !== count || values.length !== count) throw new Error(`Vertex ${i}: malformed BDEF influences`);
+    if (vertex.type === 3) {
+      // Both ordered slots are meaningful even at endpoint weights. Never merge,
+      // reorder or replace a zero-weight SDEF joint with canonical padding.
+      if (indices.some(index => !Number.isInteger(index) || index < 0 || index >= bones.length)) throw new Error(`Vertex ${i}: invalid ordered SDEF bone`);
+      if (values.some(w => !Number.isFinite(w) || w < 0 || w > 1) || Math.abs(values[0] + values[1] - 1) > BDEF_WEIGHT_TOLERANCE) throw new Error(`Vertex ${i}: invalid SDEF weights`);
+      const total = values[0] + values[1];
+      joints.set(indices, i * 4); weights.set(values.map(w => w / total), i * 4);
+      return;
+    }
     const merged = new Map<number, number>();
     values.forEach((weight, j) => {
       if (!Number.isFinite(weight) || weight < 0) throw new Error(`Vertex ${i}: negative/non-finite weight`);

@@ -1,3 +1,4 @@
+import { MMDSDEFPlugin } from '../packages/three-mmd-sdef';
 import {
   WebGPURenderer,
   Scene,
@@ -33,7 +34,7 @@ import {
 } from '../packages/three-mmd-vmd';
 
 import { validWeight } from '../packages/mmd-morph';
-import { createMorphRig, getMorphModel, getMorphWeights, applyMorphWeights, resetMorphWeights, type MorphRig } from '../packages/three-mmd-morph';
+import { createMorphRig, getMorphModel, getMorphWeights, applyMorphWeights, resetMorphWeights, refreshDeformation, type MorphRig } from '../packages/three-mmd-morph';
 
 async function start() {
   const renderer = new WebGPURenderer({
@@ -98,6 +99,7 @@ async function start() {
     player?: VMDPlayer;
     toon?: MMDToonPlugin;
     outlines: MMDOutlinePlugin;
+    sdef?: MMDSDEFPlugin;
     diagnostics?: { unmatched: string[]; omitted: object };
   }
   let assets: Asset[] = [],
@@ -125,6 +127,24 @@ async function start() {
     seek.value = String(info.time);
     motionLabel.textContent = `${info.motion || 'No motion'} · ${info.time.toFixed(4)} s · ${info.playing ? 'Playing' : 'Paused'}`;
   };
+  const comparison = input('sdef-comparison');
+  const updateComparison = () => {
+    for (const a of assets) {
+      let changed = false;
+      a.scene.traverse(n => {
+        const mesh = n as Mesh;
+        const attr = mesh.geometry?.getAttribute('mmdSkinningType');
+        if (!attr) return;
+        changed = true;
+        if (!mesh.userData.sdefSelection) mesh.userData.sdefSelection = Array.from({length: attr.count}, (_, i) => attr.getX(i));
+        for (let i = 0; i < attr.count; i++) attr.setX(i, comparison.checked ? 0 : mesh.userData.sdefSelection[i]);
+        attr.needsUpdate = true;
+      });
+      if (changed) refreshDeformation(a.scene);
+    }
+    document.querySelector('#sdef-state')!.textContent = model.value.startsWith('sdef-') ? `Mixed BDEF/SDEF · ordered pairs · rigid joints · ${comparison.checked ? 'BDEF2 approximation' : 'SDEF enabled'} · original-MMD unmeasured` : 'Core BDEF rig';
+  };
+  comparison.onchange = updateComparison;
   const appearance = () => {
     assets.forEach((a, i) => {
       a.scene.visible = material.value === 'toon' ? i === 0 : i === 1;
@@ -142,6 +162,7 @@ async function start() {
     discardPlayer(a);
     effect.release(a.scene);
     scene.remove(a.scene);
+    a.sdef?.dispose();
     a.outlines.dispose();
     a.scene.traverse((n) => {
       const mesh = n as Mesh;
@@ -155,9 +176,10 @@ async function start() {
     await a.toon?.dispose();
   }
   async function loadAsset(url: string, toon: boolean): Promise<Asset> {
-    let toonPlugin: MMDToonPlugin | undefined, outlinePlugin: MMDOutlinePlugin | undefined;
+    let toonPlugin: MMDToonPlugin | undefined, outlinePlugin: MMDOutlinePlugin | undefined, sdefPlugin: MMDSDEFPlugin | undefined;
     const loader = new GLTFLoader()
       .register((p) => new MMDVMDPlugin(p))
+      .register((p) => (sdefPlugin = new MMDSDEFPlugin(p)))
       .register((p) => (outlinePlugin = new MMDOutlinePlugin(p)));
     if (toon) loader.register((p) => (toonPlugin = new MMDToonPlugin(p)));
     const loaded = await loader.loadAsync(url);
@@ -169,10 +191,12 @@ async function start() {
         player: getVMDPlayers(loaded)[0],
         toon: toonPlugin,
         outlines: outlinePlugin!,
+        sdef: sdefPlugin,
         diagnostics: loaded.parser.json.animations?.[0]?.extras?.vmd,
       };
     } catch (error) {
       await toonPlugin?.dispose();
+      sdefPlugin?.dispose();
       outlinePlugin?.dispose();
       throw error;
     }
@@ -191,10 +215,11 @@ async function start() {
     assets.forEach((a) => scene.add(a.scene));
     appearance();
     rebuildMorphControls();
+    updateComparison();
     for (const a of previous) await disposeAsset(a);
   }
   async function loadRig() {
-    const next = await loadPair(`${import.meta.env.BASE_URL}morph/${model.value}/rest.glb`);
+    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
     await replace(next);
     info.motion = '';
     info.rig = model.value;
@@ -265,7 +290,7 @@ async function start() {
           'Converted GLB/glTF sources are available for sample motions; use byte source for local VMD',
         );
       const next = await loadPair(
-        `${import.meta.env.BASE_URL}${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}.${motionSource.value}`,
+        `${import.meta.env.BASE_URL}${model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
       );
       next.forEach((a) => a.player!.seek(0));
       await replace(next);

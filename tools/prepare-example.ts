@@ -120,3 +120,33 @@ for (const [name,scale] of [['box',0.2],['wedge',0.125]] as const) {
 }
 await writeFile('public/morph/conversion.json',JSON.stringify({attribution:'Original synthetic Issue #31 fixtures by mmd-gltf contributors.',cases:morphEvidence},null,2)+'\n');
 console.log('Generated morph variants of both rigs, combined motions and morph-only motion in GLB and unpacked glTF.');
+
+// Issue #33: mixed SDEF variants retain both combined motions and both VPD poses.
+await rm('public/sdef', { recursive: true, force: true });
+const sdefEvidence: object[] = [];
+for (const [name, scale] of [['box', 0.2], ['wedge', 0.125]] as const) {
+  const output = `public/sdef/${name}`;
+  await mkdir(output, { recursive: true });
+  const source = await readFile(`tests/fixtures/sdef-${name}.pmx`);
+  await writeFile(`${output}/source.pmx`, source);
+  for (const sample of ['rest', 'a', 'b', 'only', 'legacy-a', 'legacy-b', 'pose-a', 'pose-b']) {
+    const pose = sample.startsWith('pose-') ? sample.slice(-1) : undefined;
+    const motion = sample === 'rest' || pose ? undefined : sample.slice(-1);
+    const legacy = sample.startsWith('legacy-');
+    const result = await convertModel(parsePMX(source), '.', {
+      mode: 'sdef', scale,
+      vpd: pose ? await readFile(`tests/fixtures/pose-${pose}.vpd`) : undefined,
+      vpdEncoding: pose === 'b' ? 'utf-8' : 'shift_jis',
+      vpdBinding: { mapping: pose ? JSON.parse(await readFile(`tests/fixtures/pose-${pose}-map.json`, 'utf8')) : undefined },
+      vmd: motion ? await readFile(`tests/fixtures/${sample === 'only' ? 'morph-only' : `${legacy ? 'motion' : 'combined'}-${motion}`}.vmd`) : undefined,
+      vmdBinding: { mapping: motion && sample !== 'only' ? JSON.parse(await readFile(`tests/fixtures/motion-${motion}-map.json`, 'utf8')) : undefined,
+        morphMapping: legacy ? undefined : { '8fce82a2': 1 }, morphUnmatched: legacy ? 'ignore' : 'error' },
+      vmdSampling: { translationTolerance: 2e-8, rotationTolerance: 2e-7 },
+    });
+    result.document.getRoot().setExtras({ ...result.document.getRoot().getExtras(), attribution: 'Original synthetic SDEF derivatives by mmd-gltf contributors, Issue #33. Based on the repository box/wedge rigs; no third-party model assets. No original-MMD fidelity claim.' });
+    for (const extension of ['glb', 'gltf']) await result.io.write(`${output}/${sample}.${extension}`, result.document);
+    sdefEvidence.push({ rig: name, sample, scale, warnings: result.warnings, sha256: createHash('sha256').update(await readFile(`${output}/${sample}.glb`)).digest('hex') });
+  }
+}
+await writeFile('public/sdef/conversion.json', JSON.stringify({ cases: sdefEvidence }, null, 2) + '\n');
+console.log('Generated both mixed SDEF rigs, combined motions and VPD poses in GLB/glTF.');

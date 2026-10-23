@@ -162,3 +162,26 @@ paths. Raster limits remain two encoded levels and 128 mismatched pixels out of
 160×160. Browser lifecycle tests additionally cover visible manual weight changes,
 seek/reset, play/pause/loop, switching, local VMD ambiguity/recovery, morph-only
 motion, VPD weight preservation and disposal.
+
+## Issue #33 mixed SDEF variants
+
+`sdef-box.pmx` and `sdef-wedge.pmx` are original synthetic derivatives of the
+existing distinct box/branched wedge families, authored by mmd-gltf contributors.
+Regenerate with `npx tsx tools/synthetic-sdef.ts`; the generator deliberately keeps
+the earlier rejection-only `sdef.pmx` unchanged. Each new variant has 24 vertices,
+260 joints, two materials and the existing five source morphs (four vertex
+POSITION targets and one unsupported group). Every quad has BDEF1 followed by
+SDEF with ordered [259,2] pairs and X weights .25, 0, 1. The first face has zero
+C/R0/R1; subsequent faces have nonzero asymmetric values. Scale is 0.2 m/unit for
+the box, 0.125 m/unit for the wedge; extents are bounded below one metre.
+
+Both combined VMD files and both VPD files are reused with their existing exact
+name maps. `tests/sdef-oracle.ts` derives transforms from independent scalar
+VMD/VPD authoring predictions, restates source geometry and uses an expanded
+center correction. No runtime SDEF evaluator, loaded joints or emitted positions
+supply expectations. The standalone semantic corpus also has a one-metre arc:
+identity/90-degree Z palettes give (.7071067812,.7071067812,0), whereas BDEF2
+produces (.5,.5,0). This separation is far above ten times the 1e-4 m GPU limit.
+The TSL adaptation is attributed to pinned three-mmd-loader; its MIT notice is
+retained in `packages/three-mmd-sdef/THIRD_PARTY_LICENSE`. That reference is
+alternative-renderer evidence and supplies no original-MMD measurement.
