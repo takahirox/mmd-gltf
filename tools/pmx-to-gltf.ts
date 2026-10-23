@@ -10,6 +10,7 @@ import { createBDEFSkin } from './pmx-bdef';
 import { parseVPD, bindPose, resolvePose, type VPDEncoding, type BindingOptions } from '../packages/mmd-vpd';
 import { parseVMD, bindMotion, type VMDBindingOptions } from '../packages/mmd-vmd';
 import { addVMDAnimation, VMDWriter, type SamplingOptions } from './vmd-animation';
+import { createMorphTargets, type PMXMorph } from './pmx-morph';
 import { pmxParserBytes } from './pmx-encoding';
 
 export interface Vertex { type?: number; skinIndices?: number[]; skinWeights?: number[]; edgeRatio?: number; position: number[]; normal: number[]; uv: number[]; auvs: number[][] }
@@ -23,7 +24,7 @@ interface PMXMaterial {
 export interface PMXModel {
   metadata: { modelName: string; comment: string; englishComment: string };
   vertices: Vertex[]; faces: { indices: number[] }[]; materials: PMXMaterial[]; textures: string[];
-  bones: PMXBone[]; morphs: unknown[]; rigidBodies: unknown[]; constraints: unknown[];
+  bones: PMXBone[]; morphs: PMXMorph[]; rigidBodies: unknown[]; constraints: unknown[];
 }
 type Slot = 'baseTexture' | 'toonTexture' | 'sphereTexture';
 /** Writer-only adapter: glTF Transform writes all geometry, images, samplers and the GLB container. */
@@ -94,8 +95,8 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
   if (vpd && mode !== 'bdef') throw new Error('VPD requires mode bdef');
   if (!Number.isFinite(scale) || scale <= 0) throw new Error('scale must be finite and positive');
   if (!model.vertices.length || !model.faces.length) throw new Error('PMX has no geometry');
-  const warnings = [mode === 'static' ? `Static base pose only: omitting ${model.bones.length} bones, ${model.morphs.length} morphs, ${model.rigidBodies.length} bodies, ${model.constraints.length} joints; no skinning, IK, grants or animation.`
-    : `BDEF core skin only: retaining ${model.bones.length} bones and parent hierarchy; omitting ${model.morphs.length} morphs, ${model.rigidBodies.length} bodies, ${model.constraints.length} joints. SDEF/QDEF, deformation layers, IK, append/grants, fixed/local axes, external parents, physics are unsupported. VMD executes only solver-free bone tracks. VPD applies raw bone offsets only; IK/append/physics are not evaluated.`,
+  const warnings = [mode === 'static' ? `Static base pose only: omitting ${model.bones.length} bones, ${model.rigidBodies.length} bodies, ${model.constraints.length} joints; no skinning, IK, grants or animation.`
+    : `BDEF core skin only: retaining ${model.bones.length} bones and parent hierarchy; omitting ${model.rigidBodies.length} bodies, ${model.constraints.length} joints. SDEF/QDEF, deformation layers, IK, append/grants, fixed/local axes, external parents, physics are unsupported. VMD executes solver-free bone tracks and vertex morph weights. VPD applies raw bone offsets only; IK/append/physics are not evaluated.`,
     'Shadow flags are retained in material extras, but are not rendered. Additional UV ZW and unused additional UV channels are omitted.'];
   const doc = new Document();
   const buffer = doc.createBuffer();
@@ -113,13 +114,16 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
     scene.setName('PMX BDEF VPD bone offsets');
     warnings.push(`VPD: applied ${binding.assignments.length} bone offsets; parent filename ${JSON.stringify(pose.parentFile)} is informational. Unmatched: ${binding.unmatched.join(', ') || 'none'}. No IK/append/physics.`);
   }
+  const morph = createMorphTargets(doc, buffer, mesh, meshNode, model, scale, skin?.poseModel.modelId);
+  const unsupportedMorphs = morph.metadata.morphs.filter(m => m.target === null);
+  warnings.push(`Morphs: retained ${morph.targets.length} vertex POSITION targets; omitted unsupported source families ${JSON.stringify(unsupportedMorphs.map(m => ({ index: m.index, name: m.name, type: m.type })))}. Authored normals retained; no recomputation or morph normal targets.`);
   if (vmd && skin) {
-    const motion = parseVMD(vmd), binding = bindMotion(skin.poseModel, motion, vmdBinding);
-    const samples = addVMDAnimation(doc, buffer, binding, skin.nodes, vmdSampling);
-    warnings.push(`VMD: bound ${binding.tracks.length} bone tracks; unmatched byte keys: ${binding.unmatched.join(', ') || 'none'}. Omitted execution counts: ${JSON.stringify(binding.omitted)}. Informational model name: ${JSON.stringify(motion.modelName.text)}. Continuous-curve-v1 project policy, no original-MMD parity claim. Approximate fallback: ${samples} samples; finite adaptive probes, no continuous error proof.`);
+    const motion = parseVMD(vmd), binding = bindMotion(skin.poseModel, motion, vmdBinding, morph.metadata);
+    const samples = addVMDAnimation(doc, buffer, binding, skin.nodes, vmdSampling, meshNode);
+    warnings.push(`VMD: bound ${binding.tracks.length} bone tracks and ${binding.morphs?.[0]?.tracks.length ?? 0} morph tracks; unmatched morph byte keys: ${binding.unmatchedMorphs.join(', ') || 'none'}; unmatched byte keys: ${binding.unmatched.join(', ') || 'none'}. Omitted execution counts: ${JSON.stringify(binding.omitted)}. Informational model name: ${JSON.stringify(motion.modelName.text)}. Continuous-curve-v1 project policy, no original-MMD parity claim. Approximate fallback: ${samples} samples; finite adaptive probes, no continuous error proof.`);
   }
   doc.getRoot().setDefaultScene(scene).setExtras({ sourceComment: model.metadata.comment, sourceEnglishComment: model.metadata.englishComment, conversionMode: mode, metersPerPMXUnit: scale,
-    conversion: mode === 'static' ? 'Static PMX to glTF; reflected Z and winding; no animation, skin, physics or morphs.' : 'PMX BDEF to core glTF skin; reflected Z and winding; solver-free VPD/VMD bone offsets only; no physics or morph execution.', warnings });
+    conversion: mode === 'static' ? 'Static PMX to glTF; reflected Z and winding; vertex POSITION morphs; no animation, skin or physics.' : 'PMX BDEF to core glTF skin; reflected Z and winding; solver-free VPD/VMD bones and vertex morph weights; no physics.', warnings });
   const accessor = (name: string, type: 'SCALAR' | 'VEC2' | 'VEC3', values: number[]) => {
     if (!values.every(Number.isFinite)) throw new Error(`Non-finite ${name}`);
     const array = new Float32Array(values);
@@ -209,6 +213,7 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
     if (m.flag & 0x10 && edgeScales) primitive.setAttribute(EDGE_ATTRIBUTE, edgeScales);
     if (skin) primitive.setAttribute('JOINTS_0', skin.joints).setAttribute('WEIGHTS_0', skin.weights);
     if (m.envFlag === 3 && m.envTextureIndex >= 0) primitive.setAttribute('TEXCOORD_1', uv1!);
+    morph.targets.forEach(target => primitive.addTarget(target));
     mesh.addPrimitive(primitive);
   }
   if (faceOffset !== model.faces.length) throw new Error('Material face counts do not cover all PMX faces');
@@ -223,8 +228,8 @@ export async function convertPMX(input: string, output: string, options: Convers
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const [input, output, ...args] = process.argv.slice(2);
-  if (!input || !output || args.length % 2 || args.some((v, i) => i % 2 === 0 && !['--textures', '--scale', '--mode', '--vpd', '--vpd-encoding', '--vpd-map', '--vpd-unmatched', '--vmd', '--vmd-map', '--vmd-unmatched', '--vmd-translation-tolerance', '--vmd-rotation-tolerance', '--vmd-max-samples'].includes(v))) {
-    console.error('Usage: npm run convert -- input.pmx output.glb|output.gltf [--textures directory] [--scale meters-per-unit] [--mode static|bdef] [--vpd pose.vpd] [--vpd-encoding shift_jis|utf-8] [--vpd-map record-map.json] [--vpd-unmatched error|ignore] [--vmd motion.vmd] [--vmd-map byte-key-map.json] [--vmd-unmatched error|ignore] [--vmd-translation-tolerance meters] [--vmd-rotation-tolerance radians] [--vmd-max-samples count]'); process.exitCode = 1;
+  if (!input || !output || args.length % 2 || args.some((v, i) => i % 2 === 0 && !['--textures', '--scale', '--mode', '--vpd', '--vpd-encoding', '--vpd-map', '--vpd-unmatched', '--vmd', '--vmd-map', '--vmd-unmatched', '--vmd-morph-map', '--vmd-morph-unmatched', '--vmd-translation-tolerance', '--vmd-rotation-tolerance', '--vmd-max-samples'].includes(v))) {
+    console.error('Usage: npm run convert -- input.pmx output.glb|output.gltf [--textures directory] [--scale meters-per-unit] [--mode static|bdef] [--vpd pose.vpd] [--vpd-encoding shift_jis|utf-8] [--vpd-map record-map.json] [--vpd-unmatched error|ignore] [--vmd motion.vmd] [--vmd-map byte-key-map.json] [--vmd-unmatched error|ignore] [--vmd-morph-map byte-key-map.json] [--vmd-morph-unmatched error|ignore] [--vmd-translation-tolerance meters] [--vmd-rotation-tolerance radians] [--vmd-max-samples count]'); process.exitCode = 1;
   } else {
     const opts = Object.fromEntries(Array.from({ length: args.length / 2 }, (_, i) => [args[i * 2], args[i * 2 + 1]]));
     const numeric = (key: string) => opts[key] === undefined ? undefined : Number(opts[key]);
@@ -233,12 +238,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       opts['--vpd-map'] ? readFile(opts['--vpd-map'], 'utf8').then(JSON.parse) : undefined,
       opts['--vmd'] ? readFile(opts['--vmd']) : undefined,
       opts['--vmd-map'] ? readFile(opts['--vmd-map'], 'utf8').then(JSON.parse) : undefined,
-    ]).then(([vpd, mapping, vmd, vmdMapping]) => convertPMX(input, output, {
+      opts['--vmd-morph-map'] ? readFile(opts['--vmd-morph-map'], 'utf8').then(JSON.parse) : undefined,
+    ]).then(([vpd, mapping, vmd, vmdMapping, morphMapping]) => convertPMX(input, output, {
       textureDirectory: opts['--textures'], scale: numeric('--scale'),
       mode: opts['--mode'] as ConversionOptions['mode'],
       vpd, vpdEncoding: opts['--vpd-encoding'] as VPDEncoding,
       vpdBinding: { mapping, unmatched: opts['--vpd-unmatched'] as BindingOptions['unmatched'] },
-      vmd, vmdBinding: { mapping: vmdMapping, unmatched: opts['--vmd-unmatched'] as VMDBindingOptions['unmatched'] },
+      vmd, vmdBinding: { morphMapping, morphUnmatched: opts['--vmd-morph-unmatched'] as VMDBindingOptions['morphUnmatched'], mapping: vmdMapping, unmatched: opts['--vmd-unmatched'] as VMDBindingOptions['unmatched'] },
       vmdSampling: {
         translationTolerance: numeric('--vmd-translation-tolerance'),
         rotationTolerance: numeric('--vmd-rotation-tolerance'), maxSamples: numeric('--vmd-max-samples'),

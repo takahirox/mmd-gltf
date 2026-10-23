@@ -1,5 +1,6 @@
 import { validatePoseModel, type PoseModel, type RestBone, type Vec3, type Quat } from '../mmd-vpd';
 import { byteName, validateBone, omittedRecords, type VMD } from './reader';
+import { validateMorphModel, validWeight, evaluateWeight, type MorphModel, type WeightTrack } from '../mmd-morph';
 export * from './reader';
 export type Curve = [number, number, number, number]; // x1,y1,x2,y2 in 0..127
 export interface MotionKey {
@@ -16,16 +17,20 @@ export interface Motion {
   rest: RestBone[];
   tracks: MotionTrack[];
   duration: number;
+  morphs?: { node: number; count: number; tracks: WeightTrack[] }[];
 }
 export interface MotionBinding extends Motion {
   modelId: string;
   unmatched: string[];
+  unmatchedMorphs: string[];
   omitted: ReturnType<typeof omittedRecords>;
 }
 export interface VMDBindingOptions {
   /** Hex byte-name key (not decoded name or record ordinal) to source PMX index. */
   mapping?: Record<string, number>;
   unmatched?: 'error' | 'ignore';
+  morphMapping?: Record<string, number>;
+  morphUnmatched?: 'error' | 'ignore';
 }
 const supported = (values: number[]) =>
   values.every((v) => Number.isFinite(v) && Number.isFinite(Math.fround(v)));
@@ -39,7 +44,7 @@ export function multiply(a: Quat, b: Quat): Quat {
     w * t - x * u - y * v,
   ];
 }
-export function bindMotion(model: PoseModel, vmd: VMD, options: VMDBindingOptions = {}): MotionBinding {
+export function bindMotion(model: PoseModel, vmd: VMD, options: VMDBindingOptions = {}, morphModel?: MorphModel): MotionBinding {
   validatePoseModel(model);
   if (!vmd || !Array.isArray(vmd.bones)) throw new Error('VMD: missing bone records');
   if (options.unmatched !== undefined && !['error', 'ignore'].includes(options.unmatched))
@@ -114,14 +119,74 @@ export function bindMotion(model: PoseModel, vmd: VMD, options: VMDBindingOption
       `VMD: unmatched byte-name tracks ${unmatched.join(', ')}; unmatched: ignore is explicit partial playback`,
     );
   tracks.sort((a, b) => a.index - b.index);
+  const weights = bindMorphMotion(morphModel ?? { version: 1, modelId: model.modelId, morphs: [] }, vmd, options);
   return {
     modelId: model.modelId,
     rest: structuredClone(model.bones),
     tracks,
-    duration: Math.max(0, ...tracks.map((t) => t.keys.at(-1)!.frame / 30)),
+    duration: Math.max(weights.duration, ...tracks.map((t) => t.keys.at(-1)!.frame / 30)),
     unmatched,
-    omitted: omittedRecords(vmd),
+    unmatchedMorphs: weights.unmatched,
+    morphs: weights.count ? [{ node: 0, count: weights.count, tracks: weights.tracks }] : [],
+    omitted: { ...omittedRecords(vmd), morphs: weights.omitted },
   };
+}
+/** Morph mappings are source PMX indices, never bone indices or target dictionary names. */
+export function bindMorphMotion(model: MorphModel, vmd: VMD, options: VMDBindingOptions = {}) {
+  validateMorphModel(model);
+  if (!Array.isArray(vmd.morphs)) throw new Error('VMD: missing morph records');
+  if (options.morphUnmatched !== undefined && !['error', 'ignore'].includes(options.morphUnmatched))
+    throw new Error('VMD: morph unmatched policy must be error or ignore');
+  if (options.morphMapping !== undefined && (!options.morphMapping || Array.isArray(options.morphMapping) || typeof options.morphMapping !== 'object'))
+    throw new Error('VMD: invalid morph mapping');
+  const mapping = options.morphMapping ?? {};
+  const groups = new Map<string, VMD['morphs']>();
+  for (const r of vmd.morphs) {
+    if (!r || !r.name) throw new Error('VMD: invalid morph record');
+    const name = byteName(r.name.raw);
+    if (name.raw.length !== 15 || name.key !== r.name.key || name.text !== r.name.text || name.terminated !== r.name.terminated)
+      throw new Error('VMD: inconsistent morph byte name');
+    if (!Number.isInteger(r.frame) || r.frame < 0 || r.frame > 0xffffffff || !validWeight(r.weight))
+      throw new Error('VMD: unsupported morph frame/weight numeric range');
+    if (!groups.has(name.key)) groups.set(name.key, []);
+    groups.get(name.key)!.push(r);
+  }
+  for (const key of Object.keys(mapping)) if (!groups.has(key)) throw new Error(`VMD: invalid morph mapping byte-key ${key}`);
+  const tracks: WeightTrack[] = [], unmatched: string[] = [], targets = new Set<number>();
+  let omitted = 0;
+  for (const [key, records] of groups) {
+    const name = records[0].name, explicit = Object.hasOwn(mapping, key);
+    if (!explicit && (!name.terminated || name.text === null))
+      throw new Error(`VMD morph ${key}: full-width/truncated or undecodable name requires explicit mapping`);
+    const matches = explicit ? model.morphs.filter(m => m.index === mapping[key]) : model.morphs.filter(m => m.name === name.text);
+    if (explicit && (!Number.isInteger(mapping[key]) || matches.length !== 1)) throw new Error(`VMD: invalid mapped morph source index ${key}`);
+    if (matches.length > 1) throw new Error(`VMD morph ${key}: ambiguous PMX name; explicit mapping required`);
+    if (!matches.length || matches[0].target === null) {
+      unmatched.push(key); omitted += records.length;
+      if (options.morphUnmatched !== 'ignore') throw new Error(`VMD: unmatched or unsupported morph ${key}; morphUnmatched: ignore is explicit partial playback`);
+      continue;
+    }
+    const index = matches[0].target!;
+    if (targets.has(index)) throw new Error(`VMD: repeated morph target source index ${matches[0].index}`);
+    targets.add(index);
+    const sorted = [...records].sort((a,b) => a.frame - b.frame);
+    tracks.push({ index, keys: sorted.map((r,i) => {
+      if (i && r.frame === sorted[i-1].frame) throw new Error(`VMD: duplicate morph frame ${r.frame}`);
+      return { frame: r.frame, weight: r.weight };
+    }) });
+  }
+  tracks.sort((a,b) => a.index - b.index);
+  return { tracks, unmatched, omitted, count: model.morphs.filter(m => m.target !== null).length,
+    duration: Math.max(0, ...tracks.map(t => t.keys.at(-1)!.frame / 30)) };
+}
+export function evaluateMorphs(motion: Motion, seconds: number) {
+  if (!Number.isFinite(seconds)) throw new Error('VMD: time must be finite');
+  return (motion.morphs ?? []).map(group => {
+    const values = new Array(group.count).fill(0);
+    for (const track of group.tracks) values[track.index] = evaluateWeight(track, seconds);
+    if (!values.every(validWeight)) throw new Error('VMD: unsupported evaluated weight numeric range');
+    return { node: group.node, values };
+  });
 }
 /** Bisection in time coordinate; destination-key curves apply to every positive interval. */
 export function bezier(curve: Curve, time: number) {

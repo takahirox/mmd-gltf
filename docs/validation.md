@@ -751,3 +751,72 @@ relevant D3D9 states, specifically discriminating ambient 0.5 versus 1 and
 RGB/alpha color-domain behavior. Record actual results and resulting correction
 work when available; these observations do not gate this checkpoint's merge or
 Issue completion.
+
+## Issue #31 vertex morphs and combined motion
+
+Validation is local Coordinator execution on the pinned lockfile and Node
+`v24.12.0`, using Playwright `1.56.1`, its pinned Chromium `141.0.7390.37`
+(revision 1194), SwiftShader WebGL2 and the README's Chromium setup. No
+hosted-CI, original-MMD execution or representative integrated fidelity is claimed.
+No new specification correction was established; the earlier glTF FLOAT skin
+weight sum SHOULD correction and stricter converter interoperability policy remain.
+
+The committed [morph suite](../tests/morph.test.ts) and
+[independent scalar oracle](../tests/morph-oracle.ts) compare both distinct rigs
+and both combined motions across direct bytes, retained GLB, unpacked glTF and
+ordinary GLTFLoader. Measurements include keys and the existing 1201-point grid.
+Combined exports request bone fallback probes `2e-8 m`/`2e-7 rad`; existing bone-only
+probe defaults and regression tolerances are unchanged. No production evaluator
+or emitted sample supplies expected weights or positions.
+
+| Rig | Motion | Maximum weight error | Maximum skinned position error (m) | Maximum orientation error, including fallback (rad) |
+| --- | --- | ---: | ---: | ---: |
+| Box | A | 4.76837159e-8 | 1.09843715e-7 | 2.19001449e-7 |
+| Box | B | 8.10515139e-8 | 1.17469766e-7 | 2.08616257e-7 |
+| Wedge | A | 4.76837159e-8 | 5.57003865e-8 | 2.34663721e-7 |
+| Wedge | B | 8.10515139e-8 | 1.05532220e-7 | 2.08616257e-7 |
+
+All are within the predeclared `1e-6` weight / `2e-6 m` position limits; exact bone
+orientation separately retains `1e-7 rad`, fallback orientation `1e-4 rad`.
+GLB/unpacked core validator results are zero errors for every combined case and
+morph-only coverage. API/CLI and repeated conversions are byte deterministic.
+Static/BDEF target ordering, reflection/scaling, zero defaults, exact identity,
+unsupported families, malformed records/numeric limits, linear scalar endpoint
+policies, switching, failure atomicity, VPD preservation, bounds and disposal have
+executable checks. The original fixtures and bone checks are retained, including
+explicit ignored/unmatched morph diagnostics.
+
+The built `vmd-conformance.html?morph` performs 144 independent baked raster
+comparisons through Toon/PBR and surfaces/Outline across both rigs/motions and
+byte/GLB/glTF paths. Measured maxima: weight `8.03838674e-8`, position
+`2.59389674e-8 m`, **zero** pixels exceeding two encoded levels (limit 128 of
+160×160). Existing bone-only raster checks also measured zero mismatches. These
+are finite synthetic comparisons; endpoints/interpolation are documented project
+policies, not measured original-MMD execution. Unsupported morph families,
+advanced skinning, solvers/order, physics, scene animation and representative
+fidelity remain overall project work. VPD remains supported.
+
+During implementation, one exploratory converter run lacked prepared assets and
+material-only triangle subsets still referenced the original full-model morphs;
+setup and subset fixtures were corrected. The first Demo browser run found stale
+morph maps on legacy motions and horizontal control overflow; both were fixed.
+A subsequent Demo run exposed reselection of the same local VMD without a change
+event; sample changes now clear stale file selection. The first full browser run
+measured Gene bounds using its conservative morph envelope; camera framing and
+reported bounds now use current deformed vertices, preserving the existing
+regression assertions. A link check initially failed before this section existed.
+Final mandatory command results are recorded below.
+
+
+| Command | Actual result |
+| --- | --- |
+| `npm ci` | Passed using the unchanged pinned lockfile. |
+| `npm run build` | Passed; existing Vite large-chunk advisory remains. |
+| `npm run typecheck` | Passed. |
+| `npm test` | 33 passed, zero failures or skips; Toon/Outline fixture scripts also passed. |
+| `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | 12 passed, zero failures; two optional native WebGPU cases skipped because no adapter was available (5.9 minutes). |
+| `npm run check:links` | Passed, 191 local documentation/anchor/built-asset links. |
+| `git diff --check` | Passed. |
+
+No required post-merge verification for Issue #31. Optional controlled original-MMD
+measurements and alternative-implementation comparison were not performed.

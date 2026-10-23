@@ -32,6 +32,9 @@ import {
   type VMDBindingOptions,
 } from '../packages/three-mmd-vmd';
 
+import { validWeight } from '../packages/mmd-morph';
+import { createMorphRig, getMorphModel, getMorphWeights, applyMorphWeights, resetMorphWeights, type MorphRig } from '../packages/three-mmd-morph';
+
 async function start() {
   const renderer = new WebGPURenderer({
     antialias: true,
@@ -80,6 +83,7 @@ async function start() {
     rig: 'box',
     pose: 'rest',
     bones: [] as object[],
+    weights: [] as number[],
     error: '',
     motion: '',
     time: 0,
@@ -90,6 +94,7 @@ async function start() {
   interface Asset {
     scene: Group;
     rig: VPDRig;
+    morph: MorphRig;
     player?: VMDPlayer;
     toon?: MMDToonPlugin;
     outlines: MMDOutlinePlugin;
@@ -100,7 +105,7 @@ async function start() {
     localMotion: File | undefined,
     busy = false;
   const report = (message: string) => {
-    status.textContent = `Ready · ${message} · Solver-free bones only; IK/append/physics and non-bone VMD execution unsupported`;
+    status.textContent = `Ready · ${message} · Solver-free bones + vertex morphs; IK/append/physics and other morph families unsupported`;
   };
   const snapshot = () => {
     info.bones = [];
@@ -112,6 +117,9 @@ async function start() {
           rotation: n.quaternion.toArray(),
         });
     });
+    info.weights = assets[0] ? getMorphWeights(assets[0].morph) : [];
+    document.querySelector('#morph-state')!.textContent = `Weights: ${info.weights.map(w => w.toFixed(4)).join(', ')} · source identity retained; sum is not normalized`;
+    document.querySelectorAll<HTMLInputElement>('#morph-controls input').forEach((control,i) => { control.value = String(info.weights[i]); });
     info.time = assets[0]?.player?.time ?? 0;
     info.playing = assets[0]?.player?.playing ?? false;
     seek.value = String(info.time);
@@ -157,6 +165,7 @@ async function start() {
       return {
         scene: loaded.scene,
         rig: createVPDRig(loaded.scene),
+        morph: createMorphRig(loaded.scene),
         player: getVMDPlayers(loaded)[0],
         toon: toonPlugin,
         outlines: outlinePlugin!,
@@ -181,10 +190,11 @@ async function start() {
     assets = next;
     assets.forEach((a) => scene.add(a.scene));
     appearance();
+    rebuildMorphControls();
     for (const a of previous) await disposeAsset(a);
   }
   async function loadRig() {
-    const next = await loadPair(`${import.meta.env.BASE_URL}vpd/${model.value}/rest.glb`);
+    const next = await loadPair(`${import.meta.env.BASE_URL}morph/${model.value}/rest.glb`);
     await replace(next);
     info.motion = '';
     info.rig = model.value;
@@ -222,18 +232,22 @@ async function start() {
   }
   async function loadMotion() {
     let diagnostic = '';
+    const combined = motionSample.value.startsWith('combined-') || motionSample.value === 'only';
+    const motionId = motionSample.value.replace('combined-', '');
     if (motionSource.value === 'bytes') {
       let data: Uint8Array;
       if (motionSample.value === 'local') {
         if (!localMotion) throw new Error('Select a local VMD file first');
         data = new Uint8Array(await localMotion.arrayBuffer());
       } else {
-        const r = await fetch(`${import.meta.env.BASE_URL}vmd/motion-${motionSample.value}.vmd`);
+        const r = await fetch(`${import.meta.env.BASE_URL}${combined ? `morph/${motionId === 'only' ? 'morph-only' : `combined-${motionId}`}` : `vmd/motion-${motionId}`}.vmd`);
         if (!r.ok) throw new Error(`VMD fetch failed: ${r.status}`);
         data = new Uint8Array(await r.arrayBuffer());
       }
       const motion = parseVMD(data),
         options: VMDBindingOptions = {
+          morphUnmatched: select('motion-morph-unmatched').value as VMDBindingOptions['morphUnmatched'],
+          morphMapping: JSON.parse(document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value),
           mapping: JSON.parse(motionMap.value),
           unmatched: select('motion-unmatched').value as VMDBindingOptions['unmatched'],
         };
@@ -244,14 +258,14 @@ async function start() {
         discardPlayer(a);
         a.player = players[i];
       });
-      diagnostic = `Unmatched: ${bindings[0].unmatched.join(', ') || 'none'}. Omitted execution counts: ${JSON.stringify(bindings[0].omitted)}`;
+      diagnostic = `Unmatched morphs: ${bindings[0].unmatchedMorphs.join(', ') || 'none'}. Unmatched: ${bindings[0].unmatched.join(', ') || 'none'}. Omitted execution counts: ${JSON.stringify(bindings[0].omitted)}`;
     } else {
       if (motionSample.value === 'local')
         throw new Error(
           'Converted GLB/glTF sources are available for sample motions; use byte source for local VMD',
         );
       const next = await loadPair(
-        `${import.meta.env.BASE_URL}vmd/${model.value}/${motionSample.value}.${motionSource.value}`,
+        `${import.meta.env.BASE_URL}${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}.${motionSource.value}`,
       );
       next.forEach((a) => a.player!.seek(0));
       await replace(next);
@@ -283,6 +297,9 @@ async function start() {
     motionFile,
     motionMap,
     select('motion-unmatched'),
+    select('motion-morph-unmatched'),
+    document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!,
+    button('morph-reset'),
     button('motion-load'),
     button('motion-play'),
     button('motion-pause'),
@@ -309,6 +326,28 @@ async function start() {
       });
     }
   };
+  function rebuildMorphControls() {
+    const container = document.querySelector('#morph-controls')!;
+    container.replaceChildren();
+    for (const m of getMorphModel(assets[0].morph).morphs) {
+      if (m.target === null) continue;
+      const label = document.createElement('label'), control = document.createElement('input');
+      label.textContent = `${m.index}: ${m.name} `;
+      control.type = 'number'; control.step = '0.05'; control.value = '0';
+      control.dataset.target = String(m.target);
+      control.onchange = guarded(() => {
+        const values = getMorphWeights(assets[0].morph); values[m.target!] = Number(control.value);
+        // Validate the complete requested weight vector on both independent instances first.
+        if (!values.every(validWeight)) throw new Error('Morph: invalid FLOAT weight');
+        assets.forEach(a => applyMorphWeights(a.morph, values));
+        info.error = ''; snapshot(); report('Manual morph weights applied. Motion paused');
+      });
+      label.append(control); container.append(label);
+    }
+  }
+  button('morph-reset').onclick = guarded(() => {
+    assets.forEach(a => resetMorphWeights(a.morph)); snapshot(); report('Morph weights reset. Motion paused');
+  });
   const transport = (action: (player: VMDPlayer) => void) =>
     guarded(() => {
       if (!assets[0]?.player) throw new Error('Load a VMD motion first');
@@ -321,6 +360,7 @@ async function start() {
   const resetAll = () => {
     assets.forEach((a) => {
       a.player?.stop();
+      resetMorphWeights(a.morph);
       resetVPD(a.rig);
     });
     info.deformed = false;
@@ -330,7 +370,11 @@ async function start() {
     label.textContent = 'Rest state';
     report('Reset to original rest');
   };
-  reset.onclick = guarded(resetAll);
+  reset.onclick = guarded(() => {
+    assets.forEach(a => resetVPD(a.rig));
+    snapshot(); info.pose = 'rest'; info.error = ''; label.textContent = 'Rest state';
+    report('VPD reset to original bone rest. Motion paused; morph weights preserved');
+  });
   button('motion-reset').onclick = guarded(resetAll);
   button('motion-load').onclick = guarded(loadMotion);
   button('motion-play').onclick = transport((p) => p.play());
@@ -348,8 +392,14 @@ async function start() {
   };
   motionSample.onchange = guarded(async () => {
     if (motionSample.value !== 'local') {
-      const r = await fetch(`${import.meta.env.BASE_URL}vmd/motion-${motionSample.value}-map.json`);
-      motionMap.value = await r.text();
+      // A subsequent selection of the same local file must emit change again.
+      motionFile.value = '';
+      localMotion = undefined;
+      const id = motionSample.value.replace('combined-', '');
+      motionMap.value = id === 'only' ? '{}' : await (await fetch(`${import.meta.env.BASE_URL}vmd/motion-${id}-map.json`)).text();
+      const legacy = motionSample.value === 'a' || motionSample.value === 'b';
+      select('motion-morph-unmatched').value = legacy ? 'ignore' : 'error';
+      document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value = legacy ? '{}' : '{"8fce82a2":1}';
     }
   });
   file.onchange = () => {
@@ -362,6 +412,7 @@ async function start() {
     motionSample.value = 'local';
     motionSource.value = 'bytes';
     motionMap.value = '{}';
+    document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value = '{}';
   };
   model.onchange = guarded(loadRig);
   material.onchange = appearance;

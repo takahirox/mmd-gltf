@@ -56,7 +56,7 @@ which tests explicitly skip without an adapter. Views stack on narrow screens.
 The direct PMX is a practical reference, not a bit-identical MikuMikuDance oracle;
 independent ambient/toon/specular models produce documented shading differences.
 Neither Gene view animates or steps IK/physics/morphs. The linked synthetic BDEF
-rig loads two VPD poses and two VMD bone motions on two distinct BDEF rigs, supports local files with explicit
+rig loads two VPD poses and two VMD bone motions, two combined bone/morph motions and morph-only motion on two distinct BDEF rigs, supports local files with explicit
 encoding/binding maps, and provides pose apply/reset plus motion transport and fractional seeking. It applies raw
 bone offsets without solvers; it does not reproduce complete MMD poses.
 The browser runner owns a Vite conformance server on port 43179 and a static
@@ -88,7 +88,7 @@ The PMX converter defaults to a static base pose. Opt in with `--mode bdef`
 to preserve BDEF1/2/4 through core glTF skins, including exact source bone identity.
 The [synthetic rig](examples/rig.html) demonstrates the converter output with
 Toon, core PBR and Outline. SDEF/QDEF, deformation layers, IK/append, physics,
-morph evaluation and non-bone VMD execution remain unsupported. Solver-free VPD bone offsets are supported;
+non-vertex morph evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs convert in static and BDEF modes; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
 see the [VPD contract and APIs](docs/pipeline.md#vpd-bone-offsets). The outline effect
 also accepts core POSITION/NORMAL morph deformation from other assets.
 Source models and derivatives retain their own rights. Gene Light is
@@ -116,7 +116,7 @@ See [provenance and independent synthetic tests](tests/fixtures/README.md) and
 Solver-free VMD 0002 bone motion is supported in BDEF mode:
 
 ```sh
-npm run convert -- tests/fixtures/bdef.pmx output/motion.glb --mode bdef --scale 0.2 --vmd tests/fixtures/motion-a.vmd --vmd-map tests/fixtures/motion-a-map.json
+npm run convert -- tests/fixtures/bdef.pmx output/motion.glb --mode bdef --scale 0.2 --vmd tests/fixtures/motion-a.vmd --vmd-map tests/fixtures/motion-a-map.json --vmd-morph-unmatched ignore
 ```
 
 The optional [retained-curve draft](extensions/MMD_animation_vmd/README.md) preserves
@@ -125,8 +125,16 @@ VMD curves with an explicitly approximate core TRS fallback. The
 play/pause, fractional seek, loop, reset, disposal and explicit VPD ownership handoff.
 See the [reader/name/evaluation/API contract](docs/vmd.md) and
 [measured validation](docs/validation.md#issue-29-vmd-bone-motion).
-All known sections are read; non-bone execution is omitted with counts. Continuous
-adjacent-frame curves are a project policy, not measured original-MMD equivalence.
+All known sections are read; bone and vertex-morph tracks execute, while scene
+execution is omitted with counts. Unmatched morphs fail by default; legacy samples
+explicitly ignore/report their preserved unused records. Continuous adjacent-frame
+curves are a project policy, not measured original-MMD equivalence.
+
+PMX vertex targets preserve exact source index/name/type metadata independently
+of loader display dictionaries. The [morph contract and APIs](docs/vmd.md#vertex-morph-weights-issue-31)
+cover separate byte-name mappings, independent additive weights, model-scoped
+inspection/apply/reset and VPD/VMD handoff. See the
+[combined synthetic validation](docs/validation.md#issue-31-vertex-morphs-and-combined-motion).
 
 ## Contributing
 

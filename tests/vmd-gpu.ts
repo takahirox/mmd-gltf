@@ -21,6 +21,7 @@ import {
 import { createVPDRig } from '../packages/three-mmd-vpd';
 import { parseVMD, bindVMD, createVMDPlayer, MMDVMDPlugin, getVMDPlayers } from '../packages/three-mmd-vmd';
 import { scalarPosition, scalarNormal, scalarLocal } from './vmd-oracle';
+import { morphPoint, morphWeights } from './morph-oracle';
 import { rigScale } from './vpd-oracle';
 async function run() {
   const renderer = new WebGPURenderer({ forceWebGL: true, antialias: false });
@@ -48,6 +49,7 @@ async function run() {
     return count;
   };
   const evidence: object[] = [];
+  const morph = new URLSearchParams(location.search).has('morph');
   for (const rig of ['box', 'wedge'] as const)
     for (const motion of ['a', 'b'] as const)
       for (const mode of ['toon', 'pbr'])
@@ -59,17 +61,19 @@ async function run() {
           if (mode === 'toon') loader.register((p) => (toon = new MMDToonPlugin(p)));
           const base = import.meta.env.BASE_URL,
             asset = await loader.loadAsync(
-              source === 'bytes' ? `${base}vpd/${rig}/rest.glb` : `${base}vmd/${rig}/${motion}.${source}`,
+              source === 'bytes' ? `${base}${morph ? 'morph' : 'vpd'}/${rig}/rest.glb` : `${base}${morph ? 'morph' : 'vmd'}/${rig}/${motion}.${source}`,
             );
           const motionBytes =
             source === 'bytes'
-              ? parseVMD(new Uint8Array(await (await fetch(`${base}vmd/motion-${motion}.vmd`)).arrayBuffer()))
+              ? parseVMD(new Uint8Array(await (await fetch(`${base}${morph ? 'morph/combined-' : 'vmd/motion-'}${motion}.vmd`)).arrayBuffer()))
               : undefined;
           const handle = createVPDRig(asset.scene);
           const player = motionBytes
             ? createVMDPlayer(
                 handle,
                 bindVMD(handle, motionBytes, {
+                  morphUnmatched: morph ? 'error' : 'ignore',
+                  morphMapping: morph ? await (await fetch(`${base}morph/morph-map.json`)).json() : undefined,
                   mapping: await (await fetch(`${base}vmd/motion-${motion}-map.json`)).json(),
                 }),
               )
@@ -106,6 +110,9 @@ async function run() {
               }
             });
             if (rotationError > 1e-7) throw new Error(`rotation ${rotationError}`);
+            let maximumWeightError = 0;
+            if (morph) for (const mesh of meshes) mesh.morphTargetInfluences!.forEach((w,i) => { maximumWeightError = Math.max(maximumWeightError, Math.abs(w-morphWeights(motion,time)[i])); });
+            if (maximumWeightError > 1e-6) throw new Error(`weight ${maximumWeightError}`);
             for (const pass of ['surface', 'outline']) {
               const hull = pass === 'outline',
                 oracle = new Group();
@@ -116,11 +123,8 @@ async function run() {
                   position = geometry.getAttribute('position'),
                   normal = geometry.getAttribute('normal');
                 for (let i = 0; i < position.count; i++) {
-                  const p = scalarPosition(rig, motion, i, time, [
-                      position.getX(i),
-                      position.getY(i),
-                      position.getZ(i),
-                    ]),
+                  const basePoint = [position.getX(i),position.getY(i),position.getZ(i)],
+                    p = scalarPosition(rig, motion, i, time, morph ? morphPoint(rig,motion,i,time,basePoint) : basePoint),
                     n = scalarNormal(
                       rig,
                       motion,
@@ -136,6 +140,7 @@ async function run() {
                   position.setXYZ(i, ...(p as [number, number, number]));
                   normal.setXYZ(i, ...(n as [number, number, number]));
                 }
+                geometry.morphAttributes = {};
                 geometry.deleteAttribute('skinIndex');
                 geometry.deleteAttribute('skinWeight');
                 const materials = (
@@ -182,6 +187,7 @@ async function run() {
                 state,
                 pass,
                 maximumPositionError: error,
+                maximumWeightError,
                 maximumRotationError: rotationError,
                 oraclePixelMismatches: mismatch,
               });

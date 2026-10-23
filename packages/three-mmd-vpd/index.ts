@@ -64,7 +64,7 @@ export function bindVPD(rig: VPDRig, pose: VPD, options: BindingOptions = {}): B
 /** Snapshot of validated ORIGINAL rest metadata; current transforms are never captured. */
 export function getVPDModel(rig: VPDRig): PoseModel { return structuredClone(state(rig).model); }
 /** Shared validated local-pose writer for solver-free VPD/VMD. */
-export function applyResolvedPose(rig: VPDRig, resolved: RestBone[], motion = false) {
+export function prepareResolvedPose(rig: VPDRig, resolved: RestBone[]) {
   const s = state(rig);
   if (
     resolved.length !== s.model.bones.length ||
@@ -76,14 +76,20 @@ export function applyResolvedPose(rig: VPDRig, resolved: RestBone[], motion = fa
       [...b.translation, ...b.rotation, ...b.scale].some(v => !Number.isFinite(v) || !Number.isFinite(Math.fround(v)))
     )
   ) throw new Error('VPD/VMD: invalid resolved pose');
+  return () => {
+    // All validation and resolution finishes before the first mutation.
+    for (const b of resolved) {
+      const node = s.nodes.get(b.index)!;
+      node.position.fromArray(b.translation); node.quaternion.fromArray(b.rotation); node.scale.fromArray(b.scale); node.updateMatrix();
+    }
+    rig.root.updateMatrixWorld(true);
+    s.meshes.forEach(mesh => { mesh.skeleton.update(); mesh.computeBoundingBox(); mesh.computeBoundingSphere(); });
+  };
+}
+export function applyResolvedPose(rig: VPDRig, resolved: RestBone[], motion = false) {
+  const write = prepareResolvedPose(rig, resolved);
   if (!motion) releaseMotion(rig.root);
-  // All validation and resolution finishes before the first mutation.
-  for (const b of resolved) {
-    const node = s.nodes.get(b.index)!;
-    node.position.fromArray(b.translation); node.quaternion.fromArray(b.rotation); node.scale.fromArray(b.scale); node.updateMatrix();
-  }
-  rig.root.updateMatrixWorld(true);
-  s.meshes.forEach(mesh => { mesh.skeleton.update(); mesh.computeBoundingBox(); mesh.computeBoundingSphere(); });
+  write();
 }
 export function applyVPD(rig: VPDRig, binding: BoundVPD) {
   const bound = bindings.get(binding);

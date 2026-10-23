@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 'utf16le' | 'utf8' = 'utf16le', textRecords = false, shape: 'box' | 'wedge' = 'box') {
+export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 'utf16le' | 'utf8' = 'utf16le', textRecords = false, shape: 'box' | 'wedge' = 'box', vertexMorphs = false) {
   const chunks: Buffer[] = [];
   const u8 = (v: number) => chunks.push(Buffer.from([v & 255]));
   const i16 = (v: number) => { const b = Buffer.alloc(2); b.writeInt16LE(v); chunks.push(b); };
@@ -67,7 +67,20 @@ export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 
       i16(0); u8(0); i16(1); u8(1); floats([-1, -1, -1, 1, 1, 1]);
     } else { i16(0); floats([7, 3, 2]); } // display tail is NOT a rest rotation
   }
-  if (textRecords) {
+  if (vertexMorphs) {
+    i32(5);
+    ['unsupported', '笑い', 'overlap', '笑い', 'untracked'].forEach((name, index) => {
+      str(name); str(`Original morph ${index}`); u8(1); u8(index === 0 ? 0 : 1);
+      if (index === 0) { i32(1); u8(1); f32(0.5); return; }
+      i32(24);
+      for (let v = 0; v < 24; v++) {
+        u8(v);
+        floats(index === 1 ? [0.25, v % 4 > 0 ? 0.3 : 0.1, 0.2] :
+          index === 2 ? [-0.1, 0.15, v % 2 ? -0.3 : 0.1] : [0.05, 0.02, -0.05]);
+      }
+    });
+    i32(0); i32(0); i32(0);
+  } else if (textRecords) {
     i32(9); // every PMX 2.0 morph record layout; retained only as unsupported data
     const elementSizes = [5, 13, 30, 17, 17, 17, 17, 17, 114];
     for (let type = 0; type < 9; type++) {

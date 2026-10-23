@@ -1,3 +1,7 @@
 # Encoded parser fixtures must retain their actual bytes on every checkout.
 tests/fixtures/pose-a.vpd binary
 tests/fixtures/pose-b.vpd -text
+
+# Morph-enabled binary fixtures have the same byte-preservation contract.
+tests/fixtures/*.pmx binary
+tests/fixtures/*.vmd binary

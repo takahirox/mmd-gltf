@@ -104,6 +104,7 @@ test('generic PMX material conversion preserves all supported sphere/toon modes 
   const directory = await fetchGene();
   const source = parsePMX(await readFile(`${directory}/Gene_light.pmx`));
   const model = structuredClone(source);
+  model.morphs = []; // Material-only triangle subset has no source vertex morph references.
   model.vertices = source.vertices.slice(0, 3).map((v) => ({ ...v, auvs: [[0.2, 0.7, 0.3, 0.4]] }));
   model.faces = Array.from({ length: 5 }, () => ({ indices: [0, 1, 2] }));
   model.materials = Array.from({ length: 5 }, (_, i) => ({ ...source.materials[0], faceCount: 1, envFlag: i % 4, envTextureIndex: 1, toonFlag: i === 4 ? 0 : 1, toonIndex: i === 4 ? 2 : i === 0 ? 0 : 9 }));
@@ -160,6 +161,7 @@ test('alpha classification uses decoded image bytes, diffuse alpha and only alph
       envFlag: i === 4 || i === 5 ? 3 : i === 6 ? 1 : 0,
       envTextureIndex: i >= 4 ? i === 5 ? 0 : 1 : -1, toonIndex: -1 }));
     model.faces = Array.from({ length: 7 }, () => ({ indices: [0, 1, 2] }));
+    model.morphs = []; // Material-only triangle subset.
     model.vertices = model.vertices.slice(0, 3).map((v) => ({ ...v, auvs: [[0, 0, 0, 0]] }));
     const { document, io } = await convertModel(model, temporary);
     const json = glbJSON(await io.writeBinary(document));
