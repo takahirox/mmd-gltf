@@ -234,7 +234,14 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
           }
         }
         const meshes: Mesh[] = [];
-        node.traverse((n: Object3D) => { if ((n as Mesh).isMesh) meshes.push(n as Mesh); });
+        const collect = (n: Object3D) => {
+          // A multi-primitive node is a group; its glTF child nodes are separate targets,
+          // including instances of the same mesh definition. Stop at those boundaries.
+          if (n !== node && this.parser.associations.get(n)?.nodes !== undefined) return;
+          if ((n as Mesh).isMesh) meshes.push(n as Mesh);
+          n.children.forEach(collect);
+        };
+        collect(node);
         if (!meshes.length || meshes.some(m => m.morphTargetInfluences?.length !== count)) throw new Error(`${EXTENSION_NAME}: inconsistent loaded morph primitives`);
         weightMeshes.set(w.node, meshes);
         morphs.push({ node: w.node, count, tracks });

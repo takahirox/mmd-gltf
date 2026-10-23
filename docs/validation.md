@@ -820,3 +820,30 @@ Final mandatory command results are recorded below.
 
 No required post-merge verification for Issue #31. Optional controlled original-MMD
 measurements and alternative-implementation comparison were not performed.
+
+### PR #32 review revision
+
+The Issue #31 review fixes restrict extension weight writes to primitives of the
+referenced glTF node, resolve mesh-rooted morph handles to the instance's bone
+motion owner, and validate every weight vector position before releasing ownership
+or mutating state. Two added regression tests cover nested unanimated nodes with
+and without targets, shared mesh definitions, one/two material primitives, both
+rigs, instance isolation, mesh-rooted apply/reset, and fully/partly sparse vectors.
+The nested assets have zero core-validator errors and preserve the same child
+weights as ordinary GLTFLoader. Sparse-vector failures preserve bones, weights,
+playback time and the active owner. The initial regression run reproduced the
+nested-node and sparse-vector failures; both tests pass after the fixes.
+
+Local revision checks use Node `v24.12.0` and `npm ci` with the unchanged pinned
+lockfile. The measured morph numerical maxima above are unchanged; all 144 morph
+raster comparisons again had zero pixel mismatches. No hosted-CI or original-MMD
+evidence is inferred from this run.
+
+| Command | Revision result |
+| --- | --- |
+| `npm run build` | Passed; existing Vite large-chunk advisory remains. |
+| `npm run typecheck` | Passed. |
+| `npm test` | 35 passed, zero failures or skips; Toon/Outline fixture scripts passed. |
+| `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | 12 passed, zero failures; two optional native WebGPU skips (no adapter), 5.6 minutes. |
+| `npm run check:links` | Passed, 191 links. |
+| `git diff --check` | Passed. |

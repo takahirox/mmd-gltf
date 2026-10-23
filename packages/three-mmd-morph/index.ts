@@ -62,10 +62,14 @@ export function refreshDeformation(root: Object3D) {
 /** Preparation is read-only, allowing combined writers to validate before claiming ownership. */
 export function prepareMorphWeights(rig: MorphRig, values: readonly number[]) {
   const s = state(rig);
-  if (!Array.isArray(values) || values.length !== s.count || !values.every(validWeight) ||
+  if (!Array.isArray(values) || values.length !== s.count ||
       s.meshes.some(m => s.count && m.morphTargetInfluences?.length !== s.count))
     throw new Error('Morph: invalid weight count or FLOAT numeric range');
-  const copy = [...values];
+  const copy: number[] = [];
+  for (let i = 0; i < s.count; i++) {
+    if (!validWeight(values[i])) throw new Error('Morph: invalid weight count or FLOAT numeric range');
+    copy.push(values[i]);
+  }
   return () => { for (const mesh of s.meshes) if (s.count) mesh.morphTargetInfluences!.splice(0, s.count, ...copy); };
 }
 export function applyMorphWeights(rig: MorphRig, values: readonly number[]) {

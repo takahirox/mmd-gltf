@@ -4,7 +4,7 @@ import { readFile, mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
-import { AnimationMixer, LoopOnce, Vector3, type Mesh, type SkinnedMesh } from 'three';
+import { AnimationMixer, Group, LoopOnce, Vector3, type Mesh, type Object3D, type SkinnedMesh } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { validateBytes, validateString } from 'gltf-validator';
 import Ajv from 'ajv';
@@ -160,6 +160,65 @@ test('combined lifecycle: atomic failures, manual pause, VPD preserves weights, 
   p.play();next.seek(0.5);assert.equal(p.playing,false);
   next.stop();assert.deepEqual(snapshot(a.gltf.scene),rest);assert.deepEqual(snapshot(b.gltf.scene),other);
   p.reset(); next.dispose();next.dispose();assert.throws(()=>next.play(),/disposed/);p.dispose();
+});
+
+test('mesh-rooted morph handles pause the model owner and reject sparse vectors atomically', async () => {
+  for (const shape of ['box', 'wedge'] as const) {
+    const a = await base(shape), b = await base(shape);
+    const instances = new Group(); instances.add(a.gltf.scene, b.gltf.scene);
+    let morphNode: Object3D = a.gltf.scene;
+    a.gltf.scene.traverse(node => { if (node.userData.pmxMorph) morphNode = node; });
+    const morph = createMorphRig(morphNode);
+    const p = createVMDPlayer(a.rig!, bindVMD(a.rig!, parseVMD(morphVMD('a')), options('a')));
+    const other = createVMDPlayer(b.rig!, bindVMD(b.rig!, parseVMD(morphVMD('a')), options('a')));
+    p.seek(0.371).play(); other.play();
+    const before = snapshot(a.gltf.scene), time = p.time;
+    const partial = [0, 0, 0, 0]; delete partial[2];
+    for (const handle of [a.morph, morph]) for (const values of [new Array<number>(4), partial]) {
+      assert.throws(() => applyMorphWeights(handle, values), /weight count or FLOAT numeric range/);
+      assert.equal(p.playing, true); assert.equal(p.time, time);
+      assert.deepEqual(snapshot(a.gltf.scene), before);
+    }
+    const manual = [1.3, 0.9, -0.1, 0.2];
+    applyMorphWeights(morph, manual);
+    assert.equal(p.playing, false); assert.equal(other.playing, true);
+    p.update(0.1); assert.deepEqual(getMorphWeights(a.morph), manual);
+    p.play(); resetMorphWeights(morph);
+    assert.equal(p.playing, false); assert.deepEqual(getMorphWeights(a.morph), [0, 0, 0, 0]);
+    p.dispose(); other.dispose();
+  }
+});
+
+test('extension weights affect only the referenced node primitives, excluding nested glTF nodes', async () => {
+  const source = JSON.parse(await readFile('extensions/MMD_animation_vmd/examples/mixed-weights.gltf', 'utf8'));
+  for (const primitiveCount of [1, 2]) for (const childHasTargets of [true, false]) {
+    const json = structuredClone(source);
+    while (json.meshes[0].primitives.length < primitiveCount)
+      json.meshes[0].primitives.push(structuredClone(json.meshes[0].primitives[0]));
+    let childMesh = 0; // Reuse the same mesh definition to require node-instance identity.
+    if (!childHasTargets) {
+      childMesh = 1;
+      json.meshes.push({ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] });
+    }
+    json.nodes[0].children = [1];
+    json.nodes.push({ name: 'Nested wrapper', children: [2] }, { name: 'Unanimated child', mesh: childMesh });
+    const text = JSON.stringify(json), report = await validateString(text);
+    assert.equal(report.issues.numErrors, 0, JSON.stringify(report.issues.messages));
+    const exact = await load(text, true), core = await load(text);
+    const player = getVMDPlayers(exact)[0], mixer = new AnimationMixer(core.scene);
+    mixer.clipAction(core.animations[0]).play(); mixer.setTime(0.5); player.seek(0.5);
+    const child = exact.scene.getObjectByName('Unanimated_child')!;
+    const coreChild = core.scene.getObjectByName('Unanimated_child')!;
+    assert.ok(child); assert.ok(coreChild);
+    const childWeights = meshes(child).map(m => m.morphTargetInfluences ? [...m.morphTargetInfluences] : undefined);
+    assert.deepEqual(childWeights, meshes(coreChild).map(m => m.morphTargetInfluences));
+    const owned = meshes(exact.scene).filter(m => !meshes(child).includes(m));
+    assert.equal(owned.length, primitiveCount);
+    owned.forEach(m => assert.deepEqual(m.morphTargetInfluences, [1.5]));
+    player.stop(); owned.forEach(m => assert.deepEqual(m.morphTargetInfluences, [0]));
+    assert.deepEqual(meshes(child).map(m => m.morphTargetInfluences), childWeights);
+    player.dispose(); mixer.stopAllAction();
+  }
 });
 
 test('combined API/CLI GLB/unpacked, direct bytes and ordinary fallback against independent weights + morph-before-BDEF at keys and 1201 grid', async () => {
