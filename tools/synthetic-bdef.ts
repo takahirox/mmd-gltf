@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 'utf16le' | 'utf8' = 'utf16le', textRecords = false) {
+export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 'utf16le' | 'utf8' = 'utf16le', textRecords = false, shape: 'box' | 'wedge' = 'box') {
   const chunks: Buffer[] = [];
   const u8 = (v: number) => chunks.push(Buffer.from([v & 255]));
   const i16 = (v: number) => { const b = Buffer.alloc(2); b.writeInt16LE(v); chunks.push(b); };
@@ -14,7 +14,7 @@ export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 
   const str = (v: string) => { const b = Buffer.from(v, encoding); i32(b.length); chunks.push(b); };
   chunks.push(Buffer.from('PMX ')); f32(mode === 'qdef' ? 2.1 : 2); u8(8);
   [encoding === 'utf8' ? 1 : 0, textRecords ? 1 : 0, 1, 1, 1, 2, 1, 1].forEach(u8);
-  ['Synthetic BDEF conformance', 'Synthetic BDEF conformance',
+  [shape === 'wedge' ? 'Synthetic VPD wedge' : 'Synthetic BDEF conformance', 'Synthetic BDEF conformance',
     'Original synthetic fixture by mmd-gltf contributors; no third-party assets. No original-MMD equivalence claim.', 'Issue #25'].forEach(str);
   // Six independent quad faces, outward winding in source left-handed coordinates.
   const faces = [
@@ -27,7 +27,9 @@ export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 
   ];
   i32(24);
   for (const face of faces) face.p.forEach((p, i) => {
-    floats(p); floats(face.n); floats([i & 1, i >> 1]);
+    const point = shape === 'wedge' ? [p[0] * 0.75 + p[1] * 0.2, p[1], p[2]] : p;
+    const normal = shape === 'wedge' ? [face.n[0] / 0.75, face.n[1] - face.n[0] * 0.2 / 0.75, face.n[2]] : face.n;
+    floats(point); floats(normal); floats([i & 1, i >> 1]);
     if (textRecords) floats([0, 0, 0, 0]);
     const type = mode === 'sdef' ? 3 : mode === 'qdef' ? 4 : [0, 1, 2, 2][i];
     u8(type);
@@ -54,8 +56,8 @@ export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 
   for (let i = 0; i < 260; i++) {
     str(i === 0 || i === 259 ? '同名.骨 [duplicate]' : textRecords && i === 3 ? '\uFEFF骨😀e\u0301' : `bone ${i}`);
     str(i === 0 || i === 259 ? 'Exact English. [duplicate]' : textRecords && i === 3 ? '\uFEFFEnglish😀' : `English ${i}`);
-    floats(i === 0 ? [1, 1, 2] : i === 259 ? [1, 2, 2] : i === 1 ? [1, 0, 2] : [-1, 0, 1]);
-    i16(i === 0 ? 1 : i === 1 || i === 2 ? -1 : i === 259 ? 0 : 2);
+    floats(i === 0 ? [1, 1, 2] : i === 259 ? (shape === 'wedge' ? [0.5, 1.5, 2.5] : [1, 2, 2]) : i === 1 ? [1, 0, 2] : [-1, 0, 1]);
+    i16(i === 0 ? 1 : i === 1 || i === 2 ? -1 : i === 259 ? (shape === 'wedge' ? 2 : 0) : 2);
     i32(i % 3);
     if (textRecords && i === 2) {
       // All optional PMX 2.0 bone fields: tail reference, append, axes, external parent, IK.
@@ -83,5 +85,6 @@ export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   await mkdir('tests/fixtures', { recursive: true });
   for (const mode of ['bdef', 'sdef', 'qdef'] as const) await writeFile(`tests/fixtures/${mode}.pmx`, syntheticPMX(mode));
+  await writeFile('tests/fixtures/vpd-wedge.pmx', syntheticPMX('bdef', 'utf16le', false, 'wedge'));
   await writeFile('tests/fixtures/bdef-utf8.pmx', syntheticPMX('bdef', 'utf8', true));
 }

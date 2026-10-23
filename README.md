@@ -56,7 +56,9 @@ which tests explicitly skip without an adapter. Views stack on narrow screens.
 The direct PMX is a practical reference, not a bit-identical MikuMikuDance oracle;
 independent ambient/toon/specular models produce documented shading differences.
 Neither Gene view animates or steps IK/physics/morphs. The linked synthetic BDEF
-rig has a repeatable deformation preset and reset; it is not VPD/VMD playback.
+rig loads two VPD poses on two distinct BDEF rigs, supports local files with explicit
+encoding and binding maps, and provides repeatable apply/reset. It applies raw
+bone offsets without solvers; it does not reproduce complete MMD poses.
 The browser runner owns a Vite conformance server on port 43179 and a static
 preview on port 43180. Both browser tests and
 build use the repository prefix `/mmd-gltf/`.
@@ -86,12 +88,30 @@ The PMX converter defaults to a static base pose. Opt in with `--mode bdef`
 to preserve BDEF1/2/4 through core glTF skins, including exact source bone identity.
 The [synthetic rig](examples/rig.html) demonstrates the converter output with
 Toon, core PBR and Outline. SDEF/QDEF, deformation layers, IK/append, physics,
-morph evaluation and motion/pose loading remain unsupported. The outline effect
+morph evaluation and VMD remain unsupported. Solver-free VPD bone offsets are supported;
+see the [VPD contract and APIs](docs/pipeline.md#vpd-bone-offsets). The outline effect
 also accepts core POSITION/NORMAL morph deformation from other assets.
 Source models and derivatives retain their own rights. Gene Light is
 **CC BY 4.0 with additional usage guidelines and retained trademark/design
 rights**, for academic/personal noncommercial scope; contact the authors for
 other commercial use. It is not licensed as repository code.
+
+Convert PMX plus a byte-based VPD (Shift_JIS default, `--vpd-encoding utf-8`
+for UTF-8) with an explicit map when source names are ambiguous:
+
+```sh
+npm run convert -- tests/fixtures/bdef.pmx output/posed.glb --mode bdef --scale 0.2 --vpd tests/fixtures/pose-a.vpd --vpd-map tests/fixtures/pose-a-map.json
+npm run convert -- tests/fixtures/vpd-wedge.pmx output/posed.gltf --mode bdef --scale 0.125 --vpd tests/fixtures/pose-b.vpd --vpd-encoding utf-8 --vpd-map tests/fixtures/pose-b-map.json
+```
+
+The [reusable Three.js VPD API](packages/three-mmd-vpd/index.ts) parses bytes,
+binds exact source names within a model, applies offsets from original rest and
+resets even after posed-asset reload. Resolved poses use core joint transforms;
+versioned `extras` retain source identity, scale and original rest. Missing or
+inconsistent metadata fails clearly. Unmatched names fail by default; partial
+application is explicit and diagnostic. Parent filenames are informational.
+See [provenance and independent synthetic tests](tests/fixtures/README.md) and
+[validation results](docs/validation.md#issue-27-solver-free-vpd-bone-offsets).
 
 ## Contributing
 

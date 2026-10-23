@@ -61,7 +61,7 @@ becomes a shared FLOAT/SCALAR `_MMD_EDGE_SCALE`, attached only to outlined
 primitives, omitted when every stored ratio is exactly one. Zero stays zero.
 Material size is never baked into geometry or ratios. Edge fields and shadow
 flags remain in extras; shadow flags have no runtime effect. Additional UV ZW/unused sets and PMX-specific runtime
-features are omitted with a conversion report. PMD, VMD and VPD are unsupported.
+features are omitted with a conversion report. PMD and VMD are unsupported. Solver-free VPD offsets are supported in BDEF mode below.
 Gene Light contains no shared/custom toon or sphere image; the generic conversion
 tests exercise those modes using synthetic source material configurations.
 
@@ -97,8 +97,11 @@ non-unit sums fail rather than changing substantial source deformation.
 
 The [PMX format document](https://raw.githubusercontent.com/hirakuni45/glfw3_app/master/glfw3_app/docs/PMX_spec.txt)
 allows BDEF4 sums other than one, whereas [core glTF skinning](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#skins)
-requires normalized influences. Original-MMD behavior for abnormal sums remains
-unresolved. Rejecting them preserves the bounded core fallback contract; no
+§3.7.3.3 says FLOAT sums SHOULD be as close as reasonably possible to one (the
+previous wording here incorrectly called this mandatory). The unchanged `1e-6`
+rejection/roundoff-normalization policy is this converter's interoperability
+choice, including compatibility with Three.js loader normalization, rather than
+a core MUST. Original-MMD behavior for abnormal sums remains unresolved; no
 original-renderer equivalence is claimed.
 
 Every joint node carries the following application metadata in core `extras`:
@@ -118,8 +121,8 @@ GLB/glTF reload preserves this data; pinned GLTFLoader exposes it as
 Bind future pose/motion data by source index and retained names, never runtime
 display names. This metadata does not promise deformation-layer ordering,
 IK/append/grants, fixed/local-axis constraints or external-parent semantics.
-Those solvers, SDEF/QDEF, morph evaluation, physics and motion/pose loading remain
-unsupported. They are listed in conversion warnings; parent hierarchy alone does
+Those solvers, SDEF/QDEF, morph evaluation, physics and VMD remain
+unsupported; VPD supports only the solver-free contract below. They are listed in conversion warnings; parent hierarchy alone does
 not implement them. Core skin pose edits are supported with Toon, PBR and Outline
 without a new material or skinning extension.
 
@@ -134,10 +137,152 @@ reinterpret the file. Valid PMX 2.0 BDEF1/2/4 is the tested input contract.
 The [attributed binary fixtures](../tests/fixtures/README.md) and
 [validation evidence](validation.md#issue-25-bdef-core-skinning) document numerical
 tolerances, parser regressions and independent surface/outline measurements.
-The linked `rig.html` demo uses the actual converted fixture, with rest, a
-repeatable 90-degree joint rotation/translation preset and reset. It is synthetic
-BDEF conformance, not VPD/VMD playback or original-MMD equivalence. The existing
-Gene comparison remains static.
+The linked `rig.html` demo loads two actual converted rigs and two VPD byte
+fixtures, with local file loading, encoding selection, explicit binding maps,
+apply/reset, Toon/PBR and Outline controls. This is synthetic solver-free VPD
+conformance. The existing Gene comparison remains static.
+
+## VPD bone offsets
+
+The supported input is **bytes**, decoded with fatal WHATWG `TextDecoder`
+`shift_jis` by default, or explicitly `utf-8`. There is no encoding guess or
+replacement-character recovery. A UTF-8 file BOM is permitted at the start;
+U+FEFF inside names is preserved. LF, CRLF and CR line endings, blank lines, and
+`//` comments (whole-line or trailing) are accepted. The profile requires:
+
+```text
+Vocaloid Pose Data file
+informational-parent.pmx;
+1; // nonnegative record count, maximum 65536
+Bone91{exact source name
+0.25,-0.125,0.5;
+0,0,0,1;
+}
+```
+
+Each record occupies four nonblank, noncomment lines. Names are the exact decoded
+characters after `{`, including leading/trailing spaces, punctuation, combining
+characters and case; no normalization or English aliases are used. Names cannot
+contain braces or `//` in this profile. `BoneN` requires a unique nonnegative
+safe-integer label; it is **not** a PMX index. The parent filename (without its
+`;`) is diagnostic text only, never a file/URL fetch instruction. A count must
+match all complete records. Translation has three and quaternion four finite
+decimal/exponent values separated by commas, terminated by `;`. Nonfinite values,
+truncation, extra tokens/channels, malformed encoding and invalid counts fail
+with record/line context. Zero quaternions or lengths differing from one by more
+than absolute `1e-5` fail; smaller decimal roundoff is normalized. This permits
+six-decimal quaternion export roundoff without accepting material rotations with
+invalid magnitude. No animation or morph channels are invented.
+
+The converter and runtime use [one shared resolver](../packages/mmd-vpd/index.ts).
+It reflects source translation `(x,y,z)` to `(x,y,-z)` and source quaternion
+`(x,y,z,w)` to `(-x,-y,z,w)` exactly once. It scales translation by the model's
+retained `metersPerPMXUnit`, adds to ORIGINAL local rest translation, and composes
+`qLocal = qRest * qOffset`. PMX tails do not supply rest rotations. All joints are
+replaced: omitted bones return to original rest, even if current transforms have
+been edited. A→A, A→B→A and dirty-transform→A produce the same A. Original inverse
+binds never change. Solvers, append/grants, IK, deformation layers and physics are
+not evaluated, so raw offsets are not full MMD pose reproduction.
+
+### Converter workflow
+
+```sh
+npm run convert -- tests/fixtures/bdef.pmx output/posed.glb --mode bdef --scale 0.2 --vpd tests/fixtures/pose-a.vpd --vpd-map tests/fixtures/pose-a-map.json
+npm run convert -- tests/fixtures/vpd-wedge.pmx output/posed.gltf --mode bdef --scale 0.125 --vpd tests/fixtures/pose-b.vpd --vpd-encoding utf-8 --vpd-map tests/fixtures/pose-b-map.json
+```
+
+`convertModel` and `convertPMX` accept `{ mode: 'bdef', scale, vpd: bytes,
+vpdEncoding: 'shift_jis' | 'utf-8', vpdBinding: { mapping, unmatched } }`.
+VPD in static mode fails. `--vpd-map` reads a JSON object whose keys are zero-based
+**record ordinals in file order** and values are original PMX indices; neither
+record labels nor traversal order identify bones. Unmapped records match exact
+`pmxBone.name`. Multiple candidate bones require an explicit mapping. Invalid
+mapping keys/indices and repeated target assignments fail before mutation.
+Unmatched records fail by default; opt in with `--vpd-unmatched ignore` or
+`unmatched: 'ignore'` to apply a partial pose and report all unmatched records.
+An explicit mapping may override the name. The filename never establishes model
+identity. Since VPD has no trustworthy model identifier, the same named pose may
+be deliberately bound independently to different compatible models.
+
+The pose is serialized as core joint translation/rotation, with original inverse
+binds. Ordinary GLTFLoader preserves the resolved pose without a plugin. Both
+material drafts remain optional; core PBR remains independent. Geometry, resources,
+source comments and attribution follow the existing converter paths. No new
+extension is necessary: core glTF expresses the geometry, and application metadata
+expresses binding and reset information.
+
+### Metadata and runtime API
+
+The skeleton container's `extras.mmdPose` stores `{ version: 1, modelId,
+metersPerPMXUnit, boneCount }`. `modelId` is SHA-256 of the converter's serialized
+parsed model and scale; it is a deterministic binding identifier, not an asset
+license or cryptographic authenticity claim. Every bone keeps `extras.pmxBone`
+and adds `extras.pmxRest` with `{ modelId, metersPerPMXUnit, index, name,
+parentIndex, translation, rotation, scale }`. These arrays are original local
+RIGHT-HANDED meter-space rest transforms; current posed transforms must never be
+captured as rest. Scale is `[1,1,1]`; `parentIndex: -1` denotes the container.
+Root extras retain the historical conversion scale/report. Node metadata is
+self-contained because GLTFLoader exposes top-level extras separately from scene
+extras. Ordinary node `userData` preserves the application metadata on reload.
+
+```ts
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { parseVPD, createVPDRig, bindVPD, applyVPD, resetVPD }
+  from './packages/three-mmd-vpd';
+
+const gltf = await new GLTFLoader().loadAsync('posed.glb');
+const rig = createVPDRig(gltf.scene);
+const response = await fetch('pose.vpd');
+if (!response.ok) throw new Error(`Pose fetch failed: ${response.status}`);
+const pose = parseVPD(new Uint8Array(await response.arrayBuffer()));
+const binding = bindVPD(rig, pose, { mapping: { '2': 0, '3': 259 } });
+applyVPD(rig, binding); // replacement, including omitted bones
+applyVPD(rig, binding); // identical result
+resetVPD(rig); // ORIGINAL rest, including after posed-asset reload
+```
+
+Use pinned Three.js `0.186.1`. `createVPDRig` accepts a model-scoped subtree
+containing exactly one container and its skin meshes; it recovers and snapshots
+rest metadata rather than reading the current pose. Missing/version-mismatched
+metadata, inconsistent scale/count/identity/parents and inverse binds disagreeing
+with the rest baseline fail clearly. Inverse-bind consistency permits absolute
+`2e-6 * max(1, abs(expected))` per component for FLOAT storage; sub-meter fixture
+position tests remain bounded by `2e-6` meters. Old converted assets without the
+baseline must be reconverted. The runtime never infers source identity from
+`BoneN`, display names, English aliases, traversal order or skin array position.
+A binding is scoped to a specific rig instance: applying it to another model or
+a second load fails; rebind for each instance. Binding returns immutable
+`appliedRecords` and `unmatched` diagnostics. All validation and numeric resolution
+precedes transform writes. Applying/resetting refreshes matrices, skeletons and
+skinned bounds, retaining the original inverse binds.
+
+Serialization must preserve `pmxBone`, `pmxRest`, `mmdPose`, original inverse binds
+and current core joint transforms. The browser suite also exports runtime-posed
+ordinary Three.js rigs with GLTFExporter to GLB and embedded-resource glTF,
+reloads and resets them. With GLTFExporter, use `includeCustomExtensions: true`
+to retain unknown material drafts from ordinary GLTFLoader's
+`userData.gltfExtensions`, and copy `gltf.userData` into the exported scene's
+`userData` to retain root attribution. This is an application export recipe,
+not a general Toon/Outline TSL material exporter. Exporting a replaced custom
+material requires its own exporter support.
+
+Pose application owns the complete joint TRS while it runs. Stop an animation
+mixer/other joint writer before apply or reset. A future VMD writer must take over
+from ORIGINAL rest, or explicitly bake/compose a base pose by a documented policy;
+it must not silently capture VPD-modified transforms as baseline. A mixer can
+otherwise overwrite the pose on its next update. Dirty-transform replacement is
+tested; no VMD support is claimed. Do not reparent/replace bones after creating a
+rig handle; create a new validated handle after structural changes.
+
+The historical official Three.js r169 [loader](https://raw.githubusercontent.com/mrdoob/three.js/r169/examples/jsm/loaders/MMDLoader.js),
+[parser](https://raw.githubusercontent.com/mrdoob/three.js/r169/examples/jsm/libs/mmdparser.module.js),
+and [pose helper](https://raw.githubusercontent.com/mrdoob/three.js/r169/examples/jsm/animation/MMDAnimationHelper.js)
+provide implementation evidence for decoding, reflection and rest-relative
+composition. They are an alternative implementation, not a normative VPD
+specification or measured original-MMD oracle. This profile deliberately rejects
+ambiguity and reports unmatched records instead of inheriting last-duplicate-wins
+and silent skipping. See [fixture provenance](../tests/fixtures/README.md) and the
+[per-case validation record](validation.md#issue-27-solver-free-vpd-bone-offsets).
 
 ## Three.js integration
 

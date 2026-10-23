@@ -52,3 +52,44 @@ and reset states run for each material path. Position tolerance is `2e-6`; pixel
 comparison permits two encoded levels and at most 0.5% boundary pixels for
 independent FLOAT raster rounding. Reset must exactly match rest. Existing raw
 weight and multiple-influence-set outline coverage remains unchanged.
+
+## Issue #27 VPD fixtures
+
+All new assets are original works by mmd-gltf contributors authored in this
+repository; no third-party pose, model or motion data is included. `pose-a.vpd` is
+actual Shift_JIS/CRLF bytes with four named bone offsets; `pose-b.vpd` is actual
+UTF-8/LF bytes with three differently ordered offsets. Git attributes preserve these encoding/newline bytes across checkouts. Both contain
+Japanese punctuated duplicate names; neither parent filename is a resource dependency.
+Pose A rotates parent 1 about source +X, child 0 about source +Y, and leaf 259
+about +Z, all by 90 degrees, plus translations on four bones. Pose B rotates
+parent 1 about -Z, root 2 about +Y and leaf 259 about -X; it omits child 0 and has
+different translations. The committed JSON maps address duplicate names using
+record ORDINALS, never the unrelated BoneN labels.
+
+`vpd-wedge.pmx` is generated with
+`syntheticPMX('bdef', 'utf16le', false, 'wedge')`: its geometry shears X by
+`0.75*x + 0.2*y`, with inverse-transpose source normals. Its leaf 259 is at
+`[0.5,1.5,2.5]` in PMX coordinates and parented to root 2, rather than child 0.
+It is a distinct rig/geometry, not a text/encoding variant. The earlier
+`bdef.pmx` supplies the box rig unchanged. VPD cases use `0.2` meters/unit for
+the box and `0.125` for the wedge, exercising scale recovery independently.
+
+[Unit/integration tests](../vpd.test.ts) exercise both poses on both rigs through
+API/CLI conversion, GLB and unpacked glTF, ordinary GLTFLoader, repeat application,
+switching and reset after reload, including dirty-transform replacement and
+failure atomicity. The [scalar oracle](../vpd-oracle.ts) uses explicit quarter
+turn formulas, authored hierarchy/offsets and influence patterns, without the
+production pose resolver or emitted joint matrices/inverse binds. Numerical
+position tolerance remains absolute `2e-6` meters; double-precision quaternion
+component/basis comparisons use `1e-12`, sufficient for decimal quaternion
+roundoff and JSON serialization of these short chains. Browser pixel comparisons
+retain two encoded levels and 128 of 25,600 boundary pixels (0.5%). These limits
+are chosen before measurements and do not relax the BDEF baseline.
+
+The built `vpd-conformance.html` tool runs the same independent surface/outline
+raster method with Toon and core PBR on runtime-applied assets, converter-posed
+GLB/glTF, and runtime GLTFExporter GLB/embedded-resource glTF reloads, then resets
+and reapplies. Original-MMD pose reproduction and representative-model fidelity
+remain unmeasured; synthetic conformance cannot establish those goals. IK,
+append/grants, deformation ordering, morphs, physics, advanced skinning and VMD
+remain mandatory outstanding work for the overall project.

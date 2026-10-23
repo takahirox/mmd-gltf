@@ -1,4 +1,6 @@
 import type { Document, Buffer, Scene, Node, vec3 } from '@gltf-transform/core';
+import { createHash } from 'node:crypto';
+import type { PoseModel, RestBone } from '../packages/mmd-vpd';
 import type { PMXModel } from './pmx-to-gltf';
 
 /** Four float32 source weights accumulate at most a few ulps of roundoff near one. */
@@ -37,14 +39,18 @@ export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, mesh
     }
     path.forEach(index => { visited[index] = 2; });
   });
-  const root = doc.createNode('PMX skeleton');
+  const modelId = createHash('sha256').update(JSON.stringify({ model, scale })).digest('hex');
+  const root = doc.createNode('PMX skeleton').setExtras({ mmdPose: { version: 1, modelId, metersPerPMXUnit: scale, boneCount: bones.length } });
+  const rest: RestBone[] = [];
   scene.addChild(root);
   const nodes = bones.map((bone, i) => {
     const parent = bone.parentIndex < 0 ? [0, 0, 0] : positions[bone.parentIndex];
     const translation = positions[i].map((v, axis) => v - parent[axis]) as vec3;
     if (!translation.every(v => Number.isFinite(v) && Number.isFinite(Math.fround(v)))) throw new Error(`Bone ${i}: unsupported relative position range`);
+    rest.push({ index: i, name: bone.name, parentIndex: bone.parentIndex, translation, rotation: [0, 0, 0, 1], scale: [1, 1, 1] });
     return doc.createNode(bone.name).setTranslation(translation).setExtras({
       pmxBone: { index: i, name: bone.name, englishName: bone.englishName },
+      pmxRest: { ...rest[i], modelId, metersPerPMXUnit: scale },
     });
   });
   const skin = doc.createSkin('PMX BDEF').setSkeleton(root);
@@ -83,6 +89,7 @@ export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, mesh
   });
   if (adjusted.length) warnings.push(`Normalized roundoff-sized BDEF weight sums (tolerance ${BDEF_WEIGHT_TOLERANCE}) at ${adjusted.length} vertices [${adjusted.slice(0, 32).join(', ')}${adjusted.length > 32 ? ', …' : ''}].`);
   return {
+    poseModel: { version: 1, modelId, metersPerPMXUnit: scale, bones: rest } as PoseModel, nodes,
     joints: doc.createAccessor('PMX joints').setBuffer(buffer).setType('VEC4').setArray(joints),
     weights: doc.createAccessor('PMX weights').setBuffer(buffer).setType('VEC4').setArray(weights),
   };

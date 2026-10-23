@@ -45,3 +45,30 @@ await writeFile('public/bdef/conversion.json', JSON.stringify({ mode: 'bdef', me
   bytes: rigBytes.length, sha256: createHash('sha256').update(rigBytes).digest('hex'), warnings: rig.warnings,
 }, null, 2) + '\n');
 console.log(`Generated ${rigBytes.length} byte synthetic BDEF GLB.`);
+
+// Two original solver-free rigs × two attributed byte poses, including posed reloads.
+await rm('public/vpd', { recursive: true, force: true });
+await mkdir('public/vpd', { recursive: true });
+for (const pose of ['a', 'b']) for (const suffix of ['.vpd', '-map.json']) await copyFile(`tests/fixtures/pose-${pose}${suffix}`, `public/vpd/pose-${pose}${suffix}`);
+const poseEvidence: object[] = [];
+for (const [name, source, scale] of [['box', 'bdef.pmx', 0.2], ['wedge', 'vpd-wedge.pmx', 0.125]] as const) {
+  const output = `public/vpd/${name}`;
+  await mkdir(output, { recursive: true });
+  await copyFile(`tests/fixtures/${source}`, `${output}/source.pmx`);
+  for (const pose of ['rest', 'a', 'b'] as const) {
+    const vpd = pose === 'rest' ? undefined : await readFile(`tests/fixtures/pose-${pose}.vpd`);
+    const mapping = pose === 'rest' ? undefined : JSON.parse(await readFile(`tests/fixtures/pose-${pose}-map.json`, 'utf8'));
+    const result = await convertModel(parsePMX(await readFile(`tests/fixtures/${source}`)), '.', {
+      mode: 'bdef', scale, vpd, vpdEncoding: pose === 'b' ? 'utf-8' : 'shift_jis', vpdBinding: { mapping },
+    });
+    result.document.getRoot().setExtras({ ...result.document.getRoot().getExtras(),
+      attribution: 'Original synthetic PMX geometry/rig and VPD poses by mmd-gltf contributors, Issues #25/#27; authored in this repository. No third-party assets.',
+      changes: 'Solver-free VPD bone offsets resolved into core joint transforms; original inverse binds and rest metadata retained. No original-MMD parity claim.',
+    });
+    for (const extension of ['glb', 'gltf']) await result.io.write(`${output}/${pose}.${extension}`, result.document);
+    const data = await readFile(`${output}/${pose}.glb`);
+    poseEvidence.push({ rig: name, pose, scale, bytes: data.length, sha256: createHash('sha256').update(data).digest('hex'), warnings: result.warnings });
+  }
+}
+await writeFile('public/vpd/conversion.json', JSON.stringify({ attribution: 'Original synthetic assets by mmd-gltf contributors; authored in this repository.', cases: poseEvidence }, null, 2) + '\n');
+console.log('Generated two VPD rigs × rest/two poses in GLB and unpacked glTF.');
