@@ -54,7 +54,7 @@ core `MASK` and `alphaCutoff`.
 
 Both extensions are used, never required, so ordinary glTF viewers can load the
 fallback. The default `static` mode keeps the stored base-pose geometry and reports omitted
-bones/skins and runtime features. The opt-in `bdef` mode is described below.
+bones/skins and runtime features. The opt-in `bdef` mode is described below; [mixed SDEF](#mixed-sdef-conversion-and-runtime) adds spherical deformation.
 Neither mode evaluates SDEF, IK, grants or physics. Both retain PMX vertex POSITION morphs. BDEF mode supports synchronized solver-free VMD bones and vertex weights. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
 copied unchanged (defaults `[0,0,0,1]` and `1`). Signed per-vertex `edgeRatio`
 becomes a shared FLOAT/SCALAR `_MMD_EDGE_SCALE`, attached only to outlined
@@ -129,8 +129,8 @@ GLB/glTF reload preserves this data; pinned GLTFLoader exposes it as
 Bind future pose/motion data by source index and retained names, never runtime
 display names. This metadata does not promise deformation-layer ordering,
 IK/append/grants, fixed/local-axis constraints or external-parent semantics.
-Those solvers, SDEF/QDEF, non-vertex morph evaluation, physics and scene VMD execution remain
-unsupported; VPD supports only the solver-free contract below. They are listed in conversion warnings; parent hierarchy alone does
+Those solvers, QDEF, non-vertex morph evaluation, physics and scene VMD execution remain
+unsupported. SDEF is available in the separate opt-in mode; VPD supports only the solver-free contract below. They are listed in conversion warnings; parent hierarchy alone does
 not implement them. Core skin pose edits are supported with Toon, PBR and Outline
 without a new material or skinning extension.
 
@@ -512,3 +512,59 @@ technical demonstration; other use categories require a new review.
 After the merge-triggered workflow, perform the required public checks in
 [the validation record](validation.md#required-post-merge-verification).
 Local preview does not establish publication success.
+
+## Mixed SDEF conversion and runtime
+
+Use `--mode sdef` (API `mode: 'sdef'`) for PMX 2.0 mixed BDEF/SDEF. Static is
+still the default and strict BDEF still rejects SDEF. QDEF/PMX 2.1 remain rejected.
+The optional [MMD_skinning_sdef draft](../extensions/MMD_skinning_sdef/README.md)
+preserves an explicit selector and original metric C/R0/R1 with ordered influence
+slots. Core skins are a deliberately approximate BDEF2 fallback. Existing VMD,
+VPD, vertex morph and original-rest metadata are retained in GLB and unpacked glTF.
+
+```ts
+import { MMDSDEFPlugin, MMDSDEFExporterPlugin } from '../packages/three-mmd-sdef';
+const loader = new GLTFLoader()
+  .register(parser => new MMDSDEFPlugin(parser))
+  .register(parser => new MMDOutlinePlugin(parser));
+// MMDToonPlugin and MMDVMDPlugin can be registered independently.
+const asset = await loader.loadAsync('model.glb');
+const exporter = new GLTFExporter()
+  .register(writer => new MMDSDEFExporterPlugin(writer));
+const output = await exporter.parseAsync(asset.scene, {
+  binary: true, includeCustomExtensions: true,
+});
+```
+
+Register SDEF before Outline so cloned per-instance surface materials have final
+associations before Outline resolves alpha metadata. SDEF wraps instance materials
+and mesh CPU hooks without global Three.js changes. It supports NodeMaterial Toon
+and standard PBR (converted to MeshStandardNodeMaterial), mixed vertices, separate
+instances, multiple material primitives, rigid bind transforms and common scene
+placement. Shader palette reads follow r186's uniform-buffer/bone-texture paths;
+an object update refreshes the skeleton before buffer uploads on every pass.
+Morphs run before exactly one SDEF or BDEF evaluation. SDEF normals rotate; BDEF
+surface/Outline conventions remain distinct. Scale/shear/reflection in relative
+joint deformation fails with a diagnostic. Common scene scale cancels before the
+rigidity check; scene placement still transforms the resulting surface normally.
+
+`getVertexPosition`, ray queries and mesh bounds use SDEF through an instance
+`applyBoneTransform` hook. Existing VPD/morph/VMD APIs refresh those bounds. If an
+application writes joint transforms directly, update the complete scene hierarchy
+and recompute mesh bounds, as with ordinary Three.js skinned meshes.
+`validateSDEFTransforms(mesh)` is available for explicit diagnostics.
+
+Use the exporter adapter for runtime-applied poses: it writes new accessors and
+primitive references from actual geometry. Copying `userData.gltfExtensions`
+accessor indices from a loaded file is invalid. Core joint transforms, inverse
+binds and original rest extras survive pose export/reset/reapply. Exporting active
+Toon materials uses GLTFExporter's ordinary material limitations; preservation of
+unknown material drafts uses the existing ordinary-material export path.
+
+Keep plugin instances if unloading. Release Outline effects first, call
+`MMDSDEFPlugin.dispose()` to restore original geometry/materials/hooks and release
+its owned resources, then dispose source materials/geometries and other plugins.
+Do not use disposed assets as SDEF scenes. The built rig Demo provides both mixed
+samples, combined VMD transport, VPD apply/reset, vertex morph controls and an
+explicit BDEF2 comparison. Synthetic assets are original repository derivatives;
+original-MMD SDEF position/normal fidelity remains unmeasured.

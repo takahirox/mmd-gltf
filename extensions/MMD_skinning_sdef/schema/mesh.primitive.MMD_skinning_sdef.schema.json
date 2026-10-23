@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MMD_skinning_sdef primitive",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["selector", "c", "r0", "r1"],
+  "properties": {
+    "selector": {"type": "integer", "minimum": 0},
+    "c": {"type": "integer", "minimum": 0},
+    "r0": {"type": "integer", "minimum": 0},
+    "r1": {"type": "integer", "minimum": 0}
+  }
+}

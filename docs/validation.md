@@ -847,3 +847,113 @@ evidence is inferred from this run.
 | `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | 12 passed, zero failures; two optional native WebGPU skips (no adapter), 5.6 minutes. |
 | `npm run check:links` | Passed, 191 links. |
 | `git diff --check` | Passed. |
+
+## Issue #33: mixed SDEF conversion and playback
+
+Local measurements on 2026-10-24 use the pinned lockfile (`npm ci`), Node
+24.12.0, Three.js 0.186.1, mmd-parser 1.1.4, glTF Transform 4.5.1 and Playwright
+1.56.1 Chromium/SwiftShader. The [SDEF draft](../extensions/MMD_skinning_sdef/README.md),
+[runtime/export contract](pipeline.md#mixed-sdef-conversion-and-runtime),
+[fixture provenance](../tests/fixtures/README.md#issue-33-mixed-sdef-variants) and
+[machine-readable measurements](sdef-validation.json) describe the same cases.
+These are local results, not claims about completed hosted CI or original MMD.
+
+| Measurement | Observed maximum | Required limit |
+| --- | ---: | ---: |
+| CPU position component error | 2.729001513518403e-7 m | 2e-6 m |
+| GPU position component error (RGBA32F readback) | 7.996936788362552e-5 m | 1e-4 m |
+| GPU normalized normal component error | 1.3919622870173232e-4 | 5e-4 |
+| Independently baked raster mismatches in 160×160 | 5 pixels across 176 comparisons | 128 pixels, two encoded levels |
+| Ordinary-loader BDEF2 difference from SDEF | 0.32842715404709455 m | Must exceed 0.001 m for the distinguishing case |
+
+The box uses 0.2 m/PMX unit; the geometrically and hierarchically distinct wedge
+uses 0.125 m/unit. Both have 24 source vertices, 260 joints, two material primitives,
+zero and nonzero centers, ordered asymmetric influence pairs, endpoint weights
+and active additive vertex morphs. The standalone one-metre analytical arc also
+distinguishes SDEF from BDEF2. Expected positions/normals use independent authored
+geometry and scalar VMD/VPD predictions with expanded center correction, not
+runtime SDEF evaluators, emitted geometry or live joint matrices.
+
+The CPU sweep covers both combined motions across 121 times over 0..1.5 seconds
+plus fractional probes, both VPD poses, bounds, rest/reset/reapply and separate
+instances. Binary fixtures directly establish retention of type and C/R0/R1 by
+the installed published parser, Z reflection once and metric scaling once.
+API/CLI determinism, core validation, ordered endpoint slots, malformed input,
+quaternion sign/near-identical cases, rigid nonidentity binds, common scene
+placement, shared materials and disposal are tested. All 32 generated SDEF
+GLB/unpacked glTF assets and the complete extension example have zero core
+validator errors; unknown-extension/unused-accessor notices are expected because
+the core validator does not evaluate this draft's semantics.
+
+The browser matrix covers Toon and plugin-enabled PBR plus Outline on both rigs,
+both combined VMD motions and both VPD poses, byte application, converter GLB/glTF
+and runtime VPD export/reload in both formats. The exporter adapter resolves new
+accessors rather than copying source indices. Float readbacks inspect shader
+positions and normalized normals; separate rasters inspect actual materials and
+Outline. Additional probes force 1,100 joints through bone textures, rigid
+nonidentity bind transforms, scene placement and successive pose/rest/pose passes.
+The built Demo exercises fractional seeking, morph controls, BDEF2 comparison,
+VPD/VMD handoff, resets and invalid local-file recovery.
+
+During development the inherited 180-second budget was insufficient for the new
+176-comparison SDEF test; its dedicated budget is now 420 seconds. No numeric or
+raster threshold changed. An intermediate full browser run had one existing BDEF
+Demo five-second rig-readiness timeout (13 passes, two optional WebGPU skips).
+Unnecessary SDEF hierarchy/bounds work was removed from BDEF-only loads; the
+isolated existing VMD Demo lifecycle then passed. Initial load-time SDEF bounds
+also exposed stale sibling joint worlds, fixed by refreshing the complete SDEF
+hierarchy before computing bounds.
+
+Original-MMD SDEF positions, normal-sensitive rendering and representative model
+fidelity remain unmeasured. Native WebGPU SDEF execution was not measured here;
+the two existing optional native-WebGPU browser cases skip without an adapter.
+Rigid joint transforms are supported; joint scale/shear/reflection is diagnosed.
+QDEF/PMX 2.1, IK/append ordering, physics, other morph families, scene animation
+and representative original-MMD fidelity remain overall work. Core FLOAT
+normalization remains SHOULD, with a documented stricter converter policy.
+No post-merge verification is required.
+
+Initial local gate results before the review fixes below:
+
+| Command | Completed result |
+| --- | --- |
+| `npm run build` | Pass; deterministic fixture generation and production Vite build. Existing chunk-size advisory remains. |
+| `npm run typecheck` | Pass. |
+| `npm test` | 44 passed, zero failures/skips; includes all nine new SDEF tests and the existing extension suites. |
+| `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | 14 passed, two optional native-WebGPU skips, zero failures; full fresh rerun completed in 11.2 minutes. |
+| `npm run check:links` | Pass; 216 local documentation/asset links and anchors. |
+| `git diff --check` and `git diff --cached --check` | Pass after final staging. |
+
+The final full browser run includes the existing Gene, BDEF, VMD, VPD, morph,
+Toon and Outline checks, plus the two new SDEF checks. The earlier readiness
+failure did not recur. Existing VMD/morph/VPD raster comparisons still report
+zero mismatches; SDEF uses the unchanged two-level/128-pixel acceptance budget.
+
+### Issue #33 review fixes: duplicate joints and interleaved selectors
+
+The earlier draft assumed duplicate SDEF joints could retain two nonzero weights.
+[Core glTF skinned mesh attributes](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#skinned-mesh-attributes)
+forbid multiple nonzero weights for one joint at a vertex. The corrected draft
+retains both ordered indices but permits only one active weight for duplicate
+pairs. The converter writes [1, 0] for these pairs: identical palettes reduce SDEF
+to a single rigid transform for any original weight and C/R0/R1, preserving
+deformation and core fallback. Distinct pairs keep their ordered weights.
+
+Regression coverage uses both rig families, zero/nonzero centers, weights 0,
+0.25 and 1, and joints 2 and 259. Every resulting GLB and unpacked glTF has zero
+core-validator errors. Plugin and ordinary-loader queries agree with independent
+90-degree rotation/translation calculations within the existing 2e-6 m limit.
+
+The shared accessor decoder now distinguishes data from mesh indices explicitly.
+An UNSIGNED_BYTE SCALAR selector with byteStride 4 and byteOffset 1 passes core
+validation and loads with correct selection and arc deformation. Mesh indices
+with byteStride remain rejected; the existing sparse validation remains covered.
+
+The full Node suite passes 47 tests with zero failures/skips, including the three
+new regressions. The 176-comparison SDEF GPU matrix reproduces the maxima above:
+7.996936788362552e-5 m position error, 1.3919622870173232e-4 normal component error
+and five raster mismatches. Build, typecheck, 216 local links and whitespace
+checks pass. The complete Chromium browser rerun passes 14 tests in 11.1 minutes
+with zero failures and two optional native-WebGPU skips (no adapter), including
+the SDEF Demo and all existing Gene/BDEF/VMD/VPD/morph/Toon/Outline coverage.
+These remain local synthetic measurements.

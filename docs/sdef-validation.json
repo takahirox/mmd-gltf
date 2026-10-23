@@ -1,0 +1,204 @@
+{
+  "date": "2026-10-24",
+  "environment": {
+    "node": "24.12.0",
+    "three": "0.186.1",
+    "mmd-parser": "1.1.4",
+    "gltf-transform": "4.5.1",
+    "playwright": "1.56.1",
+    "renderer": "WebGPURenderer forceWebGL, Chromium SwiftShader"
+  },
+  "fixtures": {
+    "boxMetersPerPMXUnit": 0.2,
+    "wedgeMetersPerPMXUnit": 0.125,
+    "verticesPerPrimitive": 24,
+    "materialPrimitivesPerRig": 2,
+    "jointsPerRig": 260,
+    "stressJoints": 1100
+  },
+  "limits": {
+    "cpuPositionMeters": 2e-06,
+    "gpuPositionMeters": 0.0001,
+    "gpuNormalizedNormalComponent": 0.0005,
+    "rasterEncodedLevels": 2,
+    "rasterMismatchesPer160x160Image": 128
+  },
+  "measured": {
+    "cpuMaximumPositionMeters": 2.729001513518403e-07,
+    "gpuMaximumPositionMeters": 7.996936788362552e-05,
+    "gpuMaximumNormalizedNormalComponent": 0.00013919622870173232,
+    "ordinaryLoaderBDEF2MaximumDifferenceMeters": 0.32842715404709455,
+    "rasterComparisons": 176,
+    "maximumOraclePixelMismatches": 5
+  },
+  "rasterGroups": [
+    {
+      "rig": "box",
+      "material": "toon",
+      "source": "bytes",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 4
+    },
+    {
+      "rig": "box",
+      "material": "toon",
+      "source": "glb",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 4
+    },
+    {
+      "rig": "box",
+      "material": "toon",
+      "source": "gltf",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 4
+    },
+    {
+      "rig": "box",
+      "material": "toon",
+      "source": "export-glb",
+      "rasterComparisons": 4,
+      "maximumOraclePixelMismatches": 4
+    },
+    {
+      "rig": "box",
+      "material": "toon",
+      "source": "export-gltf",
+      "rasterComparisons": 4,
+      "maximumOraclePixelMismatches": 4
+    },
+    {
+      "rig": "box",
+      "material": "pbr",
+      "source": "bytes",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 5
+    },
+    {
+      "rig": "box",
+      "material": "pbr",
+      "source": "glb",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 5
+    },
+    {
+      "rig": "box",
+      "material": "pbr",
+      "source": "gltf",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 5
+    },
+    {
+      "rig": "box",
+      "material": "pbr",
+      "source": "export-glb",
+      "rasterComparisons": 4,
+      "maximumOraclePixelMismatches": 5
+    },
+    {
+      "rig": "box",
+      "material": "pbr",
+      "source": "export-gltf",
+      "rasterComparisons": 4,
+      "maximumOraclePixelMismatches": 5
+    },
+    {
+      "rig": "wedge",
+      "material": "toon",
+      "source": "bytes",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 1
+    },
+    {
+      "rig": "wedge",
+      "material": "toon",
+      "source": "glb",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 1
+    },
+    {
+      "rig": "wedge",
+      "material": "toon",
+      "source": "gltf",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 1
+    },
+    {
+      "rig": "wedge",
+      "material": "toon",
+      "source": "export-glb",
+      "rasterComparisons": 4,
+      "maximumOraclePixelMismatches": 1
+    },
+    {
+      "rig": "wedge",
+      "material": "toon",
+      "source": "export-gltf",
+      "rasterComparisons": 4,
+      "maximumOraclePixelMismatches": 1
+    },
+    {
+      "rig": "wedge",
+      "material": "pbr",
+      "source": "bytes",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 2
+    },
+    {
+      "rig": "wedge",
+      "material": "pbr",
+      "source": "glb",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 2
+    },
+    {
+      "rig": "wedge",
+      "material": "pbr",
+      "source": "gltf",
+      "rasterComparisons": 12,
+      "maximumOraclePixelMismatches": 2
+    },
+    {
+      "rig": "wedge",
+      "material": "pbr",
+      "source": "export-glb",
+      "rasterComparisons": 4,
+      "maximumOraclePixelMismatches": 2
+    },
+    {
+      "rig": "wedge",
+      "material": "pbr",
+      "source": "export-gltf",
+      "rasterComparisons": 4,
+      "maximumOraclePixelMismatches": 2
+    }
+  ],
+  "limitsOfEvidence": [
+    "Original-MMD SDEF positions and normals unmeasured.",
+    "Native WebGPU SDEF execution and representative original-MMD fidelity not established.",
+    "Ordinary-loader BDEF2 is approximation.",
+    "Results are bounded synthetic local measurements, not hosted CI results or a continuous-domain proof."
+  ],
+  "checks": {
+    "build": "passed",
+    "typecheck": "passed",
+    "nodeTests": {
+      "passed": 47,
+      "failed": 0,
+      "skipped": 0
+    },
+    "browserTests": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 2,
+      "elapsedMinutes": 11.1,
+      "skipReason": "Existing optional native-WebGPU cases: no adapter."
+    },
+    "links": {
+      "passed": true,
+      "count": 216
+    },
+    "diffWhitespace": "passed",
+    "hostedCI": "not executed for this checkpoint"
+  }
+}

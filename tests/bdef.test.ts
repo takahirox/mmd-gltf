@@ -169,6 +169,24 @@ test('binary BDEF fixture preserves hierarchy, identity, bind pose and analytic 
   console.log(`BDEF: 24 vertices × rest/deformed × GLB/glTF, 260 joints; absolute tolerance ${epsilon}; validator zero errors; deterministic bytes.`);
 });
 
+test('BDEF validation rejects sparse influences including inactive slots', async () => {
+  const source = parsePMX(await fixture());
+  for (const mode of ['bdef', 'sdef'] as const) for (const type of [0, 1, 2]) {
+    const vertex = source.vertices.findIndex(v => v.type === type);
+    assert.ok(vertex >= 0);
+    for (const field of ['skinIndices', 'skinWeights'] as const) {
+      for (let component = 0; component < source.vertices[vertex][field]!.length; component++) {
+        const model = structuredClone(source);
+        // Only slot zero is active: missing inactive indices/weights must also fail.
+        model.vertices[vertex].skinWeights = source.vertices[vertex].skinWeights!.map((_, i) => i === 0 ? 1 : 0);
+        delete model.vertices[vertex][field]![component];
+        await assert.rejects(convertModel(model, '.', { mode }), /Vertex \d+: /,
+          `${mode}, type ${type}, ${field}[${component}] must reject a missing component`);
+      }
+    }
+  }
+});
+
 test('BDEF validation rejects unsupported modes, malformed hierarchy, active references and abnormal weights', async () => {
   const source = parsePMX(await fixture());
   const reject = async (change: (m: typeof source) => void, pattern: RegExp) => {

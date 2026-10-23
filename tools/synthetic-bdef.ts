@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 'utf16le' | 'utf8' = 'utf16le', textRecords = false, shape: 'box' | 'wedge' = 'box', vertexMorphs = false) {
+export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' | 'mixed-sdef' = 'bdef', encoding: 'utf16le' | 'utf8' = 'utf16le', textRecords = false, shape: 'box' | 'wedge' = 'box', vertexMorphs = false) {
   const chunks: Buffer[] = [];
   const u8 = (v: number) => chunks.push(Buffer.from([v & 255]));
   const i16 = (v: number) => { const b = Buffer.alloc(2); b.writeInt16LE(v); chunks.push(b); };
@@ -26,18 +26,19 @@ export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' = 'bdef', encoding: 
     { n: [0, -1, 0], p: [[0, 0, 3], [0, 0, 1], [2, 0, 1], [2, 0, 3]] },
   ];
   i32(24);
-  for (const face of faces) face.p.forEach((p, i) => {
+  for (const [f, face] of faces.entries()) face.p.forEach((p, i) => {
     const point = shape === 'wedge' ? [p[0] * 0.75 + p[1] * 0.2, p[1], p[2]] : p;
     const normal = shape === 'wedge' ? [face.n[0] / 0.75, face.n[1] - face.n[0] * 0.2 / 0.75, face.n[2]] : face.n;
     floats(point); floats(normal); floats([i & 1, i >> 1]);
     if (textRecords) floats([0, 0, 0, 0]);
-    const type = mode === 'sdef' ? 3 : mode === 'qdef' ? 4 : [0, 1, 2, 2][i];
+    const type = mode === 'sdef' || mode === 'mixed-sdef' && i !== 0 ? 3 : mode === 'qdef' ? 4 : [0, 1, 2, 2][i];
     u8(type);
     if (type === 0) i16(259);
+    else if (type === 3 && mode === 'mixed-sdef') { [259, 2].forEach(i16); f32(i === 1 ? 0.25 : i === 2 ? 0 : 1); }
     else if (type === 1 || type === 3) { [0, 2].forEach(i16); f32(0.25); }
     else if (i === 3) { [259, 259, -1, 2].forEach(i16); floats([0.25, 0.5, 0, 0.25]); }
     else { [0, 1, 2, 259].forEach(i16); floats([0.1, 0.2, 0.3, 0.4]); }
-    if (type === 3) floats([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    if (type === 3) floats(mode === 'mixed-sdef' && f !== 0 ? [0.5, 1, 2, 0.25, 0.75, 1.5, -0.25, 1.25, 2.5] : [0, 0, 0, 0, 0, 0, 0, 0, 0]);
     f32(1);
   });
   i32(36);
