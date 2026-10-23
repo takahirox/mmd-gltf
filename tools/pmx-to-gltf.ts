@@ -98,7 +98,7 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
   if (!model.vertices.length || !model.faces.length) throw new Error('PMX has no geometry');
   if (mode === 'sdef') model.vertices.forEach((v, i) => {
     for (const [field, size] of [['position', 3], ['normal', 3], ['uv', 2]] as const) {
-      if (!Array.isArray(v[field]) || v[field].length !== size || !v[field].every(Number.isFinite)) throw new Error(`Vertex ${i}: invalid ${field} layout`);
+      if (!Array.isArray(v[field]) || v[field].length !== size || ![...v[field]].every(Number.isFinite)) throw new Error(`Vertex ${i}: invalid ${field} layout`);
     }
   });
   const warnings = [mode === 'static' ? `Static base pose only: omitting ${model.bones.length} bones, ${model.rigidBodies.length} bodies, ${model.constraints.length} joints; no skinning, IK, grants or animation.`

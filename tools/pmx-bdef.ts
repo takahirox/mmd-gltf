@@ -21,7 +21,7 @@ export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, mesh
   if (unsupported.size) throw new Error(`${allowSDEF ? 'SDEF' : 'BDEF'} mode rejects unsupported skinning: ${[...unsupported].map(([mode, indices]) => `${mode}: ${indices.length} vertices [${indices.slice(0, 32).join(', ')}${indices.length > 32 ? ', …' : ''}]`).join('; ')}`);
 
   const positions = bones.map((bone, i) => {
-    if (bone.position.length !== 3 || !bone.position.every(Number.isFinite)) throw new Error(`Bone ${i}: non-finite or invalid position`);
+    if (bone.position.length !== 3 || ![...bone.position].every(Number.isFinite)) throw new Error(`Bone ${i}: non-finite or invalid position`);
     const p = bone.parentIndex;
     if (!Number.isInteger(p) || p < -1 || p >= bones.length) throw new Error(`Bone ${i}: invalid parent ${p}`);
     const position = bone.position.map(v => v * scale);
@@ -69,7 +69,11 @@ export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, mesh
   vertices.forEach((vertex, i) => {
     const count = [1, 2, 4, 2][vertex.type!];
     const indices = vertex.skinIndices, values = vertex.skinWeights;
-    if (!indices || !values || indices.length !== count || values.length !== count) throw new Error(`Vertex ${i}: malformed BDEF influences`);
+    if (!Array.isArray(indices) || !Array.isArray(values) || indices.length !== count || values.length !== count) throw new Error(`Vertex ${i}: malformed BDEF influences`);
+    // Indexed reads also validate holes, which every/some/forEach would skip.
+    for (let j = 0; j < count; j++) {
+      if (indices[j] === undefined || values[j] === undefined) throw new Error(`Vertex ${i}: malformed BDEF influences at slot ${j}`);
+    }
     if (vertex.type === 3) {
       // Retain both ordered joint slots even at endpoint weights. A duplicate
       // pair is one rigid transform for every weight, so combine its weights

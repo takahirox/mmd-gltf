@@ -8,7 +8,7 @@ export function createSDEFAttributes(doc: Document, buffer: Buffer, model: PMXMo
   const vectors = (field: 'skinC' | 'skinR0' | 'skinR1') => new Float32Array(model.vertices.flatMap((v, i) => {
     if (v.type !== 3) return [0, 0, 0];
     const value = v[field];
-    if (!value || value.length !== 3 || !value.every(x => Number.isFinite(x) && Number.isFinite(Math.fround(x * scale)))) throw new Error(`Vertex ${i}: invalid SDEF ${field} vector/FLOAT range`);
+    if (!Array.isArray(value) || value.length !== 3 || ![...value].every(x => Number.isFinite(x) && Number.isFinite(Math.fround(x * scale)))) throw new Error(`Vertex ${i}: invalid SDEF ${field} vector/FLOAT range`);
     // Pinned parser already reflected Z; metric scaling happens here only.
     return value.map(x => x * scale);
   }));

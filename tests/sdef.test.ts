@@ -183,6 +183,25 @@ test('SDEF analytical arc, translations, endpoints, quaternion signs and near-id
     assert.ok(Number.isFinite(run(0.25,matrix).normal.length()));
   }
 });
+test('SDEF conversion rejects sparse vectors and ordered influences before serialization', async () => {
+  const source = parsePMX(await readFile('tests/fixtures/sdef-box.pmx'));
+  for (const vertex of [1, 5]) {
+    for (const field of ['position', 'normal', 'uv', 'skinC', 'skinR0', 'skinR1', 'skinIndices', 'skinWeights'] as const) {
+      for (let component = 0; component < source.vertices[vertex][field]!.length; component++) {
+        const model = structuredClone(source);
+        delete model.vertices[vertex][field]![component];
+        await assert.rejects(convertModel(model, '.', { mode: 'sdef' }), /Vertex \d+: /,
+          `vertex ${vertex}, ${field}[${component}] must reject a missing component`);
+      }
+    }
+  }
+  for (let component = 0; component < 3; component++) {
+    const model = structuredClone(source);
+    delete model.bones[0].position[component];
+    await assert.rejects(convertModel(model, '.', { mode: 'sdef' }), /Bone 0: /);
+  }
+});
+
 test('SDEF rejects malformed vectors, ordered references, weights, QDEF and runtime nonrigid joints',async()=>{
   const source=parsePMX(await readFile('tests/fixtures/sdef-box.pmx'));
   for(const change of [(m:any)=>m.vertices[1].skinC.pop(),(m:any)=>m.vertices[1].skinR0[0]=Infinity,(m:any)=>m.vertices[1].skinR1[0]=1e40,(m:any)=>m.vertices[2].skinIndices[0]=-1,(m:any)=>m.vertices[1].skinWeights=[0.1,0.5],(m:any)=>m.vertices[1].type=4]) {
