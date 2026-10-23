@@ -2,6 +2,31 @@
 
 ## Issue #25: BDEF core skinning
 
+### UTF-8 source-identity review fix
+
+Revision evidence on 2026-10-24: the converter now transcodes UTF-8 PMX 2.0
+text buffers before the pinned parser's UTF-16LE reader. The attributed binary
+regression verifies exact Japanese/English names (including duplicates, odd/even
+byte lengths, supplementary Unicode, leading U+FEFF and combining characters)
+after parsing, GLB/glTF conversion and reload, and GLTFLoader display-name changes.
+Its generated UTF-16LE counterpart produces identical transcoded bytes; numeric
+records and the original input are unchanged. Optional text-bearing record
+layouts, malformed UTF-8, truncation and existing SDEF/QDEF rejection are covered.
+All four converted outputs have zero core-validator errors.
+
+| Revision check | Actual result |
+| --- | --- |
+| `npm ci` | Passed; two existing audit findings (one low, one high) |
+| `npm run build` | Passed; existing bundle-size warning |
+| `npm run typecheck` | Passed |
+| `npm test` | Passed: 16 unit/integration tests and existing Toon/Outline CPU/schema/asset suites |
+| `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | Seven passed; two optional native-WebGPU tests skipped because no adapter was available |
+| WebGL2 conformance | 43 Toon vectors, 109 Outline checks and 12 BDEF comparisons passed; BDEF maximum position error `3.3527612686157227e-8` meters, zero oracle pixel mismatches, exact reset |
+| `npm run check:links` | Passed: 122 local links/anchors and built example assets |
+| `git diff --check` | Passed |
+
+### Initial implementation evidence
+
 Local pre-merge evidence on 2026-10-23: Node.js 24.12.0, npm 11.6.2,
 Darwin ARM64, lockfile Three.js 0.186.1, glTF Transform 4.5.1,
 mmd-parser 1.1.4 and Playwright Chromium headless/SwiftShader. No dependency

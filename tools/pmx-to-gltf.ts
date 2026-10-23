@@ -7,6 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { EXTENSION_NAME, validatePayload, type ToonPayload } from '../packages/three-mmd-toon/payload';
 import { EXTENSION_NAME as OUTLINE, EDGE_ATTRIBUTE, validatePayload as validateOutline, type OutlinePayload } from '../packages/three-mmd-outline/payload';
 import { createBDEFSkin } from './pmx-bdef';
+import { pmxParserBytes } from './pmx-encoding';
 
 export interface Vertex { type?: number; skinIndices?: number[]; skinWeights?: number[]; edgeRatio?: number; position: number[]; normal: number[]; uv: number[]; auvs: number[][] }
 export interface PMXBone { name: string; englishName: string; position: number[]; parentIndex: number; transformationClass?: number; flag?: number }
@@ -66,7 +67,10 @@ export function parsePMX(bytes: Uint8Array): PMXModel {
   // mmd-parser reflects position/normal Z and reverses triangle order together.
   // PMX and glTF both use top-left UVs, so no V flip is applied.
   try {
-    return new Parser().parsePmx(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer, true);
+    const input = pmxParserBytes(bytes);
+    const model = new Parser().parsePmx(input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength) as ArrayBuffer, true);
+    if (input !== bytes) model.metadata.encoding = bytes[9];
+    return model;
   } catch (error) {
     if (String(error) === 'PMX version 2.0999999046325684 is not supported.') {
       throw new Error('Pinned mmd-parser 1.1.4 rejects binary PMX 2.1 at its version check; QDEF is also unsupported. No vertex index is available and no approximation is performed.', { cause: error });

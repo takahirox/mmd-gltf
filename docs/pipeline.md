@@ -109,6 +109,10 @@ Every joint node carries the following application metadata in core `extras`:
 
 `index` is the original zero-based PMX bone index and the skin-joint-array index.
 Names preserve exact source strings, including duplicates and punctuation.
+PMX 2.0 text supports both UTF-16LE (encoding flag `0`) and UTF-8 (flag `1`).
+The converter transcodes UTF-8 text buffers to UTF-16LE before calling the pinned
+parser, which otherwise ignores that flag; numeric records remain unchanged.
+Malformed UTF-8 is rejected rather than replaced with corrupted names.
 GLB/glTF reload preserves this data; pinned GLTFLoader exposes it as
 `bone.userData.pmxBone`, even when it sanitizes and uniquifies `bone.name`.
 Bind future pose/motion data by source index and retained names, never runtime

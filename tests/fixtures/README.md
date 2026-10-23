@@ -9,13 +9,21 @@ the PMX comment and the demo's GLB extras and conversion record.
 Regenerate from the repository root with `npx tsx tools/synthetic-bdef.ts`.
 The unit suite checks every committed binary against the generator.
 
-- `bdef.pmx`: PMX 2.0, 24 face-normal vertices, 12 triangles, two materials,
+- `bdef.pmx`: UTF-16LE PMX 2.0, 24 face-normal vertices, 12 triangles, two materials,
   BDEF1/2/4, mixed and repeated influences, inactive `-1` padding, and 260 bones.
   Bone 0 has forward parent 1; bones 1 and 2 are roots; bone 259 is a child of 0.
   The other bones are retained despite being unweighted. Bones 0 and 259 share
   exact Japanese and English names with punctuation that GLTFLoader changes.
   Bone positions are nonzero and arbitrary tail offsets must not create rest
   rotations. The converter applies a 0.5 scale for the demo and numerical oracle.
+- `bdef-utf8.pmx`: UTF-8 PMX 2.0 with the same geometry and hierarchy, plus
+  an unused texture path, all optional bone fields and PMX 2.0 morph record
+  layouts, a display frame, rigid body and joint. These extra records exercise
+  text transcoding only; their solver/evaluation semantics remain unsupported.
+  Names cover odd/even UTF-8 byte lengths, duplicate Japanese/English strings,
+  supplementary Unicode, a leading U+FEFF and a combining character. Tests compare
+  transcoded bytes against a generated UTF-16LE counterpart, check exact names
+  through GLB/glTF reload and pinned GLTFLoader, and reject malformed UTF-8.
 - `sdef.pmx`: the same geometry/rig with 24 SDEF vertices. Static conversion
   remains supported with loss reporting; BDEF conversion must reject it and
   identify affected vertices.

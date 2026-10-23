@@ -1,15 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, mkdtemp, rm } from 'node:fs/promises';
+import { readFile, writeFile, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { Matrix4, Vector3 } from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { NodeIO } from '@gltf-transform/core';
 import { validateBytes, validateString } from 'gltf-validator';
 import { convertModel, convertPMX, parsePMX } from '../tools/pmx-to-gltf';
 import { syntheticPMX } from '../tools/synthetic-bdef';
+import { pmxParserBytes } from '../tools/pmx-encoding';
 
 const fixture = () => readFile('tests/fixtures/bdef.pmx');
 const epsilon = 2e-6; // FLOAT weights and inverse binds; sub-meter fixture, 260 joints, no accumulated rest rotations.
@@ -30,6 +32,63 @@ function expected(position: number[], indices: number[], weights: number[]) {
   });
   return output;
 }
+
+test('UTF-8 and UTF-16LE binary PMX preserve exact source names through GLB/glTF reload', async () => {
+  const utf8 = await readFile('tests/fixtures/bdef-utf8.pmx');
+  const utf16 = syntheticPMX('bdef', 'utf16le', true);
+  assert.deepEqual(utf8, syntheticPMX('bdef', 'utf8', true));
+  const original = Buffer.from(utf8);
+  assert.deepEqual(pmxParserBytes(utf8), utf16, 'only text buffers and the encoding flag change');
+  assert.deepEqual(utf8, original, 'source bytes remain untouched');
+  const expectedNames = Array.from({ length: 260 }, (_, i) => ({
+    index: i,
+    name: i === 0 || i === 259 ? '同名.骨 [duplicate]' : i === 3 ? '\uFEFF骨😀e\u0301' : `bone ${i}`,
+    englishName: i === 0 || i === 259 ? 'Exact English. [duplicate]' : i === 3 ? '\uFEFFEnglish😀' : `English ${i}`,
+  }));
+  // Exercise both parities: odd lengths threw, even lengths silently corrupted.
+  for (const parity of [0, 1]) {
+    assert.ok(expectedNames.some(n => Buffer.byteLength(n.name, 'utf8') % 2 === parity));
+    assert.ok(expectedNames.some(n => Buffer.byteLength(n.englishName, 'utf8') % 2 === parity));
+  }
+  const directory = await mkdtemp(join(tmpdir(), 'mmd-pmx-encoding-'));
+  try {
+    for (const [file, source] of [['utf16.pmx', utf16], ['utf8.pmx', utf8]] as const) {
+      const input = join(directory, file);
+      await writeFile(input, source);
+      const model = parsePMX(source);
+      assert.deepEqual(model.bones.map((b, index) => ({ index, name: b.name, englishName: b.englishName })), expectedNames);
+      for (const extension of ['glb', 'gltf']) {
+        const output = join(directory, `${file}.${extension}`);
+        await convertPMX(input, output, { mode: 'bdef' });
+        const validation = extension === 'glb' ? await validateBytes(await readFile(output))
+          : await validateString(await readFile(output, 'utf8'), { externalResourceFunction: (uri: string) => readFile(join(directory, uri)) });
+        assert.equal(validation.issues.numErrors, 0, JSON.stringify(validation.issues.messages));
+        const doc = await new NodeIO().read(output);
+        assert.deepEqual(doc.getRoot().listSkins()[0].listJoints().map(j => j.getExtras().pmxBone), expectedNames);
+        if (extension === 'glb') {
+          const bytes = await readFile(output);
+          const loaded = await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer, '');
+          const identities: typeof expectedNames = [];
+          let renamed = false;
+          loaded.scene.traverse(node => {
+            if (!node.userData.pmxBone) return;
+            identities.push(node.userData.pmxBone);
+            if (node.name !== node.userData.pmxBone.name) renamed = true;
+          });
+          assert.deepEqual(identities.sort((a, b) => a.index - b.index), expectedNames);
+          assert.ok(renamed, 'metadata survives runtime display-name changes');
+        }
+      }
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
+  const parsed = parsePMX(utf8);
+  assert.deepEqual({ ...parsed, metadata: { ...parsed.metadata, encoding: 0 } }, parsePMX(utf16), 'encoding metadata aside, both files have identical parsed records');
+  const invalidUTF8 = Buffer.from(utf8); invalidUTF8[21] = 0xff;
+  assert.throws(() => parsePMX(invalidUTF8), /encoded data was not valid/);
+  assert.throws(() => parsePMX(utf8.subarray(0, 40)), /Truncated\/invalid PMX record/);
+  await assert.rejects(convertModel(parsePMX(syntheticPMX('sdef', 'utf8')), '.', { mode: 'bdef' }), /SDEF.*24 vertices/);
+  assert.throws(() => parsePMX(syntheticPMX('qdef', 'utf8')), /mmd-parser 1.1.4 rejects binary PMX 2.1.*QDEF/);
+});
 
 test('binary BDEF fixture preserves hierarchy, identity, bind pose and analytic deformation through GLB/glTF', async () => {
   const source = await fixture();
