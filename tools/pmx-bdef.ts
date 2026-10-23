@@ -71,12 +71,14 @@ export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, mesh
     const indices = vertex.skinIndices, values = vertex.skinWeights;
     if (!indices || !values || indices.length !== count || values.length !== count) throw new Error(`Vertex ${i}: malformed BDEF influences`);
     if (vertex.type === 3) {
-      // Both ordered slots are meaningful even at endpoint weights. Never merge,
-      // reorder or replace a zero-weight SDEF joint with canonical padding.
+      // Retain both ordered joint slots even at endpoint weights. A duplicate
+      // pair is one rigid transform for every weight, so combine its weights
+      // without changing either joint index to satisfy core glTF influences.
       if (indices.some(index => !Number.isInteger(index) || index < 0 || index >= bones.length)) throw new Error(`Vertex ${i}: invalid ordered SDEF bone`);
       if (values.some(w => !Number.isFinite(w) || w < 0 || w > 1) || Math.abs(values[0] + values[1] - 1) > BDEF_WEIGHT_TOLERANCE) throw new Error(`Vertex ${i}: invalid SDEF weights`);
       const total = values[0] + values[1];
-      joints.set(indices, i * 4); weights.set(values.map(w => w / total), i * 4);
+      joints.set(indices, i * 4);
+      weights.set(indices[0] === indices[1] ? [1, 0] : values.map(w => w / total), i * 4);
       return;
     }
     const merged = new Map<number, number>();

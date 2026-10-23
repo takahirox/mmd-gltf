@@ -81,6 +81,91 @@ test('SDEF queries and bounds agree with independent combined-motion and VPD pre
   assert.ok(difference>0.001,'SDEF/BDEF2 separation exceeds ten times GPU position tolerance');
   console.log(`SDEF CPU: maximum ${maximum} m; BDEF2 separation ${difference} m.`);
 });
+test('duplicate SDEF joints produce core-valid GLB/glTF and preserve rigid deformation and fallback', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'mmd-sdef-duplicates-'));
+  try {
+    for (const rig of ['box', 'wedge'] as const) for (const weight of [0, 0.25, 1]) {
+      const model = parsePMX(await readFile(`tests/fixtures/sdef-${rig}.pmx`));
+      // Exercise zero and nonzero centers, both endpoint weights and an
+      // asymmetric pair; joint 259 also covers unsigned-short indices.
+      const pairs = [[1, 2], [5, 259]];
+      for (const [vertex, joint] of pairs) {
+        model.vertices[vertex].skinIndices = [joint, joint];
+        model.vertices[vertex].skinWeights = [weight, 1 - weight];
+      }
+      const { document, io } = await convertModel(model, '.', { mode: 'sdef', scale: rigScale[rig] });
+      const binary = await io.writeBinary(document);
+      assert.equal((await validateBytes(binary)).issues.numErrors, 0);
+      await io.write(join(directory, 'model.gltf'), document);
+      const unpacked = await readFile(join(directory, 'model.gltf'), 'utf8');
+      assert.equal((await validateString(unpacked, { externalResourceFunction: (uri: string) => readFile(join(directory, uri)) })).issues.numErrors, 0);
+      const json = JSON.parse(unpacked);
+      for (const buffer of json.buffers) buffer.uri = 'data:application/octet-stream;base64,' + (await readFile(join(directory, buffer.uri))).toString('base64');
+      globalThis.ProgressEvent ??= class extends Event {} as unknown as typeof ProgressEvent;
+      for (const input of [binary.slice().buffer as ArrayBuffer, JSON.stringify(json)]) {
+        let plugin!: MMDSDEFPlugin;
+        const asset = await new GLTFLoader().register(p => plugin = new MMDSDEFPlugin(p)).parseAsync(input, '');
+        const fallback = await new GLTFLoader().parseAsync(input, '');
+        for (const root of [asset.scene, fallback.scene]) {
+          const list = meshes(root);
+          for (const [vertex, joint] of pairs) {
+            const bone = list[0].skeleton.bones[joint];
+            const restPosition = bone.position.clone();
+            bone.rotation.z = Math.PI / 2;
+            bone.position.add(new Vector3(1, -2, 0.5));
+            root.updateMatrixWorld(true);
+            for (const mesh of list) {
+              const indices = mesh.geometry.getAttribute('skinIndex'), weights = mesh.geometry.getAttribute('skinWeight');
+              assert.deepEqual([indices.getX(vertex), indices.getY(vertex)], [joint, joint]);
+              assert.deepEqual([weights.getX(vertex), weights.getY(vertex), weights.getZ(vertex), weights.getW(vertex)], [1, 0, 0, 0]);
+              // Independent single-bone result: translate to bind joint, rotate
+              // 90 degrees about Z, then translate to the posed joint.
+              const [x, y, z] = model.vertices[vertex].position.map(v => v * rigScale[rig]);
+              const [bx, by] = model.bones[joint].position.map(v => v * rigScale[rig]);
+              close(mesh.getVertexPosition(vertex, new Vector3()).toArray(), [bx - (y - by) + 1, by + (x - bx) - 2, z + 0.5]);
+            }
+            bone.position.copy(restPosition); bone.rotation.z = 0;
+            root.updateMatrixWorld(true);
+          }
+        }
+        const geometry = meshes(asset.scene)[0].geometry;
+        assert.equal(geometry.getAttribute('mmdSkinningType').getX(1), 1);
+        close(new Vector3().fromBufferAttribute(geometry.getAttribute('mmdSdefC'), 5).toArray(), model.vertices[5].skinC!.map(v => v * rigScale[rig]));
+        plugin.dispose();
+      }
+      assert.deepEqual(model.vertices[1].skinWeights, [weight, 1 - weight], 'conversion leaves source weights intact');
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('SDEF loader accepts interleaved unsigned-byte selectors with accessor offsets', async () => {
+  const json = JSON.parse(await readFile('extensions/MMD_skinning_sdef/examples/mixed.gltf', 'utf8'));
+  const selector = json.accessors[json.meshes[0].primitives[0].extensions.MMD_skinning_sdef.selector];
+  const original = Buffer.from(json.buffers[0].uri.split(',')[1], 'base64');
+  const interleaved = Buffer.alloc(selector.count * 4, 255);
+  const selection = [0, 1, 1];
+  selection.forEach((value, i) => { interleaved[i * 4 + 1] = value; });
+  selector.bufferView = json.bufferViews.length;
+  selector.byteOffset = 1;
+  json.bufferViews.push({ buffer: 0, byteOffset: original.length, byteLength: interleaved.length, byteStride: 4 });
+  const bytes = Buffer.concat([original, interleaved]);
+  json.buffers[0] = { byteLength: bytes.length, uri: 'data:application/octet-stream;base64,' + bytes.toString('base64') };
+  const report = await validateString(JSON.stringify(json));
+  assert.equal(report.issues.numErrors, 0, JSON.stringify(report.issues.messages));
+  globalThis.ProgressEvent ??= class extends Event {} as unknown as typeof ProgressEvent;
+  let plugin!: MMDSDEFPlugin;
+  const asset = await new GLTFLoader().register(p => plugin = new MMDSDEFPlugin(p)).parseAsync(JSON.stringify(json), '');
+  const mesh = meshes(asset.scene)[0], attribute = mesh.geometry.getAttribute('mmdSkinningType');
+  assert.deepEqual(Array.from({ length: attribute.count }, (_, i) => attribute.getX(i)), selection);
+  close(mesh.getVertexPosition(1, new Vector3()).toArray(), [1, 0, 0]);
+  mesh.skeleton.bones[1].rotation.z = Math.PI / 2;
+  asset.scene.updateMatrixWorld(true);
+  // Rw=(-.1,.25), CR0=(.15,-.075), CR1=(-.05,.025). With
+  // weights (.25,.75) and a 90-degree second rotation, correction=(.01875,-.05625).
+  close(mesh.getVertexPosition(1, new Vector3()).toArray(), [Math.cos(3 * Math.PI / 8) + 0.01875, Math.sin(3 * Math.PI / 8) - 0.05625, 0]);
+  plugin.dispose();
+});
+
 test('SDEF analytical arc, translations, endpoints, quaternion signs and near-identical rotations',()=>{
   const v=new Vector3(1,0,0), n=new Vector3(0,1,0), c=new Vector3(), a=new Matrix4(), b=new Matrix4().makeRotationZ(Math.PI/2);
   const run=(w:number,m=b)=>evaluateSDEF(v,n,c,c,c,a,m,w);

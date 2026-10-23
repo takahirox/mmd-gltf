@@ -49,6 +49,21 @@ test('runtime raw validation accepts/rejects all independent asset and sparse fi
     }
   }
 });
+test('outline mesh indices still reject byteStride on scalar unsigned accessors', async () => {
+  const json = JSON.parse(await readFile('extensions/MMD_materials_outline/examples/default-scale.gltf', 'utf8'));
+  const bytes = Buffer.from([0, 255, 255, 255, 1, 255, 255, 255, 2, 255, 255, 255]);
+  const buffer = json.buffers.length, bufferView = json.bufferViews.length;
+  json.buffers.push({ byteLength: bytes.length, uri: 'data:application/octet-stream;base64,' + bytes.toString('base64') });
+  json.bufferViews.push({ buffer, byteLength: bytes.length, byteStride: 4 });
+  json.meshes[0].primitives[0].indices = json.accessors.length;
+  json.accessors.push({ bufferView, componentType: 5121, count: 3, type: 'SCALAR' });
+  await assert.rejects(validateAsset(parser(json)), /index byteStride forbidden/);
+  delete json.bufferViews[bufferView].byteStride;
+  json.buffers[buffer].uri = 'data:application/octet-stream;base64,' + Buffer.from([0, 1, 2]).toString('base64');
+  json.buffers[buffer].byteLength = json.bufferViews[bufferView].byteLength = 3;
+  await validateAsset(parser(json));
+});
+
 function model(scales: (number | undefined)[]): PMXModel {
   const material = { name: 'edge', diffuse: [1, 1, 1, 1], ambient: [0, 0, 0], specular: [0, 0, 0], shininess: 0,
     flag: 16, textureIndex: -1, envTextureIndex: -1, envFlag: 0, toonFlag: 0, toonIndex: -1, faceCount: 1 };

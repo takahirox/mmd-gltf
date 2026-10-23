@@ -22,9 +22,15 @@ UNSIGNED_SHORT VEC4, WEIGHTS_0 is non-normalized FLOAT VEC4; counts match POSITI
 This draft uses only set 0. At selector 1, X and Y are the **ordered** influence
 pair, both joint indices must be in range even at endpoint weights, Z/W weights
 are zero, and X/Y weights are in [0,1] and sum to one within 1e-6 FLOAT roundoff.
-Duplicate indices are legal; implementations must not merge/reorder slots or
-replace inactive pair members. This is a stricter policy than core glTF's SHOULD
-for FLOAT normalization. Indices address skin.joints, not node indices.
+Implementations must not reorder slots or replace inactive pair members. As
+required by [core glTF skinned mesh attributes](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#skinned-mesh-attributes),
+a joint must not have more than one nonzero weight per vertex. If the pair names
+the same joint twice, at most one weight may be nonzero. Converters can retain
+both indices and write weights [1, 0]: identical palettes reduce the SDEF formula
+to that joint's rigid transform regardless of the original weight or centers,
+so this preserves both SDEF and core fallback deformation. Distinct pairs retain
+their original ordered weights. The unit-sum policy is stricter than core glTF's
+SHOULD for FLOAT normalization. Indices address skin.joints, not node indices.
 
 This draft requires TRIANGLES, POSITION and authored FLOAT VEC3 NORMAL, with
 matching counts. The reference loader also bounds decoded FLOAT accessor

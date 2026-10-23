@@ -3,8 +3,9 @@ import { EDGE_ATTRIBUTE, EXTENSION_NAME, validatePayload } from './payload';
 const fail = (context: string, message: string): never => { throw new Error(`${EXTENSION_NAME}: ${context}: ${message}`); };
 const integer = (x: unknown, min = 0): x is number => Number.isSafeInteger(x) && (x as number) >= min;
 
-/** Check raw bounds/sparse ordering before GLTFLoader can truncate or overwrite data. */
-export async function decodeAccessor(parser: Pick<GLTFParser, 'json' | 'getDependency'>, index: number, type: 'SCALAR' | 'VEC3' | 'VEC4', components = [5126], label = 'accessor', allowNormalized = false) {
+/** Check raw bounds/sparse ordering before GLTFLoader can truncate or overwrite data.
+ * Accessor usage is explicit: integer SCALAR selectors can be interleaved, mesh indices cannot. */
+export async function decodeAccessor(parser: Pick<GLTFParser, 'json' | 'getDependency'>, index: number, type: 'SCALAR' | 'VEC3' | 'VEC4', components = [5126], label = 'accessor', allowNormalized = false, usage: 'data' | 'indices' = 'data') {
   const json = parser.json;
   const a = json.accessors?.[index];
   if (!integer(index) || !a) fail(label, 'accessor index');
@@ -29,7 +30,7 @@ export async function decodeAccessor(parser: Pick<GLTFParser, 'json' | 'getDepen
   }
   const values = new Array<number>(a.count * n).fill(0);
   if (a.bufferView !== undefined) {
-    if (type === 'SCALAR' && !components.includes(5126) && json.bufferViews?.[a.bufferView]?.byteStride !== undefined) fail(label, 'index byteStride forbidden');
+    if (usage === 'indices' && json.bufferViews?.[a.bufferView]?.byteStride !== undefined) fail(label, 'index byteStride forbidden');
     const stride = json.bufferViews?.[a.bufferView]?.byteStride ?? n * size;
     if (!integer(stride, n * size) || stride % size || (json.bufferViews?.[a.bufferView]?.byteStride !== undefined && (stride % 4 || stride > 252))) fail(label, 'invalid byteStride');
     const offset = a.byteOffset ?? 0;
@@ -105,7 +106,7 @@ export async function validateAsset(parser: Pick<GLTFParser, 'json' | 'getDepend
       const scales = await decodeAccessor(parser, edge, 'SCALAR', [5126], `${label} edge`);
       if (scales.length !== count) fail(label, 'edge count');
     }
-    const indices = primitive.indices === undefined ? null : await decodeAccessor(parser, primitive.indices, 'SCALAR', [5121, 5123, 5125], `${label} indices`);
+    const indices = primitive.indices === undefined ? null : await decodeAccessor(parser, primitive.indices, 'SCALAR', [5121, 5123, 5125], `${label} indices`, false, 'indices');
     if (indices?.some(i => i >= count)) fail(label, 'index bounds');
     const elements = indices?.length ?? count;
     if (elements < 3 || (primitive.mode ?? 4) === 4 && elements % 3 !== 0) fail(label, 'triangle count');

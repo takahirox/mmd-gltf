@@ -183,7 +183,7 @@
     "build": "passed",
     "typecheck": "passed",
     "nodeTests": {
-      "passed": 44,
+      "passed": 47,
       "failed": 0,
       "skipped": 0
     },
@@ -191,7 +191,7 @@
       "passed": 14,
       "failed": 0,
       "skipped": 2,
-      "elapsedMinutes": 11.2,
+      "elapsedMinutes": 11.1,
       "skipReason": "Existing optional native-WebGPU cases: no adapter."
     },
     "links": {
