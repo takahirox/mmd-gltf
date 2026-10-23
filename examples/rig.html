@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><link rel="icon" href="data:,"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Synthetic BDEF rig · MMD glTF</title><link rel="stylesheet" href="./style.css"></head>
+<body><main>
+  <header><div><span class="eyebrow">PMX → CORE glTF</span><h1>Synthetic BDEF conformance</h1></div><a href="./">Gene Light comparison</a></header>
+  <p id="status" role="status">Loading converter-produced rig…</p>
+  <div class="menus">
+    <button id="rig-preset" disabled>Apply deformation preset</button><button id="rig-reset" disabled>Reset to rest</button>
+    <label>Material <select id="rig-material" disabled><option value="toon">MMD toon</option><option value="pbr">Core PBR fallback</option></select></label>
+    <label>Outline <select id="rig-outlines" disabled><option value="on">On</option><option value="off">Off</option></select></label>
+  </div>
+  <p id="rig-state">Rest state</p><section id="rig-viewport" aria-label="Interactive synthetic BDEF rig"></section>
+  <footer><p>Original synthetic fixture by mmd-gltf contributors; no third-party model assets. The actual PMX converter preserves BDEF1/2/4 through ordinary glTF nodes, skins and inverse binds. Includes mixed weights, duplicate names, forward parents, multiple roots, unweighted bones, two materials and joint index 259. Drag to orbit; the preset is repeatable and reset restores the rest state.</p>
+    <p>This demonstrates bounded BDEF conformance. SDEF/QDEF, deformation-layer ordering, IK/append, physics, morph evaluation and motion/pose loading remain unsupported. This is not VPD/VMD playback or original-MMD equivalence.</p>
+    <p><a href="./bdef/source.pmx">Synthetic source PMX</a> · <a href="./bdef/model.glb">Converted GLB</a> · <a href="./bdef/conversion.json">Conversion report and attribution</a></p>
+  </footer>
+</main><script type="module" src="./rig.ts"></script></body>
+</html>

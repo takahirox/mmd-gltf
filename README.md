@@ -1,6 +1,6 @@
 # mmd-gltf
 
-A static PMX → glTF pipeline, Three.js loader plugins and outline effect for
+A static or BDEF PMX → glTF pipeline, Three.js loader plugins and outline effect for
 the [MMD_materials_toon](extensions/MMD_materials_toon/README.md) and
 [MMD_materials_outline](extensions/MMD_materials_outline/README.md) v0.1 drafts.
 The converter uses `mmd-parser` and glTF Transform, without Three.js scene
@@ -55,7 +55,8 @@ The example defaults to WebGL2; append `?backend=webgpu` to try native WebGPU,
 which tests explicitly skip without an adapter. Views stack on narrow screens.
 The direct PMX is a practical reference, not a bit-identical MikuMikuDance oracle;
 independent ambient/toon/specular models produce documented shading differences.
-Neither view animates or steps IK/physics/morphs.
+Neither Gene view animates or steps IK/physics/morphs. The linked synthetic BDEF
+rig has a repeatable deformation preset and reset; it is not VPD/VMD playback.
 The browser runner owns a Vite conformance server on port 43179 and a static
 preview on port 43180. Both browser tests and
 build use the repository prefix `/mmd-gltf/`.
@@ -81,9 +82,13 @@ proposal; original-MMD pixel equivalence is unverified. The converter emits opti
 independent plugin/effect works with core PBR, active Toon or an explicit
 other-material alpha binding. See the [outline API and lifecycle](docs/pipeline.md#outline-plugin-and-effect).
 
-The PMX converter exports a static base pose, omitting animation, skins, IK,
-grants, physics and morphs. The outline effect also accepts core glTF skin and
-POSITION/NORMAL morph deformation from other assets. Source models and derivatives retain their own rights. Gene Light is
+The PMX converter defaults to a static base pose. Opt in with `--mode bdef`
+to preserve BDEF1/2/4 through core glTF skins, including exact source bone identity.
+The [synthetic rig](examples/rig.html) demonstrates the converter output with
+Toon, core PBR and Outline. SDEF/QDEF, deformation layers, IK/append, physics,
+morph evaluation and motion/pose loading remain unsupported. The outline effect
+also accepts core POSITION/NORMAL morph deformation from other assets.
+Source models and derivatives retain their own rights. Gene Light is
 **CC BY 4.0 with additional usage guidelines and retained trademark/design
 rights**, for academic/personal noncommercial scope; contact the authors for
 other commercial use. It is not licensed as repository code.

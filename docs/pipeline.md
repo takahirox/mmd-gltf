@@ -1,11 +1,12 @@
-# Static PMX pipeline
+# PMX pipeline
 
 ## Conversion
 
 From the repository root, after `npm ci`:
 
 ```sh
-npm run convert -- path/to/model.pmx output/model.glb
+npm run convert -- path/to/model.pmx output/model.glb --mode static
+npm run convert -- path/to/bdef-model.pmx output/rig.glb --mode bdef
 npm run convert -- path/to/model.pmx output/model.gltf --textures path/to/textures --scale 0.08
 ```
 
@@ -52,8 +53,9 @@ The converter does not infer alpha-mask intent. The plugin also supports authore
 core `MASK` and `alphaCutoff`.
 
 Both extensions are used, never required, so ordinary glTF viewers can load the
-fallback. Geometry is the stored base pose, without bones/skins, SDEF evaluation,
-IK, grants, physics, animations or morphs. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
+fallback. The default `static` mode keeps the stored base-pose geometry and reports omitted
+bones/skins and runtime features. The opt-in `bdef` mode is described below.
+Neither mode evaluates SDEF, IK, grants, physics, animations or morphs. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
 copied unchanged (defaults `[0,0,0,1]` and `1`). Signed per-vertex `edgeRatio`
 becomes a shared FLOAT/SCALAR `_MMD_EDGE_SCALE`, attached only to outlined
 primitives, omitted when every stored ratio is exactly one. Zero stays zero.
@@ -62,6 +64,80 @@ flags remain in extras; shadow flags have no runtime effect. Additional UV ZW/un
 features are omitted with a conversion report. PMD, VMD and VPD are unsupported.
 Gene Light contains no shared/custom toon or sphere image; the generic conversion
 tests exercise those modes using synthetic source material configurations.
+
+## BDEF conversion and source identity
+
+The converter API accepts `convertModel(parsedModel, textureDirectory,
+{ mode: 'bdef', scale: 0.08 })` or `convertPMX(input, output,
+{ mode: 'bdef', scale: 0.08, textureDirectory })`. `mode` defaults to `static`;
+unknown modes fail. The historical numeric third argument to `convertModel`
+continues to select the static scale. `convertModel` expects the right-handed
+model returned by `parsePMX`, including already-reflected bone positions.
+
+BDEF emits every source bone in source-index order in one core skin, including
+unweighted bones. An identity container gives multiple PMX roots a common glTF
+ancestor. Parents may follow children in source order. Each rest rotation is
+identity: bone-tail display offsets and deformation layers do not define rest
+rotations. Rest translations are scaled absolute source positions minus the
+parent's scaled position. Each inverse bind is translation by the negative
+scaled absolute position. The mesh node is identity. Geometry and bones receive
+the same unit scale, and no second handedness reflection is applied. Invalid
+parents, cycles, non-finite positions and unsupported numeric ranges fail.
+
+Each primitive receives `JOINTS_0` as unsigned-short/VEC4 and `WEIGHTS_0` as
+FLOAT/VEC4. At most 65,536 bones are supported. BDEF1 expands to one weight of one;
+BDEF2 uses the parsed `[w, 1-w]`; BDEF4 uses its four source weights. Repeated
+active references merge by summing in first-occurrence order. Zero influences
+are discarded, including inactive `-1` references; remaining slots are padded
+with joint 0 and weight 0. Negative/non-finite weights, invalid active references
+and zero totals fail with the vertex index. Weight sums must be within absolute
+`1e-6` of one (a few FLOAT accumulation ulps); only such roundoff errors normalize,
+and adjustments are reported with count and up to 32 vertex indices. Materially
+non-unit sums fail rather than changing substantial source deformation.
+
+The [PMX format document](https://raw.githubusercontent.com/hirakuni45/glfw3_app/master/glfw3_app/docs/PMX_spec.txt)
+allows BDEF4 sums other than one, whereas [core glTF skinning](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#skins)
+requires normalized influences. Original-MMD behavior for abnormal sums remains
+unresolved. Rejecting them preserves the bounded core fallback contract; no
+original-renderer equivalence is claimed.
+
+Every joint node carries the following application metadata in core `extras`:
+
+```json
+{ "pmxBone": { "index": 259, "name": "exact source name", "englishName": "exact English name" } }
+```
+
+`index` is the original zero-based PMX bone index and the skin-joint-array index.
+Names preserve exact source strings, including duplicates and punctuation.
+PMX 2.0 text supports both UTF-16LE (encoding flag `0`) and UTF-8 (flag `1`).
+The converter transcodes UTF-8 text buffers to UTF-16LE before calling the pinned
+parser, which otherwise ignores that flag; numeric records remain unchanged.
+Malformed UTF-8 is rejected rather than replaced with corrupted names.
+GLB/glTF reload preserves this data; pinned GLTFLoader exposes it as
+`bone.userData.pmxBone`, even when it sanitizes and uniquifies `bone.name`.
+Bind future pose/motion data by source index and retained names, never runtime
+display names. This metadata does not promise deformation-layer ordering,
+IK/append/grants, fixed/local-axis constraints or external-parent semantics.
+Those solvers, SDEF/QDEF, morph evaluation, physics and motion/pose loading remain
+unsupported. They are listed in conversion warnings; parent hierarchy alone does
+not implement them. Core skin pose edits are supported with Toon, PBR and Outline
+without a new material or skinning extension.
+
+BDEF mode rejects SDEF and any other unsupported source type, reporting mode,
+count and up to 32 affected vertex indices. It never falls back to a static mesh
+or BDEF approximation. Pinned `mmd-parser@1.1.4` cannot parse type-4 QDEF and
+provides no affected vertex index. Additionally, its strict version check rejects
+the FLOAT representation of binary PMX 2.1 (`2.0999999046325684`) before vertices
+are read. The converter gives an explicit parser limitation error; it does not
+reinterpret the file. Valid PMX 2.0 BDEF1/2/4 is the tested input contract.
+
+The [attributed binary fixtures](../tests/fixtures/README.md) and
+[validation evidence](validation.md#issue-25-bdef-core-skinning) document numerical
+tolerances, parser regressions and independent surface/outline measurements.
+The linked `rig.html` demo uses the actual converted fixture, with rest, a
+repeatable 90-degree joint rotation/translation preset and reset. It is synthetic
+BDEF conformance, not VPD/VMD playback or original-MMD equivalence. The existing
+Gene comparison remains static.
 
 ## Three.js integration
 
@@ -262,12 +338,14 @@ is not proof of equivalence to the MikuMikuDance executable.
 ## Building and Pages
 
 `npm run build` re-verifies all source hashes, regenerates the derivative GLB,
-copies the reviewed source allowlist, then builds only `examples/index.html`
-into `dist/`. It ships one GLB, the original `Gene_light.pmx`, ten `light/` PNGs,
+copies the reviewed source allowlist, then builds `examples/index.html` and `examples/rig.html`
+into `dist/`. The Gene comparison ships its GLB, the original `Gene_light.pmx`, ten `light/` PNGs,
 both notices, manifest, conversion record and application bundle. The generated
 `public/gene-light/` directory is cleaned before packaging so stale files cannot
 leak into the site. No full Gene, unused textures, motions, conformance runner or
-model archive is included. The source manifest records all original byte hashes;
+model archive is included. The separate `bdef/` directory contains only the
+synthetic source PMX, converter-produced GLB and conversion/attribution record.
+The source manifest records all original byte hashes;
 the conversion record records the derivative SHA-256 and 0.08 scale.
 `npm run preview` serves the prefixed static build.
 
