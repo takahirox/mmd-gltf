@@ -64,7 +64,7 @@ test('built VPD demo: both rigs/poses, repeat/reset, encoding, local errors and 
     await page.locator('#rig-encoding').selectOption('utf-8'); await page.locator('#rig-map').fill('{"0":259}');
     await page.locator('#rig-preset').click(); await expect(page.locator('#rig-state')).toContainText('3 bone offsets'); await expect(page.locator('#status')).toContainText('Applied VPD'); expect(await snapshot()).not.toEqual(a);
     await page.locator('#rig-reset').click(); await expect(page.locator('#rig-state')).toHaveText('Rest state'); expect(await snapshot()).toEqual(rest);
-    await expect(page.locator('#status')).toContainText('IK/append/physics and VMD unsupported');
+    await expect(page.locator('#status')).toContainText('IK/append/physics and non-bone VMD execution unsupported');
   }
   expect(errors).toEqual([]);
 });

@@ -1,48 +1,200 @@
-import { WebGPURenderer, Scene, Color, OrthographicCamera, DirectionalLight, type Group, type Mesh, type Material } from 'three/webgpu';
+import {
+  WebGPURenderer,
+  Scene,
+  Color,
+  OrthographicCamera,
+  DirectionalLight,
+  type Group,
+  type Mesh,
+  type Material,
+} from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MMDToonPlugin } from '../packages/three-mmd-toon';
 import { MMDOutlinePlugin, MMDOutlineEffect } from '../packages/three-mmd-outline';
-import { parseVPD, createVPDRig, bindVPD, applyVPD, resetVPD, type VPDRig, type VPDEncoding, type BindingOptions } from '../packages/three-mmd-vpd';
+import {
+  parseVPD,
+  createVPDRig,
+  bindVPD,
+  applyVPD,
+  resetVPD,
+  type VPDRig,
+  type VPDEncoding,
+  type BindingOptions,
+} from '../packages/three-mmd-vpd';
+import {
+  parseVMD,
+  bindVMD,
+  createVMDPlayer,
+  MMDVMDPlugin,
+  getVMDPlayers,
+  type VMDPlayer,
+  type VMDBindingOptions,
+} from '../packages/three-mmd-vmd';
 
 async function start() {
-  const renderer = new WebGPURenderer({ antialias: true, forceWebGL: new URLSearchParams(location.search).get('backend') !== 'webgpu' });
+  const renderer = new WebGPURenderer({
+    antialias: true,
+    forceWebGL: new URLSearchParams(location.search).get('backend') !== 'webgpu',
+  });
   await renderer.init();
-  const viewport = document.querySelector<HTMLElement>('#rig-viewport')!; viewport.append(renderer.domElement);
-  const scene = new Scene(); scene.background = new Color(0xd0d0d0);
-  const light = new DirectionalLight(0xffffff, 2); light.position.set(1, 2, 4); scene.add(light);
+  const viewport = document.querySelector<HTMLElement>('#rig-viewport')!;
+  viewport.append(renderer.domElement);
+  const scene = new Scene();
+  scene.background = new Color(0xd0d0d0);
+  const light = new DirectionalLight(0xffffff, 2);
+  light.position.set(1, 2, 4);
+  scene.add(light);
   const camera = new OrthographicCamera(-0.6, 0.6, 0.6, -0.6, 0.1, 30);
   camera.position.set(2.2, 1.8, 3.6);
-  const controls = new OrbitControls(camera, renderer.domElement); controls.target.set(0.2, 0.25, -0.4); controls.update();
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0.2, 0.25, -0.4);
+  controls.update();
   const effect = new MMDOutlineEffect(renderer);
   const select = (id: string) => document.querySelector<HTMLSelectElement>(`#${id}`)!;
-  const material = select('rig-material'), outline = select('rig-outlines'), model = select('rig-model'), sample = select('rig-pose'), encoding = select('rig-encoding');
-  const mapping = document.querySelector<HTMLTextAreaElement>('#rig-map')!, file = document.querySelector<HTMLInputElement>('#rig-file')!;
-  const preset = document.querySelector<HTMLButtonElement>('#rig-preset')!, reset = document.querySelector<HTMLButtonElement>('#rig-reset')!;
-  const status = document.querySelector('#status')!, label = document.querySelector('#rig-state')!;
-  const info = { ready: false, deformed: false, mode: 'toon', frames: 0, rig: 'box', pose: 'rest', bones: [] as object[], error: '' };
+  const input = (id: string) => document.querySelector<HTMLInputElement>(`#${id}`)!;
+  const button = (id: string) => document.querySelector<HTMLButtonElement>(`#${id}`)!;
+  const material = select('rig-material'),
+    outline = select('rig-outlines'),
+    model = select('rig-model'),
+    sample = select('rig-pose'),
+    encoding = select('rig-encoding');
+  const mapping = document.querySelector<HTMLTextAreaElement>('#rig-map')!,
+    file = input('rig-file');
+  const motionSample = select('motion-sample'),
+    motionSource = select('motion-source'),
+    motionFile = input('motion-file'),
+    motionMap = document.querySelector<HTMLTextAreaElement>('#motion-map')!;
+  const seek = input('motion-time'),
+    loop = input('motion-loop'),
+    motionLabel = document.querySelector('#motion-state')!;
+  const preset = button('rig-preset'),
+    reset = button('rig-reset');
+  const status = document.querySelector('#status')!,
+    label = document.querySelector('#rig-state')!;
+  const info = {
+    ready: false,
+    deformed: false,
+    mode: 'toon',
+    frames: 0,
+    rig: 'box',
+    pose: 'rest',
+    bones: [] as object[],
+    error: '',
+    motion: '',
+    time: 0,
+    playing: false,
+    disposedPlayers: 0,
+  };
   Object.assign(window, { mmdRig: info });
-  let assets: { scene: Group; rig: VPDRig }[] = [], local: File | undefined;
-  const report = (message: string) => { status.textContent = `Ready · ${message} · Bone offsets only; IK/append/physics and VMD unsupported`; };
+  interface Asset {
+    scene: Group;
+    rig: VPDRig;
+    player?: VMDPlayer;
+    toon?: MMDToonPlugin;
+    outlines: MMDOutlinePlugin;
+    diagnostics?: { unmatched: string[]; omitted: object };
+  }
+  let assets: Asset[] = [],
+    local: File | undefined,
+    localMotion: File | undefined,
+    busy = false;
+  const report = (message: string) => {
+    status.textContent = `Ready · ${message} · Solver-free bones only; IK/append/physics and non-bone VMD execution unsupported`;
+  };
   const snapshot = () => {
     info.bones = [];
-    assets[0]?.scene.traverse(n => { if (n.userData.pmxBone) info.bones.push({ index: n.userData.pmxBone.index, translation: n.position.toArray(), rotation: n.quaternion.toArray() }); });
-  };
-  const appearance = () => { assets.forEach((a, i) => { a.scene.visible = material.value === 'toon' ? i === 0 : i === 1; }); info.mode = material.value; };
-  async function loadRig() {
-    info.ready = false; preset.disabled = reset.disabled = true;
-    status.textContent = 'Loading converter-produced rig…';
-    const url = `${import.meta.env.BASE_URL}vpd/${model.value}/rest.glb`;
-    const loader = new GLTFLoader().register(parser => new MMDToonPlugin(parser)).register(parser => new MMDOutlinePlugin(parser));
-    const loaded = await Promise.all([loader.loadAsync(url), new GLTFLoader().register(parser => new MMDOutlinePlugin(parser)).loadAsync(url)]);
-    const next = loaded.map(a => ({ scene: a.scene, rig: createVPDRig(a.scene) }));
-    assets.forEach(a => {
-      effect.release(a.scene); scene.remove(a.scene);
-      a.scene.traverse(n => { const mesh = n as Mesh; if (mesh.isMesh) { mesh.geometry.dispose(); (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).forEach((m: Material) => m.dispose()); } });
+    assets[0]?.scene.traverse((n) => {
+      if (n.userData.pmxBone)
+        info.bones.push({
+          index: n.userData.pmxBone.index,
+          translation: n.position.toArray(),
+          rotation: n.quaternion.toArray(),
+        });
     });
-    assets = next; assets.forEach(a => scene.add(a.scene)); appearance();
-    info.rig = model.value; info.pose = 'rest'; info.deformed = false; info.ready = true; info.error = '';
-    snapshot(); label.textContent = 'Rest state'; report('Rig loaded'); preset.disabled = reset.disabled = false;
+    info.time = assets[0]?.player?.time ?? 0;
+    info.playing = assets[0]?.player?.playing ?? false;
+    seek.value = String(info.time);
+    motionLabel.textContent = `${info.motion || 'No motion'} · ${info.time.toFixed(4)} s · ${info.playing ? 'Playing' : 'Paused'}`;
+  };
+  const appearance = () => {
+    assets.forEach((a, i) => {
+      a.scene.visible = material.value === 'toon' ? i === 0 : i === 1;
+    });
+    info.mode = material.value;
+  };
+  const discardPlayer = (a: Asset) => {
+    if (a.player) {
+      a.player.dispose();
+      info.disposedPlayers++;
+      a.player = undefined;
+    }
+  };
+  async function disposeAsset(a: Asset) {
+    discardPlayer(a);
+    effect.release(a.scene);
+    scene.remove(a.scene);
+    a.outlines.dispose();
+    a.scene.traverse((n) => {
+      const mesh = n as Mesh;
+      if (mesh.isMesh) {
+        mesh.geometry.dispose();
+        (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).forEach((m: Material) =>
+          m.dispose(),
+        );
+      }
+    });
+    await a.toon?.dispose();
+  }
+  async function loadAsset(url: string, toon: boolean): Promise<Asset> {
+    let toonPlugin: MMDToonPlugin | undefined, outlinePlugin: MMDOutlinePlugin | undefined;
+    const loader = new GLTFLoader()
+      .register((p) => new MMDVMDPlugin(p))
+      .register((p) => (outlinePlugin = new MMDOutlinePlugin(p)));
+    if (toon) loader.register((p) => (toonPlugin = new MMDToonPlugin(p)));
+    const loaded = await loader.loadAsync(url);
+    try {
+      return {
+        scene: loaded.scene,
+        rig: createVPDRig(loaded.scene),
+        player: getVMDPlayers(loaded)[0],
+        toon: toonPlugin,
+        outlines: outlinePlugin!,
+        diagnostics: loaded.parser.json.animations?.[0]?.extras?.vmd,
+      };
+    } catch (error) {
+      await toonPlugin?.dispose();
+      outlinePlugin?.dispose();
+      throw error;
+    }
+  }
+  async function loadPair(url: string) {
+    const settled = await Promise.allSettled([loadAsset(url, true), loadAsset(url, false)]);
+    if (settled.some((r) => r.status === 'rejected')) {
+      for (const r of settled) if (r.status === 'fulfilled') await disposeAsset(r.value);
+      throw (settled.find((r) => r.status === 'rejected') as PromiseRejectedResult).reason;
+    }
+    return settled.map((r) => (r as PromiseFulfilledResult<Asset>).value);
+  }
+  async function replace(next: Asset[]) {
+    const previous = assets;
+    assets = next;
+    assets.forEach((a) => scene.add(a.scene));
+    appearance();
+    for (const a of previous) await disposeAsset(a);
+  }
+  async function loadRig() {
+    const next = await loadPair(`${import.meta.env.BASE_URL}vpd/${model.value}/rest.glb`);
+    await replace(next);
+    info.motion = '';
+    info.rig = model.value;
+    info.pose = 'rest';
+    info.deformed = false;
+    info.ready = true;
+    info.error = '';
+    snapshot();
+    label.textContent = 'Rest state';
+    report('Rig loaded');
   }
   async function apply() {
     let data: Uint8Array;
@@ -54,35 +206,208 @@ async function start() {
       if (!response.ok) throw new Error(`VPD fetch failed: ${response.status}`);
       data = new Uint8Array(await response.arrayBuffer());
     }
-    const pose = parseVPD(data, encoding.value as VPDEncoding);
-    const options: BindingOptions = { mapping: JSON.parse(mapping.value), unmatched: select('rig-unmatched').value as BindingOptions['unmatched'] };
-    // Resolve BOTH representations before mutating either one.
-    const bound = assets.map(a => bindVPD(a.rig, pose, options));
+    const pose = parseVPD(data, encoding.value as VPDEncoding),
+      options: BindingOptions = {
+        mapping: JSON.parse(mapping.value),
+        unmatched: select('rig-unmatched').value as BindingOptions['unmatched'],
+      };
+    const bound = assets.map((a) => bindVPD(a.rig, pose, options));
     bound.forEach((b, i) => applyVPD(assets[i].rig, b));
-    info.deformed = true; info.pose = sample.value; info.error = ''; snapshot();
+    info.deformed = true;
+    info.pose = sample.value;
+    info.error = '';
+    snapshot();
     label.textContent = `Pose ${sample.value.toUpperCase()} · ${bound[0].appliedRecords} bone offsets · parent filename ${pose.parentFile} (informational)`;
-    report(`Applied VPD. Unmatched: ${bound[0].unmatched.join(', ') || 'none'}`);
+    report(`Applied VPD. Motion paused. Unmatched: ${bound[0].unmatched.join(', ') || 'none'}`);
   }
-  const poseControls = [model, sample, encoding, file, mapping, select('rig-unmatched'), preset, reset];
+  async function loadMotion() {
+    let diagnostic = '';
+    if (motionSource.value === 'bytes') {
+      let data: Uint8Array;
+      if (motionSample.value === 'local') {
+        if (!localMotion) throw new Error('Select a local VMD file first');
+        data = new Uint8Array(await localMotion.arrayBuffer());
+      } else {
+        const r = await fetch(`${import.meta.env.BASE_URL}vmd/motion-${motionSample.value}.vmd`);
+        if (!r.ok) throw new Error(`VMD fetch failed: ${r.status}`);
+        data = new Uint8Array(await r.arrayBuffer());
+      }
+      const motion = parseVMD(data),
+        options: VMDBindingOptions = {
+          mapping: JSON.parse(motionMap.value),
+          unmatched: select('motion-unmatched').value as VMDBindingOptions['unmatched'],
+        };
+      const bindings = assets.map((a) => bindVMD(a.rig, motion, options)),
+        players = bindings.map((b, i) => createVMDPlayer(assets[i].rig, b));
+      players.forEach((p) => p.seek(0));
+      assets.forEach((a, i) => {
+        discardPlayer(a);
+        a.player = players[i];
+      });
+      diagnostic = `Unmatched: ${bindings[0].unmatched.join(', ') || 'none'}. Omitted execution counts: ${JSON.stringify(bindings[0].omitted)}`;
+    } else {
+      if (motionSample.value === 'local')
+        throw new Error(
+          'Converted GLB/glTF sources are available for sample motions; use byte source for local VMD',
+        );
+      const next = await loadPair(
+        `${import.meta.env.BASE_URL}vmd/${model.value}/${motionSample.value}.${motionSource.value}`,
+      );
+      next.forEach((a) => a.player!.seek(0));
+      await replace(next);
+      diagnostic = `Retained curves loaded; approximate fallback replaced. Unmatched: ${next[0].diagnostics?.unmatched.join(', ') || 'none'}. Omitted execution counts: ${JSON.stringify(next[0].diagnostics?.omitted ?? {})}`;
+    }
+    assets.forEach((a) => {
+      a.player!.loop = loop.checked;
+    });
+    seek.max = String(assets[0].player!.duration);
+    info.motion = `Motion ${motionSample.value.toUpperCase()} (${motionSource.value})`;
+    info.pose = 'motion';
+    info.deformed = true;
+    info.error = '';
+    snapshot();
+    label.textContent = info.motion;
+    report(`VMD loaded. ${diagnostic}`);
+  }
+  const editable = [
+    model,
+    sample,
+    encoding,
+    file,
+    mapping,
+    select('rig-unmatched'),
+    preset,
+    reset,
+    motionSample,
+    motionSource,
+    motionFile,
+    motionMap,
+    select('motion-unmatched'),
+    button('motion-load'),
+    button('motion-play'),
+    button('motion-pause'),
+    button('motion-reset'),
+    seek,
+    loop,
+  ];
   const guarded = (action: () => Promise<void> | void) => async () => {
-    poseControls.forEach(control => { control.disabled = true; }); status.textContent = 'Working…';
-    try { await action(); }
-    catch (error) { info.error = String(error); info.ready = assets.length > 0; report(info.error); }
-    finally { poseControls.forEach(control => { control.disabled = !info.ready; }); }
+    busy = true;
+    editable.forEach((c) => {
+      c.disabled = true;
+    });
+    status.textContent = 'Working…';
+    try {
+      await action();
+    } catch (error) {
+      info.error = String(error);
+      info.ready = assets.length > 0;
+      report(info.error);
+    } finally {
+      busy = false;
+      editable.forEach((c) => {
+        c.disabled = !info.ready;
+      });
+    }
   };
+  const transport = (action: (player: VMDPlayer) => void) =>
+    guarded(() => {
+      if (!assets[0]?.player) throw new Error('Load a VMD motion first');
+      assets.forEach((a) => action(a.player!));
+      info.error = '';
+      snapshot();
+      report('VMD transport updated');
+    });
   preset.onclick = guarded(apply);
-  reset.onclick = guarded(() => { assets.forEach(a => resetVPD(a.rig)); info.deformed = false; info.pose = 'rest'; info.error = ''; snapshot(); label.textContent = 'Rest state'; report('Reset to original rest'); });
+  const resetAll = () => {
+    assets.forEach((a) => {
+      a.player?.stop();
+      resetVPD(a.rig);
+    });
+    info.deformed = false;
+    info.pose = 'rest';
+    info.error = '';
+    snapshot();
+    label.textContent = 'Rest state';
+    report('Reset to original rest');
+  };
+  reset.onclick = guarded(resetAll);
+  button('motion-reset').onclick = guarded(resetAll);
+  button('motion-load').onclick = guarded(loadMotion);
+  button('motion-play').onclick = transport((p) => p.play());
+  button('motion-pause').onclick = transport((p) => p.pause());
+  seek.oninput = transport((p) => p.seek(Number(seek.value)));
+  loop.onchange = () =>
+    assets.forEach((a) => {
+      if (a.player) a.player.loop = loop.checked;
+    });
   sample.onchange = () => {
     if (sample.value !== 'local') {
       encoding.value = sample.value === 'a' ? 'shift_jis' : 'utf-8';
-      mapping.value = sample.value === 'a' ? '{"2": 0, "3": 259}' : '{"0": 259}';
+      mapping.value = JSON.stringify(sample.value === 'a' ? { '2': 0, '3': 259 } : { '0': 259 });
     }
   };
-  file.onchange = () => { local = file.files?.[0]; sample.value = 'local'; mapping.value = '{}'; };
-  model.onchange = guarded(loadRig); material.onchange = appearance; outline.onchange = () => { effect.enabled = outline.value === 'on'; };
-  for (const control of [material, outline, model, sample, encoding, file, mapping, select('rig-unmatched')]) control.disabled = false;
-  const resize = () => { const width = viewport.clientWidth, height = viewport.clientHeight; renderer.setSize(width, height); camera.left = -0.6 * width / height; camera.right = 0.6 * width / height; camera.updateProjectionMatrix(); };
-  new ResizeObserver(resize).observe(viewport); resize(); await loadRig();
-  renderer.setAnimationLoop(() => { controls.update(); effect.render(scene, camera); info.frames++; });
+  motionSample.onchange = guarded(async () => {
+    if (motionSample.value !== 'local') {
+      const r = await fetch(`${import.meta.env.BASE_URL}vmd/motion-${motionSample.value}-map.json`);
+      motionMap.value = await r.text();
+    }
+  });
+  file.onchange = () => {
+    local = file.files?.[0];
+    sample.value = 'local';
+    mapping.value = '{}';
+  };
+  motionFile.onchange = () => {
+    localMotion = motionFile.files?.[0];
+    motionSample.value = 'local';
+    motionSource.value = 'bytes';
+    motionMap.value = '{}';
+  };
+  model.onchange = guarded(loadRig);
+  material.onchange = appearance;
+  outline.onchange = () => {
+    effect.enabled = outline.value === 'on';
+  };
+  material.disabled = outline.disabled = false;
+  const resize = () => {
+    const width = viewport.clientWidth,
+      height = viewport.clientHeight;
+    renderer.setSize(width, height);
+    camera.left = (-0.6 * width) / height;
+    camera.right = (0.6 * width) / height;
+    camera.updateProjectionMatrix();
+  };
+  const observer = new ResizeObserver(resize);
+  observer.observe(viewport);
+  resize();
+  await guarded(loadRig)();
+  let last = performance.now();
+  renderer.setAnimationLoop(() => {
+    const now = performance.now(),
+      delta = (now - last) / 1000;
+    last = now;
+    if (!busy && assets.some((a) => a.player?.playing)) {
+      assets.forEach((a) => a.player?.update(delta));
+      snapshot();
+    }
+    controls.update();
+    effect.render(scene, camera);
+    info.frames++;
+  });
+  window.addEventListener(
+    'pagehide',
+    () => {
+      renderer.setAnimationLoop(null);
+      observer.disconnect();
+      controls.dispose();
+      assets.forEach((a) => void disposeAsset(a));
+      effect.dispose();
+      renderer.dispose();
+    },
+    { once: true },
+  );
 }
-start().catch(error => { console.error(error); document.querySelector('#status')!.textContent = `Rig failed: ${String(error)}`; });
+start().catch((error) => {
+  console.error(error);
+  document.querySelector('#status')!.textContent = `Rig failed: ${String(error)}`;
+});

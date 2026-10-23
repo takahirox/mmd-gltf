@@ -1,5 +1,115 @@
 # Validation record
 
+## Issue #29: VMD bone motion
+
+Validated in this worktree on 2026-10-24, Node `24.12.0`, pinned lockfile,
+Three.js `0.186.1`, Playwright `1.56.1` Chromium installed with
+`npx playwright install chromium`. Browser checks force WebGL2/SwiftShader using
+the documented Chromium channel. No model/provider/allowance changes were made.
+The BDEF weight interoperability policy (`1e-6`) is unchanged.
+Historical sections below report earlier bounded increments; their former VMD
+limitations are superseded only by this bone-motion increment.
+
+| Check | Actual result |
+| --- | --- |
+| `npm run build` | Passed; generates both motions × both rigs as GLB/unpacked glTF, builds Demo and conformance pages; existing bundle-size notice remains |
+| `npm run typecheck` | Passed |
+| `npm test` | Passed: 26 unit/integration tests, existing Toon/Outline corpora unchanged |
+| Targeted built VMD browser suite | Passed: 2 tests; 144 oracle raster comparisons plus actual Demo lifecycle |
+| `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | Passed: 10 tests, 2 existing optional native-WebGPU skips (no adapter); 144 VMD and 240 VPD oracle comparisons passed; final run 3.3 minutes |
+| `npm run check:links` | Passed: 178 local links/anchors and built example assets |
+| `git diff --check` | Passed on the complete change before commit |
+
+The first unpacked-reload unit run exposed Node's missing browser `ProgressEvent`;
+the test harness now supplies it. The subsequent targeted and full unit runs
+passed. A newly added Japanese-name test initially assumed traversal order equaled
+source-index order; it now selects the retained source index explicitly and passes.
+An intermediate links check correctly reported the not-yet-written
+Issue #29 heading; final links are checked after writing this record. No acceptance
+threshold was loosened to address a failure. The only existing assertion changed
+is the Demo's intentional support/omission wording.
+
+### Original fixtures and measured numerical results
+
+Two original attributed byte motions, both authored in this repository by mmd-gltf
+contributors, run on both existing distinct box and wedge rigs. Provenance, source
+generator and independent oracle are recorded in the
+[fixture guide](../tests/fixtures/README.md#issue-29-vmd-fixtures). SHA-256:
+
+- A: `9397bb1edcfd6f66fec0ac626649fd105277e57c93415722f4c8963a6745f54a`
+- B: `d4fd5b6b63c708eba7ac3579b033cf18981d5784aefbbfc139597605c958039a`
+
+The oracle uses scalar polynomial Newton inversion, axis-angle rotations,
+hierarchical point/vector transforms, scalar BDEF sums and inverse-transpose
+normals. It does not use the production evaluator, emitted fallback samples or
+joint matrices as expected values. Declared tolerances **before measurement**:
+exact skinned positions `2e-6 m`, exact orientation `1e-7 rad`; fallback local
+translation `1e-5 m`, orientation `1e-4 rad`. Orientation distance is
+`2*acos(abs(normalizedQuaternionDot))`, making quaternion signs equivalent.
+
+Exact paths: direct VMD bytes on the rest GLB, retained-curve converted GLB and
+retained-curve unpacked glTF. Both conversion formats have zero core-validator
+errors in all four cases, deterministic API/CLI binary bytes, retained original
+inverse binds and optional curve/material declarations. Ordinary GLTFLoader
+without the VMD plugin supplies the measured core fallback. The local fallback
+measurements include all source keys and a uniform **1201-point grid**, including
+endpoints (1200 subdivisions of last bound frame/30). These are observed finite-grid
+maxima, **not a continuous error proof**.
+
+| Rig / motion | Max exact skin position (m) | Max exact orientation (rad) | Max fallback local translation (m) | Max fallback orientation (rad) |
+| --- | --- | --- | --- | --- |
+| Box / A | `2.5854903440425403e-8` | `4.2146848510894035e-8` | `1.983120726512261e-6` | `1.9860514499681696e-5` |
+| Box / B | `1.1737594451943778e-8` | `4.2146848510894035e-8` | `1.9806652804417342e-6` | `1.9860872262989417e-5` |
+| Wedge / A | `9.245415710790184e-9` | `4.2146848510894035e-8` | `1.9863436845804975e-6` | `1.9860514499681696e-5` |
+| Wedge / B | `8.823775377031495e-9` | `4.2146848510894035e-8` | `1.932682671959578e-6` | `1.9860872262989417e-5` |
+
+### Built browser coverage
+
+The [VMD conformance entry](../examples/vmd-conformance.html) exercises
+2 motions × 2 rigs × 2 materials × 3 load paths × 3 fractional-time states ×
+2 passes = **144 comparisons**. Initial/reseek time is `0.371 s`, intermediate
+seek `0.719 s`. Passes are surface and outline. The independent baked mesh uses
+scalar normals for both ordinary blended skin normals and outline inverse
+transpose normals. Existing raster limits remain: two encoded levels, at most
+128 mismatched pixels out of 160×160, nonempty foreground at least 100 pixels.
+Observed: maximum position error `2.31930292193816e-8 m`, maximum orientation
+error `2.9802322387695312e-8 rad`, **zero oracle pixel mismatches** across all 144.
+Reseeking after another time renders identically. Playwright attaches the complete
+per-case JSON as `vmd-conformance.json`.
+
+The actual built `rig.html` test exercises both motions on both rigs from bytes,
+GLB and glTF, compares source-independent fractional seeks, checks Toon/PBR and
+outline image changes, pause stability, seek order independence, play/loop/reset,
+VPD ownership handoff, motion switching, malformed local bytes with unchanged
+pose, missing explicit-map failure, successful recovery and disposal counts.
+The existing VPD 240-comparison conformance and BDEF/Toon/Outline suites remain
+mandatory regression checks. Native WebGPU results are separately reported by
+the full suite; no native GPU or original-MMD measurement is inferred from
+WebGL2 synthetic passes.
+
+### Reader, semantics, limits and evidence categories
+
+Unit cases cover all six VMD sections and retained raw fields; every truncation
+point in fixture A, permitted complete-section EOF, hostile counts and IK counts,
+nonfinite executed/unexecuted fields, malformed/versioned headers, invalid curves
+and quaternions; Japanese bytes, full 15-byte names, truncated-name collisions,
+undecodable fields, duplicate PMX names, invalid/repeated mappings and explicit
+unmatched policy; sorting, nonzero first frames, single-key clamping, adjacent
+intervals, sign-equivalent quaternions, nonidentity original rest, overflow,
+instance isolation, history independence, ownership, loop/stop/disposal;
+structural/semantic extension fixtures and FLOAT/sample/accuracy guards.
+
+This is **synthetic conformance** for the documented continuous-curve project
+profile. Identified alternative-renderer evidence is the historical official
+Three.js implementation; it is not measured original-MMD acceptance. Original-MMD
+captures of adjacent intervals/endpoints, lawful representative production assets
+and native WebGPU motion measurements remain unperformed optional validation.
+Non-bone VMD execution, advanced skinning, morph deformation, append/IK/deformation
+ordering, physics and representative-model fidelity remain mandatory overall
+project work. Existing VPD support remains functional. No new specification
+reconciliation was needed; the earlier skin-weight SHOULD correction remains in
+force. There is no required post-merge verification for Issue #29.
+
 ## Issue #27: solver-free VPD bone offsets
 
 Local pre-merge validation on 2026-10-24 used Node.js **24.12.0**, npm **11.6.2**,

@@ -93,3 +93,32 @@ and reapplies. Original-MMD pose reproduction and representative-model fidelity
 remain unmeasured; synthetic conformance cannot establish those goals. IK,
 append/grants, deformation ordering, morphs, physics, advanced skinning and VMD
 remain mandatory outstanding work for the overall project.
+
+
+## Issue #29 VMD fixtures
+
+`motion-a.vmd` and `motion-b.vmd` are two distinct original VMD 0002 byte fixtures,
+authored by mmd-gltf contributors using [synthetic-vmd.ts](../../tools/synthetic-vmd.ts).
+No third-party motion/model data. Regenerate with `npx tsx tools/synthetic-vmd.ts`;
+`npm test` checks byte equality. Both include bone, morph, camera, light, shadow
+and visibility/IK records; only bones execute. Omitted records each have one
+entry, including one IK toggle. Deliberately retained interpolation padding is
+`0xab` after the first 16 bytes.
+
+A animates X/Y/Z-axis parent/child rotations, with nonzero initial frames and an
+adjacent 6→7 frame interval; B changes hierarchy participation, direction, axis
+and duration. Both use four different nonlinear curve tuples, negative quaternion
+representations, unsorted records, Japanese bytes and full 15-byte names.
+`motion-*-map.json` documents exact byte-track to source-index mappings. Both
+are exercised on the existing box (`0.2 m/unit`) and wedge (`0.125 m/unit`).
+
+[The independent oracle](../vmd-oracle.ts) restates authoring parameters and uses
+scalar polynomial Newton inversion, axis-angle rotations, hierarchical point and
+vector transforms, BDEF scalar sums and inverse-transpose normals. It does not
+import the production motion evaluator, sample its output or use emitted fallback
+samples as expected values. Byte FLOAT authoring rounding is intentionally left
+in the measured error. Exact rotation tolerance is declared `1e-7 rad` before
+measurement; exact skin positions retain `2e-6 m`. Fallback local translation
+and orientation limits are `1e-5 m` and `1e-4 rad`, measured at keys and a uniform
+1201-point time grid (1200 subdivisions of last frame/30), without claiming a
+continuous bound. See [actual validation](../../docs/validation.md#issue-29-vmd-bone-motion).

@@ -55,13 +55,13 @@ core `MASK` and `alphaCutoff`.
 Both extensions are used, never required, so ordinary glTF viewers can load the
 fallback. The default `static` mode keeps the stored base-pose geometry and reports omitted
 bones/skins and runtime features. The opt-in `bdef` mode is described below.
-Neither mode evaluates SDEF, IK, grants, physics, animations or morphs. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
+Neither mode evaluates SDEF, IK, grants, physics or morphs. BDEF mode supports solver-free VMD bone animation. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
 copied unchanged (defaults `[0,0,0,1]` and `1`). Signed per-vertex `edgeRatio`
 becomes a shared FLOAT/SCALAR `_MMD_EDGE_SCALE`, attached only to outlined
 primitives, omitted when every stored ratio is exactly one. Zero stays zero.
 Material size is never baked into geometry or ratios. Edge fields and shadow
 flags remain in extras; shadow flags have no runtime effect. Additional UV ZW/unused sets and PMX-specific runtime
-features are omitted with a conversion report. PMD and VMD are unsupported. Solver-free VPD offsets are supported in BDEF mode below.
+features are omitted with a conversion report. PMD and non-bone VMD execution are unsupported. Solver-free VPD offsets are supported in BDEF mode below.
 Gene Light contains no shared/custom toon or sphere image; the generic conversion
 tests exercise those modes using synthetic source material configurations.
 
@@ -121,7 +121,7 @@ GLB/glTF reload preserves this data; pinned GLTFLoader exposes it as
 Bind future pose/motion data by source index and retained names, never runtime
 display names. This metadata does not promise deformation-layer ordering,
 IK/append/grants, fixed/local-axis constraints or external-parent semantics.
-Those solvers, SDEF/QDEF, morph evaluation, physics and VMD remain
+Those solvers, SDEF/QDEF, morph evaluation, physics and non-bone VMD execution remain
 unsupported; VPD supports only the solver-free contract below. They are listed in conversion warnings; parent hierarchy alone does
 not implement them. Core skin pose edits are supported with Toon, PBR and Outline
 without a new material or skinning extension.
@@ -267,12 +267,11 @@ not a general Toon/Outline TSL material exporter. Exporting a replaced custom
 material requires its own exporter support.
 
 Pose application owns the complete joint TRS while it runs. Stop an animation
-mixer/other joint writer before apply or reset. A future VMD writer must take over
-from ORIGINAL rest, or explicitly bake/compose a base pose by a documented policy;
-it must not silently capture VPD-modified transforms as baseline. A mixer can
-otherwise overwrite the pose on its next update. Dirty-transform replacement is
-tested; no VMD support is claimed. Do not reparent/replace bones after creating a
-rig handle; create a new validated handle after structural changes.
+mixer/other external joint writer before apply or reset. The reusable VMD player
+now participates in automatic model-scoped VPD/VMD ownership: applying VPD pauses
+motion; later play/seek resolves motion from ORIGINAL rest. See the
+[VMD contract and APIs](vmd.md). Do not reparent/replace bones after creating a
+rig handle; reload and rebind instead.
 
 The historical official Three.js r169 [loader](https://raw.githubusercontent.com/mrdoob/three.js/r169/examples/jsm/loaders/MMDLoader.js),
 [parser](https://raw.githubusercontent.com/mrdoob/three.js/r169/examples/jsm/libs/mmdparser.module.js),
