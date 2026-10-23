@@ -23,7 +23,7 @@ for (const file of files) {
   const content = (await readFile(file, 'utf8')).replace(/```[\s\S]*?```/g, '');
   for (const link of content.matchAll(/\[[^\]]*\]\(([^\s)]+)(?:\s+"[^"]*")?\)/g)) await check(file, link[1]);
 }
-for (const name of ['index', 'rig']) {
+for (const name of ['index', 'rig', 'vpd-conformance']) {
   const html = await readFile(`dist/${name}.html`, 'utf8');
   for (const link of html.matchAll(/(?:href|src)="([^"]+)"/g)) await check(`dist/${name}.html`, link[1], true);
   assert.match(html, /\/mmd-gltf\/assets\//, 'built application must use the repository prefix');

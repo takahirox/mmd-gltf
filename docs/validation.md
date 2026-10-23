@@ -1,5 +1,127 @@
 # Validation record
 
+## Issue #27: solver-free VPD bone offsets
+
+Local pre-merge validation on 2026-10-24 used Node.js **24.12.0**, npm **11.6.2**,
+Darwin ARM64, the existing lockfile, Three.js **0.186.1**, glTF Transform **4.5.1**,
+and Playwright **1.56.1** Chromium/SwiftShader with forced WebGL2. Setup used
+`npm ci` and `npx playwright install chromium`. No dependencies or acceptance
+thresholds were changed. No push, PR, comment, merge or deployment was performed.
+
+| Required check | Actual result |
+| --- | --- |
+| `npm ci` | Passed; the same two existing audit findings (one low, one high) |
+| `npm run build` | Passed, including verified Gene acquisition and both rigs/poses/posed reload assets; existing bundle-size warning |
+| `npm run typecheck` | Passed |
+| `npm test` | Passed: 20 unit/integration tests, plus existing Toon and Outline CPU/schema/asset suites |
+| `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | Passed: 8 passed; 2 existing optional native-WebGPU cases skipped (no adapter); 240 VPD comparisons passed |
+| `npm run check:links` | Passed: 147 local links/anchors and built example assets |
+| `git diff --check` | Passed |
+
+### Contract and matrix
+
+The [documented input profile and runtime contract](pipeline.md#vpd-bone-offsets)
+use core joint transforms and versioned application extras, with original inverse
+binds. The [committed bytes and provenance](../tests/fixtures/README.md#issue-27-vpd-fixtures)
+include Shift_JIS/CRLF Pose A, UTF-8/LF Pose B, an unchanged box PMX and a sheared
+wedge PMX with different leaf position and parentage. Both rigs are solver-free;
+they are original synthetic works, not representative production models.
+
+Tolerances were chosen before recording measurements: absolute **`2e-6` meters**
+for loaded/skinned positions, **`1e-12`** for local quaternion components and rotated
+basis vectors (double precision/JSON, short quarter-turn chains), and **two encoded
+RGB levels** with at most **128/25,600** boundary pixels for independent FLOAT
+raster rounding (the existing 0.5% allowance). Parser quaternion normalization
+permits absolute length error **`1e-5`**, accommodating six-decimal exports.
+These distinct tolerances do not relax skin-weight acceptance or the existing
+raw-weight/normal conventions.
+
+| Rig / pose | Scale m/unit | GLB + unpacked glTF core-validator errors | API/CLI determinism, runtime agreement, reload and original-rest reset | Built surface/outline comparisons | Maximum position error (m) | Maximum oracle pixel mismatches |
+| --- | --- | --- | --- | --- | --- | --- |
+| Box / A | 0.2 | 0 / 0 | Passed | 60 passed | `1.490116130486996e-8` | 0 |
+| Box / B | 0.2 | 0 / 0 | Passed | 60 passed | `9.46223749354047e-9` | 0 |
+| Wedge / A | 0.125 | 0 / 0 | Passed | 60 passed | `8.568167730871323e-9` | 0 |
+| Wedge / B | 0.125 | 0 / 0 | Passed | 60 passed | `8.381903171539307e-9` | 0 |
+
+[Unit tests](../tests/vpd.test.ts) cover actual byte decoding, exact Japanese and
+punctuated names, BOM/combining characters, comments/newlines, reordered records,
+counts, truncation, nonfinite numbers, zero/materially invalid quaternions and
+roundoff normalization. Binding tests cover duplicate source names, explicit
+record-ordinal mappings, bad mapping keys/indices/types, repeated target
+assignments, unmatched diagnostics and explicit partial policy. Wrong-model and
+second-instance application fail unchanged. Reapplication, A→B→A, omitted bones,
+dirty translation/rotation/scale replacement and original-rest reset are checked.
+Overflow fails before any mutation. Missing/inconsistent metadata and inverse
+binds are rejected. An independent nonidentity rest-rotation case checks the
+order `qRest * qOffset`. Converter bytes and original inverse binds remain
+unchanged by runtime application; CLI output matches API output deterministically.
+Both converter formats pass the existing core validator; unknown optional draft
+notices remain expected.
+
+The built [VPD raster tool](../examples/vpd-conformance.html), driven by
+[Playwright](../tests/browser/vpd.spec.ts), checks **240** comparisons:
+2 rigs × 2 poses × 2 material paths (active Toon/core PBR) × 5 sources
+(runtime apply, converter GLB, converter unpacked glTF, runtime GLTFExporter GLB,
+runtime GLTFExporter embedded-resource glTF) × 3 states (posed/reset/reapply) ×
+2 passes (surface/outline). The [oracle](../tests/vpd-oracle.ts) uses explicit
+scalar quarter turns, authored hierarchy/offsets and influence patterns; expected
+positions are not computed from production pose code, skin attributes, inverse
+binds or emitted joint matrices. Surface normals retain the existing Three.js
+weighted-transform convention; outline normals independently use inverse
+transpose. Every render must contain nonempty geometry. Reapplication must
+exactly reproduce the first posed image after reset; movement from rest must be
+visible. Runtime export additionally checks retained draft extensions and
+attribution. The full per-comparison record is attached by Playwright as
+`vpd-conformance.json` in ignored test output; this table is the committed summary.
+
+The built Demo tests load both rigs and both samples, compare repeated/switch/reset
+transforms and screenshots, upload real local Shift_JIS and UTF-8 bytes, exercise
+malformed encoding and ambiguous bindings without changing the pose, recover
+with explicit mapping, and verify Toon/PBR and outline controls. Apply reports
+busy status and disables overlapping operations. Gene Light and the 12 existing
+BDEF raster regressions remain part of the same required browser run. Existing
+43 Toon vectors and 109 Outline checks remain unchanged. The VPD measurement page
+is intentionally built so these numerical/raster checks run against preview;
+older development-only conformance entries remain excluded.
+
+Initial development runs caught a brace-containing name accepted by the parser,
+an oracle parent error for unused bones, stale success status during asynchronous
+local file loading, and an export assertion looking for Group attribution on the
+outer scene. Git attributes preserve the Shift_JIS/CRLF byte fixture (otherwise
+Git whitespace checking treats each intentional CR as trailing whitespace). These
+were corrected; final results above supersede those runs.
+
+### Weight requirement correction retained
+
+**Old assumption:** glTF mandates normalized FLOAT weight sums. **Corrected
+requirement:** [glTF §3.7.3.3](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#skinned-mesh-attributes)
+uses SHOULD for FLOAT sums near one; integer-normalized sums have separate MUST
+requirements. The converter's existing `1e-6` rejection and roundoff normalization
+policy remains an interoperability choice, including compatibility with pinned
+Three.js GLTFLoader's call to `SkinnedMesh.normalizeSkinWeights`. No weight acceptance is relaxed.
+This corrects the attribution in the pipeline and earlier validation discussion,
+retaining the old assumption, primary source and rationale. No external Issue/PR
+edit was made because this node prohibits comments/PR operations; downstream
+integration can carry this record into its normal PR.
+
+### Evidence limits and remaining overall goal
+
+| Evidence category | Status |
+| --- | --- |
+| Synthetic solver-free VPD conformance | Present; results recorded per case above |
+| Existing BDEF, Toon, Outline and Gene regressions | Present; included in required checks above |
+| Optional native WebGPU | Two existing optional cases skipped because no adapter was available; VPD native WebGPU unperformed |
+| Historical r169 Three.js helper comparison | Unperformed (optional); source inspected only |
+| Original MikuMikuDance VPD execution/measurements | Unperformed; no lawful runnable original-MMD reference available in this runner |
+| Representative production-model VPD fidelity | Unperformed; synthetic passes do not establish it |
+| VMD, full IK/append/deformation ordering, advanced skinning, morphs, physics | Unsupported and mandatory outstanding parts of the overall project goal |
+
+The historical r169 Three.js loader/parser/helper are alternative-implementation
+evidence for the bounded contract, not a normative VPD specification or a measured
+original-renderer oracle. Raw bone-offset application is not full MMD pose
+reproduction and does not complete the overall reproduction matrix. No post-merge
+verification is required by Issue #27.
+
 ## Issue #25: BDEF core skinning
 
 ### UTF-8 source-identity review fix
@@ -71,7 +193,10 @@ accumulation ulps without changing substantial source deformation; the latter
 allows FLOAT weights and inverse binds in this sub-meter test pose. The
 [PMX format document](https://raw.githubusercontent.com/hirakuni45/glfw3_app/master/glfw3_app/docs/PMX_spec.txt)
 explicitly allows non-unit BDEF4 sums, but [core glTF skinning](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#skins)
-requires normalized weights. The converter rejects materially abnormal sums;
+§3.7.3.3 recommends FLOAT sums near one with SHOULD, not MUST (the previous
+wording incorrectly claimed a mandate). The unchanged `1e-6` rejection and
+roundoff-normalization policy is a converter interoperability requirement,
+including Three.js loader normalization. No weight acceptance is relaxed;
 original-MMD handling remains unresolved.
 
 The browser suite loads the actual converter-produced asset with pinned
