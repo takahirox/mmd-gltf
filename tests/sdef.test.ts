@@ -208,7 +208,7 @@ test('SDEF rejects malformed vectors, ordered references, weights, QDEF and runt
     const m=structuredClone(source);change(m);await assert.rejects(convertModel(m,'.',{mode:'sdef'}));
   }
   await assert.rejects(convertModel(source,'.',{mode:'bdef'}),/SDEF/);
-  assert.throws(()=>parsePMX(syntheticPMX('qdef')),/2.1.*QDEF/);
+  await assert.rejects(convertModel(parsePMX(syntheticPMX('qdef')),'.',{mode:'sdef'}),/QDEF/);
   const asset=await load(await readFile('public/sdef/box/rest.glb')), mesh=meshes(asset.scene)[0];
   mesh.skeleton.bones[2].scale.x=2;asset.scene.updateMatrixWorld(true);
   assert.throws(()=>mesh.getVertexPosition(1,new Vector3()),/rigid/);

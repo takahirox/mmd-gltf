@@ -1,9 +1,10 @@
 # mmd-gltf
 
-A static, BDEF or mixed SDEF PMX → glTF pipeline, Three.js loader plugins and outline effect for
+A static, BDEF or mixed SDEF/QDEF PMX → glTF pipeline, Three.js loader plugins and outline effect for
 the [MMD_materials_toon](extensions/MMD_materials_toon/README.md) and
 [MMD_materials_outline](extensions/MMD_materials_outline/README.md) v0.1 drafts.
-The converter uses `mmd-parser` and glTF Transform, without Three.js scene
+The converter uses `mmd-parser`, a bounded PMX 2.1 reader and glTF Transform,
+without Three.js scene
 serialization. The Gene Light example shows the original PMX loaded directly
 with pinned `@takahirox/three-mmd@0.1.2` beside the generated GLB loaded through
 `GLTFLoader.register()`. Orbit and zoom stay synchronized; Front/Side/Back presets
@@ -91,8 +92,11 @@ deformation; ordinary loaders use an approximate BDEF2 fallback. See the
 [SDEF draft](extensions/MMD_skinning_sdef/README.md) and
 [runtime/export API](docs/pipeline.md#mixed-sdef-conversion-and-runtime).
 The [synthetic rig](examples/rig.html) demonstrates the converter output with
-Toon, core PBR and Outline. QDEF/PMX 2.1, deformation layers, IK/append, physics,
-non-vertex morph evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs convert in static and BDEF modes; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
+Toon, core PBR and Outline. Use `--mode qdef` with `MMDQDEFPlugin` for the bounded
+PMX 2.1 rigid dual-quaternion profile; see the [QDEF guide](docs/qdef.md) and
+[extension draft](extensions/MMD_skinning_qdef/README.md). Ordinary loaders retain
+an approximate BDEF4 fallback. General PMX 2.1, deformation layers, IK/append, physics,
+non-vertex morph evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs convert in static and all skinned modes; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
 see the [VPD contract and APIs](docs/pipeline.md#vpd-bone-offsets). The outline effect
 also accepts core POSITION/NORMAL morph deformation from other assets.
 Source models and derivatives retain their own rights. Gene Light is

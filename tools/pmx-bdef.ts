@@ -7,18 +7,18 @@ import type { PMXModel } from './pmx-to-gltf';
 export const BDEF_WEIGHT_TOLERANCE = 1e-6;
 
 export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, meshNode: Node,
-  model: PMXModel, scale: number, warnings: string[], allowSDEF = false) {
+  model: PMXModel, scale: number, warnings: string[], allowSDEF = false, allowQDEF = false) {
   const { bones, vertices } = model;
   if (!bones.length || bones.length > 65536) throw new Error('BDEF requires 1..65536 bones (core unsigned-short joint indices)');
   const unsupported = new Map<string, number[]>();
   vertices.forEach((v, i) => {
-    if (![0, 1, 2, ...(allowSDEF ? [3] : [])].includes(v.type!)) {
+    if (![0, 1, 2, ...(allowSDEF ? [3] : []), ...(allowQDEF ? [4] : [])].includes(v.type!)) {
       const mode = v.type === 3 ? 'SDEF (3)' : v.type === 4 ? 'QDEF (4)' : `unknown (${v.type})`;
       if (!unsupported.has(mode)) unsupported.set(mode, []);
       unsupported.get(mode)!.push(i);
     }
   });
-  if (unsupported.size) throw new Error(`${allowSDEF ? 'SDEF' : 'BDEF'} mode rejects unsupported skinning: ${[...unsupported].map(([mode, indices]) => `${mode}: ${indices.length} vertices [${indices.slice(0, 32).join(', ')}${indices.length > 32 ? ', …' : ''}]`).join('; ')}`);
+  if (unsupported.size) throw new Error(`${allowQDEF ? 'QDEF' : allowSDEF ? 'SDEF' : 'BDEF'} mode rejects unsupported skinning: ${[...unsupported].map(([mode, indices]) => `${mode}: ${indices.length} vertices [${indices.slice(0, 32).join(', ')}${indices.length > 32 ? ', …' : ''}]`).join('; ')}`);
 
   const positions = bones.map((bone, i) => {
     if (bone.position.length !== 3 || ![...bone.position].every(Number.isFinite)) throw new Error(`Bone ${i}: non-finite or invalid position`);
@@ -53,7 +53,7 @@ export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, mesh
       pmxRest: { ...rest[i], modelId, metersPerPMXUnit: scale },
     });
   });
-  const skin = doc.createSkin(allowSDEF ? 'PMX mixed BDEF/SDEF' : 'PMX BDEF').setSkeleton(root);
+  const skin = doc.createSkin(allowQDEF ? 'PMX mixed BDEF/SDEF/QDEF' : allowSDEF ? 'PMX mixed BDEF/SDEF' : 'PMX BDEF').setSkeleton(root);
   const inverseBinds: number[] = [];
   bones.forEach((bone, i) => {
     (bone.parentIndex < 0 ? root : nodes[bone.parentIndex]).addChild(nodes[i]);
@@ -67,7 +67,7 @@ export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, mesh
   const joints = new Uint16Array(vertices.length * 4), weights = new Float32Array(vertices.length * 4);
   const adjusted: number[] = [];
   vertices.forEach((vertex, i) => {
-    const count = [1, 2, 4, 2][vertex.type!];
+    const count = [1, 2, 4, 2, 4][vertex.type!];
     const indices = vertex.skinIndices, values = vertex.skinWeights;
     if (!Array.isArray(indices) || !Array.isArray(values) || indices.length !== count || values.length !== count) throw new Error(`Vertex ${i}: malformed BDEF influences`);
     // Indexed reads also validate holes, which every/some/forEach would skip.

@@ -1050,3 +1050,114 @@ render submission durations, screenshots and failure context. Hosted final-head
 acceptance remains pending the downstream PR workflow; this node does not push
 or create a PR. Optional native WebGPU does not replace Chromium/SwiftShader or
 establish original-MMD fidelity. No post-merge rerun is required.
+
+## Issue #37 bounded PMX 2.1 QDEF
+
+The implementation adds the bounded original-byte reader, opt-in `qdef`
+conversion mode, [rigid-dq-v1 extension](../extensions/MMD_skinning_qdef/README.md),
+instance-scoped CPU/TSL integration, shared Outline dispatch, exporter and built
+Demo. The [QDEF guide](qdef.md) records the supported input boundary, API/lifecycle,
+source/version preservation, fallback policy and remaining work. The exact
+executed environment, source hashes, numerical/raster maxima and check outcomes
+are recorded in [qdef-validation.json](qdef-validation.json).
+
+Both original synthetic box/wedge variants retain BDEF/SDEF/QDEF, distinct geometry
+and hierarchy, four active influences, duplicate/inactive source slots, endpoints,
+260 joints and vertex morphs. Node checks carry both combined VMD motions and both
+VPD poses through the reusable APIs and deterministic GLB/glTF conversion. The
+reader/CLI tests cover both encodings, all 1/2/4-byte vertex/other index-width
+combinations, missing tails, invalid counts/references, unsupported drawing flags,
+flip/impulse morphs and nonzero joint types before output emission. The old direct
+pinned-parser FLOAT-header failure and invalid header-modified probe remain
+explicit regressions; the new reader does not relabel a source version.
+
+GPU validation uses actual vertex-stage float readback and independently baked
+surface/Outline geometry, with Toon and plugin-enabled PBR. It includes both
+motions, both poses, GLB/glTF, runtime byte application and posed export/reload
+with active morphs. A 1100-joint stress case exercises bone textures, a nonidentity
+rigid bind and common scene placement; smaller palettes exercise buffers. Separate
+analytical GPU cases exercise inactive leading slots, noncommuting rotations,
+translations, endpoints, exact/near half-turns and the near-degenerate limit.
+Ordinary-loader BDEF4 fallback is measured separately. The expanded 208-comparison
+QDEF test has a dedicated 20-minute SwiftShader compilation/execution budget; the
+first partial matrix took 2.8 minutes before the reset-harness finding. Existing
+SDEF scheduling, coverage and all numerical/raster thresholds remain intact.
+
+Built Demo checks cover all two-rig × two-motion × three-source combinations,
+both VPD poses and VPD-to-VMD ownership, fractional seek/restoration, Toon/PBR,
+Outline, approximate comparison/restoration, manual morphs, invalid-file recovery,
+replacement/disposal and the held-frame rendered-acknowledgement regression.
+Canvas screenshots accompany acknowledged state, including exact restoration.
+This is executed synthetic project-profile conformance, not an original-MMD
+measurement or a claim about representative assets.
+
+Initial implementation checks exposed and fixed these issues before completion:
+
+- Floating-zero sign selection chose opposite arcs for an exact half-turn versus
+  its quarter-turn composition with roundoff. The finalized profile explicitly
+  defines canonical/sign tie bands; the independent oracle and both CPU/GPU
+  implementations use that published policy. Tolerances were not relaxed.
+- A byte-backed runtime selector conflicted with the shader's float attribute
+  input. Wire accessors remain UNSIGNED_BYTE, while the owned runtime attribute
+  is float; actual rasters are checked in addition to float position probes.
+- The expanded posed-export harness initially treated VPD reset as a full morph
+  reset. Existing VPD intentionally preserves weights. The full-reset observation
+  now explicitly calls both bone and morph reset APIs, preserving that policy.
+- Primary-format review confirmed the shared-Toon field is an unsigned byte in
+  0..9. The bounded reader rejects 10/255 and tests optional common records in
+  both encodings; the legacy 2.0 parser and fixture bytes remain unchanged.
+
+The former parser assumption, primary layout reference and correction rationale
+remain in the [historical record](#parser-evidence-correction-for-the-coordinator)
+and [QDEF reconciliation](qdef.md#specification-reconciliation). External Issue/PR
+updates were not made because this node explicitly forbids them; this record is
+available for the Coordinator's normal PR description. No human approval or
+independent AI re-review was introduced.
+
+Native WebGPU QDEF measurements, lawful representative model compatibility and
+controlled original-MMD output are not established here. IK/append ordering,
+physics, non-vertex morph execution and scene animation remain mandatory overall
+work. No post-merge verification is required by Issue #37.
+
+### Executed Issue #37 checks
+
+Executed locally on 2026-10-24: Darwin 25.6.0 arm64, Node 24.12.0, lockfile-pinned
+Three.js 0.186.1, three-mmd 0.1.2, mmd-parser 1.1.4 and glTF Transform 4.5.1.
+The exact source is identified by the parent commit plus 167 source/configuration
+file hashes in the machine-readable report. The final rebuild matched all **219
+browser-tested build files byte-for-byte by SHA-256**, including after the final
+reader-only range/version guard changes. No browser/runtime artifact changed.
+
+| Executed command | Result |
+| --- | --- |
+| `npm ci` | Passed; lockfile unchanged. Reported two existing audit findings (one low, one high). |
+| `npm run build` | Passed; final build hashes match the tested build. |
+| `npm run typecheck` | Passed. |
+| `npm test` | 63 passed, zero failures/skips, plus the existing Toon and Outline fixture runners. |
+| `npx playwright install chromium` | Passed; installed Chromium available. |
+| `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | 24 passed, zero failures, two optional native-WebGPU skips; 31.6 minutes. |
+| `npm run check:links` | Passed: 276 local links/anchors and built entry links, including the retained canvas evidence. |
+| `git diff --check` | Passed, including the staged checkpoint diff. |
+
+| QDEF measurement | Executed maximum | Required limit |
+| --- | --- | --- |
+| CPU position component error | 2.729001513518403e-7 m | 2e-6 m |
+| GPU position component error | 7.996936788362552e-5 m | 1e-4 m |
+| GPU normalized-normal component error | 1.3919622870173232e-4 | 5e-4 |
+| Raster mismatches above two encoded RGB levels | 2 / 160x160 image, 208 comparisons | 128 |
+| Additional analytical mesh probes | 10, all passed | Same numerical limits |
+| Ordinary-loader pose-A BDEF4 separation | 0.3882122800953001 m | Greater than 0.001 m |
+
+The existing 176 SDEF comparisons retained maximum position error
+7.996936788362552e-5 m, normal-component error 1.3919622870173232e-4 and five raster
+mismatches, within their unchanged limits. Existing BDEF, Toon, Outline, Gene,
+VMD, VPD and morph tests passed. The only skips were the existing optional native
+WebGPU cases because no adapter was available; QDEF native WebGPU remains unmeasured.
+
+The report retains all 208 QDEF raster case records, five Demo scenario timing and
+rendered-state records, hashes for all 219 captured QDEF canvas images, 51 generated
+QDEF resource hashes and source attribution. The
+[17 retained canvas images](qdef-canvas/README.md) include all 12 rig/motion/source
+combinations, plus rest, both active-morph VPD observations and fallback/restoration
+examples. The independent oracle and actual readback establish synthetic profile
+conformance only. Hosted CI was not run, and no push, PR, merge or comment occurred.
