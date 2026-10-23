@@ -2,9 +2,11 @@ import type { Vec3, Quat, RestBone } from '../mmd-vpd';
 import type { Motion, MotionKey } from './index';
 export const EXTENSION_NAME = 'MMD_animation_vmd';
 export interface VMDPayload {
-  version: 1;
+  version: 1 | 2;
   rest: { node: number; translation: Vec3; rotation: Quat }[];
   tracks: { node: number; keys: MotionKey[] }[];
+  /** Reuse the complete corresponding core LINEAR weight sampler. */
+  weights?: { node: number; sampler: number }[];
 }
 const vector = (v: unknown, n: number): v is number[] =>
   Array.isArray(v) && v.length === n && v.every((x) => Number.isFinite(x) && Number.isFinite(Math.fround(x)));
@@ -17,16 +19,26 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
   if (!value || typeof value !== 'object') fail();
   const p = value as VMDPayload;
   if (
-    !properties(p, ['version', 'rest', 'tracks']) ||
-    p.version !== 1 ||
+    !properties(p, ['version', 'rest', 'tracks', 'weights']) ||
+    ![1, 2].includes(p.version) ||
     !Array.isArray(p.rest) ||
-    !p.rest.length ||
+    (p.version === 1 && !p.rest.length) ||
     p.rest.length > 65536 ||
     !Array.isArray(p.tracks) ||
-    !p.tracks.length ||
+    (p.version === 1 && !p.tracks.length) ||
     p.tracks.length > 65536
   )
     fail();
+  if (p.version === 1 && p.weights !== undefined) fail();
+  if (p.version === 2) {
+    if (!Array.isArray(p.weights) || !p.weights.length || p.weights.length > 65536) fail();
+    const seen = new Set<number>();
+    for (const w of p.weights!) {
+      if (!w || !properties(w, ['node', 'sampler']) || !Number.isInteger(w.node) || w.node < 0 ||
+          w.node >= nodeCount || seen.has(w.node) || !Number.isInteger(w.sampler) || w.sampler < 0) fail();
+      seen.add(w.node);
+    }
+  }
   const nodes = new Set<number>(),
     targets = new Set<number>();
   for (const b of p.rest) {
@@ -75,8 +87,11 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
     }
   }
 }
-export function payloadMotion(payload: VMDPayload): Motion {
+export function payloadMotion(payload: VMDPayload, morphs: Motion['morphs'] = []): Motion {
   validatePayload(payload);
+  if ((payload.weights?.length ?? 0) !== morphs.length ||
+      payload.weights?.some(w => !morphs.some(g => g.node === w.node)))
+    throw new Error(`${EXTENSION_NAME}: resolved core weight samplers required`);
   const rest: RestBone[] = payload.rest.map((b) => ({
     index: b.node,
     name: '',
@@ -88,6 +103,8 @@ export function payloadMotion(payload: VMDPayload): Motion {
   return {
     rest,
     tracks: payload.tracks.map((t) => ({ index: t.node, keys: structuredClone(t.keys) })),
-    duration: Math.max(...payload.tracks.map((t) => t.keys.at(-1)!.frame / 30)),
+    morphs,
+    duration: Math.max(0, ...payload.tracks.map((t) => t.keys.at(-1)!.frame / 30),
+      ...morphs.flatMap(g => g.tracks.map(t => t.keys.at(-1)!.frame / 30))),
   };
 }

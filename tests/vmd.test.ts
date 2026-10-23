@@ -151,7 +151,7 @@ test('VMD binding: exact byte identity, explicit ambiguous/truncated/invalid nam
   const { rig } = await base(),
     model = getVPDModel(rig),
     vmd = parseVMD(await bytes('motion-a.vmd'));
-  const binding = bindMotion(model, vmd, { mapping: motionMappings.a });
+  const binding = bindMotion(model, vmd, { morphUnmatched: 'ignore' as const, mapping: motionMappings.a });
   assert.equal(binding.tracks.length, 3);
   assert.deepEqual(
     binding.tracks[1].keys.map((k) => k.frame),
@@ -160,10 +160,10 @@ test('VMD binding: exact byte identity, explicit ambiguous/truncated/invalid nam
   assert.deepEqual(binding.omitted, { morphs: 1, cameras: 1, lights: 1, shadows: 1, displays: 1, ik: 1 });
   for (const options of [
     {},
-    { mapping: { missing: 1 } },
-    { mapping: { ...motionMappings.a, [Object.keys(motionMappings.a)[0]]: -1 } },
-    { mapping: { ...motionMappings.a, [Object.keys(motionMappings.a)[0]]: 1 } },
-    { mapping: [] as any },
+    { morphUnmatched: 'ignore' as const, mapping: { missing: 1 } },
+    { morphUnmatched: 'ignore' as const, mapping: { ...motionMappings.a, [Object.keys(motionMappings.a)[0]]: -1 } },
+    { morphUnmatched: 'ignore' as const, mapping: { ...motionMappings.a, [Object.keys(motionMappings.a)[0]]: 1 } },
+    { morphUnmatched: 'ignore' as const, mapping: [] as any },
     { unmatched: 'bad' as any },
   ])
     assert.throws(() => bindMotion(model, vmd, options), /VMD/);
@@ -171,42 +171,42 @@ test('VMD binding: exact byte identity, explicit ambiguous/truncated/invalid nam
   one.bones = [one.bones.find((b) => b.name.text === 'bone 1')!];
   one.bones[0].name = byteName([...Buffer.from([0x82]), ...Array(14).fill(0)]);
   assert.throws(() => bindMotion(model, one), /undecodable/);
-  assert.equal(bindMotion(model, one, { mapping: { '82': 1 } }).tracks.length, 1);
+  assert.equal(bindMotion(model, one, { morphUnmatched: 'ignore' as const, mapping: { '82': 1 } }).tracks.length, 1);
   one.bones[0].name = byteName([...Buffer.from('missing'), ...Array(8).fill(0)]);
   assert.throws(() => bindMotion(model, one), /unmatched/);
-  assert.equal(bindMotion(model, one, { unmatched: 'ignore' }).unmatched.length, 1);
+  assert.equal(bindMotion(model, one, { unmatched: 'ignore', morphUnmatched: 'ignore' as const }).unmatched.length, 1);
   one.bones[0].name = byteName([...Buffer.from('bone 1'), ...Array(9).fill(0)]);
   const japaneseModel = structuredClone(model);
   japaneseModel.bones.find(b=>b.index===1)!.name = '同名.骨';
   one.bones[0].name = byteName([0x93,0xaf,0x96,0xbc,0x2e,0x8d,0x9c,...Array(8).fill(0)]);
-  assert.equal(bindMotion(japaneseModel,one).tracks[0].index,1);
+  assert.equal(bindMotion(japaneseModel,one,{morphUnmatched:'ignore'}).tracks[0].index,1);
   one.bones[0].name=byteName([...Buffer.from('bone 1'),...Array(9).fill(0)]);
   const duplicateModel = structuredClone(model);
   duplicateModel.bones.find(b=>b.index===2)!.name = 'bone 1';
   assert.throws(() => bindMotion(duplicateModel, one), /ambiguous/);
   const duplicate = structuredClone(vmd);
   duplicate.bones.push(structuredClone(duplicate.bones[0]));
-  assert.throws(() => bindMotion(model, duplicate, { mapping: motionMappings.a }), /duplicate frame/);
+  assert.throws(() => bindMotion(model, duplicate, { morphUnmatched: 'ignore' as const, mapping: motionMappings.a }), /duplicate frame/);
   // Two source names with the same 15-byte prefix are one byte track. A colliding frame is rejected.
   const collision = structuredClone(one);
   collision.bones[0].name = byteName([...Buffer.from('123456789012345')]);
   collision.bones.push(structuredClone(collision.bones[0]));
   assert.throws(
-    () => bindMotion(model, collision, { mapping: { [collision.bones[0].name.key]: 1 } }),
+    () => bindMotion(model, collision, { morphUnmatched: 'ignore' as const, mapping: { [collision.bones[0].name.key]: 1 } }),
     /duplicate frame/,
   );
   const overflow = structuredClone(vmd);
   overflow.bones[0].translation[0] = 1e308;
-  assert.throws(() => bindMotion(model, overflow, { mapping: motionMappings.a }), /numeric range/);
+  assert.throws(() => bindMotion(model, overflow, { morphUnmatched: 'ignore' as const, mapping: motionMappings.a }), /numeric range/);
   const invalid = structuredClone(vmd);
   invalid.bones[0].rotation = [0, 0, 0, 0];
-  assert.throws(() => bindMotion(model, invalid, { mapping: motionMappings.a }), /quaternion/);
+  assert.throws(() => bindMotion(model, invalid, { morphUnmatched: 'ignore' as const, mapping: motionMappings.a }), /quaternion/);
 });
 
 test('continuous destination curves, adjacent frames, clamping, nonidentity rest and sign equivalence against independent scalar oracle', async () => {
   const { rig } = await base(),
     model = getVPDModel(rig);
-  const binding = bindMotion(model, parseVMD(await bytes('motion-a.vmd')), { mapping: motionMappings.a });
+  const binding = bindMotion(model, parseVMD(await bytes('motion-a.vmd')), { morphUnmatched: 'ignore' as const, mapping: motionMappings.a });
   for (let axis = 0; axis < 4; axis++)
     for (let step = 0; step <= 100; step++)
       near(
@@ -250,7 +250,7 @@ test('continuous destination curves, adjacent frames, clamping, nonidentity rest
   const nonidentity = structuredClone(model);
   nonidentity.bones.find((b) => b.index === 1)!.rotation = [0, 0, Math.SQRT1_2, Math.SQRT1_2];
   const composed = bindMotion(nonidentity, parseVMD(await bytes('motion-a.vmd')), {
-    mapping: motionMappings.a,
+    morphUnmatched: 'ignore' as const, mapping: motionMappings.a,
   });
   const q = evaluateMotion(composed, 1).find((b) => b.index === 1)!.rotation;
   near(
@@ -270,7 +270,7 @@ test('reusable lifecycle: instance isolation, atomic failures, VPD handoff, hist
   const a = await base(),
     b = await base(),
     motion = parseVMD(await bytes('motion-a.vmd')),
-    binding = bindVMD(a.rig, motion, { mapping: motionMappings.a });
+    binding = bindVMD(a.rig, motion, { morphUnmatched: 'ignore' as const, mapping: motionMappings.a });
   const player = createVMDPlayer(a.rig, binding),
     otherSnapshot = snapshot(b.gltf.scene),
     rest = snapshot(a.gltf.scene);
@@ -314,7 +314,7 @@ test('reusable lifecycle: instance isolation, atomic failures, VPD handoff, hist
   assert.deepEqual(snapshot(a.gltf.scene), desired);
   const next = createVMDPlayer(
     a.rig,
-    bindVMD(a.rig, parseVMD(await bytes('motion-b.vmd')), { mapping: motionMappings.b }),
+    bindVMD(a.rig, parseVMD(await bytes('motion-b.vmd')), { morphUnmatched: 'ignore' as const, mapping: motionMappings.b }),
   );
   player.play();
   next.seek(0.3);
@@ -398,7 +398,7 @@ test('two motions × two rigs: byte playback + exact GLB/glTF reload, independen
             mode: 'bdef' as const,
             scale: rigScale[rigCase],
             vmd: await bytes(`motion-${motionCase}.vmd`),
-            vmdBinding: { mapping: motionMappings[motionCase] },
+            vmdBinding: { morphUnmatched: 'ignore' as const, mapping: motionMappings[motionCase] },
           };
         const result = await convertModel(parsePMX(await bytes(source)), '.', options),
           binary = await result.io.writeBinary(result.document),
@@ -522,6 +522,7 @@ test('two motions × two rigs: byte playback + exact GLB/glTF reload, independen
             String(options.scale),
             '--vmd',
             `tests/fixtures/motion-${motionCase}.vmd`,
+            '--vmd-morph-unmatched', 'ignore',
             '--vmd-map',
             `tests/fixtures/motion-${motionCase}-map.json`,
           ],
@@ -558,4 +559,12 @@ test('two motions × two rigs: byte playback + exact GLB/glTF reload, independen
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test('pre-v2 bone-only converter assets remain bindable without morph identity metadata', async()=>{
+  const b=await base();
+  b.gltf.scene.traverse(n=>{delete n.userData.pmxMorph;});
+  const player=createVMDPlayer(b.rig,bindVMD(b.rig,parseVMD(await bytes('motion-a.vmd')),
+    {mapping:motionMappings.a,morphUnmatched:'ignore'}));
+  player.seek(0.371);player.stop();player.dispose();
 });

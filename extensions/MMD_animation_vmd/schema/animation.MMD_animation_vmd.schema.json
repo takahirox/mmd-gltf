@@ -1,22 +1,31 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "MMD_animation_vmd v0.1 animation payload",
+  "title": "MMD_animation_vmd v0.2 animation payload",
   "type": "object", "additionalProperties": false,
   "required": ["version", "rest", "tracks"],
   "properties": {
-    "version": {"const": 1},
-    "rest": {"type":"array", "minItems":1, "maxItems":65536, "items":{
+    "version": {"enum": [1, 2]},
+    "rest": {"type":"array", "minItems":0, "maxItems":65536, "items":{
       "type":"object", "additionalProperties":false, "required":["node","translation","rotation"],
       "properties":{"node":{"$ref":"#/definitions/node"},"translation":{"$ref":"#/definitions/vec3"},"rotation":{"$ref":"#/definitions/quat"}}
     }},
-    "tracks": {"type":"array", "minItems":1, "maxItems":65536, "items":{
+    "tracks": {"type":"array", "minItems":0, "maxItems":65536, "items":{
       "type":"object", "additionalProperties":false, "required":["node","keys"],
       "properties":{"node":{"$ref":"#/definitions/node"},"keys":{"type":"array","minItems":1,"maxItems":1000000,"items":{
         "type":"object", "additionalProperties":false, "required":["frame","translation","rotation","curves"],
         "properties":{"frame":{"type":"integer","minimum":0,"maximum":4294967295},"translation":{"$ref":"#/definitions/vec3"},"rotation":{"$ref":"#/definitions/quat"},"curves":{"type":"array","minItems":4,"maxItems":4,"items":{"$ref":"#/definitions/curve"}}}
       }}}
+    }},
+    "weights": {"type":"array", "minItems":1, "maxItems":65536, "items":{
+      "type":"object", "additionalProperties":false, "required":["node","sampler"],
+      "properties":{"node":{"$ref":"#/definitions/node"},"sampler":{"$ref":"#/definitions/node"}}
     }}
   },
+  "allOf": [{
+    "if":{"properties":{"version":{"const":1}}},
+    "then":{"not":{"required":["weights"]},"properties":{"rest":{"minItems":1},"tracks":{"minItems":1}}},
+    "else":{"required":["weights"]}
+  }],
   "definitions": {
     "node":{"type":"integer","minimum":0},
     "vec3":{"type":"array","minItems":3,"maxItems":3,"items":{"type":"number"}},

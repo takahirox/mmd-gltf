@@ -12,7 +12,7 @@ document.getRoot().setExtras({ ...document.getRoot().getExtras(),
   sourceManifest: manifest,
   attribution: 'CG-CA Gene (c) 2023 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society',
   rights: 'CC BY 4.0 plus original usage guidelines and retained trademark/design rights. Academic/personal noncommercial use; contact authors for other commercial use. See accompanying English/Japanese notices.',
-  changes: 'Static base-pose PMX converted to glTF geometry and MMD_materials_toon and MMD_materials_outline; independent core PBR approximation; source textures unchanged. No animation, morphs or physics.',
+  changes: 'Static base-pose PMX converted to glTF geometry and MMD_materials_toon and MMD_materials_outline; independent core PBR approximation; source textures unchanged. Vertex morph targets retained at zero defaults; no animation or physics.',
 });
 // Rebuild the reviewed allowlist; stale/private files must never survive packaging.
 await rm('public/gene-light', { recursive: true, force: true });
@@ -78,10 +78,10 @@ await rm('public/vmd', { recursive: true, force: true });
 await mkdir('public/vmd', { recursive: true });
 const motionEvidence: object[] = [];
 for (const motion of ['a','b']) for (const suffix of ['.vmd','-map.json']) await copyFile(`tests/fixtures/motion-${motion}${suffix}`,`public/vmd/motion-${motion}${suffix}`);
-for (const [name,source,scale] of [['box','bdef.pmx',0.2],['wedge','vpd-wedge.pmx',0.125]] as const) {
+for (const [name,source,scale] of [['box','morph-box.pmx',0.2],['wedge','morph-wedge.pmx',0.125]] as const) {
   await mkdir(`public/vmd/${name}`,{recursive:true});
   for(const motion of ['a','b']) {
-    const result=await convertModel(parsePMX(await readFile(`tests/fixtures/${source}`)),'.',{mode:'bdef',scale,vmd:await readFile(`tests/fixtures/motion-${motion}.vmd`),vmdBinding:{mapping:JSON.parse(await readFile(`tests/fixtures/motion-${motion}-map.json`,'utf8'))}});
+    const result=await convertModel(parsePMX(await readFile(`tests/fixtures/${source}`)),'.',{mode:'bdef',scale,vmd:await readFile(`tests/fixtures/motion-${motion}.vmd`),vmdBinding:{morphUnmatched:'ignore',mapping:JSON.parse(await readFile(`tests/fixtures/motion-${motion}-map.json`,'utf8'))}});
     result.document.getRoot().setExtras({...result.document.getRoot().getExtras(),attribution:'Original synthetic rigs and VMD motions by mmd-gltf contributors, Issue #29; no third-party assets.',changes:'Solver-free bone motion with retained curves and approximate core TRS fallback; original rest and binds retained. No original-MMD parity claim.'});
     for(const extension of ['glb','gltf']) await result.io.write(`public/vmd/${name}/${motion}.${extension}`,result.document);
     motionEvidence.push({rig:name,motion,scale,warnings:result.warnings,sha256:createHash('sha256').update(await readFile(`public/vmd/${name}/${motion}.glb`)).digest('hex')});
@@ -89,3 +89,34 @@ for (const [name,source,scale] of [['box','bdef.pmx',0.2],['wedge','vpd-wedge.pm
 }
 await writeFile('public/vmd/conversion.json',JSON.stringify({attribution:'Original synthetic fixtures by mmd-gltf contributors; no third-party assets.',cases:motionEvidence},null,2)+'\n');
 console.log('Generated two VMD motions × two rigs, retaining curves with approximate core TRS fallback.');
+
+// Issue #31: attributed morph variants; legacy PMX and VMD files above remain byte-identical.
+await rm('public/morph', {recursive:true,force:true});
+await mkdir('public/morph', {recursive:true});
+await copyFile('tests/fixtures/morph-map.json','public/morph/morph-map.json');
+for (const motion of ['a','b']) {
+  await copyFile(`tests/fixtures/combined-${motion}.vmd`,`public/morph/combined-${motion}.vmd`);
+  await copyFile(`tests/fixtures/motion-${motion}-map.json`,`public/morph/motion-${motion}-map.json`);
+}
+await copyFile('tests/fixtures/morph-only.vmd','public/morph/morph-only.vmd');
+const morphEvidence: object[] = [];
+for (const [name,scale] of [['box',0.2],['wedge',0.125]] as const) {
+  await mkdir(`public/morph/${name}`,{recursive:true});
+  await copyFile(`tests/fixtures/morph-${name}.pmx`,`public/morph/${name}/source.pmx`);
+  for (const motion of ['rest','a','b','only']) {
+    const vmd=motion==='rest'?undefined:await readFile(`tests/fixtures/${motion==='only'?'morph-only':`combined-${motion}`}.vmd`);
+    const mapping=motion==='rest'||motion==='only'?undefined:JSON.parse(await readFile(`tests/fixtures/motion-${motion}-map.json`,'utf8'));
+    const result=await convertModel(parsePMX(await readFile(`tests/fixtures/morph-${name}.pmx`)),'.',{
+      mode:'bdef',scale,vmd,vmdBinding:{mapping,morphMapping:JSON.parse(await readFile('tests/fixtures/morph-map.json','utf8'))},
+      vmdSampling:{translationTolerance:2e-8,rotationTolerance:2e-7},
+    });
+    result.document.getRoot().setExtras({...result.document.getRoot().getExtras(),
+      attribution:'Original synthetic morph variants by mmd-gltf contributors, Issue #31; no third-party assets.',
+      changes:'Additive PMX vertex morphs, synchronized VMD bones and linear weights; authored normals retained. No original-MMD parity claim.',
+    });
+    for (const extension of ['glb','gltf']) await result.io.write(`public/morph/${name}/${motion}.${extension}`,result.document);
+    morphEvidence.push({rig:name,motion,scale,warnings:result.warnings,sha256:createHash('sha256').update(await readFile(`public/morph/${name}/${motion}.glb`)).digest('hex')});
+  }
+}
+await writeFile('public/morph/conversion.json',JSON.stringify({attribution:'Original synthetic Issue #31 fixtures by mmd-gltf contributors.',cases:morphEvidence},null,2)+'\n');
+console.log('Generated morph variants of both rigs, combined motions and morph-only motion in GLB and unpacked glTF.');

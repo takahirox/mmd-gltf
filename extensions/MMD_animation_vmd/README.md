@@ -1,4 +1,4 @@
-# MMD_animation_vmd v0.1 (draft)
+# MMD_animation_vmd v0.2 (draft)
 
 An optional, runtime-independent **animation-level** extension retaining solver-free
 VMD bone curves, alongside approximate core glTF TRS fallback. It is independent
@@ -13,7 +13,8 @@ The self-contained [minimal glTF example](examples/bone-curve.gltf) animates one
 original synthetic triangle joint with retained curves and sampled core TRS;
 `npm test` validates and reloads it without PMX/VPD metadata or material drafts.
 
-`version` is required and equals `1`. `rest` lists every joint owned by this
+`version` is required. Bone-only payload version `1` remains supported.
+Version `2` also owns vertex weights as specified below. `rest` lists every joint owned by this
 motion as `{node, translation, rotation}`. `node` references the root glTF node
 array, never a display name. Rest translation is in meters, rotation is XYZW in
 glTF coordinates. Rest is ORIGINAL local rest, even when loading a posed asset.
@@ -48,7 +49,7 @@ restored to original rest during every evaluation. Stop/reset restores all rest
 entries, not the first motion key.
 
 The containing animation MUST have exactly one core translation and one rotation
-channel for each track target, and no other channels. An extension-aware consumer
+channel for each track target, plus the weight channels listed by version 2, and no other channels. An extension-aware consumer
 **replaces the entire corresponding fallback animation**, never plays both.
 The supplied GLTFLoader plugin returns an empty-track clip in `gltf.animations`
 and exposes a VMDPlayer through `getVMDPlayers(gltf)`. Ordinary loaders ignore the
@@ -66,3 +67,36 @@ reject conversion. Requested tolerances must be finite/positive, sample limits
 
 [Reader, APIs, name handling and CLI](../../docs/vmd.md) ·
 [Actual validation results](../../docs/validation.md#issue-29-vmd-bone-motion)
+
+
+## Version 2: synchronized core weights
+
+`weights` is a required nonempty array of `{node,sampler}` for version 2; version
+1 forbids it. Each node owns every target weight on all its mesh primitives.
+Nodes are unique, reference the default scene, and have consistent nonzero target
+counts and POSITION targets across primitives. `sampler` references the containing
+animation's core LINEAR weight sampler, not an accessor or global animation index.
+Exactly one corresponding core weight channel must reference that same sampler.
+Inputs are FLOAT SCALAR, nonnegative and strictly increasing; outputs are FLOAT
+SCALAR in key-major order, with `input.count * targetCount` values. All values are
+finite and weights have magnitude at most `10000` (shared bounded playback
+profile); each output is limited to one million scalars. Invalid node/sampler/accessor references and count/layout fail before
+playback. Core samplers supply the weights; extension fields do not duplicate keys
+or invent morph Bezier fields. `rest` and `tracks` can be empty for morph-only motion.
+
+Version 2 retains the existing bone curve rules and complete-fallback replacement
+rule. Both property families run through one player/clock/owner, with duration
+including core weight keys. At endpoints clamp to nearest values. Weights are
+independent additive scalars, signed and unnormalized. Untracked owned morphs
+are zero during playback; the converter writes zero columns for them. Stop/reset
+restores all original bone rest and zero weights. VPD handoff preserves weights;
+manual weight changes pause motion. These endpoint/baseline policies are project
+policies, not measured original-MMD equivalence. Ordinary loaders ignore the
+optional extension and can play both core property families.
+
+The [self-contained mixed example](examples/mixed-weights.gltf) and
+[version 2 schema fixture](tests/valid-mixed.json) are checked by `npm test` alongside
+the unchanged v1 example. The built Demo adds two distinct combined motions and
+morph-only coverage on both rigs. Finite/FLOAT input limits, source identity,
+separate mappings and API lifecycle are documented in the
+[vertex morph contract](../../docs/vmd.md#vertex-morph-weights-issue-31).

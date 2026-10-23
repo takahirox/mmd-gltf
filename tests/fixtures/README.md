@@ -122,3 +122,43 @@ measurement; exact skin positions retain `2e-6 m`. Fallback local translation
 and orientation limits are `1e-5 m` and `1e-4 rad`, measured at keys and a uniform
 1201-point time grid (1200 subdivisions of last frame/30), without claiming a
 continuous bound. See [actual validation](../../docs/validation.md#issue-29-vmd-bone-motion).
+
+## Issue #31 vertex morph fixtures
+
+All new bytes are original synthetic works by mmd-gltf contributors, authored in
+this repository with [synthetic-morph.ts](../../tools/synthetic-morph.ts) and the
+optional `vertexMorphs` argument of [synthetic-bdef.ts](../../tools/synthetic-bdef.ts).
+Regenerate with `npx tsx tools/synthetic-morph.ts`. No third-party assets. The
+existing PMX/VPD/VMD fixtures remain byte-identical, including the intentionally
+unexecuted `unused morph` records in both original VMDs. Their callers explicitly
+ignore/report unmatched morphs; bone assertions are retained.
+
+`morph-box.pmx` and `morph-wedge.pmx` add four vertex targets and one unsupported
+group morph to the distinct box/wedge rigs. Every target references 24 vertices,
+with overlapping XYZ offsets across both materials. Two exact Japanese names
+`笑い` deliberately collide, resolved by source PMX index in `morph-map.json`.
+`combined-a.vmd` and `combined-b.vmd` retain the respective distinct bone motions
+and replace the old morph section with distinct scalar tracks. A has nonzero
+first frames, a single-key overlapping track and independent weights summing above
+one; B has different keys, a longer morph duration than bones, signed weights and
+nonzero initial values. Two untracked owned vertex targets must remain zero.
+`morph-only.vmd` has zero bone records, no dummy keys, and A's morph records.
+
+The [independent morph oracle](../morph-oracle.ts) restates decimal authoring
+parameters and scalar interpolation without importing production evaluators or
+emitted samples. It adds weighted reflected/scaled deltas **before** the existing
+independent scalar BDEF predictor. Byte FLOAT rounding is left in measured error.
+Tests compare direct byte playback, retained GLB, unpacked glTF and ordinary
+GLTFLoader core fallback at all keys and the uniform 1201-point time grid. Limits
+are weight error `1e-6`, position error `2e-6 m`, existing exact bone orientation
+`1e-7 rad`, and existing fallback orientation `1e-4 rad`. Combined fixture exports
+request `2e-8 m`/`2e-7 rad` bone sampling probes so core fallback also meets the
+combined skin-position bound. This is bounded synthetic evidence, not a continuous
+error proof or original-MMD/representative-model fidelity measurement.
+
+The same built VMD conformance entry with `?morph` bakes independent predictions
+for 144 Toon/PBR/Outline comparisons across both rigs/motions and all three source
+paths. Raster limits remain two encoded levels and 128 mismatched pixels out of
+160×160. Browser lifecycle tests additionally cover visible manual weight changes,
+seek/reset, play/pause/loop, switching, local VMD ambiguity/recovery, morph-only
+motion, VPD weight preservation and disposal.

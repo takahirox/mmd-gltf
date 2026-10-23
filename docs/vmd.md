@@ -1,9 +1,10 @@
-# VMD bone-motion contract
+# VMD bone and vertex-morph contract
 
 Issue #29 adds VMD 0002 solver-free translation/rotation through PMX BDEF conversion,
 retained glTF curves, reusable Three.js playback and the built `rig.html` Demo.
-It does not complete MMD reproduction. Morph, camera, light, shadow and display/IK
-**execution**, advanced skinning, morph deformation, append/IK/deformation ordering,
+Issue #31 extends this with vertex morphs and synchronized weight playback below.
+It does not complete MMD reproduction. Camera, light, shadow and display/IK
+**execution**, advanced skinning, other morph families, append/IK/deformation ordering,
 physics and representative production-model fidelity remain mandatory overall work.
 
 ## Reader and byte names
@@ -71,7 +72,7 @@ is deliberately not adopted. The reader layouts through display/IK follow
 [MMD Tools at the identified commit](https://github.com/MMD-Blender/blender_mmd_tools/blob/e321bd02dd0288a3dc9f1974c06597803c060e11/mmd_tools/core/vmd/__init__.py).
 These are implementation references, not original-MMD acceptance measurements.
 
-The optional [MMD_animation_vmd v0.1 draft](../extensions/MMD_animation_vmd/README.md)
+The optional [MMD_animation_vmd v0.2 draft](../extensions/MMD_animation_vmd/README.md)
 defines local glTF values, original-rest node references, curves and complete
 replacement of the corresponding fallback animation. Ordinary loaders get
 approximate core LINEAR TRS channels; the extension-aware loader removes those
@@ -89,8 +90,8 @@ are not a continuous error proof. The tests separately measure keys and a dense
 ## Converter API and CLI
 
 ```sh
-npm run convert -- tests/fixtures/bdef.pmx output/motion.glb --mode bdef --scale 0.2 --vmd tests/fixtures/motion-a.vmd --vmd-map tests/fixtures/motion-a-map.json
-npm run convert -- tests/fixtures/vpd-wedge.pmx output/motion.gltf --mode bdef --scale 0.125 --vmd tests/fixtures/motion-b.vmd --vmd-map tests/fixtures/motion-b-map.json
+npm run convert -- tests/fixtures/bdef.pmx output/motion.glb --mode bdef --scale 0.2 --vmd tests/fixtures/motion-a.vmd --vmd-map tests/fixtures/motion-a-map.json --vmd-morph-unmatched ignore
+npm run convert -- tests/fixtures/vpd-wedge.pmx output/motion.gltf --mode bdef --scale 0.125 --vmd tests/fixtures/motion-b.vmd --vmd-map tests/fixtures/motion-b-map.json --vmd-morph-unmatched ignore
 ```
 
 API: `convertModel(model, directory, {mode:'bdef', scale, vmd:bytes,
@@ -111,8 +112,8 @@ Use the lockfile's Three.js `0.186.1`. For direct bytes:
 import { createVPDRig } from '../packages/three-mmd-vpd';
 import { parseVMD, bindVMD, createVMDPlayer } from '../packages/three-mmd-vmd';
 const rig = createVPDRig(gltf.scene); // validated converter original-rest metadata
-const binding = bindVMD(rig, parseVMD(bytes), { mapping });
-console.log(binding.unmatched, binding.omitted);
+const binding = bindVMD(rig, parseVMD(bytes), { mapping, morphUnmatched: 'ignore' }); // explicit legacy partial playback
+console.log(binding.unmatched, binding.unmatchedMorphs, binding.omitted);
 const player = createVMDPlayer(rig, binding);
 player.loop = true;
 player.play();
@@ -145,3 +146,110 @@ binding/unmatched diagnostics, converted GLB/glTF samples, time entry, play/paus
 loop and original-rest reset. A failed parse/bind leaves the active state unchanged.
 Changing rigs/motions disposes old players; model replacement and page teardown
 release outline/material/geometry resources. VPD remains available on the same rigs.
+
+## Vertex morph weights (Issue #31)
+
+PMX type-1 vertex offsets now convert in both static and BDEF modes to additive
+core `POSITION` targets. The pinned binary parser reflects offset Z together with
+base positions; conversion scales each delta exactly once. All material primitives
+share source order and zero default weights. Normals remain the authored base
+normals (including the existing surface/outline skin-normal conventions); no
+normal recomputation or NORMAL targets are invented. Repeated offsets at a vertex
+add. Invalid counts, references, vector lengths, nonfinite values and FLOAT overflow
+reject conversion. Bone, UV, material, group/flip and impulse morphs remain
+unsupported; they have `target:null`, with source index/name/type loss diagnostics,
+rather than fake zero-effect targets. Advanced skinning, solvers, physics and
+representative fidelity remain outstanding.
+
+The mesh node's `extras.pmxMorph` version 1 stores a model ID and every exact
+`{index,name,englishName,type,target}` identity. Targets are contiguous in source
+order. Display dictionary names include source indices because Three.js overwrites
+duplicate dictionary names; dictionaries never establish binding identity.
+`getMorphModel(createMorphRig(gltf.scene))` returns a defensive snapshot. One
+model per handle is required, and every loaded material primitive is validated.
+Model IDs agree with original bone metadata in BDEF mode.
+
+VMD morph records have a fixed 15-byte Shift_JIS name, uint32 frame and FLOAT
+weight, with no bone interpolation bytes. `morphMapping` is a **separate** hex
+byte-name → source PMX morph index object. Japanese exact names bind automatically
+only when unique; duplicates, full-width/truncated or undecodable names require
+explicit mapping. Invalid keys/indices, target collisions, inconsistent byte
+identity and duplicate bound frames fail. `morphUnmatched:'ignore'` explicitly
+permits missing/unsupported families and reports `unmatchedMorphs` plus omitted
+record counts; ambiguity still fails. The default is error. Existing `motion-a`
+and `motion-b` bytes retain their `unused morph`; legacy callers explicitly ignore
+and report it. `omittedRecords()` is a raw section inventory; a binding's
+`omitted.morphs` counts only records not executed.
+
+Scalar interpolation is linear at frame/30, nearest-key clamping before/after
+track endpoints, including nonzero first frames and single keys. Duplicate-bound
+frame rejection, endpoint clamping and zero for untracked owned targets are
+**project policies**, not measured original-MMD behavior. Weights are independent
+additive scalars, including negative values and sums greater than one: no
+normalization or silent clamp. Supported weights are finite scalars in `[-10000,10000]`, matching the existing
+Outline renderer profile. POSITION deltas must have finite FLOAT rounding
+(magnitude up to approximately `3.402823466e38`); the Outline loader additionally
+limits decoded geometry magnitude to `1e8`, as in its existing contract;
+converted values are FLOAT, so quantization still applies. Weight output is capped
+at one million scalars per channel to bound allocation. Frames are uint32.
+Distinct source times that collapse to one FLOAT timestamp reject conversion.
+Duration includes every executed bone and morph track; morph-only VMD requires
+zero bone records, not dummy keys (BDEF model rest is retained).
+
+`MMD_animation_vmd` v0.2 adds payload version 2 with core LINEAR weight sampler
+references; bone-only payload version 1 remains readable. Weight outputs are
+SCALAR, key-major arrays of `keyCount * targetCount` values. Union key times and
+zero include clamped values for each independent target. The loader checks node,
+sampler, FLOAT accessor, count/layout, timestamp order, target widths and default
+scene membership before exposing a player. It reuses core weights rather than
+duplicating them as extension keys. The complete fallback (bones **and** weights)
+is removed from returned clips, preventing either property family from being
+driven twice. Ordinary GLTFLoader still has usable TRS and weight channels.
+
+```ts
+import { createMorphRig, getMorphWeights, applyMorphWeights,
+  resetMorphWeights } from '../packages/three-mmd-morph';
+const morph = createMorphRig(gltf.scene);
+console.log(getMorphWeights(morph));
+applyMorphWeights(morph, [1.3, 0.9, 0, 0]); // full target-order vector; pauses VMD
+resetMorphWeights(morph); // zero baseline; pauses VMD
+const binding = bindVMD(rig, parseVMD(bytes), {mapping, morphMapping});
+const player = createVMDPlayer(rig, binding);
+```
+
+Play/seek restores original bone rest and zero untracked weights before evaluating
+both families under one transport. Stop/reset restores original rest and zero
+weights, not initial motion keys. Manual weight apply/reset pauses motion.
+VPD apply/reset pauses motion and changes bones **while preserving current weights**,
+because VPD has no morph channels. Subsequent VMD play/seek replaces weights again.
+Parsing, binding and complete pose/weight preparation validate before ownership or
+mutation. Failed operations preserve bones, weights, time and the current owner.
+Instance handles cannot be reused across loads; disposal is idempotent and releases
+only its own owner. Matrices, skeletons and deformed bounds refresh after writes;
+static geometry bounds are private to avoid leaking across instances.
+
+```sh
+npm run convert -- tests/fixtures/morph-box.pmx output/combined.glb --mode bdef --scale 0.2 --vmd tests/fixtures/combined-a.vmd --vmd-map tests/fixtures/motion-a-map.json --vmd-morph-map tests/fixtures/morph-map.json --vmd-translation-tolerance 2e-8 --vmd-rotation-tolerance 2e-7
+npm run convert -- tests/fixtures/bdef.pmx output/legacy.glb --mode bdef --scale 0.2 --vmd tests/fixtures/motion-a.vmd --vmd-map tests/fixtures/motion-a-map.json --vmd-morph-unmatched ignore
+```
+
+The built Demo exposes exact-index morph controls, combined and morph-only samples,
+local VMD with separate maps/policies, and the existing synchronized transport.
+Both Toon and independent PBR instances have their own weights; Outline follows
+the same deformation. The VPD reset button preserves weights; the motion reset
+button zeros them. Numeric tests compare independent scalar interpolation and
+morph-before-BDEF predictions, not emitted samples. See
+[fixture provenance](../tests/fixtures/README.md#issue-31-vertex-morph-fixtures) and
+[measured validation](validation.md#issue-31-vertex-morphs-and-combined-motion).
+
+
+Primary representation references: the
+[mirrored format-author PMX specification](https://github.com/hirakuni45/glfw3_app/blob/master/glfw3_app/docs/PMX_spec.txt)
+describes vertex-indexed offsets; [core glTF morph targets](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#morph-targets)
+define additive deltas, common primitive ordering and morph-before-skinning.
+[Official Three.js r186 GLTFLoader](https://github.com/mrdoob/three.js/blob/r186/examples/jsm/loaders/GLTFLoader.js)
+provides the identified target/weight loading behavior. The historical MMDLoader
+and identified MMD Tools source cited above support the bounded linear morph
+profile, not original-renderer equivalence. No new specification correction was
+established for this Issue; the existing FLOAT skin-weight sum SHOULD correction
+and stricter converter interoperability policy remain in force.

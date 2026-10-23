@@ -55,15 +55,23 @@ core `MASK` and `alphaCutoff`.
 Both extensions are used, never required, so ordinary glTF viewers can load the
 fallback. The default `static` mode keeps the stored base-pose geometry and reports omitted
 bones/skins and runtime features. The opt-in `bdef` mode is described below.
-Neither mode evaluates SDEF, IK, grants, physics or morphs. BDEF mode supports solver-free VMD bone animation. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
+Neither mode evaluates SDEF, IK, grants or physics. Both retain PMX vertex POSITION morphs. BDEF mode supports synchronized solver-free VMD bones and vertex weights. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
 copied unchanged (defaults `[0,0,0,1]` and `1`). Signed per-vertex `edgeRatio`
 becomes a shared FLOAT/SCALAR `_MMD_EDGE_SCALE`, attached only to outlined
 primitives, omitted when every stored ratio is exactly one. Zero stays zero.
 Material size is never baked into geometry or ratios. Edge fields and shadow
 flags remain in extras; shadow flags have no runtime effect. Additional UV ZW/unused sets and PMX-specific runtime
-features are omitted with a conversion report. PMD and non-bone VMD execution are unsupported. Solver-free VPD offsets are supported in BDEF mode below.
+features are omitted with a conversion report. PMD and scene VMD execution are unsupported. Solver-free VPD offsets are supported in BDEF mode below.
 Gene Light contains no shared/custom toon or sphere image; the generic conversion
 tests exercise those modes using synthetic source material configurations.
+
+
+Vertex morph conversion, retained identity, reusable inspection/application/reset,
+linear VMD weights and synchronized VPD/VMD handoff are described in the
+[vertex morph contract](vmd.md#vertex-morph-weights-issue-31). Static and BDEF
+models share core POSITION targets and authored normals. Bone-only v1 retained
+animations remain readable; v2 reuses core LINEAR weight samplers and suppresses
+the complete matching fallback to prevent double-driving.
 
 ## BDEF conversion and source identity
 
@@ -121,7 +129,7 @@ GLB/glTF reload preserves this data; pinned GLTFLoader exposes it as
 Bind future pose/motion data by source index and retained names, never runtime
 display names. This metadata does not promise deformation-layer ordering,
 IK/append/grants, fixed/local-axis constraints or external-parent semantics.
-Those solvers, SDEF/QDEF, morph evaluation, physics and non-bone VMD execution remain
+Those solvers, SDEF/QDEF, non-vertex morph evaluation, physics and scene VMD execution remain
 unsupported; VPD supports only the solver-free contract below. They are listed in conversion warnings; parent hierarchy alone does
 not implement them. Core skin pose edits are supported with Toon, PBR and Outline
 without a new material or skinning extension.

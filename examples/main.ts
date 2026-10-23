@@ -76,7 +76,8 @@ async function start() {
     return { toon, fallback };
   });
   const [reference, { toon, fallback }] = await Promise.all([referencePromise, gltfPromise]);
-  const bounds = new Box3().setFromObject(toon.scene);
+  // Camera framing uses the current zero-weight pose, not the geometry's conservative morph envelope.
+  const bounds = new Box3().setFromObject(toon.scene, true);
   const center = bounds.getCenter(new Vector3());
   const height = bounds.getSize(new Vector3()).y;
   controls.minDistance = height * 0.4;
@@ -101,7 +102,7 @@ async function start() {
   select.disabled = viewpoint.disabled = outlines.disabled = false;
   const backend = ('isWebGPUBackend' in renderer.backend && renderer.backend.isWebGPUBackend) ? 'WebGPU' : 'WebGL2';
   const describeBounds = (object: Object3D) => {
-    const box = new Box3().setFromObject(object);
+    const box = new Box3().setFromObject(object, true);
     return { min: box.min.toArray(), max: box.max.toArray() };
   };
   const info = { backend, frames: 0, mode: 'toon', meshes: 0, ready: true,

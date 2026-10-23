@@ -9,6 +9,7 @@ import {
 import { evaluateTrack, slerp, type MotionBinding, type MotionTrack } from '../packages/mmd-vmd';
 import { EXTENSION_NAME, validatePayload, type VMDPayload } from '../packages/mmd-vmd/payload';
 import type { Quat } from '../packages/mmd-vpd';
+import { evaluateWeight } from '../packages/mmd-morph';
 export interface SamplingOptions {
   translationTolerance?: number;
   rotationTolerance?: number;
@@ -21,14 +22,14 @@ export function orientationError(a: Quat, b: Quat) {
 export class VMDWriter extends Extension {
   static EXTENSION_NAME = EXTENSION_NAME;
   readonly extensionName = EXTENSION_NAME;
-  records = new Map<Animation, { motion: MotionBinding; nodes: Node[] }>();
+  records = new Map<Animation, { motion: MotionBinding; nodes: Node[]; weights: { node: Node; sampler: number }[] }>();
   read(): this {
     throw new Error('VMDWriter is converter-only');
   }
   write(context: WriterContext): this {
-    for (const [animation, { motion, nodes }] of this.records) {
+    for (const [animation, { motion, nodes, weights }] of this.records) {
       const payload: VMDPayload = {
-        version: 1,
+        version: weights.length ? 2 : 1,
         rest: motion.rest.map((b) => ({
           node: context.nodeIndexMap.get(nodes[b.index])!,
           translation: b.translation,
@@ -39,6 +40,7 @@ export class VMDWriter extends Extension {
           keys: structuredClone(t.keys),
         })),
       };
+      if (weights.length) payload.weights = weights.map(w => ({ node: context.nodeIndexMap.get(w.node)!, sampler: w.sampler }));
       validatePayload(payload, context.jsonDoc.json.nodes!.length);
       const def = context.jsonDoc.json.animations![context.animationIndexMap.get(animation)!];
       def.extensions = { ...def.extensions, [EXTENSION_NAME]: payload };
@@ -127,16 +129,18 @@ export function addVMDAnimation(
   motion: MotionBinding,
   nodes: Node[],
   options: SamplingOptions = {},
+  meshNode?: Node,
 ) {
-  if (!motion.tracks.length) throw new Error('VMD: no bound bone tracks to convert');
+  if (!motion.tracks.length && !motion.morphs?.some(g => g.tracks.length)) throw new Error('VMD: no bound bone or morph tracks to convert');
   const animation = doc
-    .createAnimation('VMD bone motion')
+    .createAnimation(motion.morphs?.length ? 'VMD bone and morph motion' : 'VMD bone motion')
     .setExtras({
       vmd: {
         unmatched: motion.unmatched,
+        unmatchedMorphs: motion.unmatchedMorphs,
         omitted: motion.omitted,
         profile: 'continuous-curve-v1',
-        fallback: 'Approximate LINEAR TRS, adaptive quarter probes; no continuous error proof',
+        fallback: 'Approximate LINEAR TRS, adaptive quarter probes; core LINEAR weights; no continuous error proof',
         sampling: {
           translationTolerance: options.translationTolerance ?? 2e-6,
           rotationTolerance: options.rotationTolerance ?? 2e-5,
@@ -177,6 +181,28 @@ export function addVMDAnimation(
         );
     }
   }
-  doc.createExtension(VMDWriter).records.set(animation, { motion, nodes });
+  const weights: { node: Node; sampler: number }[] = [];
+  for (const group of motion.morphs ?? []) {
+    if (!meshNode) throw new Error('VMD: missing morph mesh node');
+    const times = [...new Set([0, ...group.tracks.flatMap(t => t.keys.map(k => k.frame / 30))])].sort((a,b) => a-b);
+    if (times.length * group.count > 1_000_000) throw new Error('VMD: maximum weight output is 1000000 scalars');
+    const stamps = times.map(Math.fround);
+    if (stamps.some((v,i) => !Number.isFinite(v) || (i > 0 && v <= stamps[i-1])))
+      throw new Error('VMD: weight keys cannot have strictly increasing FLOAT timestamps');
+    count += times.length;
+    const values = times.flatMap(time => {
+      const row = new Array(group.count).fill(0);
+      for (const track of group.tracks) row[track.index] = evaluateWeight(track, time);
+      return row;
+    });
+    const array = new Float32Array(values);
+    if (!array.every(Number.isFinite)) throw new Error('VMD: unsupported FLOAT weight numeric range');
+    const input = doc.createAccessor('VMD weight seconds').setBuffer(buffer).setType('SCALAR').setArray(new Float32Array(stamps));
+    const output = doc.createAccessor('VMD weights (key-major)').setBuffer(buffer).setType('SCALAR').setArray(array);
+    const sampler = doc.createAnimationSampler().setInterpolation('LINEAR').setInput(input).setOutput(output);
+    animation.addSampler(sampler).addChannel(doc.createAnimationChannel().setTargetNode(meshNode).setTargetPath('weights').setSampler(sampler));
+    weights.push({ node: meshNode, sampler: animation.listSamplers().indexOf(sampler) });
+  }
+  doc.createExtension(VMDWriter).records.set(animation, { motion, nodes, weights });
   return count;
 }
