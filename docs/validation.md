@@ -957,3 +957,96 @@ checks pass. The complete Chromium browser rerun passes 14 tests in 11.1 minutes
 with zero failures and two optional native-WebGPU skips (no adapter), including
 the SDEF Demo and all existing Gene/BDEF/VMD/VPD/morph/Toon/Outline coverage.
 These remain local synthetic measurements.
+
+
+## Issue #35: complete SDEF Demo observation and scheduling
+
+The historical Issue #33 and PR #34 records above remain unchanged. The
+[PR-head hosted job](https://github.com/takahirox/mmd-gltf/actions/runs/40017782133/job/120634196219)
+reported 49 Node passes, all 176 SDEF GPU comparisons, 13 browser passes, one
+180-second SDEF Demo timeout and two optional skips. The separate PR #34 report
+of 49 Node/14 browser passes was local; the saved 47-test checkpoint above is
+also historical local evidence. Neither establishes repaired hosted acceptance.
+
+The local baseline used the unchanged Demo assertions with temporary scenario
+and screenshot timers. All 12 combinations completed in 2.1 minutes. Their first
+screenshots alone consumed 34.068 seconds (1.093–7.139 seconds each), despite the
+100 ms sleeps. All measured pre-capture bounds were identical:
+`x=24, y=858.1875, width=1232, height=446`. The hosted log establishes expiration
+of the shared 180-second test budget inside screenshot stability waiting; it does
+not establish an endless layout oscillation or identify which scenario expired.
+The measured cumulative workload supports partitioning the budget. Four named
+rig/motion tests now retain all three sources within each page, preserving asset
+replacement/disposal; they also exercise cross-motion recovery and cross-rig
+replacement. The global 180-second budget, worker count and retry policy are
+unchanged. Each rendering/screenshot wait has a bounded 30-second failure point,
+over four times the largest measured baseline first screenshot, so failures
+distinguish a blocked phase from total test-budget exhaustion.
+
+Two additional observation defects were demonstrated and corrected:
+
+- Control snapshots were published before the animation callback rendered them.
+  The Demo now invalidates a revision on state changes and acknowledges the exact
+  rig, motion, pose, fractional time, weights, material, comparison and Outline
+  state only after the complete surface/Outline/resolve render. Rendering pauses
+  during asynchronous asset mutation; normal animation and orbit updates retain
+  the existing animation loop. The regression holds the real animation callback,
+  changes time and appearance, verifies the old acknowledgement remains, then
+  releases drawing and checks changed/restored screenshots. Render acknowledgement
+  means synchronous command submission, not a GPU-completion timing guarantee;
+  actual browser screenshots provide the rendered evidence.
+- Fractional element bounds made a 446-pixel canvas screenshot include 447 rows.
+  A failed exact seek-restoration comparison differed in 1,218 pixels, all on the
+  extra row 446, with no changed canvas pixels. Screenshot-scoped translation now
+  aligns the viewport with whole pixels and removes its decorative rounded-corner
+  clip without resizing its framebuffer. A subsequent reset comparison isolated
+  30 differing clip-edge pixels (maximum nine encoded levels); removing the
+  decoration exposes the complete canvas. Every capture must match the full framebuffer dimensions, and restoration comparisons
+  remain byte-exact; no pixel threshold or model region was relaxed.
+
+The VPD-to-VMD checks also exposed stale pose labelling: play/seek retook motion
+ownership while `info.pose` and the visible rig label still described VPD/rest.
+Those actions now update the label and acknowledged pose; pause preserves the
+current owner. Both VPD poses, both fractional seeks, BDEF2/restored SDEF,
+Toon/PBR, Outline off/on, rest reset, morph controls, invalid-file preservation,
+successful subsequent motion loading and player disposal have rendered checks.
+
+The exact installed npm sources were inspected after `npm ci` with the unchanged
+[lockfile](../package-lock.json): Three.js 0.186.1 `Renderer.render()` calls
+`_renderScene()` synchronously after initialization; Playwright 1.56.1
+`screenshotElement()` waits/scrolls before computing outward-rounded element
+bounds. [Machine-readable evidence](sdef-demo-validation.json) records source
+hashes, environment, phase aggregates and the validated implementation identity.
+This corrects the old assumption that 100 ms plus control text proved rendered
+state. No SDEF specification, converter or plugin convention was changed.
+
+| Command | Final local result | Elapsed |
+| --- | --- | ---: |
+| `npm run build` | Passed; existing Vite chunk-size advisory. | 6.121 s |
+| `npm run typecheck` | Passed. | 2.274 s |
+| `npm test` | 49 passed, zero failures/skips; Toon/Outline scripts passed. | 20.110 s |
+| `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | 18 passed, zero failures; two optional native-WebGPU skips (no adapter). | 801.349 s |
+| `npm run check:links` | Passed, 218 links. | 0.388 s |
+| `git diff --check` | Passed; staged whitespace also checked before commit. | 0.010 s |
+
+| Demo rig / motion | Three-source case duration |
+| --- | ---: |
+| sdef-box / combined-a | 47.145 s |
+| sdef-box / combined-b | 47.449 s |
+| sdef-wedge / combined-a | 47.191 s |
+| sdef-wedge / combined-b | 46.720 s |
+
+The held-frame regression passed in 6.460 seconds. All 12 combinations passed;
+each source retained both VPD poses and all appearance/lifecycle checks. The 176
+independent SDEF comparisons retained maximum position error
+`7.996936788362552e-05` m, normalized-normal component error
+`0.00013919622870173232`, and five mismatched raster pixels. CPU and GPU limits
+are unchanged.
+
+Per-source loading, render-acknowledgement wait, render submission, screenshot and
+cumulative durations are in the linked machine-readable evidence. The normal
+PR-triggered Ubuntu 24.04 workflow retains `test-results/` as `browser-evidence`, including per-phase and cumulative timings,
+render submission durations, screenshots and failure context. Hosted final-head
+acceptance remains pending the downstream PR workflow; this node does not push
+or create a PR. Optional native WebGPU does not replace Chromium/SwiftShader or
+establish original-MMD fidelity. No post-merge rerun is required.

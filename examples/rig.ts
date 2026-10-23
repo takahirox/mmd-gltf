@@ -90,6 +90,12 @@ async function start() {
     time: 0,
     playing: false,
     disposedPlayers: 0,
+    revision: 0,
+    rendered: null as null | {
+      revision: number; frame: number; durationMs: number;
+      rig: string; motion: string; pose: string; time: number;
+      playing: boolean; mode: string; outlines: boolean; comparison: boolean; weights: number[];
+    },
   };
   Object.assign(window, { mmdRig: info });
   interface Asset {
@@ -109,7 +115,9 @@ async function start() {
   const report = (message: string) => {
     status.textContent = `Ready · ${message} · Solver-free bones + vertex morphs; IK/append/physics and other morph families unsupported`;
   };
+  const invalidate = () => { info.revision++; };
   const snapshot = () => {
+    invalidate();
     info.bones = [];
     assets[0]?.scene.traverse((n) => {
       if (n.userData.pmxBone)
@@ -129,6 +137,7 @@ async function start() {
   };
   const comparison = input('sdef-comparison');
   const updateComparison = () => {
+    invalidate();
     for (const a of assets) {
       let changed = false;
       a.scene.traverse(n => {
@@ -146,6 +155,7 @@ async function start() {
   };
   comparison.onchange = updateComparison;
   const appearance = () => {
+    invalidate();
     assets.forEach((a, i) => {
       a.scene.visible = material.value === 'toon' ? i === 0 : i === 1;
     });
@@ -334,6 +344,7 @@ async function start() {
   ];
   const guarded = (action: () => Promise<void> | void) => async () => {
     busy = true;
+    invalidate();
     editable.forEach((c) => {
       c.disabled = true;
     });
@@ -349,6 +360,7 @@ async function start() {
       editable.forEach((c) => {
         c.disabled = !info.ready;
       });
+      invalidate();
     }
   };
   function rebuildMorphControls() {
@@ -373,10 +385,15 @@ async function start() {
   button('morph-reset').onclick = guarded(() => {
     assets.forEach(a => resetMorphWeights(a.morph)); snapshot(); report('Morph weights reset. Motion paused');
   });
-  const transport = (action: (player: VMDPlayer) => void) =>
+  const transport = (action: (player: VMDPlayer) => void, takesOwnership: boolean) =>
     guarded(() => {
       if (!assets[0]?.player) throw new Error('Load a VMD motion first');
       assets.forEach((a) => action(a.player!));
+      if (takesOwnership) {
+        info.pose = 'motion';
+        info.deformed = true;
+        label.textContent = info.motion;
+      }
       info.error = '';
       snapshot();
       report('VMD transport updated');
@@ -402,9 +419,9 @@ async function start() {
   });
   button('motion-reset').onclick = guarded(resetAll);
   button('motion-load').onclick = guarded(loadMotion);
-  button('motion-play').onclick = transport((p) => p.play());
-  button('motion-pause').onclick = transport((p) => p.pause());
-  seek.oninput = transport((p) => p.seek(Number(seek.value)));
+  button('motion-play').onclick = transport((p) => p.play(), true);
+  button('motion-pause').onclick = transport((p) => p.pause(), false);
+  seek.oninput = transport((p) => p.seek(Number(seek.value)), true);
   loop.onchange = () =>
     assets.forEach((a) => {
       if (a.player) a.player.loop = loop.checked;
@@ -443,6 +460,7 @@ async function start() {
   material.onchange = appearance;
   outline.onchange = () => {
     effect.enabled = outline.value === 'on';
+    invalidate();
   };
   material.disabled = outline.disabled = false;
   const resize = () => {
@@ -452,6 +470,7 @@ async function start() {
     camera.left = (-0.6 * width) / height;
     camera.right = (0.6 * width) / height;
     camera.updateProjectionMatrix();
+    invalidate();
   };
   const observer = new ResizeObserver(resize);
   observer.observe(viewport);
@@ -467,8 +486,19 @@ async function start() {
       snapshot();
     }
     controls.update();
+    // Do not acknowledge a half-replaced asset while an asynchronous action is active.
+    if (busy) return;
+    const started = performance.now();
     effect.render(scene, camera);
     info.frames++;
+    // render() is synchronous after renderer.init(). Publish only after the full
+    // surface/outline/resolve pass has submitted this state to the canvas.
+    info.rendered = {
+      revision: info.revision, frame: info.frames, durationMs: performance.now() - started,
+      rig: info.rig, motion: info.motion, pose: info.pose, time: info.time,
+      playing: info.playing, mode: info.mode, outlines: effect.enabled,
+      comparison: comparison.checked, weights: [...info.weights],
+    };
   });
   window.addEventListener(
     'pagehide',
