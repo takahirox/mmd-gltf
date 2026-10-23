@@ -23,8 +23,12 @@ for (const file of files) {
   const content = (await readFile(file, 'utf8')).replace(/```[\s\S]*?```/g, '');
   for (const link of content.matchAll(/\[[^\]]*\]\(([^\s)]+)(?:\s+"[^"]*")?\)/g)) await check(file, link[1]);
 }
-const html = await readFile('dist/index.html', 'utf8');
-for (const link of html.matchAll(/(?:href|src)="([^"]+)"/g)) await check('dist/index.html', link[1], true);
-assert.match(html, /\/mmd-gltf\/assets\//, 'built application must use the repository prefix');
-await assert.rejects(stat('dist/conformance.html'), /ENOENT/, 'conformance entry must not ship');
+for (const name of ['index', 'rig']) {
+  const html = await readFile(`dist/${name}.html`, 'utf8');
+  for (const link of html.matchAll(/(?:href|src)="([^"]+)"/g)) await check(`dist/${name}.html`, link[1], true);
+  assert.match(html, /\/mmd-gltf\/assets\//, 'built application must use the repository prefix');
+}
+for (const name of ['conformance', 'outline-conformance', 'bdef-conformance']) {
+  await assert.rejects(stat(`dist/${name}.html`), /ENOENT/, 'conformance entry must not ship');
+}
 console.log(`PASS: ${checked} local documentation links, anchors and built example asset links checked.`);

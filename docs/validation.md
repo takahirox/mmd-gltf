@@ -1,5 +1,100 @@
 # Validation record
 
+## Issue #25: BDEF core skinning
+
+Local pre-merge evidence on 2026-10-23: Node.js 24.12.0, npm 11.6.2,
+Darwin ARM64, lockfile Three.js 0.186.1, glTF Transform 4.5.1,
+mmd-parser 1.1.4 and Playwright Chromium headless/SwiftShader. No dependency
+changes, push, PR, comment, merge or deployment were performed.
+
+| Normal pre-merge check | Actual result |
+| --- | --- |
+| `npm ci` | Passed with existing lockfile; two existing audit findings (one low, one high) |
+| `npm run build` | Passed; Gene comparison and synthetic rig packaged; existing bundle-size warning |
+| `npm run typecheck` | Passed |
+| `npm test` | Passed: 15 unit/integration tests, existing Toon and Outline CPU/schema/asset suites |
+| `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | Seven passed; two optional native-WebGPU tests skipped because no adapter was available |
+| Existing WebGL2 conformance | 43 Toon vectors and 109 Outline checks passed |
+| New BDEF WebGL2 conformance | All 12 independent numerical/raster comparisons and built rig controls passed |
+| `npm run check:links` | Passed: 122 local links/anchors and both built page asset sets; all conformance entries excluded from build |
+| `git diff --check` | Passed |
+
+Initial development checks exposed Buffer/Uint8Array assertion typing, the parser
+header limitation described below, and a Vite conformance-entry path. These were
+corrected before the passing checks. The first browser attempt was interrupted
+after its entry-path error; the completed normal run above supersedes it. A link
+check made before this evidence section existed failed on its missing anchor and
+passed once the section was written. No check failure remains outstanding.
+
+The committed [binary fixture and deterministic generator](../tests/fixtures/README.md)
+cover BDEF1/2/4, nonzero bone positions, mixed and duplicate influences, inactive
+padding, two materials, forward parents, two source roots, 260 bones (including
+unweighted bones), and duplicate exact Japanese/English names. Unit tests verify
+byte-identical conversion, complete hierarchy and identity after GLB and unpacked
+glTF reload, unchanged rest positions, and explicit scalar deformation predictions
+for all 24 vertices. Both output formats and the attributed demo GLB have zero
+core-validator errors; optional-material-extension notices are expected.
+The CLI BDEF output is byte-identical to API output. Static loss reporting and
+the existing Gene workflow remain covered. Rejections cover SDEF/QDEF, unknown
+modes, cycles, invalid parents, non-finite positions, malformed influence records,
+invalid active bone references, negative/non-finite weights, zero totals and
+materially non-unit sums. A roundoff normalization regression checks its warning.
+
+Tolerances are absolute `1e-6` for accepting weight-sum roundoff and `2e-6`
+meters for numerical position comparisons. The former permits a few FLOAT
+accumulation ulps without changing substantial source deformation; the latter
+allows FLOAT weights and inverse binds in this sub-meter test pose. The
+[PMX format document](https://raw.githubusercontent.com/hirakuni45/glfw3_app/master/glfw3_app/docs/PMX_spec.txt)
+explicitly allows non-unit BDEF4 sums, but [core glTF skinning](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#skins)
+requires normalized weights. The converter rejects materially abnormal sums;
+original-MMD handling remains unresolved.
+
+The browser suite loads the actual converter-produced asset with pinned
+GLTFLoader. Twelve independent comparisons cover active Toon/core PBR ×
+rest/deformed/reset × surface/outline. An analytic baked-geometry oracle uses
+explicit scalar rotation/translation formulas and authored influence patterns,
+without emitted joint matrices or the production outline equation. Surface
+normals follow Three.js's weighted transform; outline normals independently use
+the specified inverse transpose. The existing raw-weight/multiple-influence-set
+outline tests and their numerical expectations are unchanged.
+
+| BDEF WebGL2 measurement | Actual result |
+| --- | --- |
+| Maximum loaded surface position error | `3.3527612686157227e-8` meters (limit `2e-6`) |
+| Oracle pixel mismatches in all 12 comparisons | Zero at two encoded-level tolerance; allowance is at most 128/25,600 boundary pixels (0.5%) |
+| Deformed Toon/PBR surface pixels changed from rest | 5,984 / 6,848 |
+| Deformed outline pixels changed from rest | 5,386 for each material path |
+| Reset difference from rest | Zero pixels for surfaces and outlines |
+| Built interactive rig | Repeatable preset, exact rest reset, Toon/PBR switch and outline toggle passed |
+
+The generated synthetic demo is 49,984 bytes, SHA-256
+`28bd6d44709a29bb5bb3dbd6994ced6def8527fdd641bd147bc0c2d413832795`.
+Its conversion report retains input/output hashes, attribution, scale and six
+roundoff adjustments at source vertices `[2, 6, 10, 14, 18, 22]`.
+
+### Parser evidence correction for the Coordinator
+
+The initial assumption was that the pinned parser's QDEF limitation would first
+be encountered when reading a type-4 vertex in a PMX 2.1 file. The corrected
+requirement is to report both the earlier PMX 2.1 header rejection and the
+independent QDEF record rejection, without approximating either. Primary evidence
+is the [distributed mmd-parser 1.1.4 source](https://unpkg.com/mmd-parser@1.1.4/build/mmdparser.js):
+`parsePmx` compares the decoded FLOAT version strictly to JavaScript `2.1`, while
+binary FLOAT 2.1 decodes as `2.0999999046325684`; `readPmxVertex` also has no type-4
+branch. The valid synthetic 2.1 QDEF file reproduces the header failure. A
+regression changing only that header to 2.0 reaches the unsupported type-4 error;
+that modified file is never treated as valid conversion input. PMX format evidence
+defines QDEF as a distinct PMX 2.1 dual-quaternion mode. This finding narrows parser
+claims, preserves the agreed PMX 2.0 BDEF contract, and does not relax acceptance.
+No external Issue/PR update was made because this node explicitly forbids comments
+and PR operations; the Coordinator can carry this record into the normal PR.
+
+SDEF/QDEF, solver/deformation-layer semantics, morph evaluation, physics and
+motion/pose loading remain outstanding. This evidence establishes synthetic
+BDEF conformance, not VPD/VMD playback or original-MMD equivalence. Optional
+alternative-MMD-loader comparison and original-MMD measurements were not
+performed. No post-merge verification is required for Issue #25.
+
 ## Issue #21: outline review fixes
 
 Local checks on 2026-10-22 with Node.js 24.12.0, npm 11.6.2, Darwin ARM64,
