@@ -185,3 +185,30 @@ produces (.5,.5,0). This separation is far above ten times the 1e-4 m GPU limit.
 The TSL adaptation is attributed to pinned three-mmd-loader; its MIT notice is
 retained in `packages/three-mmd-sdef/THIRD_PARTY_LICENSE`. That reference is
 alternative-renderer evidence and supplies no original-MMD measurement.
+
+## Issue #37 bounded QDEF variants
+
+`qdef-box.pmx` and `qdef-wedge.pmx` are original mmd-gltf contributor derivatives
+of the two earlier rigs, authored in this repository with no third-party model
+bytes. Regenerate with `npx tsx tools/synthetic-qdef.ts`. Both are actual binary
+PMX 2.1 with mandatory zero soft-body tails, four active QDEF influences, inactive
+-1 references, duplicate source influences, endpoints, BDEF1 and ordered SDEF,
+two materials, 260 joints and the existing vertex morphs. Box/wedge geometry and
+hierarchies remain distinct. Both use `combined-a.vmd`, `combined-b.vmd`,
+`pose-a.vpd` and `pose-b.vpd` with the original attribution and binding maps.
+
+`pmx21-fixture.ts` is an independent small binary writer used by Node tests to
+cover both encodings and all 1/2/4-byte vertex/other index-width combinations,
+plus unsupported sections, invalid references/counts and truncated tails.
+The original `qdef.pmx` remains byte-identical: the old pinned-parser failure
+is historical evidence; it now enters the bounded reader without relabeling.
+The header-modified probe remains invalid 2.0 input.
+
+The [QDEF oracle](../qdef-oracle.ts) expands scalar dual-quaternion equations
+from authored transforms independently of production deformation. The built
+conformance page measures actual GPU positions/normals and independent surface/
+Outline rasters. The [guide](../../docs/qdef.md) and
+[validation record](../../docs/validation.md#issue-37-bounded-pmx-21-qdef)
+state the profile choices, source hashes, numerical/raster results and limits.
+Original-MMD QDEF deformation remains unmeasured; these are synthetic
+project-profile fixtures, not representative MMD compatibility evidence.

@@ -1,3 +1,4 @@
+import { qdefSkinning } from '../three-mmd-qdef/nodes';
 import {
   WebGPURenderer, NodeMaterial, RenderTarget, DepthTexture, QuadMesh, BackSide, DoubleSide, DataTexture, RGBAFormat, FloatType,
   LessEqualDepth, AlwaysDepth, NoBlending, NormalBlending, NoToneMapping, SRGBColorSpace,
@@ -90,12 +91,20 @@ function createHull(mesh: Mesh, record: OutlineRecord, viewport: UniformNode<'ve
       : mesh.geometry.hasAttribute('_MMD_EDGE_SCALE') ? attribute('_MMD_EDGE_SCALE', 'float') : float(1);
     if (sdef) {
       const clip = vec4().toVar();
-      If(attribute('mmdSkinningType', 'float').equal(1), () => {
-        sdefSkinning();
-        clip.assign(outlineClip(positionLocal, normalLocal, view.mul(world), cameraProjectionMatrix, size, scale, viewport));
-      }).Else(() => {
-        clip.assign(outlineClip(positionLocal, normalLocal, view.mul(deformation), cameraProjectionMatrix, size, scale, viewport));
-      });
+      const standard = () => {
+        If(attribute('mmdSkinningType', 'float').equal(1), () => {
+          sdefSkinning();
+          clip.assign(outlineClip(positionLocal, normalLocal, view.mul(world), cameraProjectionMatrix, size, scale, viewport));
+        }).Else(() => {
+          clip.assign(outlineClip(positionLocal, normalLocal, view.mul(deformation), cameraProjectionMatrix, size, scale, viewport));
+        });
+      };
+      if (mesh.geometry.hasAttribute('mmdQdefSelection')) {
+        If(attribute('mmdQdefSelection', 'float').equal(1), () => {
+          qdefSkinning();
+          clip.assign(outlineClip(positionLocal, normalLocal, view.mul(world), cameraProjectionMatrix, size, scale, viewport));
+        }).Else(standard);
+      } else standard();
       return clip;
     }
     return outlineClip(positionLocal, normalLocal, view.mul(deformation), cameraProjectionMatrix, size, scale, viewport);

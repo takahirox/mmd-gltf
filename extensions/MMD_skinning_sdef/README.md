@@ -84,6 +84,7 @@ The algorithm follows the identified alternative-renderer
 which identifies babylon-mmd's center correction. The mirrored
 [PMX format-author document](https://raw.githubusercontent.com/hirakuni45/glfw3_app/master/glfw3_app/docs/PMX_spec.txt)
 identifies the fields and need for correction. This is not measured original-MMD
-position/normal behavior. QDEF/PMX 2.1, IK/append ordering, physics, other morph
+position/normal behavior. The separate [QDEF draft](../MMD_skinning_qdef/README.md) covers a bounded 2.1 profile.
+General PMX 2.1, IK/append ordering, physics, other morph
 families, scene animation and representative original-MMD fidelity remain overall
 work. Both solver-free VMD bone/vertex-morph playback and VPD offsets are supported.

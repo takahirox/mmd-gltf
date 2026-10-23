@@ -129,8 +129,8 @@ GLB/glTF reload preserves this data; pinned GLTFLoader exposes it as
 Bind future pose/motion data by source index and retained names, never runtime
 display names. This metadata does not promise deformation-layer ordering,
 IK/append/grants, fixed/local-axis constraints or external-parent semantics.
-Those solvers, QDEF, non-vertex morph evaluation, physics and scene VMD execution remain
-unsupported. SDEF is available in the separate opt-in mode; VPD supports only the solver-free contract below. They are listed in conversion warnings; parent hierarchy alone does
+Those solvers, non-vertex morph evaluation, physics and scene VMD execution remain
+unsupported. SDEF and QDEF are available in their separate opt-in modes; VPD supports only the solver-free contract below. They are listed in conversion warnings; parent hierarchy alone does
 not implement them. Core skin pose edits are supported with Toon, PBR and Outline
 without a new material or skinning extension.
 
@@ -139,8 +139,10 @@ count and up to 32 affected vertex indices. It never falls back to a static mesh
 or BDEF approximation. Pinned `mmd-parser@1.1.4` cannot parse type-4 QDEF and
 provides no affected vertex index. Additionally, its strict version check rejects
 the FLOAT representation of binary PMX 2.1 (`2.0999999046325684`) before vertices
-are read. The converter gives an explicit parser limitation error; it does not
-reinterpret the file. Valid PMX 2.0 BDEF1/2/4 is the tested input contract.
+are read. These are retained historical parser regressions. The bounded reader now
+accepts genuine 2.1 bytes without reinterpretation; strict BDEF conversion still
+rejects QDEF vertices with indices. PMX 2.0 BDEF1/2/4 remains this mode's tested
+contract; use the separate [QDEF profile](qdef.md) for mixed 2.1 deformation.
 
 The [attributed binary fixtures](../tests/fixtures/README.md) and
 [validation evidence](validation.md#issue-25-bdef-core-skinning) document numerical
@@ -516,7 +518,9 @@ Local preview does not establish publication success.
 ## Mixed SDEF conversion and runtime
 
 Use `--mode sdef` (API `mode: 'sdef'`) for PMX 2.0 mixed BDEF/SDEF. Static is
-still the default and strict BDEF still rejects SDEF. QDEF/PMX 2.1 remain rejected.
+still the default and strict BDEF still rejects SDEF. SDEF mode still rejects
+QDEF; the separate [bounded QDEF profile](qdef.md) accepts genuine PMX 2.1 with
+`--mode qdef`.
 The optional [MMD_skinning_sdef draft](../extensions/MMD_skinning_sdef/README.md)
 preserves an explicit selector and original metric C/R0/R1 with ordered influence
 slots. Core skins are a deliberately approximate BDEF2 fallback. Existing VMD,
@@ -568,3 +572,13 @@ Do not use disposed assets as SDEF scenes. The built rig Demo provides both mixe
 samples, combined VMD transport, VPD apply/reset, vertex morph controls and an
 explicit BDEF2 comparison. Synthetic assets are original repository derivatives;
 original-MMD SDEF position/normal fidelity remains unmeasured.
+
+## Mixed QDEF conversion and runtime
+
+Use `--mode qdef` for the bounded PMX 2.1 profile, preserving source version,
+encoding, metric units and independent core fallback. Register `MMDQDEFPlugin`
+in place of `MMDSDEFPlugin` to dispatch mixed BDEF/SDEF/QDEF once after morphs.
+Use both skinning exporter adapters for mixed posed export/reload. Toon,
+plugin-enabled PBR, Outline, VPD/VMD and vertex morphs share the existing lifecycle.
+See the [input boundary, API, Demo and validation guide](qdef.md) and
+[rigid-dq-v1 draft](../extensions/MMD_skinning_qdef/README.md).

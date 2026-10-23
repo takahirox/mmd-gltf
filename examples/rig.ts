@@ -1,4 +1,5 @@
-import { MMDSDEFPlugin } from '../packages/three-mmd-sdef';
+import { MMDQDEFPlugin } from '../packages/three-mmd-qdef';
+import type { MMDSDEFPlugin } from '../packages/three-mmd-sdef';
 import {
   WebGPURenderer,
   Scene,
@@ -142,16 +143,18 @@ async function start() {
       let changed = false;
       a.scene.traverse(n => {
         const mesh = n as Mesh;
-        const attr = mesh.geometry?.getAttribute('mmdSkinningType');
-        if (!attr) return;
-        changed = true;
-        if (!mesh.userData.sdefSelection) mesh.userData.sdefSelection = Array.from({length: attr.count}, (_, i) => attr.getX(i));
-        for (let i = 0; i < attr.count; i++) attr.setX(i, comparison.checked ? 0 : mesh.userData.sdefSelection[i]);
-        attr.needsUpdate = true;
+        for (const key of ['mmdSkinningType', 'mmdQdefSelection']) {
+          const attr = mesh.geometry?.getAttribute(key);
+          if (!attr) continue;
+          changed = true;
+          if (!mesh.userData[`${key}Selection`]) mesh.userData[`${key}Selection`] = Array.from({length: attr.count}, (_, i) => attr.getX(i));
+          for (let i = 0; i < attr.count; i++) attr.setX(i, comparison.checked ? 0 : mesh.userData[`${key}Selection`][i]);
+          attr.needsUpdate = true;
+        }
       });
       if (changed) refreshDeformation(a.scene);
     }
-    document.querySelector('#sdef-state')!.textContent = model.value.startsWith('sdef-') ? `Mixed BDEF/SDEF · ordered pairs · rigid joints · ${comparison.checked ? 'BDEF2 approximation' : 'SDEF enabled'} · original-MMD unmeasured` : 'Core BDEF rig';
+    document.querySelector('#sdef-state')!.textContent = model.value.startsWith('qdef-') ? `Mixed BDEF/SDEF/QDEF · rigid-dq-v1 · ${comparison.checked ? 'BDEF4 approximation' : 'QDEF enabled'} · original-MMD unmeasured` : model.value.startsWith('sdef-') ? `Mixed BDEF/SDEF · ordered pairs · rigid joints · ${comparison.checked ? 'BDEF2 approximation' : 'SDEF enabled'} · original-MMD unmeasured` : 'Core BDEF rig';
   };
   comparison.onchange = updateComparison;
   const appearance = () => {
@@ -189,7 +192,7 @@ async function start() {
     let toonPlugin: MMDToonPlugin | undefined, outlinePlugin: MMDOutlinePlugin | undefined, sdefPlugin: MMDSDEFPlugin | undefined;
     const loader = new GLTFLoader()
       .register((p) => new MMDVMDPlugin(p))
-      .register((p) => (sdefPlugin = new MMDSDEFPlugin(p)))
+      .register((p) => (sdefPlugin = new MMDQDEFPlugin(p)))
       .register((p) => (outlinePlugin = new MMDOutlinePlugin(p)));
     if (toon) loader.register((p) => (toonPlugin = new MMDToonPlugin(p)));
     const loaded = await loader.loadAsync(url);
@@ -229,7 +232,7 @@ async function start() {
     for (const a of previous) await disposeAsset(a);
   }
   async function loadRig() {
-    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
+    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
     await replace(next);
     info.motion = '';
     info.rig = model.value;
@@ -300,7 +303,7 @@ async function start() {
           'Converted GLB/glTF sources are available for sample motions; use byte source for local VMD',
         );
       const next = await loadPair(
-        `${import.meta.env.BASE_URL}${model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
+        `${import.meta.env.BASE_URL}${model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
       );
       next.forEach((a) => a.player!.seek(0));
       await replace(next);

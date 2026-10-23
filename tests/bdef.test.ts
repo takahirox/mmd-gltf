@@ -87,7 +87,7 @@ test('UTF-8 and UTF-16LE binary PMX preserve exact source names through GLB/glTF
   assert.throws(() => parsePMX(invalidUTF8), /encoded data was not valid/);
   assert.throws(() => parsePMX(utf8.subarray(0, 40)), /Truncated\/invalid PMX record/);
   await assert.rejects(convertModel(parsePMX(syntheticPMX('sdef', 'utf8')), '.', { mode: 'bdef' }), /SDEF.*24 vertices/);
-  assert.throws(() => parsePMX(syntheticPMX('qdef', 'utf8')), /mmd-parser 1.1.4 rejects binary PMX 2.1.*QDEF/);
+  await assert.rejects(convertModel(parsePMX(syntheticPMX('qdef', 'utf8')), '.', { mode: 'bdef' }), /QDEF.*24 vertices/);
 });
 
 test('binary BDEF fixture preserves hierarchy, identity, bind pose and analytic deformation through GLB/glTF', async () => {
@@ -196,7 +196,7 @@ test('BDEF validation rejects unsupported modes, malformed hierarchy, active ref
   for (const mode of ['sdef', 'qdef'] as const) assert.deepEqual(await readFile(`tests/fixtures/${mode}.pmx`), syntheticPMX(mode));
   const sdef = parsePMX(await readFile('tests/fixtures/sdef.pmx'));
   await assert.rejects(convertModel(sdef, '.', { mode: 'bdef' }), /SDEF.*24 vertices \[0, 1/);
-  assert.throws(() => parsePMX(syntheticPMX('qdef')), /mmd-parser 1.1.4 rejects binary PMX 2.1.*QDEF/);
+  await assert.rejects(convertModel(parsePMX(syntheticPMX('qdef')), '.', { mode: 'bdef' }), /QDEF.*24 vertices/);
   const qdefIn20 = syntheticPMX('qdef'); qdefIn20.writeFloatLE(2, 4);
   assert.throws(() => parsePMX(qdefIn20), /mmd-parser 1.1.4 cannot parse QDEF.*No vertex index/i);
   await reject(m => { m.vertices[0].type = 4; }, /QDEF.*vertices \[0\]/);

@@ -1,3 +1,4 @@
+import { qdefSkinning } from '../three-mmd-qdef/nodes';
 // Adapted from three-mmd-loader MMDSdef.ts at 5ae203246ccffd86a3e8fb7be0e34b9559c33a46.
 // MIT, copyright three.js authors; see THIRD_PARTY_LICENSE.
 import type { SkinnedMesh, Texture } from 'three';
@@ -9,7 +10,7 @@ import {
 } from 'three/tsl';
 
 // See extensions/MMD_skinning_sdef/README.md for spaces and the draft equation.
-const rotationQuaternion = Fn( ( [ matrix ]: [ Node<'mat4'> ] ) => {
+export const rotationQuaternion = Fn( ( [ matrix ]: [ Node<'mat4'> ] ) => {
 
 	// Absorb roundoff in accepted rigid palettes; CPU validation rejects scale/shear.
 	const x = ( matrix as unknown as { element( i: number ): Node<'vec4'> } ).element( 0 ).xyz.normalize();
@@ -62,7 +63,7 @@ const slerp = Fn( ( [ a, b, weight ]: [ Node<'vec4'>, Node<'vec4'>, Node<'float'
 
 } );
 
-const rotate = Fn( ( [ q, v ]: [ Node<'vec4'>, Node<'vec3'> ] ) => {
+export const rotate = Fn( ( [ q, v ]: [ Node<'vec4'>, Node<'vec3'> ] ) => {
 
 	return v.add( q.xyz.cross( q.xyz.cross( v ).add( v.mul( q.w ) ) ).mul( 2 ) );
 
@@ -145,17 +146,13 @@ export function setupMMDPosition( material: DeformationMaterial, builder: NodeBu
 	const { geometry } = builder;
 	const mesh = builder.object as SkinnedMesh;
 	if ( geometry.morphAttributes.position || geometry.morphAttributes.normal || geometry.morphAttributes.color ) morphReference( mesh );
-	If( attribute( 'mmdSkinningType', 'float' ).equal( 1 ), () => {
+  const standard = () => {
+    If( attribute( 'mmdSkinningType', 'float' ).equal( 1 ), () => { sdefSkinning(); } ).Else( () => { skinning( mesh ); } );
+  };
+  if ( geometry.hasAttribute( 'mmdQdefSelection' ) ) {
+    If( attribute( 'mmdQdefSelection', 'float' ).equal( 1 ), () => { qdefSkinning(); } ).Else( standard );
+  } else standard();
 
-		sdefSkinning();
-
-	} ).Else( () => {
-
-		// Keep Three's BDEF deformation for unselected vertices.
-		// Events are registered while building, independently of the GPU branch.
-		skinning( mesh );
-
-	} );
 	if ( material.displacementMap ) {
 
 		const map = materialReference( 'displacementMap', 'texture' ) as unknown as Node<'vec4'>;

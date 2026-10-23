@@ -11,19 +11,21 @@ import { parseVPD, bindPose, resolvePose, type VPDEncoding, type BindingOptions 
 import { parseVMD, bindMotion, type VMDBindingOptions } from '../packages/mmd-vmd';
 import { addVMDAnimation, VMDWriter, type SamplingOptions } from './vmd-animation';
 import { createMorphTargets, type PMXMorph } from './pmx-morph';
+import { parsePMX21, PMX21, assertPMX21Profile } from './pmx21';
 import { pmxParserBytes } from './pmx-encoding';
+import { createQDEFSelector, QDEFWriter } from './pmx-qdef';
 import { createSDEFAttributes, SDEFWriter } from './pmx-sdef';
 
 export interface Vertex { type?: number; skinIndices?: number[]; skinWeights?: number[]; skinC?: number[]; skinR0?: number[]; skinR1?: number[]; edgeRatio?: number; position: number[]; normal: number[]; uv: number[]; auvs: number[][] }
 export interface PMXBone { name: string; englishName: string; position: number[]; parentIndex: number; transformationClass?: number; flag?: number }
-export interface ConversionOptions { scale?: number; mode?: 'static' | 'bdef' | 'sdef'; vpd?: Uint8Array; vpdEncoding?: VPDEncoding; vpdBinding?: BindingOptions; vmd?: Uint8Array; vmdBinding?: VMDBindingOptions; vmdSampling?: SamplingOptions }
+export interface ConversionOptions { scale?: number; mode?: 'static' | 'bdef' | 'sdef' | 'qdef'; vpd?: Uint8Array; vpdEncoding?: VPDEncoding; vpdBinding?: BindingOptions; vmd?: Uint8Array; vmdBinding?: VMDBindingOptions; vmdSampling?: SamplingOptions }
 interface PMXMaterial {
   name: string; diffuse: number[]; ambient: number[]; specular: number[]; shininess: number;
   flag: number; textureIndex: number; envTextureIndex: number; envFlag: number;
   toonFlag: number; toonIndex: number; faceCount: number; edgeColor?: number[]; edgeSize?: number;
 }
 export interface PMXModel {
-  metadata: { modelName: string; comment: string; englishComment: string };
+  metadata: { modelName: string; comment: string; englishComment: string; version?: number; encoding?: number; softBodyCount?: number };
   vertices: Vertex[]; faces: { indices: number[] }[]; materials: PMXMaterial[]; textures: string[];
   bones: PMXBone[]; morphs: PMXMorph[]; rigidBodies: unknown[]; constraints: unknown[];
 }
@@ -69,6 +71,7 @@ class OutlineWriter extends Extension {
   }
 }
 export function parsePMX(bytes: Uint8Array): PMXModel {
+  if (bytes.length >= 8 && new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getFloat32(4, true) === PMX21) return parsePMX21(bytes);
   // mmd-parser reflects position/normal Z and reverses triangle order together.
   // PMX and glTF both use top-left UVs, so no V flip is applied.
   try {
@@ -77,9 +80,6 @@ export function parsePMX(bytes: Uint8Array): PMXModel {
     if (input !== bytes) model.metadata.encoding = bytes[9];
     return model;
   } catch (error) {
-    if (String(error) === 'PMX version 2.0999999046325684 is not supported.') {
-      throw new Error('Pinned mmd-parser 1.1.4 rejects binary PMX 2.1 at its version check; QDEF is also unsupported. No vertex index is available and no approximation is performed.', { cause: error });
-    }
     if (/unsupport bone type/.test(String(error))) {
       throw new Error(`PMX parsing failed: ${String(error)} Pinned mmd-parser 1.1.4 cannot parse QDEF (type 4); no vertex index is available. No skinning approximation is performed.`, { cause: error });
     }
@@ -90,13 +90,15 @@ const clamp = (x: number) => Math.min(1, Math.max(0, x));
 const decode = (c: number) => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 export async function convertModel(model: PMXModel, textureDirectory: string, options: ConversionOptions | number = {}) {
   const { scale = 0.08, mode = 'static', vpd, vpdEncoding, vpdBinding, vmd, vmdBinding, vmdSampling } = typeof options === 'number' ? { scale: options } : options;
-  if (!['static', 'bdef', 'sdef'].includes(mode)) throw new Error(`Unknown conversion mode ${mode}`);
+  assertPMX21Profile(model);
+  if (!['static', 'bdef', 'sdef', 'qdef'].includes(mode)) throw new Error(`Unknown conversion mode ${mode}`);
+  if (mode === 'qdef' && model.vertices.some(v => v.type === 4) && model.metadata.version !== PMX21) throw new Error('QDEF records require actual PMX 2.1 source metadata; do not relabel PMX 2.0 records.');
   if (vpd && vmd) throw new Error('Simultaneous VPD/VMD conversion is unsupported; composition is not implemented');
-  if (vmd && mode === 'static') throw new Error('VMD requires mode bdef or sdef');
-  if (vpd && mode === 'static') throw new Error('VPD requires mode bdef or sdef');
+  if (vmd && mode === 'static') throw new Error('VMD requires mode bdef, sdef or qdef');
+  if (vpd && mode === 'static') throw new Error('VPD requires mode bdef, sdef or qdef');
   if (!Number.isFinite(scale) || scale <= 0) throw new Error('scale must be finite and positive');
   if (!model.vertices.length || !model.faces.length) throw new Error('PMX has no geometry');
-  if (mode === 'sdef') model.vertices.forEach((v, i) => {
+  if (mode === 'sdef' || mode === 'qdef') model.vertices.forEach((v, i) => {
     for (const [field, size] of [['position', 3], ['normal', 3], ['uv', 2]] as const) {
       if (!Array.isArray(v[field]) || v[field].length !== size || ![...v[field]].every(Number.isFinite)) throw new Error(`Vertex ${i}: invalid ${field} layout`);
     }
@@ -111,9 +113,13 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
   const outline = model.materials.some(m => m.flag & 0x10) ? doc.createExtension(OutlineWriter) : null;
   const mesh = doc.createMesh(model.metadata.modelName);
   const meshNode = doc.createNode(model.metadata.modelName).setMesh(mesh);
-  const scene = doc.createScene(mode === 'static' ? 'Static PMX base pose' : mode === 'sdef' ? 'PMX mixed BDEF/SDEF rest pose' : 'PMX BDEF rest pose').addChild(meshNode);
-  const skin = mode !== 'static' ? createBDEFSkin(doc, buffer, scene, meshNode, model, scale, warnings, mode === 'sdef') : null;
-  const sdef = mode === 'sdef' ? createSDEFAttributes(doc, buffer, model, scale) : null;
+  const scene = doc.createScene(mode === 'static' ? 'Static PMX base pose' : mode === 'qdef' ? 'PMX mixed BDEF/SDEF/QDEF rest pose' : mode === 'sdef' ? 'PMX mixed BDEF/SDEF rest pose' : 'PMX BDEF rest pose').addChild(meshNode);
+  const skin = mode !== 'static' ? createBDEFSkin(doc, buffer, scene, meshNode, model, scale, warnings, mode === 'sdef' || mode === 'qdef', mode === 'qdef') : null;
+  const sdef = mode === 'sdef' || mode === 'qdef' ? createSDEFAttributes(doc, buffer, model, scale) : null;
+  const qdef = mode === 'qdef' ? createQDEFSelector(doc, buffer, model) : null;
+  const qdefWriter = qdef ? doc.createExtension(QDEFWriter) : null;
+  if (mode === 'qdef') warnings[0] = warnings[0].replace('BDEF core skin only', 'Mixed BDEF/SDEF/QDEF rigid-dq-v1 skin').replace('SDEF/QDEF, ', '');
+  if (qdef) warnings.push('MMD_skinning_qdef is optional: ordinary loaders use explicitly approximate BDEF4. Rigid-dq-v1 is a synthetic project profile; original-MMD deformation is unmeasured.');
   const sdefWriter = sdef ? doc.createExtension(SDEFWriter) : null;
   if (sdef) warnings.push('MMD_skinning_sdef is optional: ordinary loaders approximate SDEF with BDEF2. Rigid joint palettes only; scale/shear is unsupported. Original-MMD positions/normals are unmeasured.');
   if (vpd && skin) {
@@ -121,7 +127,7 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
     const binding = bindPose(skin.poseModel, pose, vpdBinding);
     const resolved = resolvePose(skin.poseModel, binding);
     resolved.forEach(b => skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));
-    scene.setName(mode === 'sdef' ? 'PMX mixed BDEF/SDEF VPD bone offsets' : 'PMX BDEF VPD bone offsets');
+    scene.setName(mode === 'qdef' ? 'PMX mixed BDEF/SDEF/QDEF VPD bone offsets' : mode === 'sdef' ? 'PMX mixed BDEF/SDEF VPD bone offsets' : 'PMX BDEF VPD bone offsets');
     warnings.push(`VPD: applied ${binding.assignments.length} bone offsets; parent filename ${JSON.stringify(pose.parentFile)} is informational. Unmatched: ${binding.unmatched.join(', ') || 'none'}. No IK/append/physics.`);
   }
   const morph = createMorphTargets(doc, buffer, mesh, meshNode, model, scale, skin?.poseModel.modelId);
@@ -132,8 +138,8 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
     const samples = addVMDAnimation(doc, buffer, binding, skin.nodes, vmdSampling, meshNode);
     warnings.push(`VMD: bound ${binding.tracks.length} bone tracks and ${binding.morphs?.[0]?.tracks.length ?? 0} morph tracks; unmatched morph byte keys: ${binding.unmatchedMorphs.join(', ') || 'none'}; unmatched byte keys: ${binding.unmatched.join(', ') || 'none'}. Omitted execution counts: ${JSON.stringify(binding.omitted)}. Informational model name: ${JSON.stringify(motion.modelName.text)}. Continuous-curve-v1 project policy, no original-MMD parity claim. Approximate fallback: ${samples} samples; finite adaptive probes, no continuous error proof.`);
   }
-  doc.getRoot().setDefaultScene(scene).setExtras({ sourceComment: model.metadata.comment, sourceEnglishComment: model.metadata.englishComment, conversionMode: mode, metersPerPMXUnit: scale,
-    conversion: mode === 'static' ? 'Static PMX to glTF; reflected Z and winding; vertex POSITION morphs; no animation, skin or physics.' : `PMX ${mode === 'sdef' ? 'mixed BDEF/SDEF to MMD_skinning_sdef plus approximate core' : 'BDEF to core glTF'} skin; reflected Z and winding; solver-free VPD/VMD bones and vertex morph weights; no physics.`, warnings });
+  doc.getRoot().setDefaultScene(scene).setExtras({ sourceComment: model.metadata.comment, sourceEnglishComment: model.metadata.englishComment, conversionMode: mode, sourcePMXVersion: model.metadata.version, sourcePMXEncoding: model.metadata.encoding, metersPerPMXUnit: scale,
+    conversion: mode === 'static' ? 'Static PMX to glTF; reflected Z and winding; vertex POSITION morphs; no animation, skin or physics.' : `PMX ${mode === 'qdef' ? 'mixed BDEF/SDEF/QDEF to optional skinning extensions plus approximate core' : mode === 'sdef' ? 'mixed BDEF/SDEF to MMD_skinning_sdef plus approximate core' : 'BDEF to core glTF'} skin; reflected Z and winding; solver-free VPD/VMD bones and vertex morph weights; no physics.`, warnings });
   const accessor = (name: string, type: 'SCALAR' | 'VEC2' | 'VEC3', values: number[]) => {
     if (!values.every(Number.isFinite)) throw new Error(`Non-finite ${name}`);
     const array = new Float32Array(values);
@@ -223,12 +229,13 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
     if (m.flag & 0x10 && edgeScales) primitive.setAttribute(EDGE_ATTRIBUTE, edgeScales);
     if (skin) primitive.setAttribute('JOINTS_0', skin.joints).setAttribute('WEIGHTS_0', skin.weights);
     if (sdef) sdefWriter!.records.set(primitive, sdef);
+    if (qdef) qdefWriter!.records.set(primitive, qdef);
     if (m.envFlag === 3 && m.envTextureIndex >= 0) primitive.setAttribute('TEXCOORD_1', uv1!);
     morph.targets.forEach(target => primitive.addTarget(target));
     mesh.addPrimitive(primitive);
   }
   if (faceOffset !== model.faces.length) throw new Error('Material face counts do not cover all PMX faces');
-  return { document: doc, io: new NodeIO().registerExtensions([ToonWriter, OutlineWriter, VMDWriter, SDEFWriter]), warnings };
+  return { document: doc, io: new NodeIO().registerExtensions([ToonWriter, OutlineWriter, VMDWriter, SDEFWriter, QDEFWriter]), warnings };
 }
 export async function convertPMX(input: string, output: string, options: ConversionOptions & { textureDirectory?: string } = {}) {
   if (!['.glb', '.gltf'].includes(extname(output))) throw new Error('Output must end in .glb or .gltf');
@@ -240,7 +247,7 @@ export async function convertPMX(input: string, output: string, options: Convers
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const [input, output, ...args] = process.argv.slice(2);
   if (!input || !output || args.length % 2 || args.some((v, i) => i % 2 === 0 && !['--textures', '--scale', '--mode', '--vpd', '--vpd-encoding', '--vpd-map', '--vpd-unmatched', '--vmd', '--vmd-map', '--vmd-unmatched', '--vmd-morph-map', '--vmd-morph-unmatched', '--vmd-translation-tolerance', '--vmd-rotation-tolerance', '--vmd-max-samples'].includes(v))) {
-    console.error('Usage: npm run convert -- input.pmx output.glb|output.gltf [--textures directory] [--scale meters-per-unit] [--mode static|bdef|sdef] [--vpd pose.vpd] [--vpd-encoding shift_jis|utf-8] [--vpd-map record-map.json] [--vpd-unmatched error|ignore] [--vmd motion.vmd] [--vmd-map byte-key-map.json] [--vmd-unmatched error|ignore] [--vmd-morph-map byte-key-map.json] [--vmd-morph-unmatched error|ignore] [--vmd-translation-tolerance meters] [--vmd-rotation-tolerance radians] [--vmd-max-samples count]'); process.exitCode = 1;
+    console.error('Usage: npm run convert -- input.pmx output.glb|output.gltf [--textures directory] [--scale meters-per-unit] [--mode static|bdef|sdef|qdef] [--vpd pose.vpd] [--vpd-encoding shift_jis|utf-8] [--vpd-map record-map.json] [--vpd-unmatched error|ignore] [--vmd motion.vmd] [--vmd-map byte-key-map.json] [--vmd-unmatched error|ignore] [--vmd-morph-map byte-key-map.json] [--vmd-morph-unmatched error|ignore] [--vmd-translation-tolerance meters] [--vmd-rotation-tolerance radians] [--vmd-max-samples count]'); process.exitCode = 1;
   } else {
     const opts = Object.fromEntries(Array.from({ length: args.length / 2 }, (_, i) => [args[i * 2], args[i * 2 + 1]]));
     const numeric = (key: string) => opts[key] === undefined ? undefined : Number(opts[key]);
