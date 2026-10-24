@@ -1,0 +1,284 @@
+{
+  "implementationRevision": "34e7db66f3b100c730d48fbe09a66c4434496b22",
+  "evidenceKind": "Built Demo state/render acknowledgements and actual intrinsic/display PNG captures",
+  "cases": [
+    {
+      "scenario": "built bone Demo: bone-box / bone-a / bytes + glb + gltf",
+      "elapsedMs": 66970.286291,
+      "phases": 231,
+      "allPhasesPassed": true,
+      "renderAcknowledgements": 111,
+      "uniqueFrames": 70,
+      "paths": [
+        "bytes",
+        "glb",
+        "gltf"
+      ],
+      "poses": [
+        "rest",
+        "motion",
+        "a",
+        "b"
+      ],
+      "finalState": {
+        "rig": "bone-wedge",
+        "playing": false,
+        "error": "",
+        "disposedPlayers": 8,
+        "revision": 325,
+        "renderedRevision": 325
+      }
+    },
+    {
+      "scenario": "built bone Demo: bone-box / bone-b / bytes + glb + gltf",
+      "elapsedMs": 55574.352958999996,
+      "phases": 231,
+      "allPhasesPassed": true,
+      "renderAcknowledgements": 111,
+      "uniqueFrames": 67,
+      "paths": [
+        "bytes",
+        "glb",
+        "gltf"
+      ],
+      "poses": [
+        "rest",
+        "motion",
+        "a",
+        "b"
+      ],
+      "finalState": {
+        "rig": "bone-wedge",
+        "playing": false,
+        "error": "",
+        "disposedPlayers": 8,
+        "revision": 326,
+        "renderedRevision": 326
+      }
+    },
+    {
+      "scenario": "built bone Demo: bone-wedge / bone-a / bytes + glb + gltf",
+      "elapsedMs": 50135.892374999996,
+      "phases": 231,
+      "allPhasesPassed": true,
+      "renderAcknowledgements": 111,
+      "uniqueFrames": 66,
+      "paths": [
+        "bytes",
+        "glb",
+        "gltf"
+      ],
+      "poses": [
+        "rest",
+        "motion",
+        "a",
+        "b"
+      ],
+      "finalState": {
+        "rig": "bone-box",
+        "playing": false,
+        "error": "",
+        "disposedPlayers": 8,
+        "revision": 329,
+        "renderedRevision": 329
+      }
+    },
+    {
+      "scenario": "built bone Demo: bone-wedge / bone-b / bytes + glb + gltf",
+      "elapsedMs": 52676.896542,
+      "phases": 231,
+      "allPhasesPassed": true,
+      "renderAcknowledgements": 111,
+      "uniqueFrames": 68,
+      "paths": [
+        "bytes",
+        "glb",
+        "gltf"
+      ],
+      "poses": [
+        "rest",
+        "motion",
+        "a",
+        "b"
+      ],
+      "finalState": {
+        "rig": "bone-box",
+        "playing": false,
+        "error": "",
+        "disposedPlayers": 8,
+        "revision": 322,
+        "renderedRevision": 322
+      }
+    }
+  ],
+  "captures": [
+    {
+      "filename": "built-bone-Demo-bone-box-bone-a-bytes-glb-gltf-VPD-a-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 27313,
+      "sha256": "fc84682c227671ceb3aea91cbf7e2671672431ce4eef95a35eda53cad78a396d"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-a-bytes-glb-gltf-VPD-a-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 27142,
+      "sha256": "cd6fc1b0d98e849c81755039f80276fe45c3636fbe799a27f4eba7f893eeac07"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-a-bytes-glb-gltf-VPD-b-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 30123,
+      "sha256": "5aaad5e4e64e7187600d5ec335bc8374658031c660b846c2006fc0fdb0800a40"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-a-bytes-glb-gltf-VPD-b-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 29941,
+      "sha256": "94e525b662afd98bb37bc66698f42838da6ed8e1d418f499f2b6f7eebc9c835a"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-a-bytes-glb-gltf-fractional-bone-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 26629,
+      "sha256": "4e3bb2e5b0c4873dffbf37b98cf89128071cb1acb9794b4ee0565a344cb5a3db"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-a-bytes-glb-gltf-fractional-bone-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 26363,
+      "sha256": "8cc8fc2210206b25d2d22cab2ea5d9b18d15678f38d1709f04d6d525425374ea"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-b-bytes-glb-gltf-VPD-a-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 19163,
+      "sha256": "cdb62e2f203498b7d0c79cdf27a881b8213146b5e6c6f24af89451054e51909f"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-b-bytes-glb-gltf-VPD-a-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 18992,
+      "sha256": "d67706570f1badcc1d9242def8cd39a65af845b53825707d71343cc39dd20901"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-b-bytes-glb-gltf-VPD-b-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 41181,
+      "sha256": "cbd8211f1bb6c6cfe03a66e070dce9133890ac38a09ce11dd38b82639dd60501"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-b-bytes-glb-gltf-VPD-b-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 40816,
+      "sha256": "d295b7fbed75ca6b3f757abc121e7d6910824b3e5182d02fcac36e622cc41954"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-b-bytes-glb-gltf-fractional-bone-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 32676,
+      "sha256": "6a2c2dd009ff9f6ddcc7bc002c300228047897237b7cf592b68f93902c745c48"
+    },
+    {
+      "filename": "built-bone-Demo-bone-box-bone-b-bytes-glb-gltf-fractional-bone-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 32314,
+      "sha256": "2cce28ac671ad418d0edefd8fce11cc86fea7f7bc42759ed73dd69a634eb23eb"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-a-bytes-glb-gltf-VPD-a-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 9964,
+      "sha256": "61f46806cdeda0842e279eae15755eee94c5b647d29a670462d6dc7509dfabfd"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-a-bytes-glb-gltf-VPD-a-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 9829,
+      "sha256": "d6259a3193f883ecb3a5445f8b6656d90eb126fc99efbc00c3fe002a47407096"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-a-bytes-glb-gltf-VPD-b-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 10826,
+      "sha256": "e442cecf4048d4c0912eb69cd7a22229318c01580d54ce58340a15ca0c3217bd"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-a-bytes-glb-gltf-VPD-b-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 10710,
+      "sha256": "7be71c13a3bf85b49be6d6bb05d7b876d236811091e15192234cd6b12fcc691f"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-a-bytes-glb-gltf-fractional-bone-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 11370,
+      "sha256": "1dbae809bc85345f890e01b6e2dc45c679643befc1e46af38f2180adc6cf1ccc"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-a-bytes-glb-gltf-fractional-bone-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 11206,
+      "sha256": "59ccdebd8b9c800187bebef4352c65b3ac730d5a9e9df8ee0a7cfd4099527f71"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-b-bytes-glb-gltf-VPD-a-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 7411,
+      "sha256": "4a2c3ebff9adf5e06e1b11c84949e1c7e4c19afb09c4364d8e684c8cf6f34094"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-b-bytes-glb-gltf-VPD-a-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 7341,
+      "sha256": "48ab7588ab1752395a858a5fe97bdbccc259481e181e73641ed2e714f2003079"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-b-bytes-glb-gltf-VPD-b-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 8642,
+      "sha256": "34e5a927a297b6fbc0e4f3ba7cf5e099162f86be7ba6bfa8632101fbf78bc8d7"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-b-bytes-glb-gltf-VPD-b-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 8571,
+      "sha256": "6bb3fbf608c2bfe6573b7da82a465d6e129a06159207899a46f814d9a707f7e2"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-b-bytes-glb-gltf-fractional-bone-display.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 10123,
+      "sha256": "bff5252d0fbc032c863fb106ca3069922a832daad32f9a104049a414504ae555"
+    },
+    {
+      "filename": "built-bone-Demo-bone-wedge-bone-b-bytes-glb-gltf-fractional-bone-intrinsic.png",
+      "width": 1232,
+      "height": 446,
+      "foregroundPixels": 9926,
+      "sha256": "fbed53fbe046b73261464b857781b54b9459255a2a17e635bd74d9f78683066e"
+    }
+  ]
+}

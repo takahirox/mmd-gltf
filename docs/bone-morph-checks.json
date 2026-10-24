@@ -1,0 +1,51 @@
+{
+  "issue": 47,
+  "implementationRevision": "34e7db66f3b100c730d48fbe09a66c4434496b22",
+  "workflow": "Coordinator implementation-stage checks; no independent evaluation rerun or AI re-review",
+  "checks": [
+    {
+      "command": "npm ci",
+      "status": "passed"
+    },
+    {
+      "command": "npm run build",
+      "status": "passed",
+      "note": "Completed before checks requiring generated assets; final source revision."
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed",
+      "tests": 118,
+      "skips": 0
+    },
+    {
+      "command": "npx playwright install chromium",
+      "status": "passed"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser",
+      "status": "running"
+    },
+    {
+      "command": "npm run check:links",
+      "status": "passed",
+      "checkedLinks": 394
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "supersededAttempts": [
+    "An initial Node invocation preceded generated-asset preparation and failed missing-public-asset checks; corrected by completing build before the final suites.",
+    "Enabling bone validation exposed the optional-record fixture zero quaternion; replaced that invalid authored record with identity and retained explicit rejection coverage.",
+    "Focused new checks exposed a Demo asset URL, missing rendered CPU-query observation, raw baseline identity/order in exports, and standalone binding/scope/legacy-target ordering edges; all were corrected with regression cases.",
+    "A tight first fallback probe exposed position error; the new numerical matrix uses explicit 1e-7 m / 1e-6 rad sampling, retaining the 2e-6 m CPU gate. Existing thresholds and timeouts were not changed.",
+    "Superseded suite invocations were interrupted as implementation changed. Whole-skeleton adaptive sampling caused slow intermediate runs; solver-free probe inputs now contain only referenced joints, with identical sample tolerances and numerical results. An intermediate complete Node run passed 115 tests; final revision passes 118."
+  ],
+  "optionalOriginalMMD": "Not performed (optional); this run did not use a version-labelled original-MMD execution environment."
+}

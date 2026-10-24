@@ -143,7 +143,7 @@ async function start() {
     localMotion: File | undefined,
     busy = false;
   const report = (message: string) => {
-    status.textContent = `Ready · ${message} · ${model.value.startsWith('physics-') ? 'Rigid-body-v1 + pre/post solver; fixed ticks; original-MMD unmeasured' : solverRig() ? 'Pre-physics-v1 IK/append + morphs; visibility retained without execution; original-MMD unmeasured' : 'Bone and mixed morph controls; original-MMD unmeasured'}`;
+    status.textContent = `Ready · ${message} · ${model.value.startsWith('physics-') ? 'Rigid-body-v1 + pre/post solver; fixed ticks; original-MMD unmeasured' : solverRig() ? 'Pre-physics-v1 IK/append + morphs; visibility retained without execution; original-MMD unmeasured' : model.value.startsWith('bone-') ? 'Bone and mixed morph controls; original-MMD unmeasured' : 'Solver-free bones + vertex morphs; IK/append/physics and other morph families unsupported'}`;
   };
   const invalidate = () => { info.revision++; };
   const clearPlayback = () => {

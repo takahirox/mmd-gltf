@@ -1,0 +1,70 @@
+{
+  "evidence": [
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "motion": "a",
+      "time": 0.719,
+      "maximumPosition": 0.00003126797081770549,
+      "maximumNormal": 0.00007821548735709172
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "motion": "b",
+      "time": 0.719,
+      "maximumPosition": 0.00003126797081770549,
+      "maximumNormal": 0.00007821548735709172
+    },
+    {
+      "rig": "box",
+      "mode": "qdef",
+      "motion": "a",
+      "time": 0.719,
+      "maximumPosition": 0.00003126797081770549,
+      "maximumNormal": 0.00007821548735709172
+    },
+    {
+      "rig": "box",
+      "mode": "qdef",
+      "motion": "b",
+      "time": 0.719,
+      "maximumPosition": 0.00003126797081770549,
+      "maximumNormal": 0.00007821548735709172
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "motion": "a",
+      "time": 0.719,
+      "maximumPosition": 0.00003126797081770549,
+      "maximumNormal": 0.00007821548735709172
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "motion": "b",
+      "time": 0.719,
+      "maximumPosition": 0.00003126797081770549,
+      "maximumNormal": 0.00007821548735709172
+    },
+    {
+      "rig": "wedge",
+      "mode": "qdef",
+      "motion": "a",
+      "time": 0.719,
+      "maximumPosition": 0.00003126797081770549,
+      "maximumNormal": 0.00007821548735709172
+    },
+    {
+      "rig": "wedge",
+      "mode": "qdef",
+      "motion": "b",
+      "time": 0.719,
+      "maximumPosition": 0.00003126797081770549,
+      "maximumNormal": 0.00007821548735709172
+    }
+  ],
+  "maximumPosition": 0.00003126797081770549,
+  "maximumNormal": 0.00007821548735709172
+}

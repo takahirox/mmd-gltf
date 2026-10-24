@@ -89,8 +89,8 @@ legacy empty-only bone diagnostics remain unchanged.
 Manual changes validate first, pause motion, clear/rebuild physics history at tick
 zero, and recompose from the retained raw baseline. VPD apply/reset preserves all
 control weights, replacing only raw bone inputs; VPD has no invented morph channel.
-Seek/resume reclaims VMD ownership and its independent controls. Stop/reset restores
-rest and zero controls. Loop crossings replay from the wrapped time and rebuild
+Seek/resume reclaims VMD ownership and its independent controls. Stop/reset sets raw inputs to original rest and zero controls, then runs the
+selected solver/physics pipeline. Loop crossings replay from the wrapped time and rebuild
 physics history. Explicit physics restart reuses the current morphed raw inputs;
 disabling physics evaluates the same inputs through the existing solver.
 
@@ -105,6 +105,7 @@ values, unit quaternions (1e-5 input tolerance, converter normalizes), independe
 control layout, complete diagnostics and overlapping root/extras/solver identity.
 Limits are 65536 identities/bones, 1000000 total group/bone entries, absolute
 control/reduced contribution 10000, and 50000000 vertex compilation scalar work.
+Dependency diagnostics also cap graph inspection at 1000000 visits.
 Animation and physics retain their stricter existing budgets. Invalid contracts
 or changed target layouts reject before applying transforms.
 

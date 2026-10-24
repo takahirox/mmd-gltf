@@ -23,7 +23,7 @@ supports implementing quaternion products/interpolation, not original-MMD semant
 Existing append source/contribution composition remains unchanged. Analytical
 fixtures distinguish noncommuting X/Y order, duplicate reduction, direct controls,
 compiled-group double application and immutable raw baselines. They do not prove
-original-MMD fidelity. Original-MMD measurements were not available or performed.
+original-MMD fidelity. No original-MMD measurements were performed in this run.
 
 Both pinned parsers already reflect translation Z and quaternion X/Y. The converter
 scales translation once and normalizes near-unit rotation offsets once. The old
@@ -34,8 +34,10 @@ Separate invalid-quaternion tests require rejection.
 
 ## Reusable APIs and Demo
 
-Register `MMDMorphPlugin` to load standalone contracts; `MMDVMDPlugin` also loads it
-idempotently for retained playback. `createMorphRig`, `getMorphModel`,
+For v3 controls and applied-state reloads, register `MMDMorphPlugin` so the
+independent control snapshot and raw baseline are retained, including for converter
+assets and standalone contracts. `MMDVMDPlugin` also loads it idempotently for
+retained playback. Legacy v1/v2 extras retain their previous loading behavior. `createMorphRig`, `getMorphModel`,
 `getMorphWeights`, `applyMorphWeights` and `resetMorphWeights` use independent control
 slots for v3; legacy vectors retain their original layout. Use `controlIndex` to
 build controls rather than indexing by `target`. Loading preserves core snapshots.
@@ -48,7 +50,55 @@ and QDEF presets use the same morph pipeline, surfaces and Outline.
 
 ## Validation evidence
 
-Results and exact commands are recorded below after implementation-stage checks.
+Implementation and executable checks: `34e7db66f3b100c730d48fbe09a66c4434496b22`.
+The final evidence commit changes only documentation, a validation harness, reports and captures.
+
+`npm ci`, `npm run build` (before generated-asset-dependent checks),
+`npm run typecheck`, `npm test`, `npx playwright install chromium`,
+`npm run check:links` and `git diff --check` passed. Node: **118 passed, zero
+failures/skips**. The complete Chromium run is recorded in the
+[command/result record](bone-morph-checks.json), including its tested revision,
+optional skips, superseded failures and interrupted runs.
+
+The [Node report](bone-morph-node-validation.json) records all modes and parser
+paths, 36 generated GLB/external glTF validations, 12 additional CLI conversions,
+raw-input physics tick checks, palette/bounds checks and independently authored
+noncommuting predictions. Ordinary-loader fallback at keys and 241/242 probes
+per rig/motion stayed within 6.57e-7 m vertex error and 9.97e-7 rad joint rotation
+error, using explicit 1e-7 m / 1e-6 rad sampling tolerances. This is finite-probe
+evidence, not a continuous error bound.
+
+The [raster/export report](bone-morph-raster-validation.json) covers 240
+BDEF Toon/PBR surface/Outline comparisons across both rigs/motions, bytes/GLB/glTF
+and both VPD handoffs, plus 40 applied-state GLB/glTF export checks. CPU error is
+at most 3.30e-8 m; actual BDEF GPU position and normal-component errors are at most
+8.37e-8 m / 1.29e-7. Every raster comparison has **zero** pixels differing by
+more than two byte levels (limit 128). Exports validate against core glTF and the
+custom schema, reload without applying offsets again, and support repeated
+manual/VPD/VMD operations.
+
+The [advanced GPU report](bone-morph-gpu-validation.json) adds eight mixed
+SDEF/QDEF rig/motion cases. Actual GPU position error is at most 3.13e-5 m and
+normal-component error at most 7.83e-5, below the unchanged 1e-4 m / 5e-4 gates;
+CPU queries retain the 2e-6 m gate.
+The [retained physics report](bone-morph-physics-retained-validation.json),
+reproducible with `npx tsx tools/verify-bone-physics.ts`, checks bone-only v5 motion
+with the pre/post-physics v2 solver on both rigs through direct bytes, GLB and
+external glTF. Positions agree exactly at initialization and fractional tick
+probes. This is backend cross-transport consistency, distinct from the independent
+raw-input numerical predictions and from original-MMD evidence. Existing stricter tests and timeouts remain
+unchanged.
+
+The [Demo report](bone-morph-demo-validation.json) records four built-Demo cases
+and hashes/dimensions/nonempty checks for all 24 saved PNGs. These cases require
+matching state/render revisions, numerical CPU queries,
+exact restoration, loop/endpoints, both VPD handoffs, invalid-file recovery,
+manual controls, instance replacement and player disposal. Nonempty intrinsic
+captures and display evidence are retained in [bone-canvas](bone-canvas/):
+[box motion](bone-canvas/built-bone-Demo-bone-box-bone-a-bytes-glb-gltf-fractional-bone-intrinsic.png),
+[box display](bone-canvas/built-bone-Demo-bone-box-bone-a-bytes-glb-gltf-fractional-bone-display.png),
+[wedge VPD](bone-canvas/built-bone-Demo-bone-wedge-bone-b-bytes-glb-gltf-VPD-b-intrinsic.png)
+and [wedge display](bone-canvas/built-bone-Demo-bone-wedge-bone-b-bytes-glb-gltf-VPD-b-display.png).
 Tests belong to the Coordinator; no separate evaluation rerun or AI re-review is
 required. Repository tests, analytical predictions, pinned physics-backend results
 and alternative-renderer GPU/raster output are distinct forms of evidence. Neither
