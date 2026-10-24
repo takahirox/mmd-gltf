@@ -133,8 +133,8 @@ existing PMX/VPD/VMD fixtures remain byte-identical, including the intentionally
 unexecuted `unused morph` records in both original VMDs. Their callers explicitly
 ignore/report unmatched morphs; bone assertions are retained.
 
-`morph-box.pmx` and `morph-wedge.pmx` add four vertex targets and one unsupported
-group morph to the distinct box/wedge rigs. Every target references 24 vertices,
+`morph-box.pmx` and `morph-wedge.pmx` add four vertex targets and one group
+morph (now supported by Issue #41) to the distinct box/wedge rigs. Every target references 24 vertices,
 with overlapping XYZ offsets across both materials. Two exact Japanese names
 `笑い` deliberately collide, resolved by source PMX index in `morph-map.json`.
 `combined-a.vmd` and `combined-b.vmd` retain the respective distinct bone motions
@@ -170,7 +170,7 @@ existing distinct box/branched wedge families, authored by mmd-gltf contributors
 Regenerate with `npx tsx tools/synthetic-sdef.ts`; the generator deliberately keeps
 the earlier rejection-only `sdef.pmx` unchanged. Each new variant has 24 vertices,
 260 joints, two materials and the existing five source morphs (four vertex
-POSITION targets and one unsupported group). Every quad has BDEF1 followed by
+POSITION targets and one group now supported by Issue #41). Every quad has BDEF1 followed by
 SDEF with ordered [259,2] pairs and X weights .25, 0, 1. The first face has zero
 C/R0/R1; subsequent faces have nonzero asymmetric values. Scale is 0.2 m/unit for
 the box, 0.125 m/unit for the wedge; extents are bounded below one metre.
@@ -212,3 +212,33 @@ Outline rasters. The [guide](../../docs/qdef.md) and
 state the profile choices, source hashes, numerical/raster results and limits.
 Original-MMD QDEF deformation remains unmeasured; these are synthetic
 project-profile fixtures, not representative MMD compatibility evidence.
+
+
+## Issue #41 vertex-group fixtures
+
+`tools/synthetic-group.ts` deterministically authors `group-box.pmx`,
+`group-wedge.pmx`, `group-a.vmd`, `group-b.vmd` and `group-map.json`, using the
+original geometry/bones of `tools/synthetic-bdef.ts` and the independently
+attributed bone bytes of `tools/synthetic-vmd.ts`. All additions are original work
+by mmd-gltf contributors; no third-party model/motion bytes or original-MMD capture.
+The box and sheared wedge retain distinct hierarchies/scales and both materials.
+Existing fixture bytes remain unchanged.
+
+There are four vertex targets, followed by four supported group targets. Source
+0 forward-references vertex 1 at 0.5. Source 5 shares children and preserves the
+ordered entries `(1,.25),(1,.25),(2,-.5),(4,0)`. Source 6 is empty. Source 7 duplicates
+source 0's exact name but references vertex 2. Source 8 is a bone morph; 9 mixes a
+vertex and that unsupported child; 10 nests group 0; 11 references itself; 12/13
+form a cycle. These last groups remain wholly unsupported with retained entries.
+`group-map.json` maps exact byte keys for duplicate `group` and Japanese vertex
+names. Variants generated in memory also exercise mixed SDEF/QDEF.
+
+Group A has frames 0/15/30: direct weights 0/.3/.3, first group .8/.8/-.4,
+shared group 0/.2/-.1. Group B has frames 0/20/45: direct -.2/.6/.1,
+first group 1.2/-.5/.4, shared .3/0/.7. At Group A's frame 0 only a group
+moves vertices. Separate manual probes exercise exactly `.3 + .8 * .5 = .7`.
+`tests/group-oracle.ts` independently authors decimal scalar interpolation and
+expanded combined coefficients; it reads neither production group deltas nor
+emitted animation. Existing scalar bone predictions supply morph-before-BDEF
+positions. Advanced probes pass independently computed group points to the
+existing independent SDEF/QDEF predictions.

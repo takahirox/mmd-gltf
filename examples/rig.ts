@@ -2,6 +2,7 @@ import { MMDQDEFPlugin } from '../packages/three-mmd-qdef';
 import type { MMDSDEFPlugin } from '../packages/three-mmd-sdef';
 import {
   WebGPURenderer,
+  Vector3,
   Scene,
   Color,
   OrthographicCamera,
@@ -95,6 +96,7 @@ async function start() {
     pose: 'rest',
     bones: [] as object[],
     weights: [] as number[],
+    vertices: [] as number[][],
     error: '',
     motion: '',
     source: '',
@@ -106,7 +108,7 @@ async function start() {
     rendered: null as null | {
       revision: number; frame: number; durationMs: number;
       rig: string; motion: string; pose: string; time: number;
-      playing: boolean; mode: string; outlines: boolean; comparison: boolean; weights: number[];
+      playing: boolean; mode: string; outlines: boolean; comparison: boolean; weights: number[]; vertices: number[][];
     },
   };
   Object.assign(window, { mmdRig: info });
@@ -144,9 +146,14 @@ async function start() {
           rotation: n.quaternion.toArray(),
         });
     });
+    info.vertices = [];
+    if (model.value.startsWith('group-')) assets[0]?.scene.traverse(n => {
+      const mesh = n as Mesh;
+      if (mesh.isMesh && !info.vertices.length) info.vertices = [0,1,2,3,9,23].map(i => mesh.getVertexPosition(i,new Vector3()).toArray());
+    });
     info.weights = assets[0] ? getMorphWeights(assets[0].morph) : [];
     document.querySelector('#morph-state')!.textContent = `Weights: ${info.weights.map(w => w.toFixed(4)).join(', ')} · source identity retained; sum is not normalized`;
-    document.querySelectorAll<HTMLInputElement>('#morph-controls input').forEach((control,i) => { control.value = String(info.weights[i]); });
+    document.querySelectorAll<HTMLInputElement>('#morph-controls input').forEach((control,i) => { control.value = String(info.weights[Number(control.dataset.target)]); });
     info.time = assets[0]?.player?.time ?? 0;
     info.playing = assets[0]?.player?.playing ?? false;
     seek.value = String(info.time);
@@ -170,7 +177,7 @@ async function start() {
       });
       if (changed) refreshDeformation(a.scene);
     }
-    document.querySelector('#sdef-state')!.textContent = model.value.startsWith('qdef-') ? `Mixed BDEF/SDEF/QDEF · rigid-dq-v1 · ${comparison.checked ? 'BDEF4 approximation' : 'QDEF enabled'} · original-MMD unmeasured` : model.value.startsWith('sdef-') ? `Mixed BDEF/SDEF · ordered pairs · rigid joints · ${comparison.checked ? 'BDEF2 approximation' : 'SDEF enabled'} · original-MMD unmeasured` : 'Core BDEF rig';
+    document.querySelector('#sdef-state')!.textContent = model.value.startsWith('group-') ? 'Core BDEF with independent vertex-group targets' : model.value.startsWith('qdef-') ? `Mixed BDEF/SDEF/QDEF · rigid-dq-v1 · ${comparison.checked ? 'BDEF4 approximation' : 'QDEF enabled'} · original-MMD unmeasured` : model.value.startsWith('sdef-') ? `Mixed BDEF/SDEF · ordered pairs · rigid joints · ${comparison.checked ? 'BDEF2 approximation' : 'SDEF enabled'} · original-MMD unmeasured` : 'Core BDEF rig';
   };
   comparison.onchange = updateComparison;
   const appearance = () => {
@@ -248,7 +255,7 @@ async function start() {
     for (const a of previous) await disposeAsset(a);
   }
   async function loadRig() {
-    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
+    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('group-') ? `group/${model.value.slice(6)}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
     await replace(next);
     clearPlayback();
     info.source = '';
@@ -290,14 +297,15 @@ async function start() {
   async function loadMotion() {
     let diagnostic = '';
     const combined = motionSample.value.startsWith('combined-') || motionSample.value === 'only';
-    const motionId = motionSample.value.replace('combined-', '');
+    const grouped = motionSample.value.startsWith('group-');
+    const motionId = motionSample.value.replace('combined-', '').replace('group-', '');
     if (motionSource.value === 'bytes') {
       let data: Uint8Array;
       if (motionSample.value === 'local') {
         if (!localMotion) throw new Error('Select a local VMD file first');
         data = new Uint8Array(await localMotion.arrayBuffer());
       } else {
-        const r = await fetch(`${import.meta.env.BASE_URL}${combined ? `morph/${motionId === 'only' ? 'morph-only' : `combined-${motionId}`}` : `vmd/motion-${motionId}`}.vmd`);
+        const r = await fetch(`${import.meta.env.BASE_URL}${grouped ? `group/group-${motionId}` : combined ? `morph/${motionId === 'only' ? 'morph-only' : `combined-${motionId}`}` : `vmd/motion-${motionId}`}.vmd`);
         if (!r.ok) throw new Error(`VMD fetch failed: ${r.status}`);
         data = new Uint8Array(await r.arrayBuffer());
       }
@@ -322,7 +330,7 @@ async function start() {
           'Converted GLB/glTF sources are available for sample motions; use byte source for local VMD',
         );
       const next = await loadPair(
-        `${import.meta.env.BASE_URL}${model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
+        `${import.meta.env.BASE_URL}${grouped ? `group/${model.value.replace('group-', '')}/${motionId}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
       );
       next.forEach((a) => a.player!.seek(0));
       await replace(next);
@@ -390,8 +398,7 @@ async function start() {
   function rebuildMorphControls() {
     const container = document.querySelector('#morph-controls')!;
     container.replaceChildren();
-    for (const m of getMorphModel(assets[0].morph).morphs) {
-      if (m.target === null) continue;
+    for (const m of getMorphModel(assets[0].morph).morphs.filter(m => m.target !== null).sort((a,b) => a.target! - b.target!)) {
       const label = document.createElement('label'), control = document.createElement('input');
       label.textContent = `${m.index}: ${m.name} `;
       control.type = 'number'; control.step = '0.05'; control.value = '0';
@@ -468,11 +475,11 @@ async function start() {
       // A subsequent selection of the same local file must emit change again.
       motionFile.value = '';
       localMotion = undefined;
-      const id = motionSample.value.replace('combined-', '');
+      const id = motionSample.value.replace('combined-', '').replace('group-', '');
       motionMap.value = id === 'only' ? '{}' : await (await fetch(`${import.meta.env.BASE_URL}vmd/motion-${id}-map.json`)).text();
       const legacy = motionSample.value === 'a' || motionSample.value === 'b';
       select('motion-morph-unmatched').value = legacy ? 'ignore' : 'error';
-      document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value = legacy ? '{}' : '{"8fce82a2":1}';
+      document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value = legacy ? '{}' : motionSample.value.startsWith('group-') ? '{"8fce82a2":1,"67726f7570":0}' : '{"8fce82a2":1}';
     }
   });
   file.onchange = () => {
@@ -537,7 +544,7 @@ async function start() {
       revision: info.revision, frame: info.frames, durationMs: performance.now() - started,
       rig: info.rig, motion: info.motion, pose: info.pose, time: info.time,
       playing: info.playing, mode: info.mode, outlines: effect.enabled,
-      comparison: comparison.checked, weights: [...info.weights],
+      comparison: comparison.checked, weights: [...info.weights], vertices: info.vertices.map(v=>[...v]),
     };
     if (update) {
       info.playback.updates.push(update);

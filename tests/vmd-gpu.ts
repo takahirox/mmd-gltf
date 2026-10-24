@@ -21,6 +21,8 @@ import {
 import { createVPDRig } from '../packages/three-mmd-vpd';
 import { parseVMD, bindVMD, createVMDPlayer, MMDVMDPlugin, getVMDPlayers } from '../packages/three-mmd-vmd';
 import { scalarPosition, scalarNormal, scalarLocal } from './vmd-oracle';
+import { groupPoint, groupWeights } from './group-oracle';
+import { runGroupExports } from './group-export';
 import { morphPoint, morphWeights } from './morph-oracle';
 import { rigScale } from './vpd-oracle';
 async function run() {
@@ -49,7 +51,9 @@ async function run() {
     return count;
   };
   const evidence: object[] = [];
-  const morph = new URLSearchParams(location.search).has('morph');
+  const grouped = new URLSearchParams(location.search).has('group');
+  const morph = grouped || new URLSearchParams(location.search).has('morph');
+  const weightPrediction = grouped ? groupWeights : morphWeights, pointPrediction = grouped ? groupPoint : morphPoint;
   for (const rig of ['box', 'wedge'] as const)
     for (const motion of ['a', 'b'] as const)
       for (const mode of ['toon', 'pbr'])
@@ -61,11 +65,11 @@ async function run() {
           if (mode === 'toon') loader.register((p) => (toon = new MMDToonPlugin(p)));
           const base = import.meta.env.BASE_URL,
             asset = await loader.loadAsync(
-              source === 'bytes' ? `${base}${morph ? 'morph' : 'vpd'}/${rig}/rest.glb` : `${base}${morph ? 'morph' : 'vmd'}/${rig}/${motion}.${source}`,
+              source === 'bytes' ? `${base}${grouped ? 'group' : morph ? 'morph' : 'vpd'}/${rig}/rest.glb` : `${base}${grouped ? 'group' : morph ? 'morph' : 'vmd'}/${rig}/${motion}.${source}`,
             );
           const motionBytes =
             source === 'bytes'
-              ? parseVMD(new Uint8Array(await (await fetch(`${base}${morph ? 'morph/combined-' : 'vmd/motion-'}${motion}.vmd`)).arrayBuffer()))
+              ? parseVMD(new Uint8Array(await (await fetch(`${base}${grouped ? 'group/group-' : morph ? 'morph/combined-' : 'vmd/motion-'}${motion}.vmd`)).arrayBuffer()))
               : undefined;
           const handle = createVPDRig(asset.scene);
           const player = motionBytes
@@ -73,7 +77,7 @@ async function run() {
                 handle,
                 bindVMD(handle, motionBytes, {
                   morphUnmatched: morph ? 'error' : 'ignore',
-                  morphMapping: morph ? await (await fetch(`${base}morph/morph-map.json`)).json() : undefined,
+                  morphMapping: morph ? await (await fetch(`${base}${grouped ? 'group/group-map' : 'morph/morph-map'}.json`)).json() : undefined,
                   mapping: await (await fetch(`${base}vmd/motion-${motion}-map.json`)).json(),
                 }),
               )
@@ -111,7 +115,7 @@ async function run() {
             });
             if (rotationError > 1e-7) throw new Error(`rotation ${rotationError}`);
             let maximumWeightError = 0;
-            if (morph) for (const mesh of meshes) mesh.morphTargetInfluences!.forEach((w,i) => { maximumWeightError = Math.max(maximumWeightError, Math.abs(w-morphWeights(motion,time)[i])); });
+            if (morph) for (const mesh of meshes) mesh.morphTargetInfluences!.forEach((w,i) => { maximumWeightError = Math.max(maximumWeightError, Math.abs(w-weightPrediction(motion,time)[i])); });
             if (maximumWeightError > 1e-6) throw new Error(`weight ${maximumWeightError}`);
             for (const pass of ['surface', 'outline']) {
               const hull = pass === 'outline',
@@ -124,7 +128,7 @@ async function run() {
                   normal = geometry.getAttribute('normal');
                 for (let i = 0; i < position.count; i++) {
                   const basePoint = [position.getX(i),position.getY(i),position.getZ(i)],
-                    p = scalarPosition(rig, motion, i, time, morph ? morphPoint(rig,motion,i,time,basePoint) : basePoint),
+                    p = scalarPosition(rig, motion, i, time, morph ? pointPrediction(rig,motion,i,time,basePoint) : basePoint),
                     n = scalarNormal(
                       rig,
                       motion,
@@ -211,7 +215,7 @@ async function run() {
         }
   effect.dispose();
   renderer.dispose();
-  return { passed: evidence.length, evidence };
+  return { passed: evidence.length, evidence, exports: grouped ? await runGroupExports(import.meta.env.BASE_URL) : undefined };
 }
 run()
   .then((result) => Object.assign(window, { vmdConformance: result }))

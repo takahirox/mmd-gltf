@@ -36,9 +36,9 @@ export function oraclePalette(rig: RigCase, state: SDEFState, index: number, tim
 function oracleWorld(rig: RigCase, state: SDEFState, index: number, time: number) {
   return oraclePalette(rig, state, index, time).multiply(new Matrix4().makeTranslation(...restWorld(rig,index) as [number,number,number]));
 }
-export function sdefPrediction(rig: RigCase, state: SDEFState, index: number, time = 0, approximation = false) {
+export function sdefPrediction(rig: RigCase, state: SDEFState, index: number, time = 0, approximation = false, pointTransform?: (point: number[]) => number[]) {
   let { position: p, normal: n } = sourceVertex(rig,index);
-  if (state === 'a' || state === 'b') p.fromArray(morphPoint(rig,state,index,time,p.toArray()));
+  if (state === 'a' || state === 'b') p.fromArray(pointTransform ? pointTransform(p.toArray()) : morphPoint(rig,state,index,time,p.toArray()));
   const a = oraclePalette(rig,state,259,time), b = oraclePalette(rig,state,2,time);
   const slot = index % 4, w = slot === 1 ? 0.25 : slot === 2 ? 0 : 1;
   if (slot === 0 || approximation) return { p: p.clone().applyMatrix4(a).multiplyScalar(w).addScaledVector(p.clone().applyMatrix4(b),1-w), n: n.clone().applyMatrix3(new Matrix3().setFromMatrix4(a)).multiplyScalar(w).addScaledVector(n.clone().applyMatrix3(new Matrix3().setFromMatrix4(b)),1-w).normalize() };

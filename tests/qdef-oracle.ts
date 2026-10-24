@@ -15,16 +15,16 @@ export function qdefInfluences(index: number): [number[],number[]] {
   if(face%3===2)return [[1,2,259],[0.3,0.3,0.4]];
   return [[0,1,2,259],[0.1,0.2,0.3,0.4]];
 }
-export function qdefPrediction(rig:RigCase,state:QDEFState,index:number,time=0,approximation=false) {
+export function qdefPrediction(rig:RigCase,state:QDEFState,index:number,time=0,approximation=false,pointTransform?: (point: number[]) => number[]) {
   let {position:p,normal:n}=sourceVertex(rig,index);
-  if(state==='a'||state==='b')p.fromArray(morphPoint(rig,state,index,time,p.toArray()));
+  if(state==='a'||state==='b')p.fromArray(pointTransform ? pointTransform(p.toArray()) : morphPoint(rig,state,index,time,p.toArray()));
   const [joints,weights]=qdefInfluences(index), matrices=joints.map(j=>oraclePalette(rig,state,j,time));
   if(approximation||index%4===0) {
     const position=new Vector3(),normal=new Vector3();
     matrices.forEach((m,i)=>{position.addScaledVector(p.clone().applyMatrix4(m),weights[i]);normal.addScaledVector(n.clone().applyMatrix3(new Matrix3().setFromMatrix4(m)),weights[i]);});
     return {p:position,n:normal.normalize()};
   }
-  if(index%4===1)return sdefPrediction(rig,state,index,time);
+  if(index%4===1)return sdefPrediction(rig,state,index,time,false,pointTransform);
   return scalarDq(p,n,matrices,weights);
 }
 export function scalarDq(p:Vector3,n:Vector3,matrices:Matrix4[],weights:number[]) {

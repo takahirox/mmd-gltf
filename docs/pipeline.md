@@ -55,7 +55,7 @@ core `MASK` and `alphaCutoff`.
 Both extensions are used, never required, so ordinary glTF viewers can load the
 fallback. The default `static` mode keeps the stored base-pose geometry and reports omitted
 bones/skins and runtime features. The opt-in `bdef` mode is described below; [mixed SDEF](#mixed-sdef-conversion-and-runtime) adds spherical deformation.
-Neither mode evaluates SDEF, IK, grants or physics. Both retain PMX vertex POSITION morphs. BDEF mode supports synchronized solver-free VMD bones and vertex weights. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
+Neither mode evaluates SDEF, IK, grants or physics. Both retain PMX vertex and supported vertex-group POSITION morphs. BDEF mode supports synchronized solver-free VMD bones and vertex weights. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
 copied unchanged (defaults `[0,0,0,1]` and `1`). Signed per-vertex `edgeRatio`
 becomes a shared FLOAT/SCALAR `_MMD_EDGE_SCALE`, attached only to outlined
 primitives, omitted when every stored ratio is exactly one. Zero stays zero.
@@ -129,7 +129,7 @@ GLB/glTF reload preserves this data; pinned GLTFLoader exposes it as
 Bind future pose/motion data by source index and retained names, never runtime
 display names. This metadata does not promise deformation-layer ordering,
 IK/append/grants, fixed/local-axis constraints or external-parent semantics.
-Those solvers, non-vertex morph evaluation, physics and scene VMD execution remain
+Those solvers, other morph-family evaluation, physics and scene VMD execution remain
 unsupported. SDEF and QDEF are available in their separate opt-in modes; VPD supports only the solver-free contract below. They are listed in conversion warnings; parent hierarchy alone does
 not implement them. Core skin pose edits are supported with Toon, PBR and Outline
 without a new material or skinning extension.
@@ -582,3 +582,5 @@ Use both skinning exporter adapters for mixed posed export/reload. Toon,
 plugin-enabled PBR, Outline, VPD/VMD and vertex morphs share the existing lifecycle.
 See the [input boundary, API, Demo and validation guide](qdef.md) and
 [rigid-dq-v1 draft](../extensions/MMD_skinning_qdef/README.md).
+
+Vertex-only PMX groups compile before skinning in every converter mode, with independent core weights and complete version-2 source metadata. See the [composition contract](vmd.md#vertex-group-compilation-issue-41) and [validation](group-validation.md); mixed-family and nested groups remain wholly unsupported.

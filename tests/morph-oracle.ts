@@ -10,8 +10,8 @@ export function morphWeights(motion: MotionCase, seconds: number) {
     const hi = frames.findIndex(v => v >= f), lo = hi - 1;
     return (weights[lo] * (frames[hi] - f) + weights[hi] * (f - frames[lo])) / (frames[hi] - frames[lo]);
   };
-  return motion === 'a' ? [linear([6,15,30],[0,0.9,1.3]),0.65,0,0] :
-    [linear([3,20,45],[0.7,1.2,-0.2]),linear([0,40],[0.4,0.9]),0,0];
+  return motion === 'a' ? [linear([6,15,30],[0,0.9,1.3]),0.65,0,0,0] :
+    [linear([3,20,45],[0.7,1.2,-0.2]),linear([0,40],[0.4,0.9]),0,0,0];
 }
 export function morphPoint(rig: RigCase, motion: MotionCase, vertex: number, time: number, point: number[]) {
   const [a,b] = morphWeights(motion,time), s = rigScale[rig];

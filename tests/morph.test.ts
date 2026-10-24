@@ -44,35 +44,35 @@ test('binary PMX morph conversion: exact identity, scale/reflection once, target
     for (const mode of ['static','bdef'] as const) {
       const {result,gltf,morph} = await base(shape,mode), metadata = getMorphModel(morph);
       assert.deepEqual(metadata.morphs.map(m=>[m.index,m.name,m.type,m.target]),
-        [[0,'unsupported',0,null],[1,'笑い',1,0],[2,'overlap',1,1],[3,'笑い',1,2],[4,'untracked',1,3]]);
-      assert.deepEqual(getMorphWeights(morph),[0,0,0,0]);
+        [[0,'unsupported',0,4],[1,'笑い',1,0],[2,'overlap',1,1],[3,'笑い',1,2],[4,'untracked',1,3]]);
+      assert.deepEqual(getMorphWeights(morph),[0,0,0,0,0]);
       const unpacked = await result.io.writeJSON(result.document);
       assert.equal((await validateString(JSON.stringify(unpacked.json),{externalResourceFunction: async(uri:string)=>unpacked.resources[uri]})).issues.numErrors,0);
       for(const buffer of unpacked.json.buffers ?? []) buffer.uri = `data:application/octet-stream;base64,${Buffer.from(unpacked.resources[buffer.uri!]).toString('base64')}`;
-      assert.deepEqual(getMorphWeights(createMorphRig((await load(JSON.stringify(unpacked.json))).scene)),[0,0,0,0]);
+      assert.deepEqual(getMorphWeights(createMorphRig((await load(JSON.stringify(unpacked.json))).scene)),[0,0,0,0,0]);
       const loaded = meshes(gltf.scene); assert.equal(loaded.length,2);
       for (const mesh of loaded) {
-        assert.equal(Object.keys(mesh.morphTargetDictionary!).length,4);
+        assert.equal(Object.keys(mesh.morphTargetDictionary!).length,5);
         assert.equal(mesh.geometry.morphAttributes.normal,undefined);
         assert.equal(mesh.geometry.morphTargetsRelative,true);
         const delta=mesh.geometry.morphAttributes.position![0];
         assert.ok(Math.abs(delta.getX(0)-0.25*rigScale[shape])<1e-8);
         assert.ok(Math.abs(delta.getZ(0)+0.2*rigScale[shape])<1e-8);
       }
-      assert.ok(result.warnings.some(w=>w.includes('"type":0')));
+      assert.deepEqual(metadata.morphs[0].group,[{index:1,rate:0.5}]);
       assert.equal((await validateBytes(await result.io.writeBinary(result.document))).issues.numErrors,0);
-      applyMorphWeights(morph,[1.3,0.9,0,0]);
-      loaded.forEach(m => assert.deepEqual(m.morphTargetInfluences,[1.3,0.9,0,0]));
+      applyMorphWeights(morph,[1.3,0.9,0,0,0]);
+      loaded.forEach(m => assert.deepEqual(m.morphTargetInfluences,[1.3,0.9,0,0,0]));
       if (mode === 'static') {
         const copy = gltf.scene.clone(true), instance = createMorphRig(copy);
-        applyMorphWeights(instance,[-2,3,0,0]);
-        assert.deepEqual(getMorphWeights(morph),[1.3,0.9,0,0]);
+        applyMorphWeights(instance,[-2,3,0,0,0]);
+        assert.deepEqual(getMorphWeights(morph),[1.3,0.9,0,0,0]);
         for (const mesh of meshes(copy)) {
           assert.notEqual(mesh.geometry,loaded[0].geometry);
           for (let i=0;i<24;i++) assert.ok(mesh.geometry.boundingBox!.containsPoint(mesh.getVertexPosition(i,new Vector3())));
         }
       }
-      resetMorphWeights(morph); assert.deepEqual(getMorphWeights(morph),[0,0,0,0]);
+      resetMorphWeights(morph); assert.deepEqual(getMorphWeights(morph),[0,0,0,0,0]);
     }
   }
   for (const mutate of [
@@ -103,8 +103,11 @@ test('model-scoped morph binding: Japanese duplicates, byte names, invalid maps/
     assert.equal(bindMorphMotion(model,one,{morphMapping:{[one.morphs[0].name.key]:2}}).tracks[0].index,1);
   }
   name([...Buffer.from('unsupported'),...Array(4).fill(0)]);
-  assert.throws(()=>bindMorphMotion(model,one),/unsupported/);
-  assert.equal(bindMorphMotion(model,one,{morphUnmatched:'ignore'}).omitted,1);
+  assert.equal(bindMorphMotion(model,one).tracks[0].index,4);
+  const legacyModel=structuredClone(model);legacyModel.version=1;legacyModel.morphs[0].target=null;
+  delete legacyModel.morphs[0].group;delete legacyModel.morphs[0].unsupported;
+  assert.throws(()=>bindMorphMotion(legacyModel,one),/unsupported/);
+  assert.equal(bindMorphMotion(legacyModel,one,{morphUnmatched:'ignore'}).omitted,1);
   name([...Buffer.from('missing'),...Array(8).fill(0)]);
   assert.equal(bindMorphMotion(model,one,{morphUnmatched:'ignore'}).unmatched.length,1);
   name([...Buffer.from('overlap'),...Array(8).fill(0)]);
@@ -135,7 +138,7 @@ test('combined lifecycle: atomic failures, manual pause, VPD preserves weights, 
   p.seek(0.371); const desired=snapshot(a.gltf.scene);
   p.seek(0.719).seek(0).seek(0.371); assert.deepEqual(snapshot(a.gltf.scene),desired);
   p.play(); const before=snapshot(a.gltf.scene), time=p.time;
-  for(const values of [[1,2],[0,0,NaN,0],[0,0,0,1e300]]) {
+  for(const values of [[1,2],[0,0,NaN,0,0],[0,0,0,1e300,0]]) {
     assert.throws(()=>applyMorphWeights(a.morph,values));
     assert.equal(p.playing,true);assert.equal(p.time,time);assert.deepEqual(snapshot(a.gltf.scene),before);
   }
@@ -146,7 +149,7 @@ test('combined lifecycle: atomic failures, manual pause, VPD preserves weights, 
   assert.throws(()=>p.seek(0.9),/weight count/);
   assert.equal(p.playing,true);assert.equal(p.time,time);assert.deepEqual(snapshot(a.gltf.scene),invalidState);
   damaged.push(last);
-  applyMorphWeights(a.morph,[1.3,0.9,-0.1,0.2]);assert.equal(p.playing,false);
+  applyMorphWeights(a.morph,[1.3,0.9,-0.1,0.2,0]);assert.equal(p.playing,false);
   const weights=getMorphWeights(a.morph);
   applyVPD(rig,bindVPD(rig,parseVPD(await readFile('tests/fixtures/pose-b.vpd'),'utf-8'),{mapping:{'0':259}}));
   assert.deepEqual(getMorphWeights(a.morph),weights);
@@ -173,18 +176,18 @@ test('mesh-rooted morph handles pause the model owner and reject sparse vectors 
     const other = createVMDPlayer(b.rig!, bindVMD(b.rig!, parseVMD(morphVMD('a')), options('a')));
     p.seek(0.371).play(); other.play();
     const before = snapshot(a.gltf.scene), time = p.time;
-    const partial = [0, 0, 0, 0]; delete partial[2];
-    for (const handle of [a.morph, morph]) for (const values of [new Array<number>(4), partial]) {
+    const partial = [0, 0, 0, 0, 0]; delete partial[2];
+    for (const handle of [a.morph, morph]) for (const values of [new Array<number>(5), partial]) {
       assert.throws(() => applyMorphWeights(handle, values), /weight count or FLOAT numeric range/);
       assert.equal(p.playing, true); assert.equal(p.time, time);
       assert.deepEqual(snapshot(a.gltf.scene), before);
     }
-    const manual = [1.3, 0.9, -0.1, 0.2];
+    const manual = [1.3, 0.9, -0.1, 0.2, 0];
     applyMorphWeights(morph, manual);
     assert.equal(p.playing, false); assert.equal(other.playing, true);
     p.update(0.1); assert.deepEqual(getMorphWeights(a.morph), manual);
     p.play(); resetMorphWeights(morph);
-    assert.equal(p.playing, false); assert.deepEqual(getMorphWeights(a.morph), [0, 0, 0, 0]);
+    assert.equal(p.playing, false); assert.deepEqual(getMorphWeights(a.morph), [0, 0, 0, 0, 0]);
     p.dispose(); other.dispose();
   }
 });
@@ -361,7 +364,7 @@ test('morph-only real player: exact/multiple crossings, independent weights, ori
       assert.ok(sampled.every(t => t >= 0.5), JSON.stringify(sampled));
       check(0.94, true);
       console.log('Morph loop polling evidence:', JSON.stringify({ shape, path: asset === glb ? 'glb' : 'bytes', polls, sampled, crossings }));
-      player.stop(); assert.deepEqual(bones(), rest); assert.deepEqual(getMorphWeights(morph), [0, 0, 0, 0]);
+      player.stop(); assert.deepEqual(bones(), rest); assert.deepEqual(getMorphWeights(morph), [0, 0, 0, 0, 0]);
       player.dispose();
     }
   }
