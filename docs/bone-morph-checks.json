@@ -1,0 +1,97 @@
+{
+  "issue": 47,
+  "implementationRevision": "34e7db66f3b100c730d48fbe09a66c4434496b22",
+  "workflow": "Coordinator implementation-stage checks; no independent evaluation rerun or AI re-review",
+  "checks": [
+    {
+      "command": "npm ci",
+      "status": "passed"
+    },
+    {
+      "command": "npm run build",
+      "status": "passed",
+      "note": "Completed before checks requiring generated assets; final source revision."
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed",
+      "tests": 118,
+      "skips": 0,
+      "revision": "b7076d9dfd3c3e005f6b9bf1cbc653e329eb46d9",
+      "durationMs": 40598.2345
+    },
+    {
+      "command": "npx playwright install chromium",
+      "status": "passed"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser",
+      "status": "completed; sole status-text failure resolved by affected rerun",
+      "passed": 67,
+      "failed": 1,
+      "skipped": 2,
+      "duration": "56.4 minutes",
+      "revision": "34e7db66f3b100c730d48fbe09a66c4434496b22",
+      "failureResolved": true
+    },
+    {
+      "command": "npm run check:links",
+      "status": "passed",
+      "checkedLinks": 406
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    },
+    {
+      "command": "node node_modules/tsx/dist/cli.mjs tools/verify-bone-physics.ts",
+      "status": "passed",
+      "rigs": 2,
+      "paths": [
+        "bytes",
+        "GLB",
+        "external glTF"
+      ],
+      "maximumPositionDifferenceMeters": 0
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser -- tests/browser/bone-morph.spec.ts tests/browser/vpd.spec.ts",
+      "status": "passed",
+      "revision": "b7076d9dfd3c3e005f6b9bf1cbc653e329eb46d9",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "duration": "6.1 minutes"
+    }
+  ],
+  "supersededAttempts": [
+    "An initial Node invocation preceded generated-asset preparation and failed missing-public-asset checks; corrected by completing build before the final suites.",
+    "Enabling bone validation exposed the optional-record fixture zero quaternion; replaced that invalid authored record with identity and retained explicit rejection coverage.",
+    "Focused new checks exposed a Demo asset URL, missing rendered CPU-query observation, raw baseline identity/order in exports, and standalone binding/scope/legacy-target ordering edges; all were corrected with regression cases.",
+    "A tight first fallback probe exposed position error; the new numerical matrix uses explicit 1e-7 m / 1e-6 rad sampling, retaining the 2e-6 m CPU gate. Existing thresholds and timeouts were not changed.",
+    "Superseded suite invocations were interrupted as implementation changed. Whole-skeleton adaptive sampling caused slow intermediate runs; solver-free probe inputs now contain only referenced joints, with identical sample tolerances and numerical results. An intermediate complete Node run passed 115 tests; final revision passes 118.",
+    "The complete browser run on 34e7db6 passed 67 tests, skipped two optional native-WebGPU cases, and failed the final legacy VPD status-text assertion. Restored the original capability text for legacy models while keeping bone-specific text on bone presets; no numerical threshold, timeout, expected pose or pixel assertion was changed."
+  ],
+  "optionalOriginalMMD": "Not performed (optional); this run did not use a version-labelled original-MMD execution environment.",
+  "labelFixRevision": "b7076d9dfd3c3e005f6b9bf1cbc653e329eb46d9",
+  "finalValidatedRuntimeRevision": "b7076d9dfd3c3e005f6b9bf1cbc653e329eb46d9",
+  "unperformed": [
+    "A second complete 56-minute browser run was not repeated after the isolated model-specific status-label correction. All eight affected/new-feature and VPD browser cases passed on the corrected revision.",
+    "Optional original-MMD comparisons and native-WebGPU execution (adapter unavailable)."
+  ],
+  "resolvedFailures": [
+    {
+      "revision": "34e7db66f3b100c730d48fbe09a66c4434496b22",
+      "case": "legacy VPD Demo capability status assertion",
+      "cause": "New bone capability text had been applied to legacy presets.",
+      "fix": "Restored the original legacy capability text; retained new text only for bone presets.",
+      "testChanges": "none",
+      "resolutionRevision": "b7076d9dfd3c3e005f6b9bf1cbc653e329eb46d9",
+      "verification": "118 Node tests and all eight affected/new-feature plus VPD browser tests passed."
+    }
+  ]
+}

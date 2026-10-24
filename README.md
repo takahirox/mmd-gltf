@@ -98,7 +98,7 @@ PMX 2.1 rigid dual-quaternion profile; see the [QDEF guide](docs/qdef.md) and
 [extension draft](extensions/MMD_skinning_qdef/README.md). Ordinary loaders retain
 an approximate BDEF4 fallback. Ordered pre-physics IK/append is available with
 `--solver pre-physics-v1`; see the [solver guide](docs/solver.md). General PMX 2.1, post-physics, simulation,
-other morph-family evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs and one-hop vertex-only groups convert in static and all skinned modes; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
+other morph-family evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs and one-hop vertex-only groups convert in static and all skinned modes. Skinned conversion also retains type-2 bone offsets and supported one-hop mixed groups in optional [MMD_morphs](extensions/MMD_morphs/README.md); independent controls feed raw bones before the existing solver/physics pipeline; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
 see the [VPD contract and APIs](docs/pipeline.md#vpd-bone-offsets). The outline effect
 also accepts core POSITION/NORMAL morph deformation from other assets.
 Source models and derivatives retain their own rights. Gene Light is
@@ -163,3 +163,5 @@ and solver Demo presets with explicit IK controls and applied-state export.
 Enable conversion with `--solver pre-physics-v1`; default conversion stays solver-free.
 
 Opt-in [bounded rigid-body physics](docs/physics.md) supports both synthetic rigs, VMD/VPD, BDEF/SDEF/QDEF, spring joints and applied-state export. This is a project profile; original-MMD fidelity remains unmeasured.
+
+[Bone/mixed morph implementation and validation](docs/bone-morphs.md) covers the independent scalar API, VMD v5 transport, VPD handoffs and applied-state exports.

@@ -1,3 +1,6 @@
+import { retainedMorph } from '../three-mmd-morph/plugin';
+import { composeMorphPose, retainRawMorphPose, morphState } from '../three-mmd-morph/state';
+import { solvePose } from '../mmd-solver';
 import { resolveRawPose as rawPhysicsPose } from '../mmd-vpd';
 import { getPhysicsSession } from '../three-mmd-physics/registry';
 import { getSolverModel } from '../three-mmd-solver';
@@ -5,7 +8,7 @@ import { validateSolver } from '../mmd-solver';
 export { MMDVPDExporterPlugin } from './exporter';
 import { releaseMotion } from './ownership';
 import { Matrix4, Quaternion, Vector3, type Object3D, type SkinnedMesh } from 'three';
-import { bindPose, resolvePose, validatePoseModel, type PoseModel, type RestBone, type VPD, type BindingOptions, type PoseBinding } from '../mmd-vpd';
+import { bindPose, validatePoseModel, type PoseModel, type RestBone, type VPD, type BindingOptions, type PoseBinding } from '../mmd-vpd';
 export { parseVPD, VPD_QUATERNION_TOLERANCE } from '../mmd-vpd';
 export type { VPD, VPDEncoding, BindingOptions } from '../mmd-vpd';
 
@@ -19,6 +22,12 @@ export function createVPDRig(root: Object3D): VPDRig {
   const containers: Object3D[] = [];
   root.traverse(node => { if (node.userData.mmdPose) containers.push(node); });
   const retained = getSolverModel(root);
+  const morph=retainedMorph(root),ms=morphState(root);
+  if(!containers.length && morph && ms) {
+    const model:PoseModel={version:1,modelId:morph.model.modelId,metersPerPMXUnit:morph.model.metersPerPMXUnit!,bones:structuredClone(morph.model.bones!),solver:ms.solver};
+    const meshes=validateSkins(root,ms.nodes,model.bones,false);
+    const rig=Object.freeze({root,modelId:model.modelId});rigs.set(rig,{model,nodes:ms.nodes,meshes});return rig;
+  }
   if (!containers.length && retained) {
     const model: PoseModel = { version: 1, modelId: 'MMD_skeleton_solver', metersPerPMXUnit: 1, bones: retained.profile.bones.map(({node,layer,flags,append,ik,...bone}) => structuredClone(bone)), solver: retained.profile };
     const meshes = validateSkins(root, retained.nodes, model.bones, false);
@@ -95,9 +104,14 @@ export function applyVPD(rig: VPDRig, binding: BoundVPD) {
   const bound = bindings.get(binding);
   if (!bound || bound.rig !== rig) throw new Error('VPD: binding belongs to a different model instance; bind again for this rig');
   const physics=getPhysicsSession(rig.root);
-  applyResolvedPose(rig, physics ? physics.pose(rawPhysicsPose(state(rig).model,bound.pose)) : resolvePose(state(rig).model, bound.pose));
+  const raw=rawPhysicsPose(state(rig).model,bound.pose), input=composeMorphPose(rig.root,raw);
+  applyResolvedPose(rig, physics ? physics.pose(input) : solvePose(state(rig).model.solver,input));
+  retainRawMorphPose(rig.root,raw);
 }
-export function resetVPD(rig: VPDRig) { const physics=getPhysicsSession(rig.root); applyResolvedPose(rig, physics ? physics.pose(rawPhysicsPose(state(rig).model)) : resolvePose(state(rig).model)); }
+export function resetVPD(rig: VPDRig) {
+  const physics=getPhysicsSession(rig.root),raw=rawPhysicsPose(state(rig).model),input=composeMorphPose(rig.root,raw);
+  applyResolvedPose(rig,physics ? physics.pose(input) : solvePose(state(rig).model.solver,input));retainRawMorphPose(rig.root,raw);
+}
 
 function validateSkins(root: Object3D, nodes: Map<number,Object3D>, bones: RestBone[], requireSkin: boolean): SkinnedMesh[] {
   // Validate original inverse binds against ORIGINAL rest, not posed/dirty transforms.

@@ -11,7 +11,7 @@ import {
 import { evaluateTrack, evaluateMotion, slerp, type MotionBinding, type MotionTrack } from '../packages/mmd-vmd';
 import { EXTENSION_NAME, validatePayload, type VMDPayload } from '../packages/mmd-vmd/payload';
 import type { Quat } from '../packages/mmd-vpd';
-import { evaluateWeight } from '../packages/mmd-morph';
+import { reduceMorphs, evaluateWeight } from '../packages/mmd-morph';
 export interface SamplingOptions {
   translationTolerance?: number;
   rotationTolerance?: number;
@@ -33,7 +33,7 @@ export class VMDWriter extends Extension {
   write(context: WriterContext): this {
     for (const [animation, { motion, nodes, weights }] of this.records) {
       const payload: VMDPayload = {
-        version: motion.solver?.version === 2 ? 4 : motion.solver ? 3 : weights.length ? 2 : 1,
+        version: motion.morphModel ? 5 : motion.solver?.version === 2 ? 4 : motion.solver ? 3 : weights.length ? 2 : 1,
         rest: motion.rest.map((b) => ({
           node: context.nodeIndexMap.get(nodes[b.index])!,
           translation: b.translation,
@@ -44,6 +44,7 @@ export class VMDWriter extends Extension {
           keys: structuredClone(t.keys),
         })),
       };
+      if(motion.morphModel) payload.controls={model:structuredClone(motion.morphModel),nodes:motion.rest.map(b=>({index:b.index,node:context.nodeIndexMap.get(nodes[b.index])!})),tracks:structuredClone(motion.morphs?.[0]?.tracks??[])};
       if (motion.solver) {
         payload.solver=structuredClone(motion.solver);
         payload.solver.bones.forEach(b=>{b.node=context.nodeIndexMap.get(nodes[b.index])!;});
@@ -170,7 +171,7 @@ export function addVMDAnimation(
   const budget = { remaining: options.maxSamples ?? 200_000 };
   let count = 0;
   const seams=new Set<number>();
-  const times=new Set([0,motion.duration,...motion.tracks.flatMap(t=>t.keys.map(k=>k.frame/30))]);
+  const times=new Set([0,motion.duration,...motion.tracks.flatMap(t=>t.keys.map(k=>k.frame/30)),...(motion.morphs??[]).flatMap(g=>g.tracks.flatMap(t=>t.keys.map(k=>k.frame/30)))]);
   if(motion.solver) for(const t of motion.ik??[]) for(const k of t.keys) {
     const time=k.frame/30;
     if(time===0)continue;
@@ -192,11 +193,15 @@ export function addVMDAnimation(
     }
     seeds = [...canonical.values()].sort((a,b)=>a-b);
   }
+  const affected=new Set([...motion.tracks.map(t=>t.index),...(motion.morphModel?.morphs.flatMap(m=>(m.bone??[]).map(e=>e.index))??[])]);
+  // Solver-free local TRS depends only on its raw track and referenced offsets.
+  // Avoid retaining whole unused skeletons at each adaptive probe time.
+  const samplingMotion=motion.morphModel && !motion.solver ? {...motion,rest:motion.rest.filter(b=>affected.has(b.index))} : motion;
   const cache=new Map<number,ReturnType<typeof evaluateMotion>>();
-  const resolved=(time:number)=>{if(!cache.has(time)){if(cache.size*Math.max(1,motion.rest.length)>1_000_000)cache.clear();cache.set(time,physics ? physics.seek(time,t=>evaluateMotion(motion,t,undefined,true),t=>evaluateIK(motion,t)) : evaluateMotion(motion,time));}return cache.get(time)!;};
-  const tracks=motion.solver ? motion.rest.map(b=>({index:b.index,keys:motion.tracks.find(t=>t.index===b.index)?.keys??[]})) : motion.tracks;
+  const resolved=(time:number)=>{if(!cache.has(time)){if(cache.size*Math.max(1,samplingMotion.rest.length)>1_000_000)cache.clear();cache.set(time,physics ? physics.seek(time,t=>evaluateMotion(motion,t,undefined,true),t=>evaluateIK(motion,t)) : evaluateMotion(samplingMotion,time));}return cache.get(time)!;};
+  const tracks=motion.solver || motion.morphModel ? motion.rest.filter(b=>motion.solver || affected.has(b.index)).map(b=>({index:b.index,keys:motion.tracks.find(t=>t.index===b.index)?.keys??[]})) : motion.tracks;
   for (const track of tracks) {
-    const samples = physics ? seeds.map(time=>{if(--budget.remaining<0)throw new Error("MMD_physics: fallback sample budget exceeded");const at=resolved(time).find(b=>b.index===track.index)!;return {time:Math.fround(time),translation:at.translation,rotation:at.rotation};}) : motion.solver ? sampleTrack(track,options,budget,time=>resolved(time).find(b=>b.index===track.index)!,seeds,seams) : sampleTrack(track, options, budget);
+    const samples = physics ? seeds.map(time=>{if(--budget.remaining<0)throw new Error("MMD_physics: fallback sample budget exceeded");const at=resolved(time).find(b=>b.index===track.index)!;return {time:Math.fround(time),translation:at.translation,rotation:at.rotation};}) : motion.solver || motion.morphModel ? sampleTrack(track,options,budget,time=>resolved(time).find(b=>b.index===track.index)!,seeds,seams) : sampleTrack(track, options, budget);
     if(samples.some((v,i)=>!Number.isFinite(v.time)||i>0&&v.time<=samples[i-1].time))throw new Error("VMD: fallback FLOAT timestamps must increase strictly");
     count += samples.length;
     const input = doc
@@ -229,6 +234,8 @@ export function addVMDAnimation(
   }
   const weights: { node: Node; sampler: number }[] = [];
   for (const group of motion.morphs ?? []) {
+    const targetCount=motion.morphModel ? motion.morphModel.morphs.filter(m=>m.target!==null).length : group.count;
+    if(!targetCount)continue;
     if (!meshNode) throw new Error('VMD: missing morph mesh node');
     const times = [...new Set([0, ...group.tracks.flatMap(t => t.keys.map(k => k.frame / 30))])].sort((a,b) => a-b);
     if (times.length * group.count > 1_000_000) throw new Error('VMD: maximum weight output is 1000000 scalars');
@@ -239,7 +246,7 @@ export function addVMDAnimation(
     const values = times.flatMap(time => {
       const row = new Array(group.count).fill(0);
       for (const track of group.tracks) row[track.index] = evaluateWeight(track, time);
-      return row;
+      return motion.morphModel ? reduceMorphs(motion.morphModel,row).targets : row;
     });
     const array = new Float32Array(values);
     if (!array.every(Number.isFinite)) throw new Error('VMD: unsupported FLOAT weight numeric range');

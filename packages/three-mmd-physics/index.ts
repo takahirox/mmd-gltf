@@ -1,3 +1,4 @@
+import { composeMorphPose, morphState } from '../three-mmd-morph/state';
 import type { Object3D, SkinnedMesh } from "three";
 import type {
   GLTF,
@@ -111,7 +112,7 @@ export class PhysicsRig implements PhysicsSession {
     this.root = root;
     this.nodes = m.nodes;
     this.solver = m.solver;
-    this.raw = structuredClone(m.solver.bones);
+    this.raw = composeMorphPose(root,structuredClone(morphState(root)?.raw??m.solver.bones));
     this.timeline = new PhysicsTimeline(api, m.profile, m.solver);
     try {
       registerPhysics(root, this);

@@ -1,0 +1,78 @@
+{
+  "evidence": [
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "motion": "a",
+      "time": 0.719,
+      "maximumPosition": 3.126797081770549e-05,
+      "maximumNormal": 7.821548735709172e-05
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "motion": "b",
+      "time": 0.719,
+      "maximumPosition": 3.126797081770549e-05,
+      "maximumNormal": 7.821548735709172e-05
+    },
+    {
+      "rig": "box",
+      "mode": "qdef",
+      "motion": "a",
+      "time": 0.719,
+      "maximumPosition": 3.126797081770549e-05,
+      "maximumNormal": 7.821548735709172e-05
+    },
+    {
+      "rig": "box",
+      "mode": "qdef",
+      "motion": "b",
+      "time": 0.719,
+      "maximumPosition": 3.126797081770549e-05,
+      "maximumNormal": 7.821548735709172e-05
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "motion": "a",
+      "time": 0.719,
+      "maximumPosition": 3.126797081770549e-05,
+      "maximumNormal": 7.821548735709172e-05
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "motion": "b",
+      "time": 0.719,
+      "maximumPosition": 3.126797081770549e-05,
+      "maximumNormal": 7.821548735709172e-05
+    },
+    {
+      "rig": "wedge",
+      "mode": "qdef",
+      "motion": "a",
+      "time": 0.719,
+      "maximumPosition": 3.126797081770549e-05,
+      "maximumNormal": 7.821548735709172e-05
+    },
+    {
+      "rig": "wedge",
+      "mode": "qdef",
+      "motion": "b",
+      "time": 0.719,
+      "maximumPosition": 3.126797081770549e-05,
+      "maximumNormal": 7.821548735709172e-05
+    }
+  ],
+  "maximumPosition": 3.126797081770549e-05,
+  "maximumNormal": 7.821548735709172e-05,
+  "implementationRevision": "b7076d9dfd3c3e005f6b9bf1cbc653e329eb46d9",
+  "evidenceKind": "Actual WebGL2/SwiftShader SDEF/QDEF vertex-stage readbacks",
+  "limits": {
+    "CPUPositionMeters": 2e-06,
+    "GPUPositionMeters": 0.0001,
+    "normalComponent": 0.0005,
+    "pixelsDifferingByMoreThanTwoByteLevels": 128
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "issue": 47,
+  "implementationRevision": "b7076d9dfd3c3e005f6b9bf1cbc653e329eb46d9",
+  "nodeVersion": "v24.12.0",
+  "command": "npm test",
+  "tests": 118,
+  "passed": 118,
+  "failed": 0,
+  "skipped": 0,
+  "durationMs": 40598.2345,
+  "fallback": {
+    "translationToleranceMeters": 1e-07,
+    "rotationToleranceRadians": 1e-06,
+    "coreVertexToleranceMeters": 2e-06,
+    "paths": [
+      "direct bytes",
+      "retained GLB",
+      "retained external-buffer glTF",
+      "ordinary GLTFLoader fallback"
+    ],
+    "policy": "keys and finite 241/242 probes; no continuous error proof",
+    "cases": [
+      {
+        "shape": "box",
+        "motion": "a",
+        "probes": 241,
+        "vertexError": 6.560074805845139e-07,
+        "positionError": 9.04811405799677e-08,
+        "rotationError": 8.820681921809234e-07
+      },
+      {
+        "shape": "box",
+        "motion": "b",
+        "probes": 242,
+        "vertexError": 5.738876521286986e-07,
+        "positionError": 9.512245310872025e-08,
+        "rotationError": 9.65705618025053e-07
+      },
+      {
+        "shape": "wedge",
+        "motion": "a",
+        "probes": 241,
+        "vertexError": 2.0311862769888083e-07,
+        "positionError": 9.409235218749146e-08,
+        "rotationError": 9.96485560971538e-07
+      },
+      {
+        "shape": "wedge",
+        "motion": "b",
+        "probes": 242,
+        "vertexError": 4.4650246068688476e-07,
+        "positionError": 8.946859036962351e-08,
+        "rotationError": 9.65705618025053e-07
+      }
+    ]
+  },
+  "generatedOutputs": {
+    "formats": [
+      "GLB",
+      "external-buffer glTF"
+    ],
+    "modes": [
+      "BDEF",
+      "SDEF",
+      "QDEF"
+    ],
+    "assetsValidated": 36,
+    "additionalCLIConversionsValidated": 12,
+    "coreValidatorErrors": 0,
+    "customSchemasAndSemantics": "passed"
+  },
+  "physics": "Pinned Ammo backend; initialization and every 1/120 s tick; raw numerical predictions, IK/append, coupling, manual handoff, disabled physics, deterministic restart, changed-layout failure atomicity",
+  "evidenceKind": [
+    "independent analytical predictions",
+    "core glTF validator",
+    "custom schema/semantic checks",
+    "pinned physics backend"
+  ],
+  "originalMMD": "not measured",
+  "additionalCases": [
+    "standalone bone-only VMD binding without PMX extras",
+    "legacy vertex-only group slots preceding newly executable mixed targets",
+    "explicit model mesh scope with unrelated morph geometry"
+  ]
+}

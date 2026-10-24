@@ -1,5 +1,12 @@
+import { getPhysicsSession } from '../three-mmd-physics/registry';
+import { solvePose } from '../mmd-solver';
+import { getSolverModel } from '../three-mmd-solver';
+import { morphState, registerMorphState } from './state';
+import { retainedMorph } from './plugin';
+export { MMDMorphPlugin } from './plugin';
+export { MMDMorphExporterPlugin } from './exporter';
 import { Box3, Sphere, Vector3, BufferGeometry, Mesh, type Object3D, type SkinnedMesh } from 'three';
-import { validateMorphModel, validWeight, type MorphModel } from '../mmd-morph';
+import { applyBoneMorphs, controlCount, reduceMorphs, validateMorphModel, validWeight, type MorphModel } from '../mmd-morph';
 import { releaseMotion } from '../three-mmd-vpd/ownership';
 export interface MorphRig { readonly root: Object3D; readonly modelId: string }
 const rigs = new WeakMap<MorphRig, { model: MorphModel; meshes: Mesh[]; count: number }>();
@@ -8,17 +15,30 @@ const privateGeometry = new WeakSet<Mesh>();
 export function createMorphRig(root: Object3D): MorphRig {
   const containers: Object3D[] = [];
   root.traverse(n => { if (n.userData.pmxMorph) containers.push(n); });
-  if (containers.length !== 1) throw new Error('Morph: expected one model-scoped pmxMorph identity');
-  const container = containers[0], model = structuredClone(container.userData.pmxMorph) as MorphModel;
+  const retained=retainedMorph(root);
+  if (containers.length !== 1 && !retained) throw new Error('Morph: expected one model-scoped pmxMorph identity');
+  const container = containers[0] ?? root, model = structuredClone(retained?.model ?? container.userData.pmxMorph) as MorphModel;
   validateMorphModel(model);
   const count = model.morphs.filter(m => m.target !== null).length, meshes: Mesh[] = [];
-  container.traverse(n => { if ((n as Mesh).isMesh) meshes.push(n as Mesh); });
-  if (!meshes.length) throw new Error('Morph: missing model primitives');
+  if(retained)meshes.push(...(morphState(root)?.meshes??[]));
+  else container.traverse(n => { if ((n as Mesh).isMesh) meshes.push(n as Mesh); });
+  if (!meshes.length && count) throw new Error('Morph: missing model primitives');
   for (const mesh of meshes) {
     const attrs = mesh.geometry.morphAttributes.position ?? [];
     if (attrs.length !== count || (count && (!mesh.geometry.morphTargetsRelative || mesh.morphTargetInfluences?.length !== count)) ||
         attrs.some(a => a.count !== mesh.geometry.getAttribute('position').count))
       throw new Error('Morph: inconsistent primitive target count/layout');
+  }
+  if(model.version===3 && !morphState(root)) {
+    const nodes=new Map<number,Object3D>();
+    let search=root;while(search.parent && !search.userData.mmdPose)search=search.parent;
+    search.traverse(n=>{if(n.userData.pmxRest?.modelId===model.modelId)nodes.set(n.userData.pmxRest.index,n);});
+    if(nodes.size!==model.bones!.length || model.bones!.some(b=>!nodes.has(b.index))) throw new Error('Morph: missing exact bone nodes; load MMDMorphPlugin for standalone contracts');
+    let solver=getSolverModel(root)?.profile;
+    search.traverse(n=>{if(n.userData.mmdSolver)solver=structuredClone(n.userData.mmdSolver);});
+    let raw=model.bones!;
+    search.traverse(n=>{if(n.userData.mmdRawPose)raw=n.userData.mmdRawPose;});
+    registerMorphState(root,{model,meshes,controls:new Array(controlCount(model)).fill(0),nodes,raw:structuredClone(raw),solver});
   }
   const rig = Object.freeze({ root, modelId: model.modelId });
   rigs.set(rig, { model, meshes, count }); return rig;
@@ -28,7 +48,7 @@ function state(rig: MorphRig) {
 }
 export function getMorphModel(rig: MorphRig): MorphModel { return structuredClone(state(rig).model); }
 export function getMorphWeights(rig: MorphRig): number[] {
-  const s = state(rig); return s.count ? [...s.meshes[0].morphTargetInfluences!] : [];
+  const s = state(rig); return s.model.version===3 ? [...morphState(rig.root)!.controls] : s.count ? [...s.meshes[0].morphTargetInfluences!] : [];
 }
 export function refreshDeformation(root: Object3D) {
   root.updateMatrixWorld(true);
@@ -62,18 +82,27 @@ export function refreshDeformation(root: Object3D) {
 /** Preparation is read-only, allowing combined writers to validate before claiming ownership. */
 export function prepareMorphWeights(rig: MorphRig, values: readonly number[]) {
   const s = state(rig);
-  if (!Array.isArray(values) || values.length !== s.count ||
-      s.meshes.some(m => s.count && m.morphTargetInfluences?.length !== s.count))
+  if (!Array.isArray(values) || values.length !== controlCount(s.model) ||
+      s.meshes.some(m => (m.morphTargetInfluences?.length ?? 0) !== s.count))
     throw new Error('Morph: invalid weight count or FLOAT numeric range');
   const copy: number[] = [];
-  for (let i = 0; i < s.count; i++) {
+  for (let i = 0; i < values.length; i++) {
     if (!validWeight(values[i])) throw new Error('Morph: invalid weight count or FLOAT numeric range');
     copy.push(values[i]);
   }
-  return () => { for (const mesh of s.meshes) if (s.count) mesh.morphTargetInfluences!.splice(0, s.count, ...copy); };
+  const targets=reduceMorphs(s.model,copy).targets;
+  return () => {
+    if(s.model.version===3) morphState(rig.root)!.controls=[...copy];
+    for (const mesh of s.meshes) if (s.count) mesh.morphTargetInfluences!.splice(0, s.count, ...targets);
+  };
 }
 export function applyMorphWeights(rig: MorphRig, values: readonly number[]) {
   const write = prepareMorphWeights(rig, values);
-  releaseMotion(rig.root); write(); refreshDeformation(rig.root);
+  const s=morphState(rig.root),physics=getPhysicsSession(rig.root);
+  const input=s ? applyBoneMorphs(s.model,values,s.raw) : undefined;
+  const pose=input ? physics ? physics.pose(input) : solvePose(s!.solver,input) : undefined;
+  releaseMotion(rig.root); write();
+  if(s && pose) for(const b of pose) {const n=s.nodes.get(b.index)!;n.position.fromArray(b.translation);n.quaternion.fromArray(b.rotation);n.updateMatrix();}
+  refreshDeformation(rig.root);
 }
-export function resetMorphWeights(rig: MorphRig) { applyMorphWeights(rig, new Array(state(rig).count).fill(0)); }
+export function resetMorphWeights(rig: MorphRig) { applyMorphWeights(rig, new Array(controlCount(state(rig).model)).fill(0)); }

@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' | 'mixed-sdef' | 'mixed-qdef' = 'bdef', encoding: 'utf16le' | 'utf8' = 'utf16le', textRecords = false, shape: 'box' | 'wedge' = 'box', vertexMorphs: boolean | 'groups' = false) {
+export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' | 'mixed-sdef' | 'mixed-qdef' = 'bdef', encoding: 'utf16le' | 'utf8' = 'utf16le', textRecords = false, shape: 'box' | 'wedge' = 'box', vertexMorphs: boolean | 'groups' | 'bones' | 'bones-only' = false) {
   const chunks: Buffer[] = [];
   const u8 = (v: number) => chunks.push(Buffer.from([v & 255]));
   const i16 = (v: number) => { const b = Buffer.alloc(2); b.writeInt16LE(v); chunks.push(b); };
@@ -70,7 +70,25 @@ export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' | 'mixed-sdef' | 'mi
       i16(0); u8(0); i16(1); u8(1); floats([-1, -1, -1, 1, 1, 1]);
     } else { i16(0); floats([7, 3, 2]); } // display tail is NOT a rest rotation
   }
-  if (vertexMorphs) {
+  if(vertexMorphs==='bones' || vertexMorphs==='bones-only') {
+    const boneOnly=vertexMorphs==='bones-only';
+    i32(boneOnly?2:9);
+    const header=(name:string,type:number,count:number)=>{str(name);str(`Original Issue #47 ${name}`);u8(1);u8(type);i32(count);};
+    const group=(name:string,refs:number[][])=>{header(name,0,refs.length);for(const [index,rate] of refs){u8(index);f32(rate);}};
+    const bone=(name:string,index:number,position:number[],rotation:number[])=>{header(name,2,1);i16(index);floats(position);floats(rotation);};
+    if(!boneOnly) {
+      group('mixed',[[1,0.5],[2,0.5],[2,0.5],[3,-0.25],[3,0]]);
+      header('vertex',1,24);for(let v=0;v<24;v++){u8(v);floats([0.25,v%4>0?0.3:0.1,0.2]);}
+    }
+    bone('bone-x',259,[0.2,-0.1,0.3],[Math.SQRT1_2,0,0,Math.SQRT1_2]);
+    bone('bone-y',259,[-0.1,0.2,-0.05],[0,Math.SQRT1_2,0,Math.SQRT1_2]);
+    if(!boneOnly) {
+      group('shared',[[2,-0.5],[3,0.75]]);
+      header('uv',3,1);u8(0);floats([0,0,0,0]);
+      group('incomplete',[[1,1],[5,0]]);group('nested',[[0,1]]);header('empty-bone',2,0);
+    }
+    i32(0);i32(0);i32(0);
+  } else if (vertexMorphs) {
     i32(vertexMorphs === 'groups' ? 14 : 5);
     [vertexMorphs === 'groups' ? 'group' : 'unsupported', '笑い', 'overlap', '笑い', 'untracked'].forEach((name, index) => {
       str(name); str(`Original morph ${index}`); u8(1); u8(index === 0 ? 0 : 1);
@@ -101,7 +119,9 @@ export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' | 'mixed-sdef' | 'mi
     const elementSizes = [5, 13, 30, 17, 17, 17, 17, 17, 114];
     for (let type = 0; type < 9; type++) {
       str(`モーフ ${type}`); str(`Morph ${type}`); u8(0); u8(type); i32(1);
-      chunks.push(Buffer.alloc(elementSizes[type]));
+      const record=Buffer.alloc(elementSizes[type]);
+      if(type===2)record.writeFloatLE(1,record.length-4); // valid identity quaternion; zero is invalid once executed
+      chunks.push(record);
     }
     i32(1); str('表示枠'); str('Display'); u8(0); i32(2); u8(0); i16(0); u8(1); u8(0);
     i32(1); str('剛体'); str('Body'); i16(0); u8(0); i16(0); u8(0); floats(Array(14).fill(0)); u8(0);

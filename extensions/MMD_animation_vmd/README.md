@@ -128,3 +128,17 @@ output. Loading curves does not implicitly load Ammo or enable simulation.
 With an explicit PhysicsRig owner, the player samples raw motion at each tick,
 then evaluates pre-phase, simulation and post-phase once. Older payload
 versions retain their prior semantics.
+
+## Version 5: independent bone/mixed morph controls
+
+Version 5 retains `controls: {model, nodes, tracks}` with the v3 identity model from
+[MMD_morphs](../MMD_morphs/README.md). Tracks index independent scalar control slots,
+not geometry targets. `nodes` maps source bone indices to glTF nodes; model, nodes
+and original rest must agree with the root contract. Bone-only controls contribute
+to duration even without any core weight sampler. Optional `weights` references
+still identify complete compiled vertex fallback; v5 uses retained scalar tracks
+for aware execution. Every raw-track or morph-affected joint (all joints for solver execution) has matching core translation/rotation
+fallback, so a bone morph can animate joints lacking raw VMD bone keys. Aware
+playback removes that complete corresponding fallback once. Versions 1–4 retain
+their original interpretation. Solver is optional in v5; when present its existing
+IK/visibility and pre/post-phase version contracts continue to apply.

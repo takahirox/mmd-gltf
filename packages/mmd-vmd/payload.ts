@@ -1,10 +1,12 @@
+import { validateMorphModel, controlCount, validWeight, type MorphModel, type WeightTrack } from '../mmd-morph';
 import { validateSolver, type SolverProfile } from '../mmd-solver';
 import type { IKTrack } from './index';
 import type { Vec3, Quat, RestBone } from '../mmd-vpd';
 import type { Motion, MotionKey } from './index';
 export const EXTENSION_NAME = 'MMD_animation_vmd';
 export interface VMDPayload {
-  version: 1 | 2 | 3 | 4;
+  version: 1 | 2 | 3 | 4 | 5;
+  controls?: { model:MorphModel; nodes:{index:number;node:number}[]; tracks:WeightTrack[] };
   solver?: SolverProfile;
   ik?: IKTrack[];
   visibility?: {frame:number;visible:number;raw:number[]}[];
@@ -24,8 +26,8 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
   if (!value || typeof value !== 'object') fail();
   const p = value as VMDPayload;
   if (
-    !properties(p, ['version', 'rest', 'tracks', 'weights', 'solver', 'ik', 'visibility']) ||
-    ![1, 2, 3, 4].includes(p.version) ||
+    !properties(p, ['version', 'rest', 'tracks', 'weights', 'solver', 'ik', 'visibility', 'controls']) ||
+    ![1, 2, 3, 4, 5].includes(p.version) ||
     !Array.isArray(p.rest) ||
     (p.version === 1 && !p.rest.length) ||
     p.rest.length > 65536 ||
@@ -34,10 +36,11 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
     p.tracks.length > 65536
   )
     fail();
+  if(p.version===5 && !p.solver && (p.ik!==undefined || p.visibility!==undefined))fail();
   if (p.version < 3 && (p.solver !== undefined || p.ik !== undefined || p.visibility !== undefined)) fail();
-  if (p.version >= 3) {
+  if (p.version === 3 || p.version === 4 || p.version === 5 && p.solver) {
     validateSolver(p.solver,nodeCount);
-    if(p.solver!.version !== (p.version === 4 ? 2 : 1)) fail();
+    if(p.version!==5 && p.solver!.version !== (p.version === 4 ? 2 : 1)) fail();
     const seen=new Set<number>();
     if(!Array.isArray(p.ik) || p.ik.length>65536 || !Array.isArray(p.visibility) || p.visibility.length>1_000_000) fail();
     let controls=0;
@@ -58,6 +61,29 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
       seen.add(w.node);
     }
   }
+  if(p.version===5) {
+    const c=p.controls;
+    if(!c || !properties(c,['model','nodes','tracks']))fail();
+    validateMorphModel(c!.model);
+    if(c!.model.version!==3 || !Array.isArray(c!.nodes) || c!.nodes.length!==c!.model.bones!.length ||
+        !Array.isArray(c!.tracks) || c!.tracks.length>65536)fail();
+    const refs=new Set<number>(), ids=new Set<number>();
+    for(const b of c!.nodes) {
+      if(!b || !properties(b,['index','node']) || !c!.model.bones!.some(r=>r.index===b.index) || refs.has(b.node) || ids.has(b.index) ||
+          !Number.isInteger(b.node)||b.node<0||b.node>=nodeCount)fail();
+      refs.add(b.node);ids.add(b.index);
+      const r=p.rest.find(r=>r.node===b.node),rest=c!.model.bones!.find(r=>r.index===b.index)!;
+      if(!r || JSON.stringify([r.translation,r.rotation])!==JSON.stringify([rest.translation,rest.rotation]))fail();
+    }
+    if(p.rest.length!==refs.size)fail();
+    const seen=new Set<number>();let total=0;
+    for(const t of c!.tracks) {
+      if(!t || !properties(t,['index','keys']) || !Number.isInteger(t.index)||t.index<0||t.index>=controlCount(c!.model)||seen.has(t.index)||
+          !Array.isArray(t.keys)||!t.keys.length||(total+=t.keys.length)>1_000_000)fail();
+      seen.add(t.index);
+      t.keys.forEach((k,i)=>{if(!k || !properties(k,['frame','weight']) || !Number.isInteger(k.frame)||k.frame<0||k.frame>0xffffffff||!validWeight(k.weight)||i>0&&k.frame<=t.keys[i-1].frame)fail();});
+    }
+  } else if(p.controls!==undefined)fail();
   const nodes = new Set<number>(),
     targets = new Set<number>();
   for (const b of p.rest) {
@@ -112,11 +138,11 @@ export function payloadMotion(payload: VMDPayload, morphs: Motion['morphs'] = []
   if ((payload.weights?.length ?? 0) !== morphs.length ||
       payload.weights?.some(w => !morphs.some(g => g.node === w.node)))
     throw new Error(`${EXTENSION_NAME}: resolved core weight samplers required`);
-  const id = (node:number) => payload.solver?.bones.find(b=>b.node===node)?.index ?? node;
+  const id = (node:number) => payload.solver?.bones.find(b=>b.node===node)?.index ?? payload.controls?.nodes.find(b=>b.node===node)?.index ?? node;
   const rest: RestBone[] = payload.rest.map((b) => ({
     index: id(b.node),
-    name: '',
-    parentIndex: payload.solver?.bones.find(v=>v.node===b.node)?.parentIndex ?? -1,
+    name: payload.controls?.model.bones!.find(v=>v.index===id(b.node))?.name ?? '',
+    parentIndex: payload.controls?.model.bones!.find(v=>v.index===id(b.node))?.parentIndex ?? payload.solver?.bones.find(v=>v.node===b.node)?.parentIndex ?? -1,
     translation: [...b.translation],
     rotation: [...b.rotation],
     scale: [1, 1, 1],
@@ -125,8 +151,9 @@ export function payloadMotion(payload: VMDPayload, morphs: Motion['morphs'] = []
     solver: payload.solver, ik: payload.ik, visibility: payload.visibility,
     rest,
     tracks: payload.tracks.map((t) => ({ index: id(t.node), keys: structuredClone(t.keys) })),
-    morphs,
-    duration: Math.max((payload.visibility?.at(-1)?.frame ?? 0)/30, ...(payload.ik??[]).map(t=>t.keys.at(-1)!.frame/30), ...payload.tracks.map((t) => t.keys.at(-1)!.frame / 30),
+    morphModel:payload.controls?.model,
+    morphs:payload.controls ? [{node:0,count:controlCount(payload.controls.model),tracks:structuredClone(payload.controls.tracks)}] : morphs,
+    duration: Math.max(0,...(payload.controls?.tracks??[]).map(t=>t.keys.at(-1)!.frame/30), (payload.visibility?.at(-1)?.frame ?? 0)/30, ...(payload.ik??[]).map(t=>t.keys.at(-1)!.frame/30), ...payload.tracks.map((t) => t.keys.at(-1)!.frame / 30),
       ...morphs.flatMap(g => g.tracks.map(t => t.keys.at(-1)!.frame / 30))),
   };
 }
