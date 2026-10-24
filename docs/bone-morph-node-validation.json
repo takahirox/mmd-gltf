@@ -1,13 +1,13 @@
 {
   "issue": 47,
-  "implementationRevision": "34e7db66f3b100c730d48fbe09a66c4434496b22",
+  "implementationRevision": "b7076d9dfd3c3e005f6b9bf1cbc653e329eb46d9",
   "nodeVersion": "v24.12.0",
   "command": "npm test",
   "tests": 118,
   "passed": 118,
   "failed": 0,
   "skipped": 0,
-  "durationMs": 48233.16725,
+  "durationMs": 40598.2345,
   "fallback": {
     "translationToleranceMeters": 1e-07,
     "rotationToleranceRadians": 1e-06,

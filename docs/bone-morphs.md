@@ -51,12 +51,21 @@ and QDEF presets use the same morph pipeline, surfaces and Outline.
 ## Validation evidence
 
 Implementation and executable checks: `34e7db66f3b100c730d48fbe09a66c4434496b22`.
-The final evidence commit changes only documentation, a validation harness, reports and captures.
+The only subsequent runtime change, `b7076d9dfd3c3e005f6b9bf1cbc653e329eb46d9`,
+restores model-specific legacy capability status text. Bone evaluation, rendered
+outputs, thresholds and timeouts are unchanged. The final evidence update changes
+only reports and documentation.
 
 `npm ci`, `npm run build` (before generated-asset-dependent checks),
 `npm run typecheck`, `npm test`, `npx playwright install chromium`,
 `npm run check:links` and `git diff --check` passed. Node: **118 passed, zero
-failures/skips**. The complete Chromium run is recorded in the
+failures/skips** on the corrected revision as well. The complete Chromium run
+on `34e7db6` finished with **67 passed, two optional native-WebGPU skips, and one
+legacy VPD status-text assertion failure**. The label correction preserves the
+existing test assertion; all **eight affected/new-feature and VPD browser tests
+passed** on `b7076d9`. A second complete 56-minute browser run was not repeated
+for this isolated text correction. The [browser report](bone-morph-browser-validation.json)
+keeps these executions distinct. Exact commands are recorded in the
 [command/result record](bone-morph-checks.json), including its tested revision,
 optional skips, superseded failures and interrupted runs.
 

@@ -1,14 +1,14 @@
 {
-  "implementationRevision": "34e7db66f3b100c730d48fbe09a66c4434496b22",
+  "implementationRevision": "b7076d9dfd3c3e005f6b9bf1cbc653e329eb46d9",
   "evidenceKind": "Built Demo state/render acknowledgements and actual intrinsic/display PNG captures",
   "cases": [
     {
       "scenario": "built bone Demo: bone-box / bone-a / bytes + glb + gltf",
-      "elapsedMs": 66970.286291,
+      "elapsedMs": 59811.839625,
       "phases": 231,
       "allPhasesPassed": true,
       "renderAcknowledgements": 111,
-      "uniqueFrames": 70,
+      "uniqueFrames": 65,
       "paths": [
         "bytes",
         "glb",
@@ -25,40 +25,13 @@
         "playing": false,
         "error": "",
         "disposedPlayers": 8,
-        "revision": 325,
-        "renderedRevision": 325
+        "revision": 327,
+        "renderedRevision": 327
       }
     },
     {
       "scenario": "built bone Demo: bone-box / bone-b / bytes + glb + gltf",
-      "elapsedMs": 55574.352958999996,
-      "phases": 231,
-      "allPhasesPassed": true,
-      "renderAcknowledgements": 111,
-      "uniqueFrames": 67,
-      "paths": [
-        "bytes",
-        "glb",
-        "gltf"
-      ],
-      "poses": [
-        "rest",
-        "motion",
-        "a",
-        "b"
-      ],
-      "finalState": {
-        "rig": "bone-wedge",
-        "playing": false,
-        "error": "",
-        "disposedPlayers": 8,
-        "revision": 326,
-        "renderedRevision": 326
-      }
-    },
-    {
-      "scenario": "built bone Demo: bone-wedge / bone-a / bytes + glb + gltf",
-      "elapsedMs": 50135.892374999996,
+      "elapsedMs": 51949.091542,
       "phases": 231,
       "allPhasesPassed": true,
       "renderAcknowledgements": 111,
@@ -75,21 +48,21 @@
         "b"
       ],
       "finalState": {
-        "rig": "bone-box",
+        "rig": "bone-wedge",
         "playing": false,
         "error": "",
         "disposedPlayers": 8,
-        "revision": 329,
-        "renderedRevision": 329
+        "revision": 327,
+        "renderedRevision": 327
       }
     },
     {
-      "scenario": "built bone Demo: bone-wedge / bone-b / bytes + glb + gltf",
-      "elapsedMs": 52676.896542,
+      "scenario": "built bone Demo: bone-wedge / bone-a / bytes + glb + gltf",
+      "elapsedMs": 51162.60091599998,
       "phases": 231,
       "allPhasesPassed": true,
       "renderAcknowledgements": 111,
-      "uniqueFrames": 68,
+      "uniqueFrames": 67,
       "paths": [
         "bytes",
         "glb",
@@ -106,8 +79,35 @@
         "playing": false,
         "error": "",
         "disposedPlayers": 8,
-        "revision": 322,
-        "renderedRevision": 322
+        "revision": 328,
+        "renderedRevision": 328
+      }
+    },
+    {
+      "scenario": "built bone Demo: bone-wedge / bone-b / bytes + glb + gltf",
+      "elapsedMs": 51482.808583000005,
+      "phases": 231,
+      "allPhasesPassed": true,
+      "renderAcknowledgements": 111,
+      "uniqueFrames": 64,
+      "paths": [
+        "bytes",
+        "glb",
+        "gltf"
+      ],
+      "poses": [
+        "rest",
+        "motion",
+        "a",
+        "b"
+      ],
+      "finalState": {
+        "rig": "bone-box",
+        "playing": false,
+        "error": "",
+        "disposedPlayers": 8,
+        "revision": 326,
+        "renderedRevision": 326
       }
     }
   ],
