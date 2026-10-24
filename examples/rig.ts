@@ -393,8 +393,10 @@ async function start() {
     button('motion-reset'),
     seek,
     loop,
+    select('ik-override'),
   ];
   const guarded = (action: () => Promise<void> | void) => async () => {
+    if (busy) return;
     busy = true;
     invalidate();
     editable.forEach((c) => {

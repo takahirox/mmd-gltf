@@ -4,6 +4,66 @@ import { validateBytes, validateString } from "gltf-validator";
 import { solverExpected, solverVertex } from "../solver-oracle";
 import { orientationError } from "../../tools/vmd-animation";
 const preview = "http://127.0.0.1:43180/mmd-gltf/";
+test("built Demo keeps IK and rig replacement locked during a delayed motion load", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto(`${preview}rig.html`);
+  await expect(page.locator("#rig-preset")).toBeEnabled();
+  await page.locator("#rig-model").selectOption("solver-box-bdef");
+  await expect(page.locator("#motion-load")).toBeEnabled();
+  await page.locator("#motion-source").selectOption("glb");
+
+  let releaseMotion!: () => void;
+  const motionReady = new Promise<void>(resolve => { releaseMotion = resolve; });
+  let delayedRequests = 0;
+  await page.route("**/solver/box-bdef/a.glb", async route => {
+    delayedRequests++;
+    await motionReady;
+    await route.continue();
+  });
+  try {
+    await page.locator("#motion-load").click();
+    // Hold the GLB response used by the independent Toon and PBR instances.
+    await expect.poll(() => delayedRequests).toBeGreaterThan(0);
+    await expect(page.locator("#ik-override")).toBeDisabled();
+    await expect(page.locator("#rig-model")).toBeDisabled();
+    const revision = await page.evaluate(() => (window as any).mmdRig.revision);
+    // Even a programmatic event must not finish a nested guarded operation and
+    // unlock the rig selector while the motion responses are still pending.
+    await page.locator("#ik-override").dispatchEvent("change");
+    await expect(page.locator("#rig-model")).toBeDisabled();
+    await expect(page.locator("#motion-load")).toBeDisabled();
+    await expect(page.locator("#status")).toHaveText("Working…");
+    expect(await page.evaluate(() => (window as any).mmdRig.revision)).toBe(revision);
+  } finally {
+    releaseMotion();
+  }
+
+  await expect(page.locator("#status")).toContainText("VMD loaded");
+  await expect(page.locator("#rig-model")).toBeEnabled();
+  await page.locator("#rig-model").selectOption("solver-wedge-bdef");
+  await expect(page.locator("#status")).toContainText("Rig loaded");
+  await expect(page.locator("#ik-override")).toBeEnabled();
+  await expect(page.locator("#ik-override")).toHaveValue("motion");
+  await page.waitForFunction(() => {
+    const state = (window as any).mmdRig;
+    return state.rendered?.revision === state.revision && state.rendered.rig === "solver-wedge-bdef";
+  });
+  const state = await page.evaluate(() => (window as any).mmdRig);
+  expect(state.rig).toBe("solver-wedge-bdef");
+  expect(state.motion).toBe("");
+  expect(state.disposedPlayers).toBe(2);
+  // Wedge has a 0.2 m link offset and a 0.4 m tip; box has 0 and 0.2 m.
+  for (const [index, translation] of [[1, [0, 0.2, 0]], [2, [0, 0.4, 0]]] as const) {
+    const bone = state.bones.find((b: any) => b.index === index);
+    bone.translation.forEach((v: number, c: number) =>
+      expect(Math.abs(v - translation[c])).toBeLessThanOrEqual(2e-6),
+    );
+  }
+  expect(state.error).toBe("");
+  expect(errors).toEqual([]);
+});
+
 test('built extension-only solver skins validate and reload GLB/glTF exports without PMX extras', async ({ page }) => {
   await page.goto(`${preview}solver-conformance.html?extension-only`);
   await page.waitForFunction(() => (window as any).solverConformance || (window as any).solverConformanceError);
