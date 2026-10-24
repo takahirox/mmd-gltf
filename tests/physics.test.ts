@@ -238,6 +238,102 @@ test("mode-0 follows, mode-1 writes, mode-2 aligns bone origin, unbound bodies d
   assert.ok(timeline.bodyTransforms().get(0)![13] < -1);
   timeline.dispose();
 });
+test("tick-zero disabled IK and player overrides initialize dynamic bodies from the controlled pose", async (t) => {
+  const source = parsePMX(physicsPMX("box"));
+  source.rigidBodies = [{
+    ...(source.rigidBodies[1] as object),
+    boneIndex: 2,
+    position: [...source.bones[2].position],
+    rotation: [0, 0, 0],
+  }];
+  source.constraints = [];
+  source.metadata.rigidBodyCount = 1;
+  source.metadata.constraintCount = 0;
+  const result = await convertModel(source, ".", {
+    mode: "bdef", scale: 0.2, physics: "rigid-body-v1",
+  });
+  const asset = await load(await result.io.writeBinary(result.document));
+  const model = getPhysicsModel(asset.scene)!;
+  model.profile.gravity = [0, 0, 0];
+  const timeline = new PhysicsTimeline(api, model.profile, model.solver);
+  t.after(() => timeline.dispose());
+  for (const time of [0, model.profile.fixedStep]) {
+    const pose = timeline.seek(time, () => model.solver.bones, () => new Map([[3, false]]));
+    near(pose[2].translation, [0.2, 0, 0]);
+    assert.ok(orientationError(pose[2].rotation, [0, 0, 0, 1]) < 2e-5);
+    near(timeline.bodyTransforms().get(0)!.slice(12, 15), [0.2, 0, 0]);
+  }
+  const physics = new PhysicsRig(asset.scene, api);
+  t.after(() => physics.dispose());
+  const vmd = parseVMD(solverVMD("b"));
+  vmd.bones = [];
+  vmd.morphs = [];
+  vmd.displays = [vmd.displays[0]];
+  vmd.displays[0].ik[0].enabled = 0;
+  const handle = createVPDRig(asset.scene);
+  const player = createVMDPlayer(handle, bindVMD(handle, vmd));
+  t.after(() => player.dispose());
+  const check = (position: number[]) => {
+    near(snapshot(asset.scene)[2].translation, [0.2, 0, 0]);
+    assert.ok(orientationError(snapshot(asset.scene)[2].rotation, [0, 0, 0, 1]) < 2e-5);
+    near(physics.timeline.bodyTransforms().get(0)!.slice(12, 15), position);
+  };
+  player.seek(0);
+  check([0.2, 0, 0]);
+  player.setIKEnabled(3, true);
+  check([0, 0.2, 0]);
+  player.setIKEnabled(3, false);
+  check([0.2, 0, 0]);
+  player.setIKEnabled(3, undefined);
+  check([0.2, 0, 0]);
+});
+test("physics fallback deduplicates FLOAT key/tick collisions and retains IK seams in GLB/glTF", async () => {
+  for (const id of ["a", "b"] as const) {
+    const vmd = Buffer.from(solverVMD(id));
+    for (let i = 0; i < vmd.readUInt32LE(50); i++) {
+      const offset = 54 + i * 111 + 15;
+      if (vmd.readUInt32LE(offset) === 45) vmd.writeUInt32LE(23, offset);
+    }
+    assert.notEqual(23 / 30, 92 * (1 / 120));
+    assert.equal(Math.fround(23 / 30), Math.fround(92 * (1 / 120)));
+    const result = await convertModel(parsePMX(physicsPMX("box")), ".", {
+      mode: "bdef", scale: 0.2, physics: "rigid-body-v1", vmd,
+    });
+    for (const sampler of result.document.getRoot().listAnimations()[0].listSamplers()) {
+      if (sampler.getOutput()!.getType() === "SCALAR") continue;
+      const times = Array.from(sampler.getInput()!.getArray()!);
+      assert.ok(times.every((time, i) => i === 0 || time > times[i - 1]));
+      assert.equal(times.filter(time => time === Math.fround(23 / 30)).length, 1);
+      for (const seam of [0.5, 1]) {
+        const f = new Float32Array([seam]);
+        new Uint32Array(f.buffer)[0]--;
+        assert.ok(times.includes(f[0]) && times.includes(seam));
+      }
+    }
+    const binary = await result.io.writeBinary(result.document);
+    assert.equal((await validateBytes(binary)).issues.numErrors, 0);
+    const json = await result.io.writeJSON(result.document);
+    for (const b of json.json.buffers ?? [])
+      b.uri = `data:application/octet-stream;base64,${Buffer.from(json.resources[b.uri!]).toString("base64")}`;
+    const encoded = JSON.stringify(json.json);
+    assert.equal((await validateString(encoded)).issues.numErrors, 0);
+    for (const data of [binary, encoded]) {
+      const live = await load(data), physics = new PhysicsRig(live.scene, api),
+        player = getVMDPlayers(live)[0];
+      try {
+        player.seek(23 / 30);
+        const fallback = await load(data, false), mixer = new AnimationMixer(fallback.scene);
+        mixer.clipAction(fallback.animations[0]).play();
+        mixer.setTime(Math.fround(23 / 30));
+        compare(snapshot(fallback.scene), snapshot(live.scene), 2e-5);
+      } finally {
+        player.dispose();
+        physics.dispose();
+      }
+    }
+  }
+  assert.equal(PhysicsWorld.allocations, 0);
+});
 test("mode-2 spring rotation preserves the animated bone origin and composes a rotated body offset", () => {
   const { profile, solver } = base();
   profile.gravity = [0, 0, 0];

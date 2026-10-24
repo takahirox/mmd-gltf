@@ -68,10 +68,11 @@ export class PhysicsWorld {
     readonly profile: PhysicsProfile,
     readonly solver: SolverProfile,
     initial: RestBone[],
+    enabled: ReadonlyMap<number, boolean> = new Map(),
   ) {
     checkAmmo(api);
     validatePhysics(profile, solver);
-    const pre = solvePose(solver, initial, new Map(), "pre"),
+    const pre = solvePose(solver, initial, enabled, "pre"),
       poseWorld = worlds(pre);
     try {
       const config = this.own(new api.btDefaultCollisionConfiguration()),
@@ -367,6 +368,7 @@ export class PhysicsTimeline {
       this.profile,
       this.solver,
       inputs[0].pose,
+      inputs[0].enabled,
     );
     try {
       let pose = candidate.resolve(inputs[0].pose, inputs[0].enabled, false);

@@ -179,7 +179,19 @@ export function addVMDAnimation(
     times.add(previousFloat(time));times.add(time);seams.add(time);
   }
   if(physics){physics.preflight(motion.duration);for(let i=0;i<=Math.floor(motion.duration/physics.profile.fixedStep+1e-9);i++)times.add(i*physics.profile.fixedStep);}
-  const seeds=[...times].sort((a,b)=>a-b);
+  let seeds=[...times].sort((a,b)=>a-b);
+  if (physics) {
+    // Source keys and ticks can differ as doubles yet share a FLOAT timestamp.
+    // Preserve both sides of control seams, and retain source evaluation times:
+    // evaluating at a rounded timestamp can select the preceding physics tick.
+    const canonical = new Map<number, number>();
+    const required = [...seams].flatMap(time => [previousFloat(time), time]);
+    for (const time of [...required, ...seeds]) {
+      const stamp = Math.fround(time);
+      if (!canonical.has(stamp)) canonical.set(stamp, time);
+    }
+    seeds = [...canonical.values()].sort((a,b)=>a-b);
+  }
   const cache=new Map<number,ReturnType<typeof evaluateMotion>>();
   const resolved=(time:number)=>{if(!cache.has(time)){if(cache.size*Math.max(1,motion.rest.length)>1_000_000)cache.clear();cache.set(time,physics ? physics.seek(time,t=>evaluateMotion(motion,t,undefined,true),t=>evaluateIK(motion,t)) : evaluateMotion(motion,time));}return cache.get(time)!;};
   const tracks=motion.solver ? motion.rest.map(b=>({index:b.index,keys:motion.tracks.find(t=>t.index===b.index)?.keys??[]})) : motion.tracks;
