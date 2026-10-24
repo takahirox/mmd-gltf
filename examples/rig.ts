@@ -267,7 +267,10 @@ async function start() {
   async function loadRig() {
     const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('solver-') ? `solver/${model.value.slice(7)}` : model.value.startsWith('group-') ? `group/${model.value.slice(6)}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
     await replace(next);
-    if(model.value.startsWith('solver-')){mapping.value='{}';encoding.value='utf-8';motionMap.value='{}';document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value='{}';motionSample.value='solver-a';}
+    configurePosePreset();
+    if (model.value.startsWith('solver-')) motionSample.value = 'solver-a';
+    else if (motionSample.value.startsWith('solver-')) motionSample.value = 'a';
+    await configureMotionPreset();
     clearPlayback();
     info.source = '';
     info.motion = '';
@@ -484,13 +487,14 @@ async function start() {
       if (a.player) a.player.loop = loop.checked;
     });
   };
-  sample.onchange = () => {
+  function configurePosePreset() {
     if (sample.value !== 'local') {
       encoding.value = model.value.startsWith('solver-') ? 'utf-8' : sample.value === 'a' ? 'shift_jis' : 'utf-8';
       mapping.value = model.value.startsWith('solver-') ? '{}' : JSON.stringify(sample.value === 'a' ? { '2': 0, '3': 259 } : { '0': 259 });
     }
-  };
-  motionSample.onchange = guarded(async () => {
+  }
+  sample.onchange = configurePosePreset;
+  async function configureMotionPreset() {
     if (motionSample.value !== 'local') {
       // A subsequent selection of the same local file must emit change again.
       motionFile.value = '';
@@ -502,7 +506,8 @@ async function start() {
       select('motion-morph-unmatched').value = legacy ? 'ignore' : 'error';
       document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value = legacy ? '{}' : motionSample.value.startsWith('group-') ? '{"8fce82a2":1,"67726f7570":0}' : '{"8fce82a2":1}';
     }
-  });
+  }
+  motionSample.onchange = guarded(configureMotionPreset);
   file.onchange = () => {
     local = file.files?.[0];
     sample.value = 'local';

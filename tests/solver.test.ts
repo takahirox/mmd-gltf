@@ -30,7 +30,7 @@ import {
   evaluateMotion,
   evaluateIK,
 } from "../packages/mmd-vmd";
-import { validatePayload } from "../packages/mmd-vmd/payload";
+import { validatePayload, payloadMotion, type VMDPayload } from "../packages/mmd-vmd/payload";
 import {
   parseVPD,
   createVPDRig,
@@ -44,6 +44,7 @@ import {
   getVMDPlayers,
   bindVMD,
   createVMDPlayer,
+  VMDPlayer,
 } from "../packages/three-mmd-vmd";
 import { MMDSolverPlugin } from "../packages/three-mmd-solver";
 import { orientationError } from "../tools/vmd-animation";
@@ -104,6 +105,73 @@ async function jsonOutput(r: Awaited<ReturnType<typeof convertModel>>) {
   }
   return JSON.stringify(json.json);
 }
+
+test("retained IK endpoints determine playback duration beyond all other channels", async () => {
+  const minimal = JSON.parse(await readFile(
+    "extensions/MMD_skeleton_solver/examples/minimal.gltf", "utf8",
+  ));
+  const solver: SolverProfile = minimal.extensions[EXTENSION_NAME];
+  for (const shorterChannels of [false, true]) {
+    const payload: VMDPayload = {
+      version: 3, solver,
+      rest: solver.bones.map(b => ({ node: b.node!, translation: b.translation, rotation: b.rotation })),
+      tracks: shorterChannels ? [{ node: solver.bones[0].node!, keys: [{
+        frame: 15, translation: [0,0,0], rotation: [0,0,0,1],
+        curves: [[0,0,127,127], [0,0,127,127], [0,0,127,127], [0,0,127,127]],
+      }] }] : [],
+      ik: [{ index: 2, keys: [{frame: 30, enabled: false}] }],
+      visibility: shorterChannels ? [{frame: 10, visible: 1, raw: []}] : [],
+    };
+    validatePayload(payload);
+    const motion = payloadMotion(payload);
+    assert.equal(motion.duration, 1);
+    let resolved: RestBone[] = [];
+    const player = new VMDPlayer((await load(JSON.stringify(minimal))).scene, motion,
+      pose => () => { resolved = pose; });
+    player.seek(1 - 1e-6);
+    assert.equal(player.ikStates[2], true);
+    near(resolved[0].rotation, [0,0,Math.SQRT1_2,Math.SQRT1_2]);
+    player.seek(1);
+    assert.equal(player.time, 1);
+    assert.equal(player.ikStates[2], false);
+    near(resolved[0].rotation, [0,0,0,1]);
+    player.seek(0).play().update(1);
+    assert.equal(player.playing, false);
+    assert.equal(player.ikStates[2], false);
+    player.loop = true;
+    player.play().update(0.25);
+    assert.equal(player.time, 0.25);
+    assert.equal(player.ikStates[2], true);
+    player.dispose();
+  }
+});
+
+test("VPD rejects stale converter solver extras before mutating a root-contract pose", async () => {
+  const model = parsePMX(solverPMX("box"));
+  model.bones[3].ik!.maxAngle = 0;
+  const converted = await convertModel(model, ".", {mode: "bdef", scale: 0.2, solver: "pre-physics-v1"});
+  const json = JSON.parse(await jsonOutput(converted));
+  assert.equal(json.extensions[EXTENSION_NAME].bones[3].ik.angle, 0);
+  const container = json.nodes.find((n: any) => n.extras?.mmdSolver);
+  container.extras.mmdSolver.bones[3].ik.angle = Math.PI;
+  const gltf = await load(JSON.stringify(json));
+  const before = snapshot(gltf.scene);
+  near(before[1].rotation, [0,0,0,1]);
+  assert.throws(() => createVPDRig(gltf.scene), /solver metadata differs from root contract/);
+  assert.deepEqual(snapshot(gltf.scene), before);
+  // Compatible extras and absent solver extras both use the validated root contract.
+  for (const extras of [json.extensions[EXTENSION_NAME], undefined]) {
+    container.extras.mmdSolver = extras;
+    const compatible = await load(JSON.stringify(json));
+    const rig = createVPDRig(compatible.scene);
+    resetVPD(rig);
+    near(snapshot(compatible.scene)[1].rotation, [0,0,0,1]);
+    const player = createVMDPlayer(rig, bindVMD(rig, parseVMD(solverVMD("a"))));
+    player.seek(0.371);
+    near(snapshot(compatible.scene)[1].rotation, [0,0,0,1]);
+    player.dispose();
+  }
+});
 
 test("solver fixtures: deterministic authored bytes, raw source records, bounded schema and standalone minimal glTF", async () => {
   for (const shape of ["box", "wedge"] as const)

@@ -4,6 +4,47 @@ import { validateBytes, validateString } from "gltf-validator";
 import { solverExpected, solverVertex } from "../solver-oracle";
 import { orientationError } from "../../tools/vmd-animation";
 const preview = "http://127.0.0.1:43180/mmd-gltf/";
+test("built Demo restores legacy pose and motion presets after solver rig replacement", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", e => errors.push(e.message));
+  await page.goto(`${preview}rig.html`);
+  await expect(page.locator("#rig-preset")).toBeEnabled();
+  for (const [rig, pose] of [["box", "a"], ["wedge", "b"]]) {
+    await page.locator("#rig-model").selectOption(`solver-${rig}-bdef`);
+    await expect(page.locator("#rig-preset")).toBeEnabled();
+    await page.locator("#rig-pose").selectOption(pose);
+    await expect(page.locator("#rig-encoding")).toHaveValue("utf-8");
+    await expect(page.locator("#rig-map")).toHaveValue("{}");
+    await expect(page.locator("#motion-sample")).toHaveValue("solver-a");
+    await page.locator("#rig-model").selectOption(rig);
+    await expect(page.locator("#rig-preset")).toBeEnabled();
+    await expect(page.locator("#rig-encoding")).toHaveValue(pose === "a" ? "shift_jis" : "utf-8");
+    expect(JSON.parse(await page.locator("#rig-map").inputValue())).toEqual(
+      pose === "a" ? {"2": 0, "3": 259} : {"0": 259},
+    );
+    await expect(page.locator("#motion-sample")).toHaveValue("a");
+    await expect(page.locator("#motion-morph-unmatched")).toHaveValue("ignore");
+    const rest = await page.evaluate(() => (window as any).mmdRig.bones);
+    await page.locator("#rig-preset").click();
+    await expect(page.locator("#status")).toContainText("Applied VPD");
+    expect(await page.evaluate(() => (window as any).mmdRig.bones)).not.toEqual(rest);
+    // Load the restored motion selection directly, without triggering a selection change.
+    for (const source of ["bytes", "glb", "gltf"]) {
+      await page.locator("#motion-source").selectOption(source);
+      await page.locator("#motion-load").click();
+      await expect(page.locator("#status")).toContainText("VMD loaded");
+      await page.locator("#motion-time").fill("0.371");
+      await page.locator("#motion-time").dispatchEvent("input");
+      await expect(page.locator("#motion-load")).toBeEnabled();
+      const state = await page.evaluate(() => (window as any).mmdRig);
+      expect(state.time).toBe(0.371);
+      expect(state.error).toBe("");
+      expect(state.bones).not.toEqual(rest);
+    }
+  }
+  expect(errors).toEqual([]);
+});
+
 for (const mode of ["bdef", "sdef", "qdef"])
   for (const rig of ["box", "wedge"])
     for (const material of ["toon", "pbr"])

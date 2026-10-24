@@ -36,6 +36,18 @@ export function createVPDRig(root: Object3D): VPDRig {
   if (bones.length !== metadata.boneCount) throw new Error('VPD: inconsistent baseline bone count');
   const model: PoseModel = { version: metadata.version, modelId: metadata.modelId, metersPerPMXUnit: metadata.metersPerPMXUnit, bones };
   if (container.userData.mmdSolver) { validateSolver(container.userData.mmdSolver); model.solver = structuredClone(container.userData.mmdSolver); }
+  if (retained) {
+    // Converter extras omit glTF node references; all other solver data must agree.
+    const identity = (profile: NonNullable<PoseModel['solver']>) => JSON.stringify(
+      { ...profile, bones: [...profile.bones].sort((a,b) => a.index-b.index) },
+      (key,value) => key === 'node' ? undefined : value && typeof value === 'object' && !Array.isArray(value)
+        ? Object.fromEntries(Object.entries(value).sort(([a],[b]) => a.localeCompare(b))) : value,
+    );
+    if (model.solver && identity(model.solver) !== identity(retained.profile) ||
+        [...nodes].some(([index,node]) => retained.nodes.get(index) !== node))
+      throw new Error('VPD: solver metadata differs from root contract');
+    model.solver = retained.profile;
+  }
   validatePoseModel(model);
   meshes.push(...validateSkins(root, nodes, bones, true));
   const rig = Object.freeze({ root, modelId: model.modelId });
