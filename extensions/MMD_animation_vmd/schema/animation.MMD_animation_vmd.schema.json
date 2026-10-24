@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "MMD_animation_vmd v0.4 animation payload",
+  "title": "MMD_animation_vmd v0.5 animation payload",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,7 +14,8 @@
         1,
         2,
         3,
-        4
+        4,
+        5
       ]
     },
     "rest": {
@@ -385,6 +386,306 @@
           }
         }
       }
+    },
+    "controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "version": {
+              "const": 3
+            },
+            "modelId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bones": {
+              "type": "array",
+              "maxItems": 65536,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "parentIndex": {
+                    "type": "integer",
+                    "minimum": -1
+                  },
+                  "translation": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "number",
+                      "minimum": -3.4028234663852886e+38,
+                      "maximum": 3.4028234663852886e+38
+                    }
+                  },
+                  "rotation": {
+                    "type": "array",
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "items": {
+                      "type": "number",
+                      "minimum": -3.4028234663852886e+38,
+                      "maximum": 3.4028234663852886e+38
+                    }
+                  },
+                  "scale": {
+                    "const": [
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                },
+                "required": [
+                  "index",
+                  "name",
+                  "parentIndex",
+                  "translation",
+                  "rotation",
+                  "scale"
+                ]
+              }
+            },
+            "morphs": {
+              "type": "array",
+              "maxItems": 65536,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "englishName": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "target": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "control": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "bone": {
+                    "type": "array",
+                    "maxItems": 1000000,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "index": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "translation": {
+                          "type": "array",
+                          "minItems": 3,
+                          "maxItems": 3,
+                          "items": {
+                            "type": "number",
+                            "minimum": -3.4028234663852886e+38,
+                            "maximum": 3.4028234663852886e+38
+                          }
+                        },
+                        "rotation": {
+                          "type": "array",
+                          "minItems": 4,
+                          "maxItems": 4,
+                          "items": {
+                            "type": "number",
+                            "minimum": -3.4028234663852886e+38,
+                            "maximum": 3.4028234663852886e+38
+                          }
+                        }
+                      },
+                      "required": [
+                        "index",
+                        "translation",
+                        "rotation"
+                      ]
+                    }
+                  },
+                  "group": {
+                    "type": "array",
+                    "maxItems": 1000000,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "index": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "rate": {
+                          "type": "number",
+                          "minimum": -3.4028234663852886e+38,
+                          "maximum": 3.4028234663852886e+38
+                        }
+                      },
+                      "required": [
+                        "index",
+                        "rate"
+                      ]
+                    }
+                  },
+                  "unsupported": {
+                    "type": "array",
+                    "maxItems": 1000000,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "index": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "type": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 10
+                        },
+                        "reason": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "index",
+                        "type",
+                        "reason"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "index",
+                  "name",
+                  "englishName",
+                  "type",
+                  "target",
+                  "control"
+                ]
+              }
+            },
+            "metersPerPMXUnit": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "version",
+            "modelId",
+            "bones",
+            "morphs",
+            "metersPerPMXUnit"
+          ]
+        },
+        "nodes": {
+          "type": "array",
+          "maxItems": 65536,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "node": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "index",
+              "node"
+            ]
+          }
+        },
+        "tracks": {
+          "type": "array",
+          "maxItems": 65536,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "keys": {
+                "type": "array",
+                "maxItems": 1000000,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "frame": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4294967295
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": -10000,
+                      "maximum": 10000
+                    }
+                  },
+                  "required": [
+                    "frame",
+                    "weight"
+                  ]
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "index",
+              "keys"
+            ]
+          }
+        }
+      },
+      "required": [
+        "model",
+        "nodes",
+        "tracks"
+      ]
     }
   },
   "allOf": [
@@ -425,11 +726,23 @@
           ]
         },
         "else": {
-          "required": [
-            "solver",
-            "ik",
-            "visibility"
-          ]
+          "if": {
+            "properties": {
+              "version": {
+                "enum": [
+                  3,
+                  4
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "solver",
+              "ik",
+              "visibility"
+            ]
+          }
         }
       }
     },
@@ -486,14 +799,48 @@
         }
       },
       "else": {
-        "properties": {
-          "solver": {
-            "properties": {
-              "version": {
-                "const": 1
+        "if": {
+          "properties": {
+            "version": {
+              "enum": [
+                1,
+                2,
+                3
+              ]
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "solver": {
+              "properties": {
+                "version": {
+                  "const": 1
+                }
               }
             }
           }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "version": {
+            "const": 5
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "controls"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "controls"
+          ]
         }
       }
     }

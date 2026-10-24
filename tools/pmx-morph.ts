@@ -1,19 +1,22 @@
 import { createHash } from 'node:crypto';
 import type { Document, Buffer, Mesh, Node } from '@gltf-transform/core';
 import { validateMorphModel, groupIssues, type MorphModel } from '../packages/mmd-morph';
+import type { RestBone, Vec3, Quat } from '../packages/mmd-vpd';
 import type { PMXModel } from './pmx-to-gltf';
 
 export interface PMXMorph {
   name: string; englishName: string; type: number; elementCount: number;
-  elements: { index: number; position?: number[]; ratio?: number }[];
+  elements: { index: number; position?: number[]; rotation?: number[]; ratio?: number }[];
 }
 export function createMorphTargets(doc: Document, buffer: Buffer, mesh: Mesh, node: Node,
-  model: PMXModel, scale: number, modelId?: string) {
+  model: PMXModel, scale: number, modelId?: string, bones?: RestBone[]) {
   if (!Array.isArray(model.morphs) || model.morphs.length > 65536 ||
       (model.metadata.morphCount !== undefined && model.metadata.morphCount !== model.morphs.length))
     throw new Error('Morph: malformed source table/count (limit 65536)');
+  if(bones && model.metadata.boneCount!==undefined && model.metadata.boneCount!==model.bones.length)throw new Error('Morph: malformed bone source count');
   const metadata: MorphModel = {
-    version: 2,
+    version: bones && model.morphs.some(m=>m.type===2 && m.elements.length>0) ? 3 : 2,
+    ...(bones && model.morphs.some(m=>m.type===2 && m.elements.length>0) ? {bones:structuredClone(bones),metersPerPMXUnit:scale} : {}),
     modelId: modelId ?? createHash('sha256').update(JSON.stringify({ model, scale })).digest('hex'),
     morphs: Array.from(model.morphs, (m, index) => {
       if (!m || !Array.isArray(m.elements) || m.elementCount !== m.elements.length)
@@ -33,12 +36,32 @@ export function createMorphTargets(doc: Document, buffer: Buffer, mesh: Mesh, no
   }
   if (entries > 1000000) throw new Error('Morph: group entry limit (1000000) exceeded');
   const order = metadata.morphs.filter(m => m.type === 1);
+  const budget={remaining:1_000_000};
   for (const m of metadata.morphs) if (m.type === 0) {
-    m.unsupported = groupIssues(metadata.morphs, m.index);
-    if (!m.unsupported.length) order.push(m);
+    m.unsupported = groupIssues(metadata.morphs, m.index, metadata.version===3,budget);
+    if (!m.unsupported.length && (metadata.version<3 || (!m.group!.length || m.group!.some(e=>metadata.morphs[e.index].type===1)))) order.push(m);
   }
   order.forEach((m, target) => { m.target = target; });
+  if (metadata.version===3) {
+    let count=0;
+    for(const m of order) m.control=count++;
+    for(const m of metadata.morphs) {
+      if(m.type===2) {
+        m.bone=model.morphs[m.index].elements.map(e=>{
+          if(!e || !Number.isInteger(e.index) || !e.position || e.position.length!==3 || !e.rotation || e.rotation.length!==4 ||
+              ![...e.position,...e.rotation].every(Number.isFinite) || Math.abs(Math.hypot(...e.rotation)-1)>1e-5)
+            throw new Error(`Morph ${m.index}: invalid bone offset/quaternion`);
+          const length=Math.hypot(...e.rotation);
+          // Both pinned parser paths already reflect position Z and quaternion X/Y.
+          return {index:e.index,translation:e.position.map(v=>v*scale) as Vec3,rotation:e.rotation.map(v=>v/length) as Quat};
+        });
+      }
+      if(m.control===undefined) m.control=m.type===2 || m.type===0 && !m.unsupported!.length ? count++ : null;
+    }
+  }
   validateMorphModel(metadata);
+  const work=order.length * model.vertices.length * 3 + metadata.morphs.reduce((n,m)=>n+(m.group?.length??0)*model.vertices.length*3,0);
+  if(work>50_000_000) throw new Error('Morph: target compilation work limit (50000000) exceeded');
   const deltas = new Map<number, number[]>();
   for (const m of order) {
     const values = new Array(model.vertices.length * 3).fill(0);
@@ -50,6 +73,7 @@ export function createMorphTargets(doc: Document, buffer: Buffer, mesh: Mesh, no
       e.position.forEach((v, axis) => { values[e.index * 3 + axis] += v * scale; });
     }
     else for (const e of m.group!) {
+      if(metadata.morphs[e.index].type!==1) continue;
       const child = deltas.get(e.index)!;
       for (let i = 0; i < values.length; i++) values[i] += e.rate * child[i];
     }

@@ -1,3 +1,4 @@
+import { MorphWriter } from './morph-contract';
 import { createPhysics, PhysicsWriter } from './pmx-physics';
 import { loadAmmoNode } from '../packages/three-mmd-physics/node';
 import { PhysicsTimeline } from '../packages/three-mmd-physics/world';
@@ -149,17 +150,20 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
   if (qdef) warnings.push('MMD_skinning_qdef is optional: ordinary loaders use explicitly approximate BDEF4. Rigid-dq-v1 is a synthetic project profile; original-MMD deformation is unmeasured.');
   const sdefWriter = sdef ? doc.createExtension(SDEFWriter) : null;
   if (sdef) warnings.push('MMD_skinning_sdef is optional: ordinary loaders approximate SDEF with BDEF2. Rigid joint palettes only; scale/shear is unsupported. Original-MMD positions/normals are unmeasured.');
+  let morphRaw = skin?.poseModel.bones;
   if (vpd && skin) {
     const pose = parseVPD(vpd, vpdEncoding);
     const binding = bindPose(skin.poseModel, pose, vpdBinding);
+    morphRaw=resolveRawPose(skin.poseModel,binding);
     const timeline=physicsProfile ? new PhysicsTimeline(physicsBackend!.api,physicsProfile,skin.poseModel.solver!) : undefined;
     let resolved;try {resolved=timeline ? timeline.seek(physicsSettle,()=>resolveRawPose(skin.poseModel,binding)) : resolvePose(skin.poseModel, binding);}finally{timeline?.dispose();}
     resolved.forEach(b => skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));
     scene.setName(mode === 'qdef' ? 'PMX mixed BDEF/SDEF/QDEF VPD bone offsets' : mode === 'sdef' ? 'PMX mixed BDEF/SDEF VPD bone offsets' : 'PMX BDEF VPD bone offsets');
     warnings.push(`VPD: applied ${binding.assignments.length} bone offsets; parent filename ${JSON.stringify(pose.parentFile)} is informational. Unmatched: ${binding.unmatched.join(', ') || 'none'}. ${physicsProfile ? `Rigid-body-v1 evaluated at ${physicsSettle} seconds; restart on explicit enable.` : solver === 'none' ? 'No IK/append/physics.' : 'Pre-physics-v1 solved; no physics.'}`);
   }
-  const morph = createMorphTargets(doc, buffer, mesh, meshNode, model, scale, skin?.poseModel.modelId);
-  const unsupportedMorphs = morph.metadata.morphs.filter(m => m.target === null);
+  const morph = createMorphTargets(doc, buffer, mesh, meshNode, model, scale, skin?.poseModel.modelId, skin?.poseModel.bones);
+  if(morph.metadata.version===3 && skin) doc.createExtension(MorphWriter).record={model:morph.metadata,nodes:skin.nodes,mesh:meshNode,raw:morphRaw};
+  const unsupportedMorphs = morph.metadata.morphs.filter(m => (m.control === undefined ? m.target : m.control) === null);
   warnings.push(`Morphs: retained ${morph.targets.length} vertex/group POSITION targets; omitted unsupported source families ${JSON.stringify(unsupportedMorphs.map(m => ({ index: m.index, name: m.name, type: m.type, group: m.group, unsupported: m.unsupported })))}. Authored normals retained; no recomputation or morph normal targets.`);
   if (vmd && skin) {
     const motion = parseVMD(vmd), binding = bindMotion(skin.poseModel, motion, vmdBinding, morph.metadata);
@@ -265,7 +269,7 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
     mesh.addPrimitive(primitive);
   }
   if (faceOffset !== model.faces.length) throw new Error('Material face counts do not cover all PMX faces');
-  return { document: doc, io: new NodeIO().registerExtensions([ToonWriter, OutlineWriter, VMDWriter, SDEFWriter, QDEFWriter, SolverWriter, PhysicsWriter]), warnings };
+  return { document: doc, io: new NodeIO().registerExtensions([ToonWriter, OutlineWriter, MorphWriter, VMDWriter, SDEFWriter, QDEFWriter, SolverWriter, PhysicsWriter]), warnings };
 }
 export async function convertPMX(input: string, output: string, options: ConversionOptions & { textureDirectory?: string } = {}) {
   if (!['.glb', '.gltf'].includes(extname(output))) throw new Error('Output must end in .glb or .gltf');

@@ -1,3 +1,6 @@
+import { ensureMorphLoaded, MMDMorphPlugin } from '../three-mmd-morph/plugin';
+import { retainRawMorphPose } from '../three-mmd-morph/state';
+import { morphIdentity } from '../mmd-morph/payload';
 import { getPhysicsSession } from '../three-mmd-physics/registry';
 import { MMDSolverPlugin } from '../three-mmd-solver';
 import { solvePose, type SolverProfile } from '../mmd-solver';
@@ -6,6 +9,7 @@ import type { GLTF, GLTFLoaderPlugin, GLTFParser } from 'three/addons/loaders/GL
 import {
   bindMotion,
   evaluateMotion,
+  evaluateRawMotion,
   evaluateMorphs,
   evaluateIK,
   type VMD,
@@ -89,8 +93,11 @@ export class VMDPlayer {
   seek(seconds: number) {
     this.check();
     if (!Number.isFinite(seconds)) throw new Error('VMD: seek time must be finite');
-    const time = Math.max(0, Math.min(this.duration, seconds)),
-      physics = getPhysicsSession(this.root!),
+    const time = Math.max(0, Math.min(this.duration, seconds));
+    const weights=evaluateMorphs(this.motion,this.sampledTime(time));
+    // Read-only writer preparation catches changed layouts before native history is replaced.
+    this.prepare(this.motion.rest,weights);
+    const physics = getPhysicsSession(this.root!),
       controls=(t:number)=>{const values=evaluateIK(this.motion,t);this.ikOverrides.forEach((v,k)=>values.set(k,v));return values;},
       pose = physics ? physics.motion(time,t=>evaluateMotion(this.motion,t,this.ikOverrides,true),controls) : evaluateMotion(this.motion, time, this.ikOverrides);
     // Resolve and validate before claiming ownership or mutating transforms.
@@ -102,11 +109,12 @@ export class VMDPlayer {
       )
     )
       throw new Error('VMD: unsupported evaluated numeric range');
-    const write = this.prepare(pose, evaluateMorphs(this.motion, this.sampledTime(time)));
+    const write = this.prepare(pose, weights);
     claimMotion(this.root!, this, () => {
       this.active = false;
     });
     write();
+    retainRawMorphPose(this.root!,evaluateRawMotion(this.motion,this.sampledTime(time)));
     this.current = time;
     return this;
   }
@@ -136,10 +144,12 @@ export class VMDPlayer {
   stop() {
     this.check();
     const weights = (this.motion.morphs ?? []).map(g => ({ node: g.node, values: new Array(g.count).fill(0) }));
+    this.prepare(this.motion.rest,weights);
     const physics=getPhysicsSession(this.root!);
     const write = this.prepare(physics ? physics.pose(this.motion.rest) : solvePose(this.motion.solver, this.motion.rest), weights);
     claimMotion(this.root!, this, () => { this.active = false; });
     write();
+    retainRawMorphPose(this.root!,this.motion.rest);
     this.active = false;
     this.current = 0;
     releaseMotion(this.root!, this);
@@ -178,15 +188,18 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
   constructor(private parser: GLTFParser) {}
   beforeRoot() {
     const json = this.parser.json;
+    new MMDMorphPlugin(this.parser).beforeRoot();
     const originals = new Map<number, string>();
     for (const animation of json.animations ?? []) {
       const payload = animation.extensions?.[EXTENSION_NAME];
       if (payload === undefined) continue;
       validatePayload(payload, json.nodes?.length ?? 0);
+      if(payload.controls && (!json.extensions?.MMD_morphs || morphIdentity(payload.controls.model)!==morphIdentity(json.extensions.MMD_morphs.model) ||
+          morphIdentity(payload.controls.nodes)!==morphIdentity(json.extensions.MMD_morphs.nodes)))throw new Error('MMD_animation_vmd: controls differ from root MMD_morphs');
       if (payload.solver) new MMDSolverPlugin(this.parser).beforeRoot();
       if (payload.solver && (!json.extensions?.MMD_skeleton_solver || solverIdentity(payload.solver)!==solverIdentity(json.extensions.MMD_skeleton_solver))) throw new Error(`${EXTENSION_NAME}: solver differs from root contract`);
       const expected = new Set(
-        (payload.solver ? payload.solver.bones.map(b=>({node:b.node!})) : payload.tracks).flatMap((t) => [`${t.node}:translation`, `${t.node}:rotation`]),
+        (payload.solver ? payload.solver.bones.map(b=>({node:b.node!})) : payload.controls ? payload.rest.filter(r=>payload.tracks.some(t=>t.node===r.node) || payload.controls!.model.morphs.some(m=>m.bone?.some(b=>payload.controls!.nodes.find(n=>n.index===b.index)?.node===r.node))) : payload.tracks).flatMap((t) => [`${t.node}:translation`, `${t.node}:rotation`]),
       );
       for (const w of payload.weights ?? []) {
         expected.add(`${w.node}:weights`);
@@ -229,6 +242,7 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
     return Promise.resolve(new AnimationClip(def.name ?? 'VMD', -1, []));
   }
   async afterRoot(result: GLTF) {
+    await ensureMorphLoaded(this.parser,result);
     const players: VMDPlayer[] = [];
     for (const [animationIndex, def] of (this.parser.json.animations ?? []).entries()) {
       const p = def.extensions?.[EXTENSION_NAME];
@@ -271,18 +285,21 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
       const motion = payloadMotion(p, morphs),
         nodes = new Map<number, Object3D>();
       for (const b of motion.rest) {
-        const node = (await this.parser.getDependency('node', motion.solver?.bones.find(v=>v.index===b.index)?.node ?? b.index)) as Object3D;
+        const node = (await this.parser.getDependency('node', motion.solver?.bones.find(v=>v.index===b.index)?.node ?? p.controls?.nodes.find((v:any)=>v.index===b.index)?.node ?? b.index)) as Object3D;
         if (!result.scene.getObjectById(node.id))
           throw new Error(`${EXTENSION_NAME}: node outside default scene`);
         nodes.set(b.index, node);
       }
       result.animations[animationIndex].duration = motion.duration;
+      const controlRig=p.controls ? createMorphRig(result.scene) : undefined;
       players.push(
         new VMDPlayer(result.scene, motion, (pose, weights) => {
-          for (const w of weights) if (weightMeshes.get(w.node)!.some(m => m.morphTargetInfluences?.length !== w.values.length))
+          const writeControls=controlRig ? prepareMorphWeights(controlRig,weights[0]?.values??[]) : undefined;
+          for (const w of controlRig ? [] : weights) if (weightMeshes.get(w.node)!.some(m => m.morphTargetInfluences?.length !== w.values.length))
             throw new Error(`${EXTENSION_NAME}: changed morph target count`);
           return () => {
-            for (const w of weights) for (const mesh of weightMeshes.get(w.node)!) mesh.morphTargetInfluences!.splice(0, w.values.length, ...w.values);
+            writeControls?.();
+            for (const w of controlRig ? [] : weights) for (const mesh of weightMeshes.get(w.node)!) mesh.morphTargetInfluences!.splice(0, w.values.length, ...w.values);
             for (const b of pose) {
               const node = nodes.get(b.index)!;
               node.position.fromArray(b.translation);

@@ -221,3 +221,19 @@ for(const rig of ['box','wedge'] as const)for(const mode of ['bdef','sdef','qdef
 await writeFile('public/physics/conversion.json',JSON.stringify({backendSHA256:BACKEND_SHA256,attribution:'Original synthetic Issue 45 variants by mmd-gltf contributors. No third-party fixture bytes; original-MMD unmeasured.',cases:physicsEvidence},null,2)+'\n');
 console.log('Generated physics rigs, both motions and both VPD snapshots across BDEF/SDEF/QDEF and GLB/glTF.');
 const {writePhysicsReferences}=await import('./physics-reference');await writePhysicsReferences();
+
+// Issue #47: bone-only controls and one-hop mixed groups, both parser paths.
+const {boneMorphPMX,boneMorphVMD}=await import('./synthetic-bone-morph');
+await rm('public/bone',{recursive:true,force:true});await mkdir('public/bone',{recursive:true});
+for(const motion of ['a','b'] as const)await writeFile(`public/bone/bone-morph-${motion}.vmd`,boneMorphVMD(motion));
+for(const rig of ['box','wedge'] as const)for(const mode of ['bdef','sdef','qdef'] as const) {
+  const output=`public/bone/${rig}${mode==='bdef'?'':`-${mode}`}`;await mkdir(output,{recursive:true});
+  const source=boneMorphPMX(rig,mode==='bdef'?'bdef':mode==='sdef'?'mixed-sdef':'mixed-qdef');await writeFile(`${output}/source.pmx`,source);
+  for(const state of ['rest','a','b'] as const) {
+    const result=await convertModel(parsePMX(source),'.',{mode,scale:rig==='box'?0.2:0.125,
+      vmd:state==='rest'?undefined:boneMorphVMD(state),vmdBinding:state==='rest'?undefined:{mapping:JSON.parse(await readFile(`tests/fixtures/motion-${state}-map.json`,'utf8'))}});
+    result.document.getRoot().getAsset().extras={attribution:'Original Issue #47 synthetic bone/mixed morph fixtures by mmd-gltf contributors. Analytical project policy; original-MMD unmeasured.'};
+    for(const ext of ['glb','gltf'])await result.io.write(`${output}/${state}.${ext}`,result.document);
+  }
+}
+console.log('Generated Issue #47 bone/mixed morph rigs and motions across BDEF/SDEF/QDEF and GLB/glTF.');

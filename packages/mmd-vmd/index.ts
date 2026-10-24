@@ -1,7 +1,7 @@
 import { solvePose, validateSolver, type SolverProfile } from '../mmd-solver';
 import { validatePoseModel, type PoseModel, type RestBone, type Vec3, type Quat } from '../mmd-vpd';
 import { byteName, validateBone, omittedRecords, type VMD } from './reader';
-import { validateMorphModel, validWeight, evaluateWeight, type MorphModel, type WeightTrack } from '../mmd-morph';
+import { applyBoneMorphs, controlIndex, controlCount, validateMorphModel, validWeight, evaluateWeight, type MorphModel, type WeightTrack } from '../mmd-morph';
 export * from './reader';
 export type Curve = [number, number, number, number]; // x1,y1,x2,y2 in 0..127
 export interface MotionKey {
@@ -16,6 +16,7 @@ export interface MotionTrack {
 }
 export interface IKTrack { index: number; keys: { frame: number; enabled: boolean }[] }
 export interface Motion {
+  morphModel?: MorphModel;
   solver?: SolverProfile;
   ik?: IKTrack[];
   visibility?: { frame: number; visible: number; raw: number[] }[];
@@ -53,6 +54,12 @@ export function multiply(a: Quat, b: Quat): Quat {
 }
 export function bindMotion(model: PoseModel, vmd: VMD, options: VMDBindingOptions = {}, morphModel?: MorphModel): MotionBinding {
   validatePoseModel(model);
+  if(morphModel) {
+    validateMorphModel(morphModel);
+    const identities=(bones:RestBone[])=>JSON.stringify([...bones].sort((a,b)=>a.index-b.index).map(b=>[b.index,b.name,b.parentIndex,b.translation,b.rotation,b.scale]));
+    if(morphModel.modelId!==model.modelId || morphModel.version===3 && (morphModel.metersPerPMXUnit!==model.metersPerPMXUnit || identities(morphModel.bones!)!==identities(model.bones)))
+      throw new Error('VMD: inconsistent bone/morph model identity or original rest');
+  }
   if (!vmd || !Array.isArray(vmd.bones)) throw new Error('VMD: missing bone records');
   if (options.unmatched !== undefined && !['error', 'ignore'].includes(options.unmatched))
     throw new Error('VMD: unmatched policy must be error or ignore');
@@ -129,6 +136,7 @@ export function bindMotion(model: PoseModel, vmd: VMD, options: VMDBindingOption
   const weights = bindMorphMotion(morphModel ?? { version: 1, modelId: model.modelId, morphs: [] }, vmd, options);
   const controls = model.solver ? bindIK(model.solver, vmd, options) : undefined;
   return {
+    morphModel: morphModel?.version===3 ? structuredClone(morphModel) : undefined,
     solver: model.solver ? structuredClone(model.solver) : undefined,
     ik: controls?.tracks,
     visibility: controls?.visibility,
@@ -172,12 +180,12 @@ export function bindMorphMotion(model: MorphModel, vmd: VMD, options: VMDBinding
     const matches = explicit ? model.morphs.filter(m => m.index === mapping[key]) : model.morphs.filter(m => m.name === name.text);
     if (explicit && (!Number.isInteger(mapping[key]) || matches.length !== 1)) throw new Error(`VMD: invalid mapped morph source index ${key}`);
     if (matches.length > 1) throw new Error(`VMD morph ${key}: ambiguous PMX name; explicit mapping required`);
-    if (!matches.length || matches[0].target === null) {
+    if (!matches.length || controlIndex(matches[0]) === null) {
       unmatched.push(key); omitted += records.length;
       if (options.morphUnmatched !== 'ignore') throw new Error(`VMD: unmatched or unsupported morph ${key}; morphUnmatched: ignore is explicit partial playback`);
       continue;
     }
-    const index = matches[0].target!;
+    const index = controlIndex(matches[0])!;
     if (targets.has(index)) throw new Error(`VMD: repeated morph target source index ${matches[0].index}`);
     targets.add(index);
     const sorted = [...records].sort((a,b) => a.frame - b.frame);
@@ -187,7 +195,7 @@ export function bindMorphMotion(model: MorphModel, vmd: VMD, options: VMDBinding
     }) });
   }
   tracks.sort((a,b) => a.index - b.index);
-  return { tracks, unmatched, omitted, count: model.morphs.filter(m => m.target !== null).length,
+  return { tracks, unmatched, omitted, count: controlCount(model),
     duration: Math.max(0, ...tracks.map(t => t.keys.at(-1)!.frame / 30)) };
 }
 export function evaluateMorphs(motion: Motion, seconds: number) {
@@ -264,12 +272,18 @@ export function evaluateTrack(track: MotionTrack, seconds: number): { translatio
     rotation: slerp(a.rotation, b.rotation, bezier(b.curves[3], u)),
   };
 }
-export function evaluateMotion(motion: Motion, seconds: number, overrides?: ReadonlyMap<number,boolean>, raw = false): RestBone[] {
+export function evaluateRawMotion(motion: Motion, seconds: number): RestBone[] {
   if (!Number.isFinite(seconds)) throw new Error('VMD: seek time must be finite');
   const values = new Map(motion.tracks.map((t) => [t.index, evaluateTrack(t, seconds)]));
   const input = motion.rest.map((b) => ({ ...structuredClone(b), ...values.get(b.index) }));
-  const enabled = evaluateIK(motion, seconds); overrides?.forEach((v,k)=>enabled.set(k,v));
-  return raw ? input : solvePose(motion.solver, input, enabled);
+  return input;
+}
+
+export function evaluateMotion(motion: Motion, seconds: number, overrides?: ReadonlyMap<number,boolean>, raw = false): RestBone[] {
+  let input=evaluateRawMotion(motion,seconds);
+  if(motion.morphModel) input=applyBoneMorphs(motion.morphModel,evaluateMorphs(motion,seconds)[0]?.values??[],input);
+  const enabled=evaluateIK(motion,seconds);overrides?.forEach((v,k)=>enabled.set(k,v));
+  return raw ? input : solvePose(motion.solver,input,enabled);
 }
 
 /** Defaults on; right-continuous at frame/30; omitted controls retain their last value. */

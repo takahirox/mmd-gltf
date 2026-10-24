@@ -42,8 +42,8 @@ import {
   type VMDBindingOptions,
 } from '../packages/three-mmd-vmd';
 
-import { validWeight } from '../packages/mmd-morph';
-import { createMorphRig, getMorphModel, getMorphWeights, applyMorphWeights, resetMorphWeights, refreshDeformation, type MorphRig } from '../packages/three-mmd-morph';
+import { controlIndex, validWeight } from '../packages/mmd-morph';
+import { MMDMorphExporterPlugin, createMorphRig, getMorphModel, getMorphWeights, applyMorphWeights, resetMorphWeights, refreshDeformation, type MorphRig } from '../packages/three-mmd-morph';
 
 // Bounded diagnostics from real player updates, acknowledged only by the render
 // that follows that update. A crossing survives subsequent ordinary frames.
@@ -143,7 +143,7 @@ async function start() {
     localMotion: File | undefined,
     busy = false;
   const report = (message: string) => {
-    status.textContent = `Ready · ${message} · ${model.value.startsWith('physics-') ? 'Rigid-body-v1 + pre/post solver; fixed ticks; original-MMD unmeasured' : solverRig() ? 'Pre-physics-v1 IK/append + vertex groups; visibility retained without execution; original-MMD unmeasured' : 'Solver-free bones + vertex morphs; IK/append/physics and other morph families unsupported'}`;
+    status.textContent = `Ready · ${message} · ${model.value.startsWith('physics-') ? 'Rigid-body-v1 + pre/post solver; fixed ticks; original-MMD unmeasured' : solverRig() ? 'Pre-physics-v1 IK/append + morphs; visibility retained without execution; original-MMD unmeasured' : 'Bone and mixed morph controls; original-MMD unmeasured'}`;
   };
   const invalidate = () => { info.revision++; };
   const clearPlayback = () => {
@@ -163,7 +163,7 @@ async function start() {
         });
     });
     info.vertices = [];
-    if (model.value.startsWith('group-') || solverRig()) assets[0]?.scene.traverse(n => {
+    if (model.value.startsWith('bone-') || model.value.startsWith('group-') || solverRig()) assets[0]?.scene.traverse(n => {
       const mesh = n as Mesh;
       if (mesh.isMesh && !info.vertices.length) info.vertices = [0,1,2,3,9,23].map(i => mesh.getVertexPosition(i,new Vector3()).toArray());
     });
@@ -288,7 +288,7 @@ async function start() {
     for (const a of previous) await disposeAsset(a);
   }
   async function loadRig() {
-    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('physics-') ? `physics/${model.value.slice(8)}` : solverRig() ? `solver/${model.value.slice(7)}` : model.value.startsWith('group-') ? `group/${model.value.slice(6)}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
+    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('bone-') ? `bone/${model.value.slice(5)}` : model.value.startsWith('physics-') ? `physics/${model.value.slice(8)}` : solverRig() ? `solver/${model.value.slice(7)}` : model.value.startsWith('group-') ? `group/${model.value.slice(6)}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
     await replace(next);
     select('ik-override').value = 'motion';
     configurePosePreset();
@@ -336,15 +336,16 @@ async function start() {
     let diagnostic = '';
     const combined = motionSample.value.startsWith('combined-') || motionSample.value === 'only';
     const grouped = motionSample.value.startsWith('group-');
+    const boned = motionSample.value.startsWith('bone-');
     const solving = motionSample.value.startsWith('solver-');
-    const motionId = motionSample.value.replace('combined-', '').replace('group-', '').replace('solver-', '');
+    const motionId = motionSample.value.replace('combined-', '').replace('group-', '').replace('solver-', '').replace('bone-', '');
     if (motionSource.value === 'bytes') {
       let data: Uint8Array;
       if (motionSample.value === 'local') {
         if (!localMotion) throw new Error('Select a local VMD file first');
         data = new Uint8Array(await localMotion.arrayBuffer());
       } else {
-        const r = await fetch(`${import.meta.env.BASE_URL}${solving ? `solver/solver-${motionId}` : grouped ? `group/group-${motionId}` : combined ? `morph/${motionId === 'only' ? 'morph-only' : `combined-${motionId}`}` : `vmd/motion-${motionId}`}.vmd`);
+        const r = await fetch(`${import.meta.env.BASE_URL}${boned ? `bone/bone-morph-${motionId}` : solving ? `solver/solver-${motionId}` : grouped ? `group/group-${motionId}` : combined ? `morph/${motionId === 'only' ? 'morph-only' : `combined-${motionId}`}` : `vmd/motion-${motionId}`}.vmd`);
         if (!r.ok) throw new Error(`VMD fetch failed: ${r.status}`);
         data = new Uint8Array(await r.arrayBuffer());
       }
@@ -369,7 +370,7 @@ async function start() {
           'Converted GLB/glTF sources are available for sample motions; use byte source for local VMD',
         );
       const next = await loadPair(
-        `${import.meta.env.BASE_URL}${solving ? `${model.value.startsWith('physics-')?'physics':'solver'}/${model.value.slice(model.value.startsWith('physics-')?8:7)}/${motionId}` : grouped ? `group/${model.value.replace('group-', '')}/${motionId}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
+        `${import.meta.env.BASE_URL}${boned ? `bone/${model.value.slice(5)}/${motionId}` : solving ? `${model.value.startsWith('physics-')?'physics':'solver'}/${model.value.slice(model.value.startsWith('physics-')?8:7)}/${motionId}` : grouped ? `group/${model.value.replace('group-', '')}/${motionId}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
       );
       next.forEach((a) => a.player!.seek(0));
       await replace(next);
@@ -444,13 +445,13 @@ async function start() {
   function rebuildMorphControls() {
     const container = document.querySelector('#morph-controls')!;
     container.replaceChildren();
-    for (const m of getMorphModel(assets[0].morph).morphs.filter(m => m.target !== null).sort((a,b) => a.target! - b.target!)) {
+    for (const m of getMorphModel(assets[0].morph).morphs.filter(m => controlIndex(m) !== null).sort((a,b) => controlIndex(a)! - controlIndex(b)!)) {
       const label = document.createElement('label'), control = document.createElement('input');
       label.textContent = `${m.index}: ${m.name} `;
       control.type = 'number'; control.step = '0.05'; control.value = '0';
-      control.dataset.target = String(m.target);
+      control.dataset.target = String(controlIndex(m));
       control.onchange = guarded(() => {
-        const values = getMorphWeights(assets[0].morph); values[m.target!] = Number(control.value);
+        const values = getMorphWeights(assets[0].morph); values[controlIndex(m)!] = Number(control.value);
         // Validate the complete requested weight vector on both independent instances first.
         if (!values.every(validWeight)) throw new Error('Morph: invalid FLOAT weight');
         assets.forEach(a => applyMorphWeights(a.morph, values));
@@ -482,7 +483,7 @@ async function start() {
   button('physics-reset').onclick=guarded(()=>{assets.forEach(a=>a.physics?.reset());snapshot();report('Physics reset from current raw pose; velocities cleared');});
   document.querySelector<HTMLInputElement>('#physics-enabled')!.onchange=guarded(()=>{const enabled=document.querySelector<HTMLInputElement>('#physics-enabled')!.checked;assets.forEach(a=>{if(a.physics){a.physics.enabled=enabled;if(a.player && info.pose==='motion')a.player.seek(a.player.time);else a.physics.reset();}});snapshot();report('Physics setting applied');});
   for(const format of ['glb','gltf']) button(`rig-export-${format}`).onclick=guarded(async()=>{
-    const encoded=await new GLTFExporter().register(w=>new MMDVPDExporterPlugin(w)).register(w=>new MMDPhysicsExporterPlugin(w)).register(w=>new MMDSDEFExporterPlugin(w)).register(w=>new MMDQDEFExporterPlugin(w)).parseAsync(assets[1].scene,{binary:format==='glb',onlyVisible:false,includeCustomExtensions:true});
+    const encoded=await new GLTFExporter().register(w=>new MMDVPDExporterPlugin(w)).register(w=>new MMDMorphExporterPlugin(w)).register(w=>new MMDPhysicsExporterPlugin(w)).register(w=>new MMDSDEFExporterPlugin(w)).register(w=>new MMDQDEFExporterPlugin(w)).parseAsync(assets[1].scene,{binary:format==='glb',onlyVisible:false,includeCustomExtensions:true});
     const data=encoded instanceof ArrayBuffer?encoded:JSON.stringify(encoded),blob=new Blob([data],{type:format==='glb'?'model/gltf-binary':'model/gltf+json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
     link.href=url;link.download=`${model.value}-applied.${format}`;link.click();URL.revokeObjectURL(url);report(`Exported applied ${format.toUpperCase()} state with original rest`);
   });
@@ -531,12 +532,12 @@ async function start() {
       // A subsequent selection of the same local file must emit change again.
       motionFile.value = '';
       localMotion = undefined;
-      const id = motionSample.value.replace('combined-', '').replace('group-', '').replace('solver-', '');
+      const id = motionSample.value.replace('combined-', '').replace('group-', '').replace('solver-', '').replace('bone-', '');
       if(motionSample.value.startsWith('solver-')){motionMap.value='{}';document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value='{}';select('motion-morph-unmatched').value='error';return;}
       motionMap.value = id === 'only' ? '{}' : await (await fetch(`${import.meta.env.BASE_URL}vmd/motion-${id}-map.json`)).text();
       const legacy = motionSample.value === 'a' || motionSample.value === 'b';
       select('motion-morph-unmatched').value = legacy ? 'ignore' : 'error';
-      document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value = legacy ? '{}' : motionSample.value.startsWith('group-') ? '{"8fce82a2":1,"67726f7570":0}' : '{"8fce82a2":1}';
+      document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value = legacy || motionSample.value.startsWith('bone-') ? '{}' : motionSample.value.startsWith('group-') ? '{"8fce82a2":1,"67726f7570":0}' : '{"8fce82a2":1}';
     }
   }
   motionSample.onchange = guarded(configureMotionPreset);
