@@ -102,15 +102,17 @@ export function validateMorphModel(model: MorphModel) {
   });
   if (entries > 1000000) throw new Error('Morph: group entry limit (1000000) exceeded');
   // Keep existing vertex target indices stable; append supported groups in source order.
-  const budget={remaining:1_000_000};
+  const budget={remaining:1_000_000}, groups:MorphIdentity[]=[];
   const ordered = model.morphs.filter(m => m.type === 1);
   for (const m of model.morphs) if (model.version >= 2 && m.type === 0) {
     const issues = groupIssues(model.morphs, m.index, model.version === 3,budget);
     if (!Array.isArray(m.unsupported) || m.unsupported.length !== issues.length ||
         Array.from(m.unsupported).some((e, i) => !e || e.index !== issues[i].index || e.type !== issues[i].type || e.reason !== issues[i].reason))
       throw new Error(`Morph ${m.index}: inconsistent group dependency diagnostics`);
-    if (!issues.length && (model.version < 3 || (!m.group!.length || m.group!.some(e => model.morphs[e.index].type === 1)))) ordered.push(m);
+    if (!issues.length && (model.version < 3 || (!m.group!.length || m.group!.some(e => model.morphs[e.index].type === 1)))) groups.push(m);
   }
+  const legacy=(m:MorphIdentity)=>m.group!.every(e=>model.morphs[e.index].type===1);
+  ordered.push(...groups.filter(legacy),...groups.filter(m=>!legacy(m)));
   const targets = new Map(ordered.map((m, i) => [m.index, i]));
   for (const m of model.morphs) if (m.target !== (targets.get(m.index) ?? null))
     throw new Error(`Morph ${m.index}: inconsistent source index/type/target metadata`);

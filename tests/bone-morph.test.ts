@@ -15,6 +15,7 @@ import { createVPDRig, getVPDModel, bindVPD, applyVPD, resetVPD, parseVPD } from
 import { MMDVMDPlugin, getVMDPlayers, bindVMD, createVMDPlayer, parseVMD } from '../packages/three-mmd-vmd';
 import { validateMorphPayload } from '../packages/mmd-morph/payload';
 import { applyBoneMorphs, validateMorphModel } from '../packages/mmd-morph';
+import { byteName } from '../packages/mmd-vmd';
 import { motionMappings } from '../tools/synthetic-vmd';
 import { orientationError } from '../tools/vmd-animation';
 import { boneControls, bonePalette, bonePrediction, boneLocal, poseBoneLocal, predictedMorphLocal } from './bone-morph-oracle';
@@ -40,6 +41,10 @@ test('MMD_morphs standalone bone-only contract, schema and invalid semantics nee
   const m=createMorphRig(asset.scene);applyMorphWeights(m,[0.5]);close(asset.scene.children[0].position.toArray(),[0,0.1,0]);
   applyMorphWeights(m,[-1]);close(asset.scene.children[0].position.toArray(),[0,-0.2,0]);
   const rig=createVPDRig(asset.scene);resetVPD(rig);close(asset.scene.children[0].position.toArray(),[0,-0.2,0]);
+  const vmd=parseVMD(boneMorphVMD('a',true));vmd.morphs=vmd.morphs.filter(r=>r.name.text==='bone-x');
+  for(const r of vmd.morphs) {const raw=Buffer.alloc(15);raw.write('lift');r.name=byteName([...raw]);r.weight=r.frame/30;}
+  const player=createVMDPlayer(rig,bindVMD(rig,vmd));assert.equal(player.duration,1);player.seek(0.5);
+  close(asset.scene.children[0].position.toArray(),[0,0.1,0]);player.stop();close(asset.scene.children[0].position.toArray(),[0,0,0]);player.dispose();
 });
 test('both parser paths and all skinning modes preserve reflection/scale once; source diagnostics and failures are atomic',async()=>{
   for(const shape of ['box','wedge'] as const)for(const mode of ['bdef','sdef','qdef'] as const) {
@@ -73,6 +78,14 @@ test('both parser paths and all skinning modes preserve reflection/scale once; s
     for(const sign of [-1,1]) {const half=structuredClone(m);half.morphs[2].bone![0].rotation=[sign,0,0,0];close(applyBoneMorphs(half,[0,0,0.5,0,0,0],raw).find(b=>b.index===259)!.rotation,[Math.SQRT1_2,0,0,Math.SQRT1_2]);}
     const bad=structuredClone(m);bad.morphs[6].control=6;assert.throws(()=>validateMorphModel(bad));
   }
+});
+test('new mixed targets preserve legacy vertex-only group slots even with earlier mixed source indices',async()=>{
+  const model=parsePMX(boneMorphPMX('box'));
+  model.morphs.push({name:'legacy vertex group',englishName:'Original Issue 47 compatibility probe',type:0,elementCount:1,elements:[{index:1,ratio:0.25}]});
+  model.metadata.morphCount=model.morphs.length;
+  const result=await convertModel(model,'.',{mode:'bdef',scale:.2});
+  const asset=await load(await result.io.writeBinary(result.document)),morph=createMorphRig(asset.scene),metadata=getMorphModel(morph);
+  assert.equal(metadata.morphs[1].target,0);assert.equal(metadata.morphs[9].target,1);assert.equal(metadata.morphs[0].target,2);
 });
 test('bone-only VMD duration, independent controls, manual retained raw baseline, VPD handoffs, ownership and isolation',async()=>{
   for(const shape of ['box','wedge'] as const) {
@@ -214,4 +227,17 @@ test('all generated bone/mixed GLB and external glTF outputs validate across ski
   } finally {await rm(directory,{recursive:true,force:true});}
   assert.equal(count,36);assert.equal(cliCount,12);console.log('Bone morph generated validation:',JSON.stringify({count,cliCount,errors:0}));
   await assert.rejects(convertModel(parsePMX(boneMorphPMX('box')),'.',{mode:'bdef',scale:.2,vmd:boneMorphVMD('a'),vmdBinding:{mapping:motionMappings.a},vmdSampling:{maxSamples:1}}),/budget|sampling/);
+});
+
+test('standalone mixed contract scopes controls to explicit mesh references without PMX extras',async()=>{
+  const b=await base(),doc=await b.result.io.writeJSON(b.result.document),json=doc.json as any;
+  for(const n of json.nodes)delete n.extras;
+  for(const buffer of json.buffers)buffer.uri=`data:application/octet-stream;base64,${Buffer.from(doc.resources[buffer.uri]).toString('base64')}`;
+  const foreign=structuredClone(json.meshes[0]);foreign.primitives.forEach((p:any)=>p.targets=p.targets.slice(0,1));foreign.weights=[0];foreign.extras.targetNames=foreign.extras.targetNames.slice(0,1);
+  const index=json.nodes.length;json.nodes.push({name:'unrelated morph mesh',mesh:json.meshes.length});json.meshes.push(foreign);json.scenes[0].nodes.push(index);
+  const asset=await load(JSON.stringify(json)),morph=createMorphRig(asset.scene);
+  applyMorphWeights(morph,[0.4,0.5,0.2,-0.1,0.3,0]);
+  const unrelated=asset.scene.getObjectByName('unrelated_morph_mesh')??asset.scene.getObjectByName('unrelated morph mesh');
+  assert.ok(unrelated);const weights:number[][]=[];unrelated.traverse(n=>{if((n as Mesh).isMesh)weights.push([...(n as Mesh).morphTargetInfluences!]);});
+  assert.deepEqual(weights,[[0],[0]]);
 });

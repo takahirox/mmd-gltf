@@ -21,8 +21,9 @@ quaternions in glTF local axes. Consumers must not reflect or scale them again.
 The v3 model adds `control` to every identity, independently of nullable `target`.
 Executable vertex, bone and supported one-hop group identities have distinct
 contiguous control slots. Unsupported families and unsupported whole groups have
-`control:null`. Direct vertex targets come first, then groups with vertex children
-(and legacy empty groups), in source order. These target slots remain unchanged
+`control:null`. Direct vertex targets come first, then legacy vertex-only groups (including empty
+groups), then newly executable mixed vertex/bone groups; each family retains source
+order. A newly executable mixed group cannot shift existing vertex-only group slots. These target slots remain unchanged
 when bone controls are appended. Control slots corresponding to targets retain
 those indices; remaining bone/bone-only-group controls follow in source order.
 

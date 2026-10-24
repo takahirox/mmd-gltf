@@ -1,4 +1,4 @@
-import { ensureMorphLoaded, MMDMorphPlugin } from '../three-mmd-morph/plugin';
+import { retainedMorph, ensureMorphLoaded, MMDMorphPlugin } from '../three-mmd-morph/plugin';
 import { retainRawMorphPose } from '../three-mmd-morph/state';
 import { morphIdentity } from '../mmd-morph/payload';
 import { getPhysicsSession } from '../three-mmd-physics/registry';
@@ -35,7 +35,7 @@ export interface BoundVMD {
 const bound = new WeakMap<BoundVMD, { rig: VPDRig; motion: MotionBinding; morph?: MorphRig }>();
 export function bindVMD(rig: VPDRig, vmd: VMD, options: VMDBindingOptions = {}): BoundVMD {
   const model = getVPDModel(rig);
-  let hasIdentity = false, hasTargets = false;
+  let hasIdentity = !!retainedMorph(rig.root), hasTargets = false;
   rig.root.traverse(n => {
     hasIdentity ||= Object.hasOwn(n.userData, 'pmxMorph');
     hasTargets ||= !!(n as Mesh).morphTargetInfluences?.length;
@@ -196,6 +196,10 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
       validatePayload(payload, json.nodes?.length ?? 0);
       if(payload.controls && (!json.extensions?.MMD_morphs || morphIdentity(payload.controls.model)!==morphIdentity(json.extensions.MMD_morphs.model) ||
           morphIdentity(payload.controls.nodes)!==morphIdentity(json.extensions.MMD_morphs.nodes)))throw new Error('MMD_animation_vmd: controls differ from root MMD_morphs');
+      if(payload.controls) {
+        const expectedMeshes=payload.controls.model.morphs.some(m=>m.target!==null)?json.extensions.MMD_morphs.meshes??[]:[];
+        if(morphIdentity([...(payload.weights??[]).map(w=>w.node)].sort((a,b)=>a-b))!==morphIdentity([...expectedMeshes].sort((a:number,b:number)=>a-b)))throw new Error('MMD_animation_vmd: fallback weights differ from morph mesh references');
+      }
       if (payload.solver) new MMDSolverPlugin(this.parser).beforeRoot();
       if (payload.solver && (!json.extensions?.MMD_skeleton_solver || solverIdentity(payload.solver)!==solverIdentity(json.extensions.MMD_skeleton_solver))) throw new Error(`${EXTENSION_NAME}: solver differs from root contract`);
       const expected = new Set(

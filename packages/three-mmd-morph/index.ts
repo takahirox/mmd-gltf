@@ -20,7 +20,8 @@ export function createMorphRig(root: Object3D): MorphRig {
   const container = containers[0] ?? root, model = structuredClone(retained?.model ?? container.userData.pmxMorph) as MorphModel;
   validateMorphModel(model);
   const count = model.morphs.filter(m => m.target !== null).length, meshes: Mesh[] = [];
-  container.traverse(n => { if ((n as Mesh).isMesh) meshes.push(n as Mesh); });
+  if(retained)meshes.push(...(morphState(root)?.meshes??[]));
+  else container.traverse(n => { if ((n as Mesh).isMesh) meshes.push(n as Mesh); });
   if (!meshes.length && count) throw new Error('Morph: missing model primitives');
   for (const mesh of meshes) {
     const attrs = mesh.geometry.morphAttributes.position ?? [];
@@ -37,7 +38,7 @@ export function createMorphRig(root: Object3D): MorphRig {
     search.traverse(n=>{if(n.userData.mmdSolver)solver=structuredClone(n.userData.mmdSolver);});
     let raw=model.bones!;
     search.traverse(n=>{if(n.userData.mmdRawPose)raw=n.userData.mmdRawPose;});
-    registerMorphState(root,{model,controls:new Array(controlCount(model)).fill(0),nodes,raw:structuredClone(raw),solver});
+    registerMorphState(root,{model,meshes,controls:new Array(controlCount(model)).fill(0),nodes,raw:structuredClone(raw),solver});
   }
   const rig = Object.freeze({ root, modelId: model.modelId });
   rigs.set(rig, { model, meshes, count }); return rig;

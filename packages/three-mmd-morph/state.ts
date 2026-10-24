@@ -1,11 +1,11 @@
-import type { Object3D } from 'three';
+import type { Mesh, Object3D } from 'three';
 import { motionScope } from '../three-mmd-vpd/ownership';
 import type { RestBone } from '../mmd-vpd';
 import type { SolverProfile } from '../mmd-solver';
 import { applyBoneMorphs, type MorphModel } from '../mmd-morph';
 export interface MorphState {
   model:MorphModel; controls:number[]; raw:RestBone[];
-  nodes:Map<number,Object3D>; solver?:SolverProfile;
+  nodes:Map<number,Object3D>; meshes?:Mesh[]; solver?:SolverProfile;
 }
 const states=new WeakMap<Object3D,MorphState>();
 export function morphState(root:Object3D) { return states.get(motionScope(root)); }

@@ -36,11 +36,13 @@ export function createMorphTargets(doc: Document, buffer: Buffer, mesh: Mesh, no
   }
   if (entries > 1000000) throw new Error('Morph: group entry limit (1000000) exceeded');
   const order = metadata.morphs.filter(m => m.type === 1);
-  const budget={remaining:1_000_000};
+  const budget={remaining:1_000_000}, groups:typeof order=[];
   for (const m of metadata.morphs) if (m.type === 0) {
     m.unsupported = groupIssues(metadata.morphs, m.index, metadata.version===3,budget);
-    if (!m.unsupported.length && (metadata.version<3 || (!m.group!.length || m.group!.some(e=>metadata.morphs[e.index].type===1)))) order.push(m);
+    if (!m.unsupported.length && (metadata.version<3 || (!m.group!.length || m.group!.some(e=>metadata.morphs[e.index].type===1)))) groups.push(m);
   }
+  const legacy=(m:typeof order[number])=>m.group!.every(e=>metadata.morphs[e.index].type===1);
+  order.push(...groups.filter(legacy),...groups.filter(m=>!legacy(m)));
   order.forEach((m, target) => { m.target = target; });
   if (metadata.version===3) {
     let count=0;

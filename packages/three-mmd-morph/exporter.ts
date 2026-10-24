@@ -12,7 +12,7 @@ export class MMDMorphExporterPlugin {
       const s=morphState(n);if(!s || seen.has(s))return;seen.add(s);
       if(w.json.extensions?.[EXTENSION_NAME])throw new Error('MMD_morphs: export one model per asset');
       const meshes:number[]=[];
-      root.traverse(n=>{if((n as import('three').Mesh).isMesh && w.nodeMap.has(n))meshes.push(w.nodeMap.get(n)!);});
+      for(const n of s.meshes??[])if(w.nodeMap.has(n))meshes.push(w.nodeMap.get(n)!);
       const payload:MorphPayload={version:1,model:structuredClone(s.model),nodes:[...s.nodes].map(([index,n])=>({index,node:w.nodeMap.get(n)!})),
         weights:[...s.controls],raw:structuredClone(s.raw),meshes};
       validateMorphPayload(payload,w.json.nodes?.length??0);

@@ -1,4 +1,4 @@
-import type { Object3D } from 'three';
+import type { Mesh, Object3D } from 'three';
 import type { GLTF, GLTFLoaderPlugin, GLTFParser } from 'three/addons/loaders/GLTFLoader.js';
 import { EXTENSION_NAME, validateMorphPayload, morphIdentity, type MorphPayload } from '../mmd-morph/payload';
 import { reduceMorphs } from '../mmd-morph';
@@ -43,7 +43,7 @@ export class MMDMorphPlugin implements GLTFLoaderPlugin {
     const targets=reduceMorphs(p.model,p.weights).targets;
     for(const node of p.meshes??[]) {
       const mesh=j.meshes?.[j.nodes[node].mesh];
-      if(!mesh || mesh.primitives.some((v:any)=>(v.targets?.length??0)!==targets.length) ||
+      if(!mesh || mesh.primitives.some((v:any)=>(v.targets?.length??0)!==targets.length || (v.targets??[]).some((t:any)=>!Number.isInteger(t.POSITION))) ||
           morphIdentity(j.nodes[node].weights??mesh.weights??targets.map(()=>0))!==morphIdentity(targets))
         throw new Error('MMD_morphs: geometry target snapshot/layout differs');
     }
@@ -62,9 +62,18 @@ export function ensureMorphLoaded(parser:GLTFParser,result:GLTF):Promise<void> {
       const n=await parser.getDependency('node',b.node);
       if(!result.scene.getObjectById(n.id))throw new Error('MMD_morphs: joint outside default scene');nodes.set(b.index,n);
     }
+    const meshes:Mesh[]=[];
+    for(const index of p.meshes??[]) {
+      const node=await parser.getDependency('node',index);
+      if(!result.scene.getObjectById(node.id))throw new Error('MMD_morphs: mesh outside default scene');
+      const collect=(n:Object3D)=>{
+        if(n!==node && parser.associations.get(n)?.nodes!==undefined)return;
+        if((n as Mesh).isMesh)meshes.push(n as Mesh);n.children.forEach(collect);
+      };collect(node);
+    }
     const model=structuredClone(p.model);
     retained.set(result.scene,structuredClone(p));retained.set(motionScope(result.scene),structuredClone(p));
     // Retain data and visible core TRS; never apply offsets during loading.
-    registerMorphState(result.scene,{model,nodes,raw:structuredClone(p.raw??model.bones!),controls:[...p.weights],solver:getSolverModel(result.scene)?.profile ?? parser.json.extensions?.MMD_skeleton_solver});
+    registerMorphState(result.scene,{model,nodes,meshes,raw:structuredClone(p.raw??model.bones!),controls:[...p.weights],solver:getSolverModel(result.scene)?.profile ?? parser.json.extensions?.MMD_skeleton_solver});
   })();pending.set(parser,job);return job;
 }
