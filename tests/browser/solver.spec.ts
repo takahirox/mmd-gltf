@@ -4,6 +4,22 @@ import { validateBytes, validateString } from "gltf-validator";
 import { solverExpected, solverVertex } from "../solver-oracle";
 import { orientationError } from "../../tools/vmd-animation";
 const preview = "http://127.0.0.1:43180/mmd-gltf/";
+test('built extension-only solver skins validate and reload GLB/glTF exports without PMX extras', async ({ page }) => {
+  await page.goto(`${preview}solver-conformance.html?extension-only`);
+  await page.waitForFunction(() => (window as any).solverConformance || (window as any).solverConformanceError);
+  expect(await page.evaluate(() => (window as any).solverConformanceError)).toBeUndefined();
+  const result = await page.evaluate(() => (window as any).solverConformance);
+  expect(result.maximumError).toBeLessThanOrEqual(2e-6);
+  expect(result.records).toHaveLength(10);
+  for (const record of result.records) {
+    const report = record.format === 'glb'
+      ? await validateBytes(new Uint8Array(record.bytes))
+      : await validateString(record.json);
+    expect(report.issues.numErrors, JSON.stringify({ shape: record.shape, state: record.state, format: record.format, issues: report.issues.messages })).toBe(0);
+  }
+  console.log('Extension-only solver export evidence:', JSON.stringify({ validatedAssets: result.records.length, maximumError: result.maximumError }));
+});
+
 for (const source of ["bytes", "glb", "gltf"])
   test(`built Demo resets IK override on ${source} player replacement`, async ({ page }) => {
     await page.goto(`${preview}rig.html`);

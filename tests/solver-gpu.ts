@@ -63,6 +63,7 @@ import {
 import { MMDSolverPlugin } from "../packages/three-mmd-solver";
 import { MMDVPDExporterPlugin } from "../packages/three-mmd-vpd";
 import { solverVertex, solverExpected } from "./solver-oracle";
+import { runSolverExports } from "./solver-export";
 const base = import.meta.env.BASE_URL;
 async function run() {
   const mode = (new URLSearchParams(location.search).get("mode") ?? "bdef") as
@@ -497,7 +498,7 @@ async function run() {
     evidence,
   };
 }
-run()
+(new URLSearchParams(location.search).has('extension-only') ? runSolverExports(base) : run())
   .then((result) => Object.assign(window, { solverConformance: result }))
   .catch((error) => {
     console.error(error);
