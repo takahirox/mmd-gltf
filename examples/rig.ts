@@ -157,8 +157,12 @@ async function start() {
       const mesh = n as Mesh;
       if (mesh.isMesh && !info.vertices.length) info.vertices = [0,1,2,3,9,23].map(i => mesh.getVertexPosition(i,new Vector3()).toArray());
     });
-    info.ik = assets[0]?.player?.ikStates ?? {};
-    document.querySelector('#ik-state')!.textContent = Object.entries(info.ik).map(([k,v])=>`Controller ${k}: ${v ? 'enabled' : 'disabled'}`).join(', ') || 'No active IK motion';
+    // A retained player's switches describe the bones only while its pose is applied.
+    const player = assets[0]?.player;
+    info.ik = info.pose === 'motion' ? player?.ikStates ?? {} : {};
+    document.querySelector('#ik-state')!.textContent = player && info.pose !== 'motion'
+      ? 'Motion IK controls inactive · override retained for resumed motion'
+      : Object.entries(info.ik).map(([k,v])=>`Controller ${k}: ${v ? 'enabled' : 'disabled'}`).join(', ') || 'No active IK motion';
     info.weights = assets[0] ? getMorphWeights(assets[0].morph) : [];
     document.querySelector('#morph-state')!.textContent = `Weights: ${info.weights.map(w => w.toFixed(4)).join(', ')} · source identity retained; sum is not normalized`;
     document.querySelectorAll<HTMLInputElement>('#morph-controls input').forEach((control,i) => { control.value = String(info.weights[Number(control.dataset.target)]); });
@@ -477,7 +481,7 @@ async function start() {
   reset.onclick = guarded(() => {
     assets.forEach(a => resetVPD(a.rig));
     clearPlayback();
-    snapshot(); info.pose = 'rest'; info.error = ''; label.textContent = 'Rest state';
+    info.pose = 'rest'; info.error = ''; snapshot(); label.textContent = 'Rest state';
     report('VPD reset to original bone rest. Motion paused; morph weights preserved');
   });
   button('motion-reset').onclick = guarded(resetAll);

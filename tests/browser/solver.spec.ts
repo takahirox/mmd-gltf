@@ -116,6 +116,76 @@ for (const source of ["bytes", "glb", "gltf"])
     await expect(page.locator("#ik-override")).toHaveValue("motion");
   });
 
+for (const source of ["bytes", "glb", "gltf"])
+  test(`built Demo marks retained ${source} IK controls inactive through VPD and resets`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", error => errors.push(error.message));
+    const rendered = async () => {
+      await page.waitForFunction(() => {
+        const s = (window as any).mmdRig;
+        return s.rendered?.revision === s.revision && !s.playing;
+      });
+      return page.evaluate(() => (window as any).mmdRig);
+    };
+    const checkBones = (state: any, expected: ReturnType<typeof solverExpected>) => {
+      for (const bone of state.bones) {
+        const predicted = expected.find(b => b.index === bone.index)!;
+        expect(orientationError(bone.rotation, predicted.rotation)).toBeLessThanOrEqual(1e-5);
+        bone.translation.forEach((v: number, c: number) =>
+          expect(Math.abs(v - predicted.translation[c])).toBeLessThanOrEqual(2e-6),
+        );
+      }
+    };
+    await page.goto(`${preview}rig.html`);
+    await expect(page.locator("#rig-preset")).toBeEnabled();
+    await page.locator("#rig-model").selectOption("solver-box-bdef");
+    await expect(page.locator("#motion-load")).toBeEnabled();
+    const rest = (await rendered()).bones;
+    // At rest, +X tip -> +Y goal requires an enabled +Z quarter turn.
+    expect(orientationError(rest.find((b: any) => b.index === 1).rotation,
+      [0, 0, Math.SQRT1_2, Math.SQRT1_2])).toBeLessThanOrEqual(1e-5);
+    await page.locator("#motion-source").selectOption(source);
+    await page.locator("#motion-load").click();
+    await expect(page.locator("#status")).toContainText("VMD loaded");
+
+    for (const action of ["motion-reset", "vpd-a", "vpd-b", "rig-reset"]) {
+      await page.locator("#motion-time").fill("0.371");
+      await page.locator("#motion-time").dispatchEvent("input");
+      await page.locator("#ik-override").selectOption("off");
+      checkBones(await rendered(), solverExpected("box", "a", false, 0.2, 0.371));
+      if (action !== "motion-reset") {
+        await page.locator("#rig-pose").selectOption(action === "vpd-a" ? "a" : "b");
+        await page.locator("#rig-preset").click();
+        await expect(page.locator("#status")).toContainText("Applied VPD");
+      }
+      if (action === "motion-reset" || action === "rig-reset") {
+        await page.locator(`#${action}`).click();
+        await expect(page.locator("#rig-state")).toHaveText("Rest state");
+      }
+      const inactive = await rendered();
+      expect(inactive.ik).toEqual({});
+      await expect(page.locator("#ik-override")).toHaveValue("off");
+      await expect(page.locator("#ik-state")).toHaveText(
+        "Motion IK controls inactive · override retained for resumed motion",
+      );
+      checkBones(inactive, action.startsWith("vpd-")
+        ? solverExpected("box", action === "vpd-a" ? "a" : "b") : rest);
+
+      // Playback reclaims the pose with the retained Disabled override.
+      const before = inactive.time;
+      await page.locator("#motion-play").click();
+      await expect.poll(() => page.evaluate(() => (window as any).mmdRig.time)).toBeGreaterThan(before);
+      await page.locator("#motion-pause").click();
+      const resumed = await rendered();
+      expect(resumed.ik[3]).toBe(false);
+      expect(resumed.pose).toBe("motion");
+      expect(resumed.error).toBe("");
+      await expect(page.locator("#ik-state")).toHaveText("Controller 3: disabled");
+      checkBones(resumed, solverExpected("box", "a", false, 0.2, resumed.time));
+    }
+    expect(errors).toEqual([]);
+  });
+
 test("built Demo restores legacy pose and motion presets after solver rig replacement", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", e => errors.push(e.message));
