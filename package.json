@@ -21,6 +21,7 @@
   "dependencies": {
     "@gltf-transform/core": "4.5.1",
     "@takahirox/three-mmd": "0.1.2",
+    "ammojs-typed": "1.0.6",
     "mmd-parser": "1.1.4",
     "pngjs": "7.0.0",
     "three": "0.186.1"

@@ -1,0 +1,136 @@
+{
+  "issue": 45,
+  "environment": {
+    "platform": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "node": "v24.12.0",
+    "npm": "11.6.2",
+    "playwright": "1.56.1",
+    "chromium": "141.0.7390.37",
+    "browserBackend": "SwiftShader WebGL fallback"
+  },
+  "checks": [
+    {
+      "command": "npm ci",
+      "status": "passed",
+      "notes": "Final exact dependency lock; npm reported 1 low and 1 high advisory."
+    },
+    {
+      "command": "npm run build",
+      "status": "passed",
+      "notes": "Ran before generated-asset-dependent tests; existing large-chunk warning."
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed",
+      "tests": 108,
+      "failed": 0,
+      "skipped": 0,
+      "nodeDurationMs": 34936.343166,
+      "notes": "Includes Toon/Outline schema suites and 17 physics tests; stop/reset/resume assertions included."
+    },
+    {
+      "command": "npx playwright install chromium",
+      "status": "passed"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser",
+      "status": "passed",
+      "passed": 62,
+      "failed": 0,
+      "skipped": 2,
+      "total": 64,
+      "elapsedMinutesReported": 59.3,
+      "notes": "Two existing optional native-WebGPU cases skipped; complete stable-build run."
+    },
+    {
+      "command": "focused group recovery and physics browser tests",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "command": "npm run check:links",
+      "status": "passed",
+      "checked": 383
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "backend": {
+    "package": "ammojs-typed",
+    "version": "1.0.6",
+    "packageGitHead": "9c7d8107dc04cbb0c39ed3f86a4c9179d54f77fa",
+    "artifact": "node_modules/ammojs-typed/ammo/ammo.js",
+    "artifactSHA256": "422b87333fec6272a592088f96bd672dc8f62b9649b12d44e493fd427e89fff8",
+    "tarball": "https://registry.npmjs.org/ammojs-typed/-/ammojs-typed-1.0.6.tgz",
+    "integrity": "sha512-ut/tD0m5eEdlJ5KK97ma6SIEGZ4FN3AJTSVz8wl6C4EtnpVQdP70lOwgDMJKsHjTohxc2/xEZl6yJfMBZNlQ5w==",
+    "license": "Ammo binary header: zlib; wrapper/types package metadata: MIT",
+    "bulletProvenance": "The distributed binary has no Bullet version or build commit string. The wrapper gitHead does not pin the upstream Ammo/Bullet source used for this generated binary. Exact embedded Bullet revision could not be recovered; do not infer it from current upstream README. Artifact bytes are the conformance boundary.",
+    "runtime": "Self-contained JavaScript build with a local WebAssembly shim invoking the generated JavaScript constructor. No external WASM sidecar; identical bytes for Node CommonJS factory and browser classic script factory. No claim of asm.js validation or recovered compiler flags.",
+    "requiredBindings": [
+      "btDiscreteDynamicsWorld.stepSimulation",
+      "btGeneric6DofSpringConstraint.enableSpring",
+      "btGeneric6DofSpringConstraint.setStiffness",
+      "btGeneric6DofSpringConstraint.setDamping",
+      "btGeneric6DofSpringConstraint.setEquilibriumPoint",
+      "btRigidBody.setWorldTransform",
+      "btRigidBody.setLinearVelocity",
+      "destroy",
+      "getPointer",
+      "getClass",
+      "getCache",
+      "btTransform.getBasis",
+      "btMatrix3x3.getRotation"
+    ],
+    "timing": "stepSimulation(h,0,h); observed semi-implicit Euler unconstrained free motion",
+    "allocationABI": "Published ammo.idl marks btTransform.getRotation as [Value] and getBasis/getOrigin as [Ref]. Use the basis output-parameter quaternion read to avoid a native allocation; evict only borrowed JS cache wrappers, never destroy parent-owned native memory."
+  },
+  "generatedAssetHashes": "physics-assets.json",
+  "physicsGPU": {
+    "bdef": {
+      "maximumCPU": 1.1280152736439786e-08,
+      "maximumPosition": 3.380723750945336e-08,
+      "maximumNormal": 1.1399444654891511e-07,
+      "maximumRaster": 0
+    },
+    "sdef": {
+      "maximumCPU": 6.222543005295231e-09,
+      "maximumPosition": 2.618072883364686e-05,
+      "maximumNormal": 9.040812000238319e-05,
+      "maximumRaster": 0
+    },
+    "qdef": {
+      "maximumCPU": 6.380907349966505e-09,
+      "maximumPosition": 2.618072883364686e-05,
+      "maximumNormal": 9.040812000238319e-05,
+      "maximumRaster": 0
+    }
+  },
+  "physicsNodeEvidence": "physics-node-validation.json",
+  "earlierBrowserAttempt": {
+    "passed": 14,
+    "failed": 9,
+    "skipped": 2,
+    "interrupted": 1,
+    "didNotRun": 38,
+    "elapsedMinutesReported": 26.4,
+    "supersededByCompleteRun": true,
+    "reason": "Replaced CSS-composited restoration equality with nonempty intrinsic bitmap capture inside the real render callback. Screen captures, exact equality, raster/numerical bounds, scenarios and timeouts remain; initial outside-frame blank probe was rejected."
+  },
+  "unperformedMandatoryChecks": [],
+  "optionalNotPerformed": [
+    "Controlled version-labelled original-MMD measurements",
+    "Native WebGPU validation beyond optional skipped probes",
+    "Additional representative integrated compatibility measurements"
+  ],
+  "requiredPostMergeVerification": "None",
+  "externalWrites": "No push, pull request, merge, Issue edit or comment."
+}

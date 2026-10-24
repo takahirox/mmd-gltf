@@ -161,3 +161,5 @@ Issue #43 adds optional [pre-physics IK and append](docs/solver.md), the
 [runtime-independent solver contract](extensions/MMD_skeleton_solver/README.md),
 and solver Demo presets with explicit IK controls and applied-state export.
 Enable conversion with `--solver pre-physics-v1`; default conversion stays solver-free.
+
+Opt-in [bounded rigid-body physics](docs/physics.md) supports both synthetic rigs, VMD/VPD, BDEF/SDEF/QDEF, spring joints and applied-state export. This is a project profile; original-MMD fidelity remains unmeasured.

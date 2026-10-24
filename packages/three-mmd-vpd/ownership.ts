@@ -28,6 +28,8 @@ function scope(root: Object3D) {
   return result;
 }
 const owners = new WeakMap<Object3D, { token: object; pause: () => void }>();
+/** Normalize physics and motion owners to the same model instance boundary. */
+export function motionScope(root: Object3D) { return scope(root); }
 export function claimMotion(root: Object3D, token: object, pause: () => void) {
   const previous = owners.get(scope(root));
   if (previous?.token !== token) previous?.pause();

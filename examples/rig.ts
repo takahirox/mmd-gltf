@@ -1,3 +1,5 @@
+import { MMDPhysicsPlugin, PhysicsRig, getPhysicsModel, loadAmmoBrowser } from '../packages/three-mmd-physics';
+import { MMDPhysicsExporterPlugin } from '../packages/three-mmd-physics/exporter';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { MMDVPDExporterPlugin } from '../packages/three-mmd-vpd';
 import { MMDSDEFExporterPlugin } from '../packages/three-mmd-sdef';
@@ -107,6 +109,7 @@ async function start() {
     motion: '',
     source: '',
     playback: { generation: 0, updates: [] as PlaybackUpdate[], crossing: null as PlaybackUpdate | null },
+    physics: null as null | {enabled:boolean;time:number;bodies:Record<string,number[]>},
     time: 0,
     playing: false,
     disposedPlayers: 0,
@@ -114,26 +117,33 @@ async function start() {
     rendered: null as null | {
       revision: number; frame: number; durationMs: number;
       rig: string; motion: string; pose: string; time: number;
-      playing: boolean; mode: string; outlines: boolean; comparison: boolean; weights: number[]; vertices: number[][];
+      bones?: object[]; playing: boolean; mode: string; outlines: boolean; comparison: boolean; weights: number[]; vertices: number[][];
     },
   };
   Object.assign(window, { mmdRig: info });
+  const captures: ((value: { png: string; revision: number; frame: number }) => void)[] = [];
+  // Capture before WebGL presents/clears the buffer, with the same revision as diagnostics.
+  Object.assign(window, { captureMMDRigCanvas: () => new Promise(resolve => captures.push(resolve)) });
   interface Asset {
     scene: Group;
     rig: VPDRig;
     morph: MorphRig;
     player?: VMDPlayer;
+    physics?: PhysicsRig;
     toon?: MMDToonPlugin;
     outlines: MMDOutlinePlugin;
     sdef?: MMDSDEFPlugin;
     diagnostics?: { unmatched: string[]; omitted: object };
   }
+  let physicsBackend: ReturnType<typeof loadAmmoBrowser> | undefined;
+  const backend=()=>physicsBackend??=loadAmmoBrowser(`${import.meta.env.BASE_URL}runtime/ammo.js`).catch(error=>{physicsBackend=undefined;throw error;});
+  const solverRig=()=>model.value.startsWith('solver-')||model.value.startsWith('physics-');
   let assets: Asset[] = [],
     local: File | undefined,
     localMotion: File | undefined,
     busy = false;
   const report = (message: string) => {
-    status.textContent = `Ready · ${message} · ${model.value.startsWith('solver-') ? 'Pre-physics-v1 IK/append + vertex groups; visibility retained without execution; original-MMD unmeasured' : 'Solver-free bones + vertex morphs; IK/append/physics and other morph families unsupported'}`;
+    status.textContent = `Ready · ${message} · ${model.value.startsWith('physics-') ? 'Rigid-body-v1 + pre/post solver; fixed ticks; original-MMD unmeasured' : solverRig() ? 'Pre-physics-v1 IK/append + vertex groups; visibility retained without execution; original-MMD unmeasured' : 'Solver-free bones + vertex morphs; IK/append/physics and other morph families unsupported'}`;
   };
   const invalidate = () => { info.revision++; };
   const clearPlayback = () => {
@@ -153,7 +163,7 @@ async function start() {
         });
     });
     info.vertices = [];
-    if (model.value.startsWith('group-') || model.value.startsWith('solver-')) assets[0]?.scene.traverse(n => {
+    if (model.value.startsWith('group-') || solverRig()) assets[0]?.scene.traverse(n => {
       const mesh = n as Mesh;
       if (mesh.isMesh && !info.vertices.length) info.vertices = [0,1,2,3,9,23].map(i => mesh.getVertexPosition(i,new Vector3()).toArray());
     });
@@ -167,6 +177,7 @@ async function start() {
     document.querySelector('#morph-state')!.textContent = `Weights: ${info.weights.map(w => w.toFixed(4)).join(', ')} · source identity retained; sum is not normalized`;
     document.querySelectorAll<HTMLInputElement>('#morph-controls input').forEach((control,i) => { control.value = String(info.weights[Number(control.dataset.target)]); });
     info.time = assets[0]?.player?.time ?? 0;
+    info.physics = assets[0]?.physics ? { enabled:assets[0].physics.enabled,time:assets[0].physics.time,bodies:Object.fromEntries(assets[0].physics.timeline.bodyTransforms()) } : null;
     info.playing = assets[0]?.player?.playing ?? false;
     seek.value = String(info.time);
     motionLabel.textContent = `${info.motion || 'No motion'} · ${info.time.toFixed(4)} s · ${info.playing ? 'Playing' : 'Paused'}`;
@@ -209,6 +220,7 @@ async function start() {
   };
   async function disposeAsset(a: Asset) {
     discardPlayer(a);
+    a.physics?.dispose();
     effect.release(a.scene);
     scene.remove(a.scene);
     a.sdef?.dispose();
@@ -227,17 +239,23 @@ async function start() {
   async function loadAsset(url: string, toon: boolean): Promise<Asset> {
     let toonPlugin: MMDToonPlugin | undefined, outlinePlugin: MMDOutlinePlugin | undefined, sdefPlugin: MMDSDEFPlugin | undefined;
     const loader = new GLTFLoader()
+      .register((p) => new MMDPhysicsPlugin(p))
       .register((p) => new MMDSolverPlugin(p))
       .register((p) => new MMDVMDPlugin(p))
       .register((p) => (sdefPlugin = new MMDQDEFPlugin(p)))
       .register((p) => (outlinePlugin = new MMDOutlinePlugin(p)));
     if (toon) loader.register((p) => (toonPlugin = new MMDToonPlugin(p)));
     const loaded = await loader.loadAsync(url);
+    let physics:PhysicsRig|undefined;
     try {
+      const rig=createVPDRig(loaded.scene),morph=createMorphRig(loaded.scene);
+      physics=getPhysicsModel(loaded.scene)?new PhysicsRig(loaded.scene,(await backend()).api):undefined;
+      if(physics)physics.enabled=input('physics-enabled').checked;
       return {
         scene: loaded.scene,
-        rig: createVPDRig(loaded.scene),
-        morph: createMorphRig(loaded.scene),
+        physics,
+        rig,
+        morph,
         player: getVMDPlayers(loaded)[0],
         toon: toonPlugin,
         outlines: outlinePlugin!,
@@ -245,6 +263,7 @@ async function start() {
         diagnostics: loaded.parser.json.animations?.[0]?.extras?.vmd,
       };
     } catch (error) {
+      physics?.dispose();
       await toonPlugin?.dispose();
       sdefPlugin?.dispose();
       outlinePlugin?.dispose();
@@ -269,11 +288,11 @@ async function start() {
     for (const a of previous) await disposeAsset(a);
   }
   async function loadRig() {
-    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('solver-') ? `solver/${model.value.slice(7)}` : model.value.startsWith('group-') ? `group/${model.value.slice(6)}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
+    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('physics-') ? `physics/${model.value.slice(8)}` : solverRig() ? `solver/${model.value.slice(7)}` : model.value.startsWith('group-') ? `group/${model.value.slice(6)}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
     await replace(next);
     select('ik-override').value = 'motion';
     configurePosePreset();
-    if (model.value.startsWith('solver-')) motionSample.value = 'solver-a';
+    if (solverRig()) motionSample.value = 'solver-a';
     else if (motionSample.value.startsWith('solver-')) motionSample.value = 'a';
     await configureMotionPreset();
     clearPlayback();
@@ -294,7 +313,7 @@ async function start() {
       if (!local) throw new Error('Select a local VPD file first');
       data = new Uint8Array(await local.arrayBuffer());
     } else {
-      const response = await fetch(`${import.meta.env.BASE_URL}${model.value.startsWith('solver-') ? 'solver/solver-' : 'vpd/pose-'}${sample.value}.vpd`);
+      const response = await fetch(`${import.meta.env.BASE_URL}${solverRig() ? 'solver/solver-' : 'vpd/pose-'}${sample.value}.vpd`);
       if (!response.ok) throw new Error(`VPD fetch failed: ${response.status}`);
       data = new Uint8Array(await response.arrayBuffer());
     }
@@ -350,7 +369,7 @@ async function start() {
           'Converted GLB/glTF sources are available for sample motions; use byte source for local VMD',
         );
       const next = await loadPair(
-        `${import.meta.env.BASE_URL}${solving ? `solver/${model.value.slice(7)}/${motionId}` : grouped ? `group/${model.value.replace('group-', '')}/${motionId}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
+        `${import.meta.env.BASE_URL}${solving ? `${model.value.startsWith('physics-')?'physics':'solver'}/${model.value.slice(model.value.startsWith('physics-')?8:7)}/${motionId}` : grouped ? `group/${model.value.replace('group-', '')}/${motionId}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
       );
       next.forEach((a) => a.player!.seek(0));
       await replace(next);
@@ -389,6 +408,7 @@ async function start() {
     select('motion-morph-unmatched'),
     document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!,
     button('morph-reset'),
+    button('physics-reset'),button('physics-step'),document.querySelector<HTMLInputElement>('#physics-enabled')!,
     button('rig-export-glb'),
     button('rig-export-gltf'),
     button('motion-load'),
@@ -458,8 +478,11 @@ async function start() {
       report('VMD transport updated');
     });
   select('ik-override').onchange = transport(p=>{const value=select('ik-override').value;p.setIKEnabled(3,value==='motion'?undefined:value==='on');},true);
+  button('physics-step').onclick=guarded(()=>{const seconds=Number(document.querySelector<HTMLInputElement>('#physics-seconds')!.value);assets.forEach(a=>{if(!a.physics)throw new Error('Select a physics rig');a.physics.timeline.validateDelta(seconds);});assets.forEach(a=>a.physics!.step(seconds));info.pose='settled';snapshot();report('Physics stepped; motion paused');});
+  button('physics-reset').onclick=guarded(()=>{assets.forEach(a=>a.physics?.reset());snapshot();report('Physics reset from current raw pose; velocities cleared');});
+  document.querySelector<HTMLInputElement>('#physics-enabled')!.onchange=guarded(()=>{const enabled=document.querySelector<HTMLInputElement>('#physics-enabled')!.checked;assets.forEach(a=>{if(a.physics){a.physics.enabled=enabled;if(a.player && info.pose==='motion')a.player.seek(a.player.time);else a.physics.reset();}});snapshot();report('Physics setting applied');});
   for(const format of ['glb','gltf']) button(`rig-export-${format}`).onclick=guarded(async()=>{
-    const encoded=await new GLTFExporter().register(w=>new MMDVPDExporterPlugin(w)).register(w=>new MMDSDEFExporterPlugin(w)).register(w=>new MMDQDEFExporterPlugin(w)).parseAsync(assets[1].scene,{binary:format==='glb',onlyVisible:false,includeCustomExtensions:true});
+    const encoded=await new GLTFExporter().register(w=>new MMDVPDExporterPlugin(w)).register(w=>new MMDPhysicsExporterPlugin(w)).register(w=>new MMDSDEFExporterPlugin(w)).register(w=>new MMDQDEFExporterPlugin(w)).parseAsync(assets[1].scene,{binary:format==='glb',onlyVisible:false,includeCustomExtensions:true});
     const data=encoded instanceof ArrayBuffer?encoded:JSON.stringify(encoded),blob=new Blob([data],{type:format==='glb'?'model/gltf-binary':'model/gltf+json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
     link.href=url;link.download=`${model.value}-applied.${format}`;link.click();URL.revokeObjectURL(url);report(`Exported applied ${format.toUpperCase()} state with original rest`);
   });
@@ -498,8 +521,8 @@ async function start() {
   };
   function configurePosePreset() {
     if (sample.value !== 'local') {
-      encoding.value = model.value.startsWith('solver-') ? 'utf-8' : sample.value === 'a' ? 'shift_jis' : 'utf-8';
-      mapping.value = model.value.startsWith('solver-') ? '{}' : JSON.stringify(sample.value === 'a' ? { '2': 0, '3': 259 } : { '0': 259 });
+      encoding.value = solverRig() ? 'utf-8' : sample.value === 'a' ? 'shift_jis' : 'utf-8';
+      mapping.value = solverRig() ? '{}' : JSON.stringify(sample.value === 'a' ? { '2': 0, '3': 259 } : { '0': 259 });
     }
   }
   sample.onchange = configurePosePreset;
@@ -557,7 +580,7 @@ async function start() {
     let update: PlaybackUpdate | undefined;
     if (!busy && assets.some((a) => a.player?.playing)) {
       const player = assets[0].player!, before = player.time, playingBefore = player.playing;
-      assets.forEach((a) => a.player?.update(delta));
+      try { assets.forEach((a) => a.player?.update(delta)); } catch(error) { assets.forEach(a=>a.player?.pause());info.error=String(error);report(info.error); }
       snapshot();
       update = {
         generation: info.playback.generation, rig: info.rig, source: info.source, motion: info.motion,
@@ -578,9 +601,10 @@ async function start() {
     info.rendered = {
       revision: info.revision, frame: info.frames, durationMs: performance.now() - started,
       rig: info.rig, motion: info.motion, pose: info.pose, time: info.time,
-      playing: info.playing, mode: info.mode, outlines: effect.enabled,
+      ...(assets[0]?.physics ? {bones: structuredClone(info.bones)} : {}), playing: info.playing, mode: info.mode, outlines: effect.enabled,
       comparison: comparison.checked, weights: [...info.weights], vertices: info.vertices.map(v=>[...v]),
     };
+    if(captures.length){const captured={png:renderer.domElement.toDataURL('image/png'),revision:info.rendered.revision,frame:info.rendered.frame};captures.splice(0).forEach(resolve=>resolve(captured));}
     if (update) {
       info.playback.updates.push(update);
       if (info.playback.updates.length > 8) info.playback.updates.shift();

@@ -1,0 +1,527 @@
+{
+  "generation": "npm run build",
+  "backend": "ammojs-typed@1.0.6",
+  "originalMMD": "unmeasured",
+  "files": [
+    {
+      "path": "public/physics/box-bdef/a.bin",
+      "bytes": 43456,
+      "sha256": "db314097a3cf32706ffc15934f1c9eb7cd8cf1d3fd890344b38e82101343ae09"
+    },
+    {
+      "path": "public/physics/box-bdef/a.glb",
+      "bytes": 64464,
+      "sha256": "e0f4d2a7c9cf8224e0dd2ee125d45b8c1e0b7938950024de0060c894286d6721"
+    },
+    {
+      "path": "public/physics/box-bdef/a.gltf",
+      "bytes": 53684,
+      "sha256": "eefe0bfc1970e9232a861bf1d8d145a7c25100bf67682185b28687f5ca48d896"
+    },
+    {
+      "path": "public/physics/box-bdef/b.bin",
+      "bytes": 43456,
+      "sha256": "55b6203388a685c1959eace67c02322c620e64c953f9683d84f65ea1f9f8232f"
+    },
+    {
+      "path": "public/physics/box-bdef/b.glb",
+      "bytes": 64444,
+      "sha256": "e1cd5103c257e922cda941af7014af079b386430bde254f3b8bad3eaf87aee64"
+    },
+    {
+      "path": "public/physics/box-bdef/b.gltf",
+      "bytes": 53663,
+      "sha256": "f33de377a2137911843d5a98033f3e2a241e85331acc45feadbf0f0e1f4bfe1e"
+    },
+    {
+      "path": "public/physics/box-bdef/pose-a.bin",
+      "bytes": 2440,
+      "sha256": "4e0ee1c9070b732f2feba28a4d6d143fb6cc742aa120990ea008a2864839a737"
+    },
+    {
+      "path": "public/physics/box-bdef/pose-a.glb",
+      "bytes": 15384,
+      "sha256": "1755af63ae30007e662e391dae338879669d4a8bdeaa8a0426098ad83432f4c6"
+    },
+    {
+      "path": "public/physics/box-bdef/pose-a.gltf",
+      "bytes": 27287,
+      "sha256": "a2bdccd4dc569f1081d9d7764be2aa592f4257c8b794d48addb566bfdf7e8204"
+    },
+    {
+      "path": "public/physics/box-bdef/pose-b.bin",
+      "bytes": 2440,
+      "sha256": "4e0ee1c9070b732f2feba28a4d6d143fb6cc742aa120990ea008a2864839a737"
+    },
+    {
+      "path": "public/physics/box-bdef/pose-b.glb",
+      "bytes": 15340,
+      "sha256": "cb6e264cbeca8c6a60299ac2a3bbed4501b60ed5d4de10c9437e1bd715d968e0"
+    },
+    {
+      "path": "public/physics/box-bdef/pose-b.gltf",
+      "bytes": 27194,
+      "sha256": "a24784e030b9202f9d3cbf07ce4dfe80abb376482ac8d39241a3511d3223b222"
+    },
+    {
+      "path": "public/physics/box-bdef/rest.bin",
+      "bytes": 2440,
+      "sha256": "4e0ee1c9070b732f2feba28a4d6d143fb6cc742aa120990ea008a2864839a737"
+    },
+    {
+      "path": "public/physics/box-bdef/rest.glb",
+      "bytes": 14816,
+      "sha256": "ec0b42f7b1945feaeaaae4261519e24e272549d1d5858ad4ec8037bc4783157d"
+    },
+    {
+      "path": "public/physics/box-bdef/rest.gltf",
+      "bytes": 26515,
+      "sha256": "da3a8d7f5cd3ca9c0870b3dd5c93d4424fd7092f4224be84fd5dda1c457021f6"
+    },
+    {
+      "path": "public/physics/box-bdef/source.pmx",
+      "bytes": 2927,
+      "sha256": "d18ae935d47496e3ba72cbfa43d6abc31bfb9566f16f1d11dd7c61dc6867a72a"
+    },
+    {
+      "path": "public/physics/box-qdef/a.bin",
+      "bytes": 44368,
+      "sha256": "340581371f8d473e725d2176503fa41a54a7d89c63219b7d18e9950f805443e3"
+    },
+    {
+      "path": "public/physics/box-qdef/a.glb",
+      "bytes": 66472,
+      "sha256": "968f82dadbbc5a7ea7f2f82d9c2834ced9d6fcd4a283b4f1957a7d6174ee4fe9"
+    },
+    {
+      "path": "public/physics/box-qdef/a.gltf",
+      "bytes": 55239,
+      "sha256": "3fd6fd074f5b86e87f03af796c499b5b22b0271703dd5fe322c5becc84f7d8bf"
+    },
+    {
+      "path": "public/physics/box-qdef/b.bin",
+      "bytes": 44368,
+      "sha256": "12f1efb9b0f0f1fdbf4f68c9e3644322443bdf64e2639e8c1a063e7eb03b5a0d"
+    },
+    {
+      "path": "public/physics/box-qdef/b.glb",
+      "bytes": 66452,
+      "sha256": "91b4df6c3078ade64a61e7c7127d2835a9f35a90555b542ebe40ed09a5dfbe12"
+    },
+    {
+      "path": "public/physics/box-qdef/b.gltf",
+      "bytes": 55218,
+      "sha256": "df4e4eef444e75326d89a533de3486f5c554b0fff9b38b9b693c96ae3445dc73"
+    },
+    {
+      "path": "public/physics/box-qdef/pose-a.bin",
+      "bytes": 3352,
+      "sha256": "6a6b9db2912e51db230b544c089d325b57621ba898d4cefc62264e496c72d0d2"
+    },
+    {
+      "path": "public/physics/box-qdef/pose-a.glb",
+      "bytes": 17432,
+      "sha256": "8b4a8ece8c1b055f1068d2a497e7a4a0a308ca8c95e878247137eecc19c36b10"
+    },
+    {
+      "path": "public/physics/box-qdef/pose-a.gltf",
+      "bytes": 28917,
+      "sha256": "7854159e64ac40ab5bbba83a874cc20bf83347c0589538b28608c8ba6fbeb787"
+    },
+    {
+      "path": "public/physics/box-qdef/pose-b.bin",
+      "bytes": 3352,
+      "sha256": "6a6b9db2912e51db230b544c089d325b57621ba898d4cefc62264e496c72d0d2"
+    },
+    {
+      "path": "public/physics/box-qdef/pose-b.glb",
+      "bytes": 17392,
+      "sha256": "ffb99a7b8fa5a34b34993aacddb9bcfde8783d70d3f0bed19ff2522323fa1b70"
+    },
+    {
+      "path": "public/physics/box-qdef/pose-b.gltf",
+      "bytes": 28824,
+      "sha256": "e1cfae3a40836b0ce5a5c2d90fe82279971f7c11933ed159f79d38e25fb0ffc5"
+    },
+    {
+      "path": "public/physics/box-qdef/rest.bin",
+      "bytes": 3352,
+      "sha256": "6a6b9db2912e51db230b544c089d325b57621ba898d4cefc62264e496c72d0d2"
+    },
+    {
+      "path": "public/physics/box-qdef/rest.glb",
+      "bytes": 16864,
+      "sha256": "72f1e1c2a7531c035fda403cbc20a39740e9ee9afb00cbc13763c43751d19677"
+    },
+    {
+      "path": "public/physics/box-qdef/rest.gltf",
+      "bytes": 28145,
+      "sha256": "facf363c1f2ffff86b727d9196d252f5d2192f813aa461f1a0218a2c9d3efad2"
+    },
+    {
+      "path": "public/physics/box-qdef/source.pmx",
+      "bytes": 3147,
+      "sha256": "a3801e98d3ca5689eee409ee15838ab9631232d3e1e23eee9eaabe8e85cbe802"
+    },
+    {
+      "path": "public/physics/box-sdef/a.bin",
+      "bytes": 44344,
+      "sha256": "e843f94fcefd98954c0d10462eed21e2de6b856630905044ed9c46ea260d71b5"
+    },
+    {
+      "path": "public/physics/box-sdef/a.glb",
+      "bytes": 65964,
+      "sha256": "9f2b53cb4edf3c58952d2c1002e1351d10763fd8028cc4b98740453c94b311df"
+    },
+    {
+      "path": "public/physics/box-sdef/a.gltf",
+      "bytes": 54645,
+      "sha256": "85bd4c4f32851afb0f10754f9ae37446f1db2135c918d4c9dd4b7a544e48fd6d"
+    },
+    {
+      "path": "public/physics/box-sdef/b.bin",
+      "bytes": 44344,
+      "sha256": "d5fdeb86f7145083645da599f8f665b296c5efa1fc8ddde59a2a73717b32ca31"
+    },
+    {
+      "path": "public/physics/box-sdef/b.glb",
+      "bytes": 65944,
+      "sha256": "257addf0aef4fac918d47f87d453fb65ce1e92e91a971f3648ee42716327584f"
+    },
+    {
+      "path": "public/physics/box-sdef/b.gltf",
+      "bytes": 54624,
+      "sha256": "f813926f2c8eec96c9536be66572b5d5889d6e9e43daca527d8241d6b3bdd1b3"
+    },
+    {
+      "path": "public/physics/box-sdef/pose-a.bin",
+      "bytes": 3328,
+      "sha256": "06fd976bc066749cac7357929b916ea754bf2d1fee70de67336648796c1f3818"
+    },
+    {
+      "path": "public/physics/box-sdef/pose-a.glb",
+      "bytes": 16924,
+      "sha256": "55d76134181820f9c8f63bf74391a86b6f55a4e3a654ed79f66c31c7de423f14"
+    },
+    {
+      "path": "public/physics/box-sdef/pose-a.gltf",
+      "bytes": 28323,
+      "sha256": "9d8db7cc928145bc2e3ed0869d2056491451768c5b34ca0135136bccb152999a"
+    },
+    {
+      "path": "public/physics/box-sdef/pose-b.bin",
+      "bytes": 3328,
+      "sha256": "06fd976bc066749cac7357929b916ea754bf2d1fee70de67336648796c1f3818"
+    },
+    {
+      "path": "public/physics/box-sdef/pose-b.glb",
+      "bytes": 16880,
+      "sha256": "fcd4d5b5987b5ee16be6cd707ceeec9e1eaed9efad9ec1b4e9db80a1371f7821"
+    },
+    {
+      "path": "public/physics/box-sdef/pose-b.gltf",
+      "bytes": 28230,
+      "sha256": "0869506faff84163c9485e3bddc77fb73b31fecbbf4865740fd0338edd668975"
+    },
+    {
+      "path": "public/physics/box-sdef/rest.bin",
+      "bytes": 3328,
+      "sha256": "06fd976bc066749cac7357929b916ea754bf2d1fee70de67336648796c1f3818"
+    },
+    {
+      "path": "public/physics/box-sdef/rest.glb",
+      "bytes": 16356,
+      "sha256": "1daf6760f035e8b31fc268a9b89c8e209d81e45ea386aebd7f93e37308d68da2"
+    },
+    {
+      "path": "public/physics/box-sdef/rest.gltf",
+      "bytes": 27551,
+      "sha256": "62df8c08818f71669bb73c6cac9a579e7b0ec7c98562535310e3b7e160a994b3"
+    },
+    {
+      "path": "public/physics/box-sdef/source.pmx",
+      "bytes": 3407,
+      "sha256": "332b6bea7be020bd8be029f2a8aea3a013903c564f1e39a9eb46090b9af9491b"
+    },
+    {
+      "path": "public/physics/conversion.json",
+      "bytes": 39777,
+      "sha256": "11db060985603725c47569f23a70081edbc6c0524c06b956a5f0ebcdb2a3b91f"
+    },
+    {
+      "path": "public/physics/reference.json",
+      "bytes": 28117,
+      "sha256": "c695ee208ba36f2fccab25ff004da60a32383ce17fe23a89181ad6400faf1dfe"
+    },
+    {
+      "path": "public/physics/wedge-bdef/a.bin",
+      "bytes": 43456,
+      "sha256": "04dcb86ff0db05dd3dd25a524c364869172d4b32a889e17464920e6523d14449"
+    },
+    {
+      "path": "public/physics/wedge-bdef/a.glb",
+      "bytes": 64600,
+      "sha256": "b076b68eda34c743d50c61d56b719842d65aa6f2aa3cb0c47983528e01720d24"
+    },
+    {
+      "path": "public/physics/wedge-bdef/a.gltf",
+      "bytes": 53862,
+      "sha256": "7d9e72cf40be92b800920ccb1f8508e0657f714d8ffa48401b6e4b1fa7e9a6ee"
+    },
+    {
+      "path": "public/physics/wedge-bdef/b.bin",
+      "bytes": 43456,
+      "sha256": "4711582b17f956c7dffe804eb1da3877e90be08d3e953d012ee9acd6880a96a0"
+    },
+    {
+      "path": "public/physics/wedge-bdef/b.glb",
+      "bytes": 64596,
+      "sha256": "9af6fbb3a154afc96a375d3b1572827c6c6773a5450274a4cd2c5ecbb5d22fce"
+    },
+    {
+      "path": "public/physics/wedge-bdef/b.gltf",
+      "bytes": 53856,
+      "sha256": "bd2f362d19b4b9bfd62fb7f04722c8cc0fdcfa058d6ee89017312f6a98479c7c"
+    },
+    {
+      "path": "public/physics/wedge-bdef/pose-a.bin",
+      "bytes": 2440,
+      "sha256": "5fad2a5e9b7169391810bbe811e015eee67515e2b1c00cc95b756d3af0fbc566"
+    },
+    {
+      "path": "public/physics/wedge-bdef/pose-a.glb",
+      "bytes": 15436,
+      "sha256": "05d3013d5681457ae0e6f12f8d3664a7e91fbee99eafcdc41538a18c384ec24e"
+    },
+    {
+      "path": "public/physics/wedge-bdef/pose-a.gltf",
+      "bytes": 27338,
+      "sha256": "51abdbf1d8229e0ac51c1146de34a65c6ba9e8d5f7d61e06b2e098ff49379e41"
+    },
+    {
+      "path": "public/physics/wedge-bdef/pose-b.bin",
+      "bytes": 2440,
+      "sha256": "5fad2a5e9b7169391810bbe811e015eee67515e2b1c00cc95b756d3af0fbc566"
+    },
+    {
+      "path": "public/physics/wedge-bdef/pose-b.glb",
+      "bytes": 15404,
+      "sha256": "168b704e982a5adddbb14f6f4a40962c00537f50903e190a3370c542cbd4a02a"
+    },
+    {
+      "path": "public/physics/wedge-bdef/pose-b.gltf",
+      "bytes": 27258,
+      "sha256": "94bed3208d28f0b40d4f7c6d7e11ed32b219a3d1b85fa1883921fcf37d18eb24"
+    },
+    {
+      "path": "public/physics/wedge-bdef/rest.bin",
+      "bytes": 2440,
+      "sha256": "5fad2a5e9b7169391810bbe811e015eee67515e2b1c00cc95b756d3af0fbc566"
+    },
+    {
+      "path": "public/physics/wedge-bdef/rest.glb",
+      "bytes": 14916,
+      "sha256": "b12b3d449b66787316cf9102074950c9ce6fc15cb6335c9e5e5a64b609d42c1c"
+    },
+    {
+      "path": "public/physics/wedge-bdef/rest.gltf",
+      "bytes": 26656,
+      "sha256": "16f4b8d5614e71bce8f3abb589f46874ea91fc2d161a33cb401c2006dfc293ae"
+    },
+    {
+      "path": "public/physics/wedge-bdef/source.pmx",
+      "bytes": 2929,
+      "sha256": "567a8ffc7be23486601836f8038a342bdc19e48cfdc5c7d923bda8832ec26d72"
+    },
+    {
+      "path": "public/physics/wedge-qdef/a.bin",
+      "bytes": 44368,
+      "sha256": "7db0cc66a48c09063ed0934d14299d77b3d6383e803f698c533a9de3cbbf6407"
+    },
+    {
+      "path": "public/physics/wedge-qdef/a.glb",
+      "bytes": 66608,
+      "sha256": "75e52896b298e2d3f506165e83c6f4222ad70401c2394c53446b86bf71cd78e8"
+    },
+    {
+      "path": "public/physics/wedge-qdef/a.gltf",
+      "bytes": 55417,
+      "sha256": "334189257a6175d812e6d6f12e836900e18d0ea186c3798fe85e758c8797e448"
+    },
+    {
+      "path": "public/physics/wedge-qdef/b.bin",
+      "bytes": 44368,
+      "sha256": "882aebfc275d27c3c4edec444be98237728a79becf265bdd9189d0106f90880f"
+    },
+    {
+      "path": "public/physics/wedge-qdef/b.glb",
+      "bytes": 66604,
+      "sha256": "9a0e96fb43f12611e02b38fd6d7c55ff69e86354c45e38e9a23f2470c84c5479"
+    },
+    {
+      "path": "public/physics/wedge-qdef/b.gltf",
+      "bytes": 55411,
+      "sha256": "e0504b12fcef35515c1c78c69c84f78afa644e2abe16066791d36f0630f05c37"
+    },
+    {
+      "path": "public/physics/wedge-qdef/pose-a.bin",
+      "bytes": 3352,
+      "sha256": "75bcdd5d041fcd30d67a67dd8ea675857eb24b06440604b47a73c1a1d94b7898"
+    },
+    {
+      "path": "public/physics/wedge-qdef/pose-a.glb",
+      "bytes": 17484,
+      "sha256": "c2512d47a1a98801daf65a0649370833e815e2278cd24f5873708b921be0ab51"
+    },
+    {
+      "path": "public/physics/wedge-qdef/pose-a.gltf",
+      "bytes": 28968,
+      "sha256": "83d3f9cfc008ba7b25fc59f56d9127f35f452f0a10e8740739ee01638432dee6"
+    },
+    {
+      "path": "public/physics/wedge-qdef/pose-b.bin",
+      "bytes": 3352,
+      "sha256": "75bcdd5d041fcd30d67a67dd8ea675857eb24b06440604b47a73c1a1d94b7898"
+    },
+    {
+      "path": "public/physics/wedge-qdef/pose-b.glb",
+      "bytes": 17456,
+      "sha256": "2a67a221b8f702d13835143b0a863ef64a48ed55b81ca786e4a2febeb654013b"
+    },
+    {
+      "path": "public/physics/wedge-qdef/pose-b.gltf",
+      "bytes": 28888,
+      "sha256": "3b8665173adf64d01be82bcfae9060eeb1dffa2007dd0983047da6682b36e9ca"
+    },
+    {
+      "path": "public/physics/wedge-qdef/rest.bin",
+      "bytes": 3352,
+      "sha256": "75bcdd5d041fcd30d67a67dd8ea675857eb24b06440604b47a73c1a1d94b7898"
+    },
+    {
+      "path": "public/physics/wedge-qdef/rest.glb",
+      "bytes": 16964,
+      "sha256": "025a4419c2fe59ccb642f274f369e58eb23653a71832b94004ad195d669f3743"
+    },
+    {
+      "path": "public/physics/wedge-qdef/rest.gltf",
+      "bytes": 28286,
+      "sha256": "b8ec734de77a80bb1a2c69dc226ddb870a7de9dfbd8917d243ec74a616068f37"
+    },
+    {
+      "path": "public/physics/wedge-qdef/source.pmx",
+      "bytes": 3149,
+      "sha256": "64beebb64fc33f4022517ed7148ded9151755fbf3c79f4f0e8383cac59601ac9"
+    },
+    {
+      "path": "public/physics/wedge-sdef/a.bin",
+      "bytes": 44344,
+      "sha256": "f59eb9f352472f8c606e6abc92bc48a8df3a2cd661a99bd77ffc58f545808c73"
+    },
+    {
+      "path": "public/physics/wedge-sdef/a.glb",
+      "bytes": 66100,
+      "sha256": "484e90087a9bc57e781996bcd5617590ad3dcd2780255cb1af541066bf4846f3"
+    },
+    {
+      "path": "public/physics/wedge-sdef/a.gltf",
+      "bytes": 54823,
+      "sha256": "826df3ae3009464c5d9199e017702522df3b159dfa2e43840f8338c84eed87fa"
+    },
+    {
+      "path": "public/physics/wedge-sdef/b.bin",
+      "bytes": 44344,
+      "sha256": "d5d4b4d5f8a50637877533a7a38e64b3ab0e42452a9927bca52f71b7d495da85"
+    },
+    {
+      "path": "public/physics/wedge-sdef/b.glb",
+      "bytes": 66092,
+      "sha256": "578a040ad2d40bc77642683ca70f6ea64228a813abf5b856093048140d4e82b0"
+    },
+    {
+      "path": "public/physics/wedge-sdef/b.gltf",
+      "bytes": 54817,
+      "sha256": "b281a3e5165fe7e229b15e75e6d1a5bb38c0b950562cb1736b2fa8192c513880"
+    },
+    {
+      "path": "public/physics/wedge-sdef/pose-a.bin",
+      "bytes": 3328,
+      "sha256": "dbf6ed0022ab559bd8cecf8ef1804b9674f255c7273b77f0778fddd941721aa9"
+    },
+    {
+      "path": "public/physics/wedge-sdef/pose-a.glb",
+      "bytes": 16972,
+      "sha256": "7e454aa02c1da45e38f3ccf7295468d5f82e44c3c83fe77c78ea6aae06bf5e14"
+    },
+    {
+      "path": "public/physics/wedge-sdef/pose-a.gltf",
+      "bytes": 28374,
+      "sha256": "9ba7e33d7f04d9b8b0b12dfd12f48e099e3f562a2a2471aa81f8aad83035c363"
+    },
+    {
+      "path": "public/physics/wedge-sdef/pose-b.bin",
+      "bytes": 3328,
+      "sha256": "dbf6ed0022ab559bd8cecf8ef1804b9674f255c7273b77f0778fddd941721aa9"
+    },
+    {
+      "path": "public/physics/wedge-sdef/pose-b.glb",
+      "bytes": 16944,
+      "sha256": "b52a44cc2e9637f87ad339a951eef4913306acb121addaccbfebb683caf905fa"
+    },
+    {
+      "path": "public/physics/wedge-sdef/pose-b.gltf",
+      "bytes": 28294,
+      "sha256": "29624f236f2ee911f3888391887735e68790270d8c500e50e37979c1c973073a"
+    },
+    {
+      "path": "public/physics/wedge-sdef/rest.bin",
+      "bytes": 3328,
+      "sha256": "dbf6ed0022ab559bd8cecf8ef1804b9674f255c7273b77f0778fddd941721aa9"
+    },
+    {
+      "path": "public/physics/wedge-sdef/rest.glb",
+      "bytes": 16452,
+      "sha256": "beb95c3cacc99487b36453a53be68d09614fa5b9c63c9150d6c13986c12367ab"
+    },
+    {
+      "path": "public/physics/wedge-sdef/rest.gltf",
+      "bytes": 27692,
+      "sha256": "6d8417294f2552dc489b9d977979d8467e4b5ec109571493bc1b4be417374275"
+    },
+    {
+      "path": "public/physics/wedge-sdef/source.pmx",
+      "bytes": 3409,
+      "sha256": "e08c7be75ee66e122d3cf853e3aae810820a528dca759f8d91233b08cf3ab9c1"
+    },
+    {
+      "path": "public/runtime/ammo.js",
+      "bytes": 1881243,
+      "sha256": "422b87333fec6272a592088f96bd672dc8f62b9649b12d44e493fd427e89fff8"
+    },
+    {
+      "path": "public/runtime/ammo-LICENSE.txt",
+      "bytes": 904,
+      "sha256": "c31332f4670d02c475fca0dde6a48b46333a78eb83594195f010d0c6caebdd11"
+    },
+    {
+      "path": "tests/fixtures/solver-a.vmd",
+      "bytes": 1144,
+      "sha256": "6bd5764d3067bee1819c40aed52e6568dcf5afcb8de5caf1c51094c90ce3595f"
+    },
+    {
+      "path": "tests/fixtures/solver-a.vpd",
+      "bytes": 231,
+      "sha256": "eadf1afb604d194798fb513d56714c57b8a9f1f4760a24a296c0f1bcd1103f5f"
+    },
+    {
+      "path": "tests/fixtures/solver-b.vmd",
+      "bytes": 1144,
+      "sha256": "89bb68a31b5237c8ef3d0a17e1eb6c15c269890c08c45d17b56339460d8312c4"
+    },
+    {
+      "path": "tests/fixtures/solver-b.vpd",
+      "bytes": 198,
+      "sha256": "c6cef11c15359f80d04a1af0b3f755356ed9d03b3ebc5bd6a799efab8e25d944"
+    }
+  ]
+}

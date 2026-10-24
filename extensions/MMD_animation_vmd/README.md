@@ -118,3 +118,13 @@ and evaluates raw curves plus controls once. Versions 1/2 retain solver-free
 behavior. The [solver guide](../../docs/solver.md#ik-controls-and-vmd-transport-version-3)
 specifies binding, defaults, right-continuous boundaries, unsupported visibility
 execution and the explicit finite-width approximation at core LINEAR switches.
+
+## Version 4 physics integration
+
+Version 4 retains the v3 layout and requires solver version 2. A matching
+optional root [physics contract](../MMD_physics/README.md) permits fixed-tick
+physics playback. The core animation contains sampled resolved simulation
+output. Loading curves does not implicitly load Ammo or enable simulation.
+With an explicit PhysicsRig owner, the player samples raw motion at each tick,
+then evaluates pre-phase, simulation and post-phase once. Older payload
+versions retain their prior semantics.

@@ -140,3 +140,13 @@ Exact playback evaluates raw curves then solves once. No fallback track drives
 the same joints concurrently. Model visibility is preserved but does not execute;
 its omitted count is explicit. Versions 1/2 keep their existing solver-free
 semantics. See the [runtime guide](../../docs/solver.md) for binding and sampling.
+
+## Version 2 physics phases
+
+Version 2 retains version 1's fields and bounded algorithms and permits flag
+0x1000 for post-physics evaluation. Sort phase (pre then post), layer, index.
+`solvePose` accepts an explicit `pre` or `post` pass so simulated transforms
+can be inserted once between them. Parent/append dependencies must precede
+consumers in this order; IK cannot write across phases. Version 1 still rejects
+post-physics execution. See the [physics contract](../MMD_physics/README.md) for
+body-writer restrictions, clock, offsets and lifecycle.

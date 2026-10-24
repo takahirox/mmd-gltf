@@ -134,6 +134,7 @@ export function solverVertex(
   outline = false,
   time = 0,
   approximation = false,
+  suppliedPose?: RestBone[],
 ) {
   const u = Math.max(0, Math.min(1, time / 1.5));
   const faces = [
@@ -220,7 +221,7 @@ export function solverVertex(
           [1, 1, 0],
           [-1, 0, 0],
         ];
-  const expected = solverExpected(shape, motion, enabled, 0.2, time),
+  const expected = suppliedPose ?? solverExpected(shape, motion, enabled, 0.2, time),
     world: Matrix4[] = [],
     palette: Matrix4[] = [];
   if (wrongOrder) {

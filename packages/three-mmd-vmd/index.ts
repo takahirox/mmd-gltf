@@ -1,3 +1,4 @@
+import { getPhysicsSession } from '../three-mmd-physics/registry';
 import { MMDSolverPlugin } from '../three-mmd-solver';
 import { solvePose, type SolverProfile } from '../mmd-solver';
 import { AnimationClip, type Object3D, type Mesh } from 'three';
@@ -56,7 +57,8 @@ export class VMDPlayer {
   private active = false;
   private current = 0;
   private ikOverrides = new Map<number,boolean>();
-  get ikStates() { const values=evaluateIK(this.motion,this.current); this.motion.solver?.bones.filter(b=>b.ik).forEach(b=>{if(!values.has(b.index))values.set(b.index,true);});this.ikOverrides.forEach((v,k)=>values.set(k,v));return Object.fromEntries(values); }
+  private sampledTime(time:number) { const p=this.root ? getPhysicsSession(this.root) : undefined;return p?.enabled ? Math.floor(time/p.timeline.profile.fixedStep+1e-9)*p.timeline.profile.fixedStep : time; }
+  get ikStates() { const values=evaluateIK(this.motion,this.sampledTime(this.current)); this.motion.solver?.bones.filter(b=>b.ik).forEach(b=>{if(!values.has(b.index))values.set(b.index,true);});this.ikOverrides.forEach((v,k)=>values.set(k,v));return Object.fromEntries(values); }
   setIKEnabled(index:number, enabled:boolean | undefined) {
     this.check();
     if(!this.motion.solver?.bones.some(b=>b.index===index && b.ik) || enabled!==undefined && typeof enabled!=='boolean')throw new Error('VMD IK: invalid controller override');
@@ -88,7 +90,9 @@ export class VMDPlayer {
     this.check();
     if (!Number.isFinite(seconds)) throw new Error('VMD: seek time must be finite');
     const time = Math.max(0, Math.min(this.duration, seconds)),
-      pose = evaluateMotion(this.motion, time, this.ikOverrides);
+      physics = getPhysicsSession(this.root!),
+      controls=(t:number)=>{const values=evaluateIK(this.motion,t);this.ikOverrides.forEach((v,k)=>values.set(k,v));return values;},
+      pose = physics ? physics.motion(time,t=>evaluateMotion(this.motion,t,this.ikOverrides,true),controls) : evaluateMotion(this.motion, time, this.ikOverrides);
     // Resolve and validate before claiming ownership or mutating transforms.
     if (
       pose.some((b) =>
@@ -98,7 +102,7 @@ export class VMDPlayer {
       )
     )
       throw new Error('VMD: unsupported evaluated numeric range');
-    const write = this.prepare(pose, evaluateMorphs(this.motion, time));
+    const write = this.prepare(pose, evaluateMorphs(this.motion, this.sampledTime(time)));
     claimMotion(this.root!, this, () => {
       this.active = false;
     });
@@ -121,6 +125,7 @@ export class VMDPlayer {
     this.check();
     if (!Number.isFinite(deltaSeconds) || deltaSeconds < 0)
       throw new Error('VMD: update delta must be finite and nonnegative');
+    getPhysicsSession(this.root!)?.timeline.validateDelta(deltaSeconds);
     if (!this.active) return this;
     const next = this.current + deltaSeconds;
     if (!Number.isFinite(next)) throw new Error('VMD: unsupported playback time range');
@@ -131,7 +136,8 @@ export class VMDPlayer {
   stop() {
     this.check();
     const weights = (this.motion.morphs ?? []).map(g => ({ node: g.node, values: new Array(g.count).fill(0) }));
-    const write = this.prepare(solvePose(this.motion.solver, this.motion.rest), weights);
+    const physics=getPhysicsSession(this.root!);
+    const write = this.prepare(physics ? physics.pose(this.motion.rest) : solvePose(this.motion.solver, this.motion.rest), weights);
     claimMotion(this.root!, this, () => { this.active = false; });
     write();
     this.active = false;

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "MMD_animation_vmd v0.3 animation payload",
+  "title": "MMD_animation_vmd v0.4 animation payload",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -13,7 +13,8 @@
       "enum": [
         1,
         2,
-        3
+        3,
+        4
       ]
     },
     "rest": {
@@ -125,7 +126,10 @@
       ],
       "properties": {
         "version": {
-          "const": 1
+          "enum": [
+            1,
+            2
+          ]
         },
         "bones": {
           "type": "array",
@@ -304,7 +308,7 @@
           }
         }
       },
-      "title": "MMD_skeleton_solver pre-physics-v1"
+      "title": "MMD_skeleton_solver versioned pre/post-physics profiles"
     },
     "ik": {
       "type": "array",
@@ -459,6 +463,37 @@
               ]
             }
           ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "version": {
+            "const": 4
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "solver": {
+            "properties": {
+              "version": {
+                "const": 2
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "solver": {
+            "properties": {
+              "version": {
+                "const": 1
+              }
+            }
+          }
         }
       }
     }

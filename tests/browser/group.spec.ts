@@ -1,3 +1,4 @@
+import { readRigBitmap } from './rig-bitmap';
 import { test, expect, type Page, type TestInfo } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 import { sourceVertex } from '../sdef-oracle';
@@ -202,7 +203,13 @@ function demoEvidence(page: Page, info: TestInfo) {
       const pixels = PNG.sync.read(capture);
       const size = await canvas.evaluate(element => ({ width: (element as HTMLCanvasElement).width, height: (element as HTMLCanvasElement).height }));
       expect({ width: pixels.width, height: pixels.height }).toEqual(size);
-      return capture;
+      // Restoration concerns the rendered bitmap. Chromium's CSS compositor can
+      // resample an identical canvas after scrolling, even with aligned bounds.
+      // Keep the screen capture above as evidence and retain exact PNG equality
+      // on the intrinsic bitmap (no tolerance, crop, or pixel mask).
+      const intrinsic = await readRigBitmap(page);
+      await writeFile(info.outputPath(`${source}-${name.replaceAll(' ', '-')}-bitmap.png`), intrinsic);
+      return intrinsic;
     });
   }
   return { phase, rendered, image, source(value: string) { source = value; }, async save() {

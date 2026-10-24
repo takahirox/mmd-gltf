@@ -45,6 +45,7 @@ export function solverPMX(
   shape: "box" | "wedge",
   mode: "bdef" | "sdef" | "qdef" = "bdef",
   hingeAxis?: 0 | 1 | 2,
+  physics = false,
 ) {
   const { bytes, u8, i32, f, fs, text, result } = writer();
   const u16 = (n: number) => {
@@ -190,11 +191,11 @@ export function solverPMX(
     fs(positions[i]);
     u8(i === 1 || (shape === "wedge" && i === 4) ? 0 : i === 2 ? 1 : 255);
     i32(i < 3 ? 0 : i === 3 ? 1 : i < 6 ? 2 : 3);
-    const flags =
+    const flags = physics && (i===4 || i===6) ? 0 : physics && i===5 ? 0x1380 :
       i === 3 ? 0x20 : i === 4 || i === 6 ? 0x300 : i === 5 ? 0x380 : 0;
     u16(flags);
     fs([0, 1, 0]);
-    if (i >= 4) {
+    if (flags & 0x300) {
       u8(i === 4 ? 1 : 4);
       f(i === 6 ? -0.5 : 1);
     }
@@ -231,9 +232,20 @@ export function solverPMX(
   i32(1);
   u8(0);
   f(0.5);
-  i32(0);
-  i32(0);
-  i32(0);
+  i32(0); // frames
+  i32(physics ? 4 : 0);
+  if (physics) for (const [id,bone,group,exclude,shape,size,p,r,mass,coupling] of [
+    [0,0,0,65535 ^ ((1<<1)|(1<<15)),1,[3,.2,3],[0,-1,0],[.1,0,.1],0,0],
+    [1,4,1,65535 ^ 1,0,[.25,0,0],[1,0,0],[.2,.1,.3],1,1],
+    [2,6,2,65535,2,[.2,.6,0],[-1,0,0],[.1,.2,-.1],.5,2],
+    [3,255,15,65535 ^ 1,0,[.3,0,0],[0,2,0],[0,0,0],.5,1],
+  ] as [number,number,number,number,number,number[],number[],number[],number,number][]) {
+    text('physics body '+id);text('Original Issue 45');u8(bone);u8(group);u16(exclude);u8(shape);fs(size);fs(p);fs(r);
+    f(mass);f(.02);f(.04);f(.1);f(.5);u8(coupling);
+  }
+  i32(physics ? 1 : 0);
+  if(physics){text('translated rotated spring');text('Original Issue 45');u8(0);u8(0);u8(1);fs([.4,.2,.1]);fs([.2,.1,.3]);
+    fs([-.6,-.4,-.2]);fs([.3,.6,.5]);fs([-.5,-.2,-.1]);fs([.3,.4,.6]);fs([5,8,3]);fs([2,3,1]);}
   if (mode === "qdef") i32(0);
   return result();
 }

@@ -33,7 +33,7 @@ const sourceAngle = (v: number) =>
   Math.abs(v) <= Math.fround(Math.PI)
     ? Math.max(-Math.PI, Math.min(Math.PI, v))
     : v;
-export function createSolver(model: PMXModel, pose: PoseModel): SolverProfile {
+export function createSolver(model: PMXModel, pose: PoseModel, version: 1 | 2 = 1): SolverProfile {
   const bones: SolverBone[] = model.bones.map((b, i) => {
     const fail = (why: string): never => {
       throw new Error(`PMX bones[${i}]: ${why}`);
@@ -115,7 +115,7 @@ export function createSolver(model: PMXModel, pose: PoseModel): SolverProfile {
     }
     return result;
   });
-  const profile: SolverProfile = { version: 1, bones };
+  const profile: SolverProfile = { version, bones };
   validateSolver(profile);
   return profile;
 }
