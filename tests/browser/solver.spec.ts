@@ -4,6 +4,42 @@ import { validateBytes, validateString } from "gltf-validator";
 import { solverExpected, solverVertex } from "../solver-oracle";
 import { orientationError } from "../../tools/vmd-animation";
 const preview = "http://127.0.0.1:43180/mmd-gltf/";
+for (const source of ["bytes", "glb", "gltf"])
+  test(`built Demo resets IK override on ${source} player replacement`, async ({ page }) => {
+    await page.goto(`${preview}rig.html`);
+    await expect(page.locator("#rig-preset")).toBeEnabled();
+    await page.locator("#rig-model").selectOption("solver-box-bdef");
+    await expect(page.locator("#motion-load")).toBeEnabled();
+    await page.locator("#motion-source").selectOption(source);
+    await page.locator("#motion-load").click();
+    await expect(page.locator("#status")).toContainText("VMD loaded");
+    for (const [override, motion] of [["off", "b"], ["on", "a"]] as const) {
+      await page.locator("#ik-override").selectOption(override);
+      expect(await page.evaluate(() => (window as any).mmdRig.ik[3])).toBe(override === "on");
+      await page.locator("#motion-sample").selectOption(`solver-${motion}`);
+      await expect(page.locator("#motion-load")).toBeEnabled();
+      await page.locator("#motion-load").click();
+      await expect(page.locator("#status")).toContainText("VMD loaded");
+      await expect(page.locator("#motion-load")).toBeEnabled();
+      await expect(page.locator("#ik-override")).toHaveValue("motion");
+      expect(await page.evaluate(() => (window as any).mmdRig.ik[3])).toBe(true);
+      await page.locator("#motion-time").fill("0.5");
+      await page.locator("#motion-time").dispatchEvent("input");
+      await expect(page.locator("#motion-load")).toBeEnabled();
+      const state = await page.evaluate(() => (window as any).mmdRig);
+      expect(state.error).toBe("");
+      expect(state.ik[3]).toBe(false);
+      const expected = solverExpected("box", motion, false, 0.2, 0.5);
+      for (const bone of state.bones)
+        expect(orientationError(bone.rotation, expected[bone.index].rotation)).toBeLessThanOrEqual(1e-5);
+    }
+    await page.locator("#ik-override").selectOption("off");
+    await page.locator("#rig-model").selectOption("solver-wedge-bdef");
+    await expect(page.locator("#status")).toContainText("Rig loaded");
+    await expect(page.locator("#motion-load")).toBeEnabled();
+    await expect(page.locator("#ik-override")).toHaveValue("motion");
+  });
+
 test("built Demo restores legacy pose and motion presets after solver rig replacement", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", e => errors.push(e.message));

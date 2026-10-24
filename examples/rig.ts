@@ -267,6 +267,7 @@ async function start() {
   async function loadRig() {
     const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('solver-') ? `solver/${model.value.slice(7)}` : model.value.startsWith('group-') ? `group/${model.value.slice(6)}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
     await replace(next);
+    select('ik-override').value = 'motion';
     configurePosePreset();
     if (model.value.startsWith('solver-')) motionSample.value = 'solver-a';
     else if (motionSample.value.startsWith('solver-')) motionSample.value = 'a';
@@ -354,6 +355,8 @@ async function start() {
     assets.forEach((a) => {
       a.player!.loop = loop.checked;
     });
+    // Replacement players start without overrides, so reflect their motion controls.
+    select('ik-override').value = 'motion';
     clearPlayback();
     info.source = motionSource.value;
     seek.max = String(assets[0].player!.duration);
