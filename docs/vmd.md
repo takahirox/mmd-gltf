@@ -3,9 +3,11 @@
 Issue #29 adds VMD 0002 solver-free translation/rotation through PMX BDEF conversion,
 retained glTF curves, reusable Three.js playback and the built `rig.html` Demo.
 Issue #31 extends this with vertex morphs and synchronized weight playback below.
-It does not complete MMD reproduction. Camera, light, shadow and display/IK
-**execution**, advanced skinning, other morph families, append/IK/deformation ordering,
-physics and representative production-model fidelity remain mandatory overall work.
+These sections describe the solver-free default. Issue #43 adds optional
+[pre-physics IK/append and bound IK-enable execution](solver.md), including
+version 3 transport. Bounded SDEF/QDEF skinning is also available. Camera, light,
+shadow and visibility execution, remaining solver dependencies, other morph
+families, physics and representative fidelity remain mandatory overall work.
 
 ## Reader and byte names
 
@@ -158,8 +160,8 @@ normal recomputation or NORMAL targets are invented. Repeated offsets at a verte
 add. Invalid counts, references, vector lengths, nonfinite values and FLOAT overflow
 reject conversion. Bone, UV, material, unsupported groups/flip and impulse morphs remain
 unsupported; they have `target:null`, with source index/name/type loss diagnostics,
-rather than fake zero-effect targets. SDEF/QDEF now have bounded profiles; solvers, physics and
-representative fidelity remain outstanding.
+rather than fake zero-effect targets. SDEF/QDEF and pre-physics IK/append now have bounded profiles; remaining solver
+dependencies, physics and representative fidelity remain outstanding.
 
 The original mesh node's `extras.pmxMorph` version 1 stores a model ID and every exact
 `{index,name,englishName,type,target}` identity. Version 1 vertex targets are contiguous in source
@@ -344,4 +346,5 @@ no pre-merge coverage and requires no recursive evaluator or independent AI revi
 See [group validation](group-validation.md) and
 [fixture provenance](../tests/fixtures/README.md#issue-41-vertex-group-fixtures).
 Original-MMD measurements, representative fidelity, remaining morph families,
-ordered IK/append, physics and scene controls remain outstanding overall work.
+solver dependencies outside the bounded pre-physics profile, physics and scene
+controls remain outstanding overall work.

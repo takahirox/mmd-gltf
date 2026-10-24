@@ -109,7 +109,7 @@ for (const [name,scale] of [['box',0.2],['wedge',0.125]] as const) {
     const mapping=motion==='rest'||motion==='only'?undefined:JSON.parse(await readFile(`tests/fixtures/motion-${motion}-map.json`,'utf8'));
     const result=await convertModel(parsePMX(await readFile(`tests/fixtures/morph-${name}.pmx`)),'.',{
       mode:'bdef',scale,vmd,vmdBinding:{mapping,morphMapping:JSON.parse(await readFile('tests/fixtures/morph-map.json','utf8'))},
-      vmdSampling:{translationTolerance:2e-8,rotationTolerance:2e-7},
+      vmdSampling:{translationTolerance:1e-7,rotationTolerance:2e-7},
     });
     result.document.getRoot().setExtras({...result.document.getRoot().getExtras(),
       attribution:'Original synthetic morph variants by mmd-gltf contributors, Issue #31; no third-party assets.',
@@ -170,10 +170,31 @@ for(const [rig,scale] of [['box',0.2],['wedge',0.125]] as const) {
       mode:'bdef',scale,vmd:motion==='rest'?undefined:await readFile(`tests/fixtures/group-${motion}.vmd`),
       vmdBinding:motion==='rest'?undefined:{mapping:JSON.parse(await readFile(`tests/fixtures/motion-${motion}-map.json`,'utf8')),
         morphMapping:JSON.parse(await readFile('tests/fixtures/group-map.json','utf8'))},
-      vmdSampling:{translationTolerance:2e-8,rotationTolerance:2e-7},
+      vmdSampling:{translationTolerance:1e-7,rotationTolerance:2e-7},
     });
     result.document.getRoot().getAsset().extras={attribution:'Original synthetic Issue #41 group fixtures by mmd-gltf contributors; no third-party bytes. No original-MMD parity claim.'};
     for(const ext of ['glb','gltf']) await result.io.write(`public/group/${rig}/${motion}.${ext}`,result.document);
   }
 }
 console.log('Generated Issue #41 group rigs and motions in GLB and unpacked glTF.');
+
+// Issue #43: the same solver-bearing sources drive conversion, Demo and probes.
+await rm('public/solver',{recursive:true,force:true});
+await mkdir('public/solver',{recursive:true});
+const solverEvidence:object[]=[];
+for(const id of ['a','b'])for(const suffix of ['vmd','vpd'])await copyFile(`tests/fixtures/solver-${id}.${suffix}`,`public/solver/solver-${id}.${suffix}`);
+for(const rig of ['box','wedge'])for(const mode of ['bdef','sdef','qdef'] as const){
+  const output=`public/solver/${rig}-${mode}`;await mkdir(output,{recursive:true});
+  const source=await readFile(`tests/fixtures/solver-${rig}-${mode}.pmx`);await writeFile(`${output}/source.pmx`,source);
+  for(const state of ['rest','a','b','pose-a','pose-b']){
+    const pose=state.startsWith('pose-')?state.slice(-1):undefined;
+    const result=await convertModel(parsePMX(source),'.',{mode,scale:.2,solver:'pre-physics-v1',
+      vmd:state==='a'||state==='b'?await readFile(`tests/fixtures/solver-${state}.vmd`):undefined,
+      vpd:pose?await readFile(`tests/fixtures/solver-${pose}.vpd`):undefined,vpdEncoding:'utf-8',vmdSampling:{translationTolerance:1e-7,rotationTolerance:2e-7},
+    });
+    for(const ext of ['glb','gltf'])await result.io.write(`${output}/${state}.${ext}`,result.document);
+    solverEvidence.push({rig,mode,state,sourceSHA256:createHash('sha256').update(source).digest('hex'),warnings:result.warnings});
+  }
+}
+await writeFile('public/solver/conversion.json',JSON.stringify({attribution:'Original synthetic works by mmd-gltf contributors, Issue #43. No third-party bytes; original-MMD unmeasured.',cases:solverEvidence},null,2)+'\n');
+console.log('Generated Issue #43 solver rigs, motions and poses across all skinning/output modes.');

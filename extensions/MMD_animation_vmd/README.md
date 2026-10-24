@@ -1,7 +1,8 @@
-# MMD_animation_vmd v0.2 (draft)
+# MMD_animation_vmd v0.3 (draft)
 
-An optional, runtime-independent **animation-level** extension retaining solver-free
-VMD bone curves, alongside approximate core glTF TRS fallback. It is independent
+An optional, runtime-independent **animation-level** extension retaining VMD bone
+curves and synchronized weights, alongside approximate core glTF fallback.
+Versions 1/2 are solver-free; version 3 adds the bounded solver profile below. It is independent
 of Toon, Outline and PBR. This is a project proposal, not a Khronos ratified extension.
 
 The [schema](schema/animation.MMD_animation_vmd.schema.json),
@@ -12,6 +13,12 @@ builds complete examples for both rigs and motions in `public/vmd` with `npm run
 The self-contained [minimal glTF example](examples/bone-curve.gltf) animates one
 original synthetic triangle joint with retained curves and sampled core TRS;
 `npm test` validates and reloads it without PMX/VPD metadata or material drafts.
+
+## Versions 1/2: curve contract
+
+The following solver-free rules remain unchanged for versions 1/2. Version 3
+adds ordered solving, complete-profile fallback channels and control duration as
+specified in its section below.
 
 `version` is required. Bone-only payload version `1` remains supported.
 Version `2` also owns vertex weights as specified below. `rest` lists every joint owned by this
@@ -100,3 +107,14 @@ the unchanged v1 example. The built Demo adds two distinct combined motions and
 morph-only coverage on both rigs. Finite/FLOAT input limits, source identity,
 separate mappings and API lifecycle are documented in the
 [vertex morph contract](../../docs/vmd.md#vertex-morph-weights-issue-31).
+
+## Version 3: bounded IK and append
+
+Version 3 extends the existing transport with the identical root
+[`MMD_skeleton_solver` contract](../MMD_skeleton_solver/README.md), bound IK-enable
+tracks and retained visibility bytes. All solver bones receive resolved core
+fallback TRS channels. Exact playback replaces that complete matching fallback
+and evaluates raw curves plus controls once. Versions 1/2 retain solver-free
+behavior. The [solver guide](../../docs/solver.md#ik-controls-and-vmd-transport-version-3)
+specifies binding, defaults, right-continuous boundaries, unsupported visibility
+execution and the explicit finite-width approximation at core LINEAR switches.

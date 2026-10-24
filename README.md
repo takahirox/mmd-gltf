@@ -59,7 +59,8 @@ independent ambient/toon/specular models produce documented shading differences.
 Neither Gene view animates or steps IK/physics/morphs. The linked synthetic BDEF
 rig loads two VPD poses and two VMD bone motions, two combined bone/morph motions and morph-only motion on two distinct BDEF rigs, supports local files with explicit
 encoding/binding maps, and provides pose apply/reset plus motion transport and fractional seeking. It applies raw
-bone offsets without solvers; it does not reproduce complete MMD poses.
+bone offsets without solvers by default. Additional IK/append presets execute the
+bounded pre-physics profile; complete MMD reproduction remains outstanding.
 The browser runner owns a Vite conformance server on port 43179 and a static
 preview on port 43180. Both browser tests and
 build use the repository prefix `/mmd-gltf/`.
@@ -95,7 +96,8 @@ The [synthetic rig](examples/rig.html) demonstrates the converter output with
 Toon, core PBR and Outline. Use `--mode qdef` with `MMDQDEFPlugin` for the bounded
 PMX 2.1 rigid dual-quaternion profile; see the [QDEF guide](docs/qdef.md) and
 [extension draft](extensions/MMD_skinning_qdef/README.md). Ordinary loaders retain
-an approximate BDEF4 fallback. General PMX 2.1, deformation layers, IK/append, physics,
+an approximate BDEF4 fallback. Ordered pre-physics IK/append is available with
+`--solver pre-physics-v1`; see the [solver guide](docs/solver.md). General PMX 2.1, post-physics, simulation,
 other morph-family evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs and one-hop vertex-only groups convert in static and all skinned modes; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
 see the [VPD contract and APIs](docs/pipeline.md#vpd-bone-offsets). The outline effect
 also accepts core POSITION/NORMAL morph deformation from other assets.
@@ -154,3 +156,8 @@ inspection/apply/reset and VPD/VMD handoff. See the
 AI agents should start with [AGENTS.md](AGENTS.md).
 
 Issue #41 adds independent [vertex-group compilation and composition](docs/vmd.md#vertex-group-compilation-issue-41), two group-bearing motions on both Demo rigs, and [group validation](docs/group-validation.md).
+
+Issue #43 adds optional [pre-physics IK and append](docs/solver.md), the
+[runtime-independent solver contract](extensions/MMD_skeleton_solver/README.md),
+and solver Demo presets with explicit IK controls and applied-state export.
+Enable conversion with `--solver pre-physics-v1`; default conversion stays solver-free.

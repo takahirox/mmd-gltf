@@ -1,0 +1,66 @@
+[
+  {
+    "bone": 0,
+    "patch": {
+      "parentIndex": 1
+    }
+  },
+  {
+    "bone": 0,
+    "patch": {
+      "scale": [
+        2,
+        1,
+        1
+      ]
+    }
+  },
+  {
+    "bone": 2,
+    "patch": {
+      "ik": {
+        "effector": 99,
+        "iterations": 1,
+        "angle": 1,
+        "links": [
+          {
+            "index": 0
+          }
+        ]
+      }
+    }
+  },
+  {
+    "bone": 0,
+    "patch": {
+      "flags": 4096
+    }
+  },
+  {
+    "bone": 0,
+    "patch": {
+      "append": {
+        "source": 2,
+        "rate": 1,
+        "local": true,
+        "rotation": true,
+        "translation": false
+      }
+    }
+  },
+  {
+    "bone": 2,
+    "patch": {
+      "ik": {
+        "effector": 1,
+        "iterations": 256,
+        "angle": 1,
+        "links": [
+          {
+            "index": 0
+          }
+        ]
+      }
+    }
+  }
+]

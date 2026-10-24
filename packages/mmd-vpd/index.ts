@@ -1,4 +1,5 @@
-/** Solver-free VPD bone offsets, in source left-handed PMX units until resolvePose. */
+import { solvePose, validateSolver } from '../mmd-solver';
+/** VPD bone offsets, in source left-handed PMX units until resolution. */
 export type VPDEncoding = 'shift_jis' | 'utf-8';
 export type Vec3 = [number, number, number];
 export type Quat = [number, number, number, number];
@@ -48,7 +49,7 @@ export function parseVPD(bytes: Uint8Array, encoding: VPDEncoding = 'shift_jis')
   return { parentFile, records };
 }
 export interface RestBone { index: number; name: string; parentIndex: number; translation: Vec3; rotation: Quat; scale: Vec3 }
-export interface PoseModel { version: 1; modelId: string; metersPerPMXUnit: number; bones: RestBone[] }
+export interface PoseModel { solver?: import('../mmd-solver').SolverProfile; version: 1; modelId: string; metersPerPMXUnit: number; bones: RestBone[] }
 export interface BindingOptions { /** Keys are zero-based record ordinals, NOT BoneN labels. */ mapping?: Record<string, number>; unmatched?: 'error' | 'ignore' }
 export interface PoseBinding { readonly modelId: string; readonly assignments: readonly { index: number; translation: Vec3; rotation: Quat }[]; readonly unmatched: readonly string[] }
 export function validatePoseModel(model: PoseModel) {
@@ -59,6 +60,15 @@ export function validatePoseModel(model: PoseModel) {
     quaternion(bone.rotation, `VPD rest bone ${bone.index}`); indices.add(bone.index);
   }
   for (const bone of model.bones) if (bone.parentIndex !== -1 && !indices.has(bone.parentIndex)) throw new Error(`VPD: missing rest parent ${bone.parentIndex}`);
+  if(model.solver) {
+    validateSolver(model.solver);
+    const restByIndex=new Map(model.bones.map(b=>[b.index,b]));
+    if(model.bones.length!==model.solver.bones.length)throw new Error('VPD: solver original rest differs from baseline bone count');
+    const invalid=model.solver.bones.find(b=>{
+      const rest=restByIndex.get(b.index);return !rest || JSON.stringify([rest.name,rest.parentIndex,rest.translation,rest.rotation,rest.scale])!==JSON.stringify([b.name,b.parentIndex,b.translation,b.rotation,b.scale]);
+    });
+    if(invalid)throw new Error(`VPD: solver bones[${invalid.index}] original rest differs from baseline`);
+  }
 }
 export function bindPose(model: PoseModel, pose: VPD, options: BindingOptions = {}): PoseBinding {
   validatePoseModel(model);
@@ -87,8 +97,11 @@ export function bindPose(model: PoseModel, pose: VPD, options: BindingOptions = 
   if (unmatched.length && options.unmatched !== 'ignore') throw new Error(`VPD: unmatched ${unmatched.join(', ')}; select unmatched: ignore only for intentional partial application`);
   return { modelId: model.modelId, assignments, unmatched };
 }
-/** Resolve from immutable ORIGINAL local rest, never current transforms. No solvers. */
+/** Resolve from immutable ORIGINAL local rest, then optionally solve the bounded profile. */
 export function resolvePose(model: PoseModel, binding?: PoseBinding): RestBone[] {
+  return solvePose(model.solver, resolveRawPose(model, binding));
+}
+export function resolveRawPose(model: PoseModel, binding?: PoseBinding): RestBone[] {
   validatePoseModel(model);
   if (binding && binding.modelId !== model.modelId) throw new Error('VPD: binding belongs to a different model');
   const assignments = new Map(binding?.assignments.map(a => [a.index, a]));

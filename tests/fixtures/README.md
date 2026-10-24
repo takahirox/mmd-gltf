@@ -242,3 +242,36 @@ expanded combined coefficients; it reads neither production group deltas nor
 emitted animation. Existing scalar bone predictions supply morph-before-BDEF
 positions. Advanced probes pass independently computed group points to the
 existing independent SDEF/QDEF predictions.
+
+## Issue #43 solver fixtures
+
+`tools/synthetic-solver.ts` authors all `solver-*` bytes as original works by
+mmd-gltf contributors, without third-party models/motions or original-MMD capture.
+Six PMX variants combine two distinct geometries/hierarchies with BDEF, SDEF and
+actual PMX 2.1 QDEF (mandatory zero soft-body tail). The wedge shears its geometry,
+uses a length-two +Y IK chain and parents its append bone under the animated root;
+the box uses a length-one +X chain and a separate append root. Both have seven
+bones, a vertex/group morph, noncommuting input/append rotations, translation
+append, signed chained append, local append of an appending source, an IK-updated
+append source and layer/index ties. Scale is 0.2 m/unit for both.
+
+`solver-a.vmd` and `solver-b.vmd` contain distinct continuously changing raw inputs plus
+IK enabled/disabled/re-enabled controls at frames 0/15/30 and last bone frame 45.
+Visibility switches are preserved but not executed. A varies root X and append Y rotations while moving the goal; B varies root Z
+and append Z rotations along a different goal trajectory. Both include a link
+translation, animated append translation, direct vertex weights (.1→.2 / -.15→.05)
+and group weights (.6→.8 / -.4→-.2).
+Linear raw curves generate nonlinear solved trajectories.
+`solver-a.vpd` / `solver-b.vpd` contain the corresponding raw bone offsets in
+UTF-8. Reproduce with `npx tsx tools/synthetic-solver.ts`.
+
+`tests/solver-oracle.ts` independently calculates shortest arcs geometrically,
+uses authored rest geometry and transforms, and applies independent BDEF sums,
+expanded SDEF center correction and the independent scalar QDEF oracle. It never
+imports the production evaluator, source parser or emitted sample values.
+Node fixtures separately predict hinge limits, unreachable, zero-length,
+antiparallel and capped/disabled behavior. Numerical limits remain orientation
+1e-5 rad and CPU position 2e-6 m; GPU position 1e-4 m and normal components 5e-4.
+Toon/PBR surface and Outline comparisons keep two encoded levels / 128 of 25600
+boundary pixels. Negative controls disable IK and deliberately use the raw joint palette
+from before IK/append when deforming vertices. Saved measurements are linked from the solver validation record.

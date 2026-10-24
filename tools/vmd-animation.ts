@@ -6,7 +6,7 @@ import {
   type Animation,
   type WriterContext,
 } from '@gltf-transform/core';
-import { evaluateTrack, slerp, type MotionBinding, type MotionTrack } from '../packages/mmd-vmd';
+import { evaluateTrack, evaluateMotion, slerp, type MotionBinding, type MotionTrack } from '../packages/mmd-vmd';
 import { EXTENSION_NAME, validatePayload, type VMDPayload } from '../packages/mmd-vmd/payload';
 import type { Quat } from '../packages/mmd-vpd';
 import { evaluateWeight } from '../packages/mmd-morph';
@@ -14,6 +14,8 @@ export interface SamplingOptions {
   translationTolerance?: number;
   rotationTolerance?: number;
   maxSamples?: number;
+  /** Maximum width of the explicitly approximate LINEAR IK switch seam. */
+  controlTimeTolerance?: number;
 }
 export function orientationError(a: Quat, b: Quat) {
   const dot = Math.abs(a.reduce((n, v, i) => n + v * b[i], 0) / (Math.hypot(...a) * Math.hypot(...b)));
@@ -29,7 +31,7 @@ export class VMDWriter extends Extension {
   write(context: WriterContext): this {
     for (const [animation, { motion, nodes, weights }] of this.records) {
       const payload: VMDPayload = {
-        version: weights.length ? 2 : 1,
+        version: motion.solver ? 3 : weights.length ? 2 : 1,
         rest: motion.rest.map((b) => ({
           node: context.nodeIndexMap.get(nodes[b.index])!,
           translation: b.translation,
@@ -40,6 +42,11 @@ export class VMDWriter extends Extension {
           keys: structuredClone(t.keys),
         })),
       };
+      if (motion.solver) {
+        payload.solver=structuredClone(motion.solver);
+        payload.solver.bones.forEach(b=>{b.node=context.nodeIndexMap.get(nodes[b.index])!;});
+        payload.ik=structuredClone(motion.ik??[]);payload.visibility=structuredClone(motion.visibility??[]);
+      }
       if (weights.length) payload.weights = weights.map(w => ({ node: context.nodeIndexMap.get(w.node)!, sampler: w.sampler }));
       validatePayload(payload, context.jsonDoc.json.nodes!.length);
       const def = context.jsonDoc.json.animations![context.animationIndexMap.get(animation)!];
@@ -53,6 +60,9 @@ export function sampleTrack(
   track: MotionTrack,
   options: SamplingOptions = {},
   budget = { remaining: 200_000 },
+  evaluator: (time:number) => ReturnType<typeof evaluateTrack> = time=>evaluateTrack(track,time),
+  seeds?: number[],
+  seams: ReadonlySet<number> = new Set(),
 ) {
   const translationTolerance = options.translationTolerance ?? 2e-6,
     rotationTolerance = options.rotationTolerance ?? 2e-5,
@@ -68,7 +78,7 @@ export function sampleTrack(
   )
     throw new Error('VMD: invalid fallback sampling limits (maximum 200000 samples)');
   const at = (time: number) => {
-    const v = evaluateTrack(track, time);
+    const v = evaluator(time);
     return {
       time,
       translation: v.translation.map(Math.fround),
@@ -85,7 +95,7 @@ export function sampleTrack(
     samples.push(s);
   };
   const fits = (a: Sample, b: Sample, time: number) => {
-    const exact = evaluateTrack(track, time),
+    const exact = evaluator(time),
       t = b.time === a.time ? 0 : Math.max(0, Math.min(1, (time - a.time) / (b.time - a.time)));
     const translation = a.translation.map((v, i) => v + (b.translation[i] - v) * t),
       rotation = slerp(a.rotation, b.rotation, t);
@@ -95,6 +105,7 @@ export function sampleTrack(
     );
   };
   const split = (a: Sample, b: Sample, depth: number) => {
+    if(seams.has(b.time) && a.time===previousFloat(b.time)) { add(b); return; }
     if ([0, 0.25, 0.5, 0.75, 1].every((t) => fits(a, b, a.time + (b.time - a.time) * t))) {
       add(b);
       return;
@@ -102,13 +113,13 @@ export function sampleTrack(
     const middle = Math.fround((a.time + b.time) / 2);
     if (depth >= 24 || middle <= a.time || middle >= b.time)
       throw new Error(
-        'VMD: requested fallback accuracy cannot be represented with strictly increasing FLOAT timestamps',
+        `VMD track ${track.index}: requested fallback accuracy cannot be represented with strictly increasing FLOAT timestamps in [${a.time}, ${b.time}]`,
       );
     const m = at(middle);
     split(a, m, depth + 1);
     split(m, b, depth + 1);
   };
-  const times = [...new Set([0, ...track.keys.map((k) => k.frame / 30)])];
+  const times = seeds ?? [...new Set([0, ...track.keys.map((k) => k.frame / 30)])];
   let previous = -1;
   for (const time of times) {
     const f = Math.fround(time);
@@ -131,7 +142,7 @@ export function addVMDAnimation(
   options: SamplingOptions = {},
   meshNode?: Node,
 ) {
-  if (!motion.tracks.length && !motion.morphs?.some(g => g.tracks.length)) throw new Error('VMD: no bound bone or morph tracks to convert');
+  if (!motion.solver && !motion.tracks.length && !motion.morphs?.some(g => g.tracks.length)) throw new Error('VMD: no bound bone or morph tracks to convert');
   const animation = doc
     .createAnimation(motion.morphs?.length ? 'VMD bone and morph motion' : 'VMD bone motion')
     .setExtras({
@@ -150,8 +161,21 @@ export function addVMDAnimation(
     });
   const budget = { remaining: options.maxSamples ?? 200_000 };
   let count = 0;
-  for (const track of motion.tracks) {
-    const samples = sampleTrack(track, options, budget);
+  const seams=new Set<number>();
+  const times=new Set([0,motion.duration,...motion.tracks.flatMap(t=>t.keys.map(k=>k.frame/30))]);
+  if(motion.solver) for(const t of motion.ik??[]) for(const k of t.keys) {
+    const time=k.frame/30;
+    if(time===0)continue;
+    const width=time-previousFloat(time),limit=options.controlTimeTolerance??1e-6;
+    if(!Number.isFinite(limit)||limit<=0||Math.fround(time)!==time||width>limit)throw new Error(`VMD IK frame ${k.frame}: switch accuracy cannot be represented in FLOAT within controlTimeTolerance`);
+    times.add(previousFloat(time));times.add(time);seams.add(time);
+  }
+  const seeds=[...times].sort((a,b)=>a-b);
+  const cache=new Map<number,ReturnType<typeof evaluateMotion>>();
+  const resolved=(time:number)=>{if(!cache.has(time)){if(cache.size*Math.max(1,motion.rest.length)>1_000_000)cache.clear();cache.set(time,evaluateMotion(motion,time));}return cache.get(time)!;};
+  const tracks=motion.solver ? motion.rest.map(b=>({index:b.index,keys:motion.tracks.find(t=>t.index===b.index)?.keys??[]})) : motion.tracks;
+  for (const track of tracks) {
+    const samples = motion.solver ? sampleTrack(track,options,budget,time=>resolved(time).find(b=>b.index===track.index)!,seeds,seams) : sampleTrack(track, options, budget);
     count += samples.length;
     const input = doc
       .createAccessor('VMD seconds')
@@ -205,4 +229,9 @@ export function addVMDAnimation(
   }
   doc.createExtension(VMDWriter).records.set(animation, { motion, nodes, weights });
   return count;
+}
+
+function previousFloat(value:number) {
+  if(value<=0 || Math.fround(value)!==value) return NaN;
+  const array=new Float32Array([value]),bits=new Uint32Array(array.buffer);bits[0]--;return array[0];
 }

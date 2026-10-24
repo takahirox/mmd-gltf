@@ -31,7 +31,7 @@ test('built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, indepen
   });
 });
 
-test('built Demo VMD lifecycle: both rigs/motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup', async ({
+for (const rig of ['box', 'wedge']) test(`built Demo VMD lifecycle: ${rig}, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup`, async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -49,9 +49,16 @@ test('built Demo VMD lifecycle: both rigs/motions/sources, fractional seek, play
     await page.waitForTimeout(100);
     return page.locator('canvas').screenshot();
   };
-  for (const rig of ['box', 'wedge']) {
+  {
     if (rig === 'wedge') {
       await page.locator('#rig-model').selectOption(rig);
+      // The previous reset already says Rest state. Await this rig's real
+      // rendered revision before checking its controls or capturing its rest.
+      await page.waitForFunction(rig => {
+        const state = (window as any).mmdRig;
+        return state.ready && state.rig === rig && state.rendered?.rig === rig &&
+          state.rendered.revision === state.revision;
+      }, rig, { timeout: 30000 });
       await expect(page.locator('#rig-state')).toHaveText('Rest state');
       await expect(page.locator('#rig-preset')).toBeEnabled();
     }
@@ -138,7 +145,18 @@ test('built Demo VMD lifecycle: both rigs/motions/sources, fractional seek, play
     await page.locator('#motion-reset').click();
     expect(await snapshot()).toEqual(rest);
   }
-  expect((await state()).disposedPlayers).toBeGreaterThanOrEqual(24);
+  const disposed = (await state()).disposedPlayers;
+  expect(disposed).toBeGreaterThanOrEqual(12);
+  // Retain cross-rig replacement, now in both directions, after local recovery.
+  const replacement = rig === 'box' ? 'wedge' : 'box';
+  await page.locator('#rig-model').selectOption(replacement);
+  await page.waitForFunction(rig => {
+    const state = (window as any).mmdRig;
+    return state.rig === rig && state.rendered?.rig === rig &&
+      state.rendered.revision === state.revision;
+  }, replacement, { timeout: 30000 });
+  expect((await state()).disposedPlayers).toBeGreaterThanOrEqual(disposed + 2);
+  expect((await state()).motion).toBe('');
   expect(errors).toEqual([]);
 });
 
