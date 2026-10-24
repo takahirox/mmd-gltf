@@ -1161,3 +1161,137 @@ QDEF resource hashes and source attribution. The
 combinations, plus rest, both active-morph VPD observations and fallback/restoration
 examples. The independent oracle and actual readback establish synthetic profile
 conformance only. Hosted CI was not run, and no push, PR, merge or comment occurred.
+
+## Issue #39: durable loop and rendered-frame acceptance
+
+This increment addresses [Issue #39](https://github.com/takahirox/mmd-gltf/issues/39)
+at evaluation baseline `b85a15bf6ab2dee2cd20054a925e92e23efe6402`, with worktree
+parent `9b4acdae71c291778867b7eb17a4b27ad1b71a07`. Local execution uses Darwin
+25.6.0 arm64, Node 24.12.0, lockfile-pinned Three.js 0.186.1 and Playwright
+1.56.1 Chromium/WebGL2/SwiftShader. The
+[bounded machine-readable evidence](vmd-loop-validation.json) identifies the
+executed source hashes, check results, Node sample schedules, actual Demo update
+and rendered-frame traces, and retained canvas hashes.
+
+### Diagnosis and retained assumption correction
+
+The old AI-authored assumption was that polling instantaneous `time < 0.5` after
+seeking near the endpoint reliably proves looping. The corrected requirement is
+an actual positive-duration crossing, its modulo result and evaluated state,
+scoped to the active model and loaded motion, with matching rendered evidence.
+[Playwright 1.56.1 polling source](https://github.com/microsoft/playwright/blob/v1.56.1/packages/playwright/src/matchers/expect.ts#L396)
+uses intervals of 100, 250, 500, then 1000 milliseconds. Delayed callbacks and
+observations can keep sampling the same phase of a periodic state. These intervals
+are scheduling requests, not a promise of when a busy browser delivers a sample.
+
+The controlled browser regression demonstrates this observation failure: five
+successive one-second callbacks each cross duration while every observed player
+time remains approximately 0.85. The former `time < 0.5` criterion stays false;
+the durable crossing evidence succeeds. A separate real-player Node trace begins
+at 0.99 and observes at elapsed `[0, 0.95, 1.95, 2.95, 3.95, 4.95]` seconds: all
+samples are at least 0.94 despite five crossings. This deliberately delayed sample
+schedule is not represented as the exact default Playwright schedule.
+
+No playback defect was demonstrated. The existing `VMDPlayer.update()` modulo
+policy is correct in the measured cases and is unchanged. The historical CI
+failure (observed 0.9416000000000933 after five seconds) lacks per-update/frame
+traces. Neither the historical timeout nor a later passing run establishes its
+cause. Sampling aliasing is now reproduced under controlled scheduling, but its
+role in that particular historical run remains unproven. No original-MMD
+semantics are inferred from it. The
+[core glTF animation specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#animations)
+sampler endpoint behavior and this repository's separate playback loop/stop policy
+remain distinct.
+
+### Implementation and focused evidence
+
+The Demo records at most eight updates and one durable last crossing. Each record
+contains the evidence generation, actual rig/source/motion identity, duration,
+before/after time, supplied elapsed delta, playing/loop state, crossing count,
+evaluated weights and the matching revision/frame. Records are published only
+after the real surface/outline render returns. Ordinary later frames do not erase
+a crossing. Successful model/motion replacement or reload, seek/play, motion reset,
+VPD apply/reset, manual morph changes/reset and loop-policy changes clear the
+records and advance the generation. Pause preserves historical evidence, but the
+acceptance also requires current playback. Loaded identity is retained separately
+from subsequently edited source selectors.
+
+Both former transient loop assertions now require a durable rendered crossing.
+The bone lifecycle still exercises two rigs, both motions and bytes/GLB/glTF;
+the morph lifecycle still exercises both rigs, both combined motions and all
+three sources, plus the morph-only GLB reproducer, VPD/manual ownership and cleanup.
+The new Node test uses both rigs through byte binding and exact GLB reload. It
+checks exact-duration and multiple-duration updates, independently predicted
+weights, unchanged original-rest bones, pause, non-loop endpoints and disposal.
+Existing bone-motion lifecycle coverage remains intact.
+
+The new browser regression gates the renderer's real requestAnimationFrame chain
+and controls `performance.now()`, then delivers callbacks through the browser's
+native frame scheduler. It never calls the player or fabricates UI/diagnostic
+state. The held clock makes rendered `durationMs` zero in these controlled traces;
+that field is not a performance measurement here. With duration 1, before time
+0.99 and delta 2.36, both rigs produce three
+crossings and after time 0.34999999999999964, remain playing, preserve rest bones,
+and evaluate weights `[0.4499999836087217, 0.6499999761581421, 0, 0]`. Independent
+expected weights are `[0.45, 0.65, 0, 0]`, within the existing `1e-7` weight limit.
+The regression matches crossing revision/frame/time/weights to the rendered state
+and captures the canvas while that callback chain remains held. A later 0.5-second
+callback gives approximately 0.85 and independently predicted weights; the earlier
+crossing remains available. Five subsequent one-second callbacks demonstrate
+sampling aliasing and continuing playback.
+
+[Three.js r186 render source](https://github.com/mrdoob/three.js/blob/r186/src/renderers/common/Renderer.js#L1408)
+invokes scene rendering after initialization; its return does not establish GPU
+completion. Canvas capture therefore accompanies the acknowledgement. Retained
+images show changed output and the test also requires exact pixel restoration
+when the same evaluated time is sought. These canvases use the repository-authored
+`morph-box.pmx`, `morph-wedge.pmx` and `morph-only.vmd` fixtures, converted by the
+existing asset tooling; no third-party model is used:
+
+| Rig | Before delayed callback (0.99) | Rendered crossing (approximately 0.35) |
+| --- | --- | --- |
+| Box | [Before canvas](vmd-loop-canvas/box-before.png) | [Crossing canvas](vmd-loop-canvas/box-crossing.png) |
+| Wedge | [Before canvas](vmd-loop-canvas/wedge-before.png) | [Crossing canvas](vmd-loop-canvas/wedge-crossing.png) |
+
+Negative checks run the same crossing acceptance with the default five-second
+polling timeout: held rendering after Play leaves the render revision stale and
+produces no crossing; a new paused seek followed by a 3.2-second callback produces
+no crossing either. Both are required to reject acceptance. Pause also preserves
+player time and update history across a delayed callback. Fresh crossings precede
+both existing VPD poses, reset, reload, manual weights and motion replacement;
+these actions clear the evidence. Page reload starts with no crossing, model
+replacement clears it, and player disposal remains required. Existing numerical,
+raster and lifecycle checks, scenario coverage and timeouts are unchanged.
+
+### Executed Issue #39 checks and limits
+
+Final results below come from this source state; the full browser run took
+32.2 minutes. Source/configuration hashes still match the executed checks. During
+implementation, the first Node run was started concurrently with asset generation
+and failed nine existing tests on missing generated files (55 passed). After the
+build completed, all 64 passed. The first focused browser run measured the correct
+crossing/render/canvas result, then caught a harness race: checking evidence before
+asynchronous VPD application completed. Waiting for the existing enabled/status
+signals corrected the observation. The corrected focused test passed on both rigs.
+These were diagnosed setup/harness corrections, not repeated runs until green;
+no retry, skip, larger timeout, slowed production clock or relaxed threshold was
+introduced.
+
+| Command | Final result |
+| --- | --- |
+| `npm ci` | Passed; lockfile unchanged; reported two existing audit findings (one low, one high). |
+| `npm run build` | Passed; existing bundle-size notice only. |
+| `npm run typecheck` | Passed. |
+| `npm test` | 64 passed, zero failures/skips, plus existing Toon/Outline fixture runners. |
+| Focused delayed-frame browser regression | Passed on both rigs (one test). |
+| `PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser` | 25 passed, zero failures/flaky results, two existing optional native-WebGPU skips (adapter unavailable); 32.2 minutes. |
+| `npm run check:links` | Passed: 281 local links/anchors and built entry links, including all retained canvases. |
+| `git diff --check` | Passed on the complete final change, including staged files. |
+
+Optional naturally scheduled slow-frame tracing was not performed. This work does
+not establish historical-cause attribution, original-MMD equivalence, native
+WebGPU performance or representative-asset fidelity. VMD/VPD fidelity beyond this
+solver-free profile, remaining morph families, ordered IK/append, physics and
+representative fidelity remain mandatory overall work. No post-merge verification
+is required by Issue #39. External Issue/PR edits were not performed because this
+node expressly prohibits them; this retained correction is available downstream.
