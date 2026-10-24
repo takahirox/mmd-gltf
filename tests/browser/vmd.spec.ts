@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { morphWeights } from '../morph-oracle';
 const preview = 'http://127.0.0.1:43180/mmd-gltf/';
 test('built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines', async ({
   page,
@@ -107,7 +108,7 @@ test('built Demo VMD lifecycle: both rigs/motions/sources, fractional seek, play
     await page.locator('#motion-loop').check();
     await seek(1.32);
     await page.locator('#motion-play').click();
-    await expect.poll(async () => (await state()).time).toBeLessThan(0.5);
+    await expectCrossing(page, rig, 'gltf', 'Motion B (gltf)');
     await page.locator('#motion-pause').click();
     expect((await state()).playing).toBe(false);
     await page.locator('#motion-loop').uncheck();
@@ -201,7 +202,7 @@ test('built Demo morph controls and combined lifecycle on both rigs, local motio
     await expect(page.locator('#status')).toContainText('VMD loaded');const bones=(await state()).bones;
     await seek(0.8);expect((await state()).bones).toEqual(bones);expect((await state()).weights[0]).toBeGreaterThan(1);
     await page.locator('#motion-loop').check();await seek(0.99);await page.locator('#motion-play').click();
-    await expect.poll(async()=>(await state()).time).toBeLessThan(0.5);await page.locator('#motion-pause').click();
+    await expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)');await page.locator('#motion-pause').click();
     await page.locator('#motion-loop').uncheck();
     await page.locator('#motion-file').setInputFiles('tests/fixtures/combined-a.vmd');
     await expect(page.locator('#motion-source')).toHaveValue('bytes');
@@ -216,4 +217,172 @@ test('built Demo morph controls and combined lifecycle on both rigs, local motio
     await seek(0.5);expect((await state()).weights[0]).toBeGreaterThan(0);
   }
   expect((await state()).disposedPlayers).toBeGreaterThan(20);expect(errors).toEqual([]);
+});
+
+// This predicate requires a recorded update that actually crossed duration and
+// was submitted by the corresponding render. It cannot pass on a seek alone.
+async function expectCrossing(page: Page, rig: string, source: string, motion: string) {
+  await expect.poll(() => page.evaluate(({ rig, source, motion }) => {
+    const s = (window as any).mmdRig, c = s.playback.crossing;
+    return s.playing && !!c && c.generation === s.playback.generation && c.rig === rig && c.source === source && c.motion === motion &&
+      c.playingBefore && c.playing && c.loop && c.duration > 0 && c.delta > 0 &&
+      c.before + c.delta >= c.duration && c.crossings > 0 &&
+      Math.abs(c.after - (c.before + c.delta) % c.duration) < 1e-12 &&
+      c.frame <= s.rendered.frame && c.revision <= s.rendered.revision;
+  }, { rig, source, motion })).toBe(true);
+}
+
+// Gate the actual renderer RAF chain; other RAF consumers (including canvas
+// capture) continue. Supply a controlled performance clock, never player/UI data.
+async function installPlaybackGate(page: Page) {
+  await page.addInitScript(() => {
+    const request = window.requestAnimationFrame.bind(window), realNow = performance.now.bind(performance);
+    let held = false, target: FrameRequestCallback | undefined, pending: FrameRequestCallback | undefined;
+    let notify: (() => void) | undefined, now = 0, offset = 0;
+    performance.now = () => held ? now : realNow() + offset;
+    window.requestAnimationFrame = callback => request(time => {
+      if (held && (!target || callback === target)) {
+        target = callback; pending = callback; notify?.(); notify = undefined;
+      } else callback(time);
+    });
+    (window as any).playbackGate = {
+      hold: () => new Promise<void>(resolve => { now = realNow() + offset; held = true; notify = resolve; }),
+      step: (ms: number) => new Promise<void>(resolve => {
+        const callback = pending!; pending = undefined; now += ms; notify = resolve;
+        request(time => callback(time));
+      }),
+      release: () => {
+        offset = now - realNow(); held = false;
+        if (pending) request(pending);
+        pending = target = undefined;
+      },
+    };
+  });
+}
+
+async function seekDemo(page: Page, time: number) {
+  await page.locator('#motion-time').fill(String(time));
+  await page.locator('#motion-time').dispatchEvent('input');
+}
+
+test('built Demo delayed real frames retain crossing/render/canvas evidence and isolate ownership', async ({ page }, info) => {
+  await installPlaybackGate(page);
+  const traces: object[] = [], errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  const state = () => page.evaluate(() => (window as any).mmdRig);
+  const step = async (ms: number) => {
+    await page.evaluate(ms => (window as any).playbackGate.step(ms), ms);
+
+  };
+  const cleared = async (previous: number) => {
+    const s = await state();
+    expect(s.playback.generation).toBeGreaterThan(previous);
+    expect(s.playback.crossing).toBeNull(); expect(s.playback.updates).toEqual([]);
+    return s.playback.generation;
+  };
+  try {
+    for (const rig of ['box', 'wedge']) {
+      await page.goto(`${preview}rig.html`);
+      await expect(page.locator('#rig-preset')).toBeEnabled();
+      expect((await state()).playback.crossing).toBeNull();
+      await page.locator('#rig-model').selectOption(rig);
+      await expect(page.locator('#rig-preset')).toBeEnabled();
+      const rest = (await state()).bones;
+      await page.locator('#motion-sample').selectOption('only');
+      await expect(page.locator('#motion-load')).toBeEnabled();
+      await page.locator('#motion-source').selectOption('glb');
+      await page.locator('#motion-load').click();
+      await expect(page.locator('#motion-load')).toBeEnabled();
+      await page.locator('#motion-loop').check();
+      await seekDemo(page, 0.99);
+      await page.waitForFunction(() => { const s = (window as any).mmdRig; return s.rendered?.revision === s.revision; });
+      await page.evaluate(() => (window as any).playbackGate.hold());
+      await step(0); // Prime last=controlled performance.now() while paused.
+      const before = await state();
+      const canvas = page.locator('canvas');
+      const beforeImage = await canvas.screenshot({ path: info.outputPath(`${rig}-before.png`) });
+      await page.locator('#motion-play').click();
+      const held = await state();
+      expect(held.time).toBe(0.99); expect(held.playing).toBe(true);
+      expect(held.playback.crossing).toBeNull();
+      expect(held.rendered.revision).toBeLessThan(held.revision);
+      expect(held.rendered.frame).toBe(before.rendered.frame);
+      // No callback means neither an update nor rendered acknowledgement.
+      await expect(expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)')).rejects.toThrow();
+      await step(2360);
+      let s = await state(), c = s.playback.crossing;
+      await expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)');
+      expect(c.before).toBe(0.99); expect(c.delta).toBeCloseTo(2.36, 12);
+      expect(c.after).toBeCloseTo(0.35, 12); expect(c.crossings).toBe(3);
+      expect(s.playing).toBe(true); expect(s.bones).toEqual(rest);
+      s.weights.forEach((w: number, i: number) => expect(Math.abs(w - morphWeights('a', 0.35)[i])).toBeLessThan(1e-7));
+      expect(c.revision).toBe(s.rendered.revision); expect(c.frame).toBe(s.rendered.frame);
+      expect(c.after).toBe(s.rendered.time); expect(c.weights).toEqual(s.rendered.weights);
+      const drawn = await canvas.screenshot({ path: info.outputPath(`${rig}-crossing.png`) });
+      expect(drawn.equals(beforeImage)).toBe(false);
+      expect((await state()).rendered).toEqual(s.rendered);
+      traces.push({ rig, delayed: c, rendered: s.rendered });
+      // Later frames leave the crossing durable even outside the old window.
+      await step(500); s = await state();
+      expect(s.time).toBeCloseTo(0.85, 12); expect(s.playing).toBe(true);
+      expect(s.playback.crossing).toEqual(c);
+      s.weights.forEach((w: number, i: number) => expect(Math.abs(w - morphWeights('a', 0.85)[i])).toBeLessThan(1e-7));
+      await expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)');
+      const aliased: object[] = [];
+      for (let i = 0; i < 5; i++) {
+        await step(1000); s = await state();
+        expect(s.time).toBeCloseTo(0.85, 12);
+        expect(s.time < 0.5).toBe(false);
+        await expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)');
+        aliased.push(s.playback.crossing);
+      }
+      traces.push({ rig, aliased });
+      // Paused playback must not produce another update despite a delayed frame.
+      await page.locator('#motion-pause').click();
+      const paused = await state(); await step(3200); s = await state();
+      expect(s.time).toBe(paused.time); expect(s.playback).toEqual(paused.playback);
+      expect(s.rendered.playing).toBe(false);
+      await seekDemo(page, 0.35); let generation = await cleared(s.playback.generation);
+      await step(3200);
+      expect((await state()).time).toBe(0.35);
+      await expect(expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)')).rejects.toThrow();
+      expect((await canvas.screenshot()).equals(drawn)).toBe(true);
+      // Motion reload/replacement, reset, both VPD poses, manual ownership and
+      // model replacement must not borrow a previous crossing.
+      const cross = async () => {
+        await seekDemo(page, 0.99); await page.locator('#motion-play').click(); await step(1360);
+        await expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)');
+        await page.locator('#motion-pause').click();
+        return (await state()).playback.generation;
+      };
+      for (const pose of ['a', 'b']) {
+        generation = await cross();
+        await page.locator('#rig-pose').selectOption(pose); await page.locator('#rig-preset').click();
+        await expect(page.locator('#rig-preset')).toBeEnabled();
+        await expect(page.locator('#status')).toContainText('Applied VPD');
+        await cleared(generation); expect((await state()).playing).toBe(false);
+      }
+      generation = await cross(); await page.locator('#motion-reset').click(); await cleared(generation);
+      expect((await state()).weights).toEqual([0, 0, 0, 0]); expect((await state()).bones).toEqual(rest);
+      generation = await cross(); await page.locator('#motion-load').click();
+      await expect(page.locator('#motion-load')).toBeEnabled(); await cleared(generation);
+      generation = await cross();
+      await page.locator('#morph-controls input').first().fill('1.8');
+      await page.locator('#morph-controls input').first().dispatchEvent('change');
+      await cleared(generation); expect((await state()).playing).toBe(false);
+      generation = await cross();
+      await page.locator('#motion-sample').selectOption('combined-a');
+      await expect(page.locator('#motion-load')).toBeEnabled(); await page.locator('#motion-load').click();
+      await expect(page.locator('#motion-load')).toBeEnabled(); await cleared(generation);
+      generation = (await state()).playback.generation;
+      await page.locator('#rig-model').selectOption(rig === 'box' ? 'wedge' : 'box');
+      await expect(page.locator('#rig-preset')).toBeEnabled(); await cleared(generation);
+      expect((await state()).disposedPlayers).toBeGreaterThan(0);
+    }
+    expect(errors).toEqual([]);
+  } finally {
+    await info.attach('loop-traces.json', { body: JSON.stringify(traces, null, 2), contentType: 'application/json' });
+    console.log('Demo loop traces:', JSON.stringify(traces));
+    await page.evaluate(() => (window as any).playbackGate?.release()).catch(() => {});
+  }
 });

@@ -315,6 +315,58 @@ test('morph-only VMD needs no dummy bone keys and restores original rest and zer
   assert.throws(()=>addVMDAnimation(b.result.document,b.result.document.getRoot().listBuffers()[0],bound,[],{},b.result.document.getRoot().listNodes()[0]),/FLOAT/);
 });
 
+test('morph-only real player: exact/multiple crossings, independent weights, original-rest bones, pause and endpoint', async () => {
+  for (const shape of ['box', 'wedge'] as const) {
+    const direct = await base(shape);
+    const converted = await convertModel(parsePMX(morphPMX(shape)), '.', {
+      mode: 'bdef', scale: rigScale[shape], vmd: morphVMD('a', true), vmdBinding: { morphMapping },
+    });
+    const glb = await load(await converted.io.writeBinary(converted.document), true);
+    const players = [
+      { asset: direct.gltf, player: createVMDPlayer(direct.rig!, bindVMD(direct.rig!, parseVMD(morphVMD('a', true)), { morphMapping })) },
+      { asset: glb, player: getVMDPlayers(glb)[0] },
+    ];
+    for (const { asset, player } of players) {
+      const bones = () => { const out: object[] = []; asset.scene.traverse(n => {
+        if (n.userData.pmxBone) out.push([n.position.toArray(), n.quaternion.toArray()]);
+      }); return out; };
+      const rest = bones(), morph = createMorphRig(asset.scene);
+      const check = (time: number, playing: boolean) => {
+        assert.ok(Math.abs(player.time - time) < 1e-14);
+        assert.equal(player.playing, playing);
+        getMorphWeights(morph).forEach((w, i) => assert.ok(Math.abs(w - morphWeights('a', time)[i]) < 1e-7));
+        assert.deepEqual(bones(), rest);
+      };
+      player.loop = true;
+      player.seek(0).play().update(1); check(0, true);
+      player.seek(0.99).update(0.01); check(0, true);
+      player.seek(0.9).update(3.45); check(0.35, true);
+      player.pause().update(10); check(0.35, false);
+      player.loop = false;
+      player.play().update(4); check(1, false);
+      player.update(2); check(1, false);
+      // A one-second periodic state can evade Playwright's default polling
+      // schedule under delayed delivery for its five-second budget. Crossings still occurred.
+      player.loop = true;
+      player.seek(0.99).play();
+      const polls = [0, 0.95, 1.95, 2.95, 3.95, 4.95];
+      let previous = 0, crossings = 0;
+      const sampled: number[] = [];
+      for (const elapsed of polls) {
+        const delta = elapsed - previous;
+        crossings += Math.floor(player.time + delta);
+        player.update(delta); previous = elapsed; sampled.push(player.time);
+      }
+      assert.ok(crossings >= 4);
+      assert.ok(sampled.every(t => t >= 0.5), JSON.stringify(sampled));
+      check(0.94, true);
+      console.log('Morph loop polling evidence:', JSON.stringify({ shape, path: asset === glb ? 'glb' : 'bytes', polls, sampled, crossings }));
+      player.stop(); assert.deepEqual(bones(), rest); assert.deepEqual(getMorphWeights(morph), [0, 0, 0, 0]);
+      player.dispose();
+    }
+  }
+});
+
 test('standalone v2 mixed draft example and schema; v1 remains readable without PMX metadata',async()=>{
   const text=await readFile('extensions/MMD_animation_vmd/examples/mixed-weights.gltf','utf8');
   const report=await validateString(text);assert.equal(report.issues.numErrors,0,JSON.stringify(report.issues.messages));

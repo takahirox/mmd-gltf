@@ -37,6 +37,15 @@ import {
 import { validWeight } from '../packages/mmd-morph';
 import { createMorphRig, getMorphModel, getMorphWeights, applyMorphWeights, resetMorphWeights, refreshDeformation, type MorphRig } from '../packages/three-mmd-morph';
 
+// Bounded diagnostics from real player updates, acknowledged only by the render
+// that follows that update. A crossing survives subsequent ordinary frames.
+interface PlaybackUpdate {
+  generation: number; rig: string; source: string; motion: string;
+  duration: number; before: number; delta: number; after: number;
+  playingBefore: boolean; playing: boolean; loop: boolean; crossings: number;
+  revision: number; frame: number; weights: number[];
+}
+
 async function start() {
   const renderer = new WebGPURenderer({
     antialias: true,
@@ -88,6 +97,8 @@ async function start() {
     weights: [] as number[],
     error: '',
     motion: '',
+    source: '',
+    playback: { generation: 0, updates: [] as PlaybackUpdate[], crossing: null as PlaybackUpdate | null },
     time: 0,
     playing: false,
     disposedPlayers: 0,
@@ -117,6 +128,11 @@ async function start() {
     status.textContent = `Ready · ${message} · Solver-free bones + vertex morphs; IK/append/physics and other morph families unsupported`;
   };
   const invalidate = () => { info.revision++; };
+  const clearPlayback = () => {
+    info.playback.generation++;
+    info.playback.updates = [];
+    info.playback.crossing = null;
+  };
   const snapshot = () => {
     invalidate();
     info.bones = [];
@@ -234,6 +250,8 @@ async function start() {
   async function loadRig() {
     const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
     await replace(next);
+    clearPlayback();
+    info.source = '';
     info.motion = '';
     info.rig = model.value;
     info.pose = 'rest';
@@ -261,6 +279,7 @@ async function start() {
       };
     const bound = assets.map((a) => bindVPD(a.rig, pose, options));
     bound.forEach((b, i) => applyVPD(assets[i].rig, b));
+    clearPlayback();
     info.deformed = true;
     info.pose = sample.value;
     info.error = '';
@@ -312,6 +331,8 @@ async function start() {
     assets.forEach((a) => {
       a.player!.loop = loop.checked;
     });
+    clearPlayback();
+    info.source = motionSource.value;
     seek.max = String(assets[0].player!.duration);
     info.motion = `Motion ${motionSample.value.toUpperCase()} (${motionSource.value})`;
     info.pose = 'motion';
@@ -380,19 +401,21 @@ async function start() {
         // Validate the complete requested weight vector on both independent instances first.
         if (!values.every(validWeight)) throw new Error('Morph: invalid FLOAT weight');
         assets.forEach(a => applyMorphWeights(a.morph, values));
+        clearPlayback();
         info.error = ''; snapshot(); report('Manual morph weights applied. Motion paused');
       });
       label.append(control); container.append(label);
     }
   }
   button('morph-reset').onclick = guarded(() => {
-    assets.forEach(a => resetMorphWeights(a.morph)); snapshot(); report('Morph weights reset. Motion paused');
+    assets.forEach(a => resetMorphWeights(a.morph)); clearPlayback(); snapshot(); report('Morph weights reset. Motion paused');
   });
   const transport = (action: (player: VMDPlayer) => void, takesOwnership: boolean) =>
     guarded(() => {
       if (!assets[0]?.player) throw new Error('Load a VMD motion first');
       assets.forEach((a) => action(a.player!));
       if (takesOwnership) {
+        clearPlayback();
         info.pose = 'motion';
         info.deformed = true;
         label.textContent = info.motion;
@@ -403,6 +426,7 @@ async function start() {
     });
   preset.onclick = guarded(apply);
   const resetAll = () => {
+    clearPlayback();
     assets.forEach((a) => {
       a.player?.stop();
       resetMorphWeights(a.morph);
@@ -417,6 +441,7 @@ async function start() {
   };
   reset.onclick = guarded(() => {
     assets.forEach(a => resetVPD(a.rig));
+    clearPlayback();
     snapshot(); info.pose = 'rest'; info.error = ''; label.textContent = 'Rest state';
     report('VPD reset to original bone rest. Motion paused; morph weights preserved');
   });
@@ -425,10 +450,13 @@ async function start() {
   button('motion-play').onclick = transport((p) => p.play(), true);
   button('motion-pause').onclick = transport((p) => p.pause(), false);
   seek.oninput = transport((p) => p.seek(Number(seek.value)), true);
-  loop.onchange = () =>
+  loop.onchange = () => {
+    clearPlayback();
+    invalidate();
     assets.forEach((a) => {
       if (a.player) a.player.loop = loop.checked;
     });
+  };
   sample.onchange = () => {
     if (sample.value !== 'local') {
       encoding.value = sample.value === 'a' ? 'shift_jis' : 'utf-8';
@@ -484,9 +512,18 @@ async function start() {
     const now = performance.now(),
       delta = (now - last) / 1000;
     last = now;
+    let update: PlaybackUpdate | undefined;
     if (!busy && assets.some((a) => a.player?.playing)) {
+      const player = assets[0].player!, before = player.time, playingBefore = player.playing;
       assets.forEach((a) => a.player?.update(delta));
       snapshot();
+      update = {
+        generation: info.playback.generation, rig: info.rig, source: info.source, motion: info.motion,
+        duration: player.duration, before, delta, after: player.time,
+        playingBefore, playing: player.playing, loop: player.loop,
+        crossings: playingBefore && player.loop && player.duration > 0 ? Math.floor((before + delta) / player.duration) : 0,
+        revision: info.revision, frame: info.frames + 1, weights: [...info.weights],
+      };
     }
     controls.update();
     // Do not acknowledge a half-replaced asset while an asynchronous action is active.
@@ -502,6 +539,11 @@ async function start() {
       playing: info.playing, mode: info.mode, outlines: effect.enabled,
       comparison: comparison.checked, weights: [...info.weights],
     };
+    if (update) {
+      info.playback.updates.push(update);
+      if (info.playback.updates.length > 8) info.playback.updates.shift();
+      if (update.crossings > 0) info.playback.crossing = update;
+    }
   });
   window.addEventListener(
     'pagehide',
