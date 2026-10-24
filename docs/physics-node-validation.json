@@ -1,0 +1,225 @@
+{
+  "environment": {
+    "node": "v24.12.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "backendSHA256": "422b87333fec6272a592088f96bd672dc8f62b9649b12d44e493fd427e89fff8",
+  "originalMMD": "unmeasured",
+  "cases": [
+    {
+      "kind": "analytical symplectic Euler",
+      "ticks": 60,
+      "step": 0.008333333333333333,
+      "expectedY": -0.24626177083333345,
+      "actualY": -0.2462618201971054,
+      "absoluteError": 4.9363771958965685e-8,
+      "positionBound": 0.000002
+    },
+    {
+      "kind": "mode-2 nonzero spring rotation",
+      "rotation": [
+        0,
+        0,
+        0.2112531156084904,
+        0.9774313894825079
+      ],
+      "position": [
+        -3.4597284204185286e-9,
+        0.9999999861876926,
+        0
+      ],
+      "positionBound": 0.000003
+    },
+    {
+      "kind": "independently authored direct-backend conformance",
+      "contactY": 0.09999997913837433,
+      "wrongMaskY": -3.9441890716552734,
+      "springY": 0.8999998569488525,
+      "springDisplacement": 0.10000014305114746,
+      "jointDrift": 1.4305114745538638e-7,
+      "positionBound": 0.01,
+      "jointDriftBound": 0.03
+    },
+    {
+      "kind": "raw PMX bit filtering",
+      "group": 15,
+      "rawExclusion0": 0.09999997913837433,
+      "rawExclusion1": -3.9441890716552734
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "box",
+      "mode": "bdef",
+      "motion": "a",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "rig": "box",
+      "mode": "bdef",
+      "motion": "a",
+      "sourceSHA256": "d18ae935d47496e3ba72cbfa43d6abc31bfb9566f16f1d11dd7c61dc6867a72a",
+      "GLBSHA256": "e0f4d2a7c9cf8224e0dd2ee125d45b8c1e0b7938950024de0060c894286d6721",
+      "measuredFallbackTranslationError": 0.011813470822974933,
+      "measuredFallbackRotationError": 0.025303258807487822,
+      "measuredFallbackWeightError": 0.0008444443941115765,
+      "interpolation": "three finite between-tick probes, no continuous guarantee"
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "box",
+      "mode": "bdef",
+      "motion": "b",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "rig": "box",
+      "mode": "bdef",
+      "motion": "b",
+      "sourceSHA256": "d18ae935d47496e3ba72cbfa43d6abc31bfb9566f16f1d11dd7c61dc6867a72a",
+      "GLBSHA256": "e1cd5103c257e922cda941af7014af079b386430bde254f3b8bad3eaf87aee64",
+      "measuredFallbackTranslationError": 0.008060949936095258,
+      "measuredFallbackRotationError": 0.022247777716318886,
+      "measuredFallbackWeightError": 0.0008444444727566669,
+      "interpolation": "three finite between-tick probes, no continuous guarantee"
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "box",
+      "mode": "sdef",
+      "motion": "a",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "box",
+      "mode": "sdef",
+      "motion": "b",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "box",
+      "mode": "qdef",
+      "motion": "a",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "box",
+      "mode": "qdef",
+      "motion": "b",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "wedge",
+      "mode": "bdef",
+      "motion": "a",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "rig": "wedge",
+      "mode": "bdef",
+      "motion": "a",
+      "sourceSHA256": "567a8ffc7be23486601836f8038a342bdc19e48cfdc5c7d923bda8832ec26d72",
+      "GLBSHA256": "b076b68eda34c743d50c61d56b719842d65aa6f2aa3cb0c47983528e01720d24",
+      "measuredFallbackTranslationError": 0.008836655145125862,
+      "measuredFallbackRotationError": 0.01777428281068358,
+      "measuredFallbackWeightError": 0.0008444443941115765,
+      "interpolation": "three finite between-tick probes, no continuous guarantee"
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "wedge",
+      "mode": "bdef",
+      "motion": "b",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "rig": "wedge",
+      "mode": "bdef",
+      "motion": "b",
+      "sourceSHA256": "567a8ffc7be23486601836f8038a342bdc19e48cfdc5c7d923bda8832ec26d72",
+      "GLBSHA256": "9af6fbb3a154afc96a375d3b1572827c6c6773a5450274a4cd2c5ecbb5d22fce",
+      "measuredFallbackTranslationError": 0.008309054953330258,
+      "measuredFallbackRotationError": 0.02269707064965682,
+      "measuredFallbackWeightError": 0.0008444444727566669,
+      "interpolation": "three finite between-tick probes, no continuous guarantee"
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "wedge",
+      "mode": "sdef",
+      "motion": "a",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "wedge",
+      "mode": "sdef",
+      "motion": "b",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "wedge",
+      "mode": "qdef",
+      "motion": "a",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "kind": "independent direct-backend rig coupling and explicit post append",
+      "rig": "wedge",
+      "mode": "qdef",
+      "motion": "b",
+      "positionBound": 0.000003,
+      "rotationBound": 0.00002
+    },
+    {
+      "kind": "owned native handles and borrowed JS wrappers",
+      "remainingNativeAllocations": 0,
+      "cacheCountsBefore": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cacheCountsAfter": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "resets": 11,
+      "allocatingValueGetter": "forbidden by executable guard"
+    },
+    {
+      "kind": "generated asset validator",
+      "validated": 60,
+      "errors": 0,
+      "formats": [
+        "GLB",
+        "external-buffer glTF"
+      ],
+      "skinning": [
+        "BDEF",
+        "SDEF",
+        "QDEF"
+      ]
+    }
+  ]
+}

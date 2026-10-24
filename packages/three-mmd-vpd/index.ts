@@ -1,3 +1,5 @@
+import { resolveRawPose as rawPhysicsPose } from '../mmd-vpd';
+import { getPhysicsSession } from '../three-mmd-physics/registry';
 import { getSolverModel } from '../three-mmd-solver';
 import { validateSolver } from '../mmd-solver';
 export { MMDVPDExporterPlugin } from './exporter';
@@ -92,9 +94,10 @@ export function applyResolvedPose(rig: VPDRig, resolved: RestBone[], motion = fa
 export function applyVPD(rig: VPDRig, binding: BoundVPD) {
   const bound = bindings.get(binding);
   if (!bound || bound.rig !== rig) throw new Error('VPD: binding belongs to a different model instance; bind again for this rig');
-  applyResolvedPose(rig, resolvePose(state(rig).model, bound.pose));
+  const physics=getPhysicsSession(rig.root);
+  applyResolvedPose(rig, physics ? physics.pose(rawPhysicsPose(state(rig).model,bound.pose)) : resolvePose(state(rig).model, bound.pose));
 }
-export function resetVPD(rig: VPDRig) { applyResolvedPose(rig, resolvePose(state(rig).model)); }
+export function resetVPD(rig: VPDRig) { const physics=getPhysicsSession(rig.root); applyResolvedPose(rig, physics ? physics.pose(rawPhysicsPose(state(rig).model)) : resolvePose(state(rig).model)); }
 
 function validateSkins(root: Object3D, nodes: Map<number,Object3D>, bones: RestBone[], requireSkin: boolean): SkinnedMesh[] {
   // Validate original inverse binds against ORIGINAL rest, not posed/dirty transforms.

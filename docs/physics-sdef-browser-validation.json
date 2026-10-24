@@ -1,0 +1,299 @@
+{
+  "environment": "Chromium SwiftShader WebGL fallback; built production Demo resources",
+  "mode": "sdef",
+  "maximumCPU": 6.222543005295231e-9,
+  "maximumPosition": 0.00002618072883364686,
+  "maximumNormal": 0.00009040812000238319,
+  "maximumRaster": 0,
+  "evidence": [
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "a",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "a",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "b",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "b",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "pose-a",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "pose-a",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "pose-b",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "pose-b",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "a",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "a",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "b",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "b",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "pose-a",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "pose-a",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "pose-b",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "box",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "pose-b",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "a",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "a",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "b",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "b",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "pose-a",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "pose-a",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "pose-b",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "toon",
+      "state": "pose-b",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "a",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "a",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "b",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "b",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "pose-a",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "pose-a",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "pose-b",
+      "pass": "surface",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    },
+    {
+      "rig": "wedge",
+      "mode": "sdef",
+      "material": "pbr",
+      "state": "pose-b",
+      "pass": "outline",
+      "different": 0,
+      "revision": "post-physics nodes/palette used by the measured render"
+    }
+  ],
+  "errors": []
+}

@@ -1,3 +1,4 @@
+import { readRigBitmap } from './rig-bitmap';
 import { test, expect, type Page } from '@playwright/test';
 import { morphWeights } from '../morph-oracle';
 const preview = 'http://127.0.0.1:43180/mmd-gltf/';
@@ -47,7 +48,7 @@ for (const rig of ['box', 'wedge']) test(`built Demo VMD lifecycle: ${rig}, both
   };
   const image = async () => {
     await page.waitForTimeout(100);
-    return page.locator('canvas').screenshot();
+    await page.locator('canvas').screenshot(); return readRigBitmap(page);
   };
   {
     if (rig === 'wedge') {

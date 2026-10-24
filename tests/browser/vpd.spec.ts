@@ -1,3 +1,4 @@
+import { readRigBitmap } from './rig-bitmap';
 import { test, expect } from '@playwright/test';
 const preview = 'http://127.0.0.1:43180/mmd-gltf/';
 
@@ -26,7 +27,7 @@ test('built VPD demo: both rigs/poses, repeat/reset, encoding, local errors and 
   await expect(page.locator('#status')).toContainText('Ready');
   await page.waitForFunction(() => (window as any).mmdRig?.frames > 2);
   const snapshot = () => page.evaluate(() => (window as any).mmdRig.bones);
-  const image = async () => { await page.waitForTimeout(200); return page.locator('canvas').screenshot(); };
+  const image = async () => { await page.waitForTimeout(200); await page.locator('canvas').screenshot(); return readRigBitmap(page); };
   for (const rig of ['box','wedge']) {
     if (rig==='wedge') {
       await page.locator('#rig-model').selectOption(rig);

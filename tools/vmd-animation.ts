@@ -1,3 +1,5 @@
+import type { PhysicsTimeline } from '../packages/three-mmd-physics/world';
+import { evaluateIK } from '../packages/mmd-vmd';
 import {
   Extension,
   type Document,
@@ -31,7 +33,7 @@ export class VMDWriter extends Extension {
   write(context: WriterContext): this {
     for (const [animation, { motion, nodes, weights }] of this.records) {
       const payload: VMDPayload = {
-        version: motion.solver ? 3 : weights.length ? 2 : 1,
+        version: motion.solver?.version === 2 ? 4 : motion.solver ? 3 : weights.length ? 2 : 1,
         rest: motion.rest.map((b) => ({
           node: context.nodeIndexMap.get(nodes[b.index])!,
           translation: b.translation,
@@ -141,7 +143,12 @@ export function addVMDAnimation(
   nodes: Node[],
   options: SamplingOptions = {},
   meshNode?: Node,
+  physics?: PhysicsTimeline,
 ) {
+  if(physics){
+    const max=options.maxSamples??200_000;
+    if(!Number.isInteger(max)||max<1||max>200_000||[options.translationTolerance??2e-6,options.rotationTolerance??2e-5].some(v=>!Number.isFinite(v)||v<=0))throw new Error('MMD_physics: invalid fallback sampling options');
+  }
   if (!motion.solver && !motion.tracks.length && !motion.morphs?.some(g => g.tracks.length)) throw new Error('VMD: no bound bone or morph tracks to convert');
   const animation = doc
     .createAnimation(motion.morphs?.length ? 'VMD bone and morph motion' : 'VMD bone motion')
@@ -151,10 +158,11 @@ export function addVMDAnimation(
         unmatchedMorphs: motion.unmatchedMorphs,
         omitted: motion.omitted,
         profile: 'continuous-curve-v1',
-        fallback: 'Approximate LINEAR TRS, adaptive quarter probes; core LINEAR weights; no continuous error proof',
+        fallback: physics ? 'Physics tick LINEAR TRS; live physics holds last full tick; between-tick interpolation is approximate' : 'Approximate LINEAR TRS, adaptive quarter probes; core LINEAR weights; no continuous error proof',
         sampling: {
-          translationTolerance: options.translationTolerance ?? 2e-6,
-          rotationTolerance: options.rotationTolerance ?? 2e-5,
+          translationTolerance: physics ? null : options.translationTolerance ?? 2e-6,
+          rotationTolerance: physics ? null : options.rotationTolerance ?? 2e-5,
+          physicsFixedStep: physics?.profile.fixedStep,
           maxSamples: options.maxSamples ?? 200000,
         },
       },
@@ -170,12 +178,14 @@ export function addVMDAnimation(
     if(!Number.isFinite(limit)||limit<=0||Math.fround(time)!==time||width>limit)throw new Error(`VMD IK frame ${k.frame}: switch accuracy cannot be represented in FLOAT within controlTimeTolerance`);
     times.add(previousFloat(time));times.add(time);seams.add(time);
   }
+  if(physics){physics.preflight(motion.duration);for(let i=0;i<=Math.floor(motion.duration/physics.profile.fixedStep+1e-9);i++)times.add(i*physics.profile.fixedStep);}
   const seeds=[...times].sort((a,b)=>a-b);
   const cache=new Map<number,ReturnType<typeof evaluateMotion>>();
-  const resolved=(time:number)=>{if(!cache.has(time)){if(cache.size*Math.max(1,motion.rest.length)>1_000_000)cache.clear();cache.set(time,evaluateMotion(motion,time));}return cache.get(time)!;};
+  const resolved=(time:number)=>{if(!cache.has(time)){if(cache.size*Math.max(1,motion.rest.length)>1_000_000)cache.clear();cache.set(time,physics ? physics.seek(time,t=>evaluateMotion(motion,t,undefined,true),t=>evaluateIK(motion,t)) : evaluateMotion(motion,time));}return cache.get(time)!;};
   const tracks=motion.solver ? motion.rest.map(b=>({index:b.index,keys:motion.tracks.find(t=>t.index===b.index)?.keys??[]})) : motion.tracks;
   for (const track of tracks) {
-    const samples = motion.solver ? sampleTrack(track,options,budget,time=>resolved(time).find(b=>b.index===track.index)!,seeds,seams) : sampleTrack(track, options, budget);
+    const samples = physics ? seeds.map(time=>{if(--budget.remaining<0)throw new Error("MMD_physics: fallback sample budget exceeded");const at=resolved(time).find(b=>b.index===track.index)!;return {time:Math.fround(time),translation:at.translation,rotation:at.rotation};}) : motion.solver ? sampleTrack(track,options,budget,time=>resolved(time).find(b=>b.index===track.index)!,seeds,seams) : sampleTrack(track, options, budget);
+    if(samples.some((v,i)=>!Number.isFinite(v.time)||i>0&&v.time<=samples[i-1].time))throw new Error("VMD: fallback FLOAT timestamps must increase strictly");
     count += samples.length;
     const input = doc
       .createAccessor('VMD seconds')

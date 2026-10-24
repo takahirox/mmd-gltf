@@ -4,7 +4,7 @@ import type { Vec3, Quat, RestBone } from '../mmd-vpd';
 import type { Motion, MotionKey } from './index';
 export const EXTENSION_NAME = 'MMD_animation_vmd';
 export interface VMDPayload {
-  version: 1 | 2 | 3;
+  version: 1 | 2 | 3 | 4;
   solver?: SolverProfile;
   ik?: IKTrack[];
   visibility?: {frame:number;visible:number;raw:number[]}[];
@@ -25,7 +25,7 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
   const p = value as VMDPayload;
   if (
     !properties(p, ['version', 'rest', 'tracks', 'weights', 'solver', 'ik', 'visibility']) ||
-    ![1, 2, 3].includes(p.version) ||
+    ![1, 2, 3, 4].includes(p.version) ||
     !Array.isArray(p.rest) ||
     (p.version === 1 && !p.rest.length) ||
     p.rest.length > 65536 ||
@@ -34,9 +34,10 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
     p.tracks.length > 65536
   )
     fail();
-  if (p.version !== 3 && (p.solver !== undefined || p.ik !== undefined || p.visibility !== undefined)) fail();
-  if (p.version === 3) {
+  if (p.version < 3 && (p.solver !== undefined || p.ik !== undefined || p.visibility !== undefined)) fail();
+  if (p.version >= 3) {
     validateSolver(p.solver,nodeCount);
+    if(p.solver!.version !== (p.version === 4 ? 2 : 1)) fail();
     const seen=new Set<number>();
     if(!Array.isArray(p.ik) || p.ik.length>65536 || !Array.isArray(p.visibility) || p.visibility.length>1_000_000) fail();
     let controls=0;
@@ -48,7 +49,7 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
     p.visibility!.forEach((d,i)=>{if(!d || !properties(d,['frame','visible','raw']) || !Number.isInteger(d.frame)||d.frame<0||d.frame>0xffffffff||![0,1].includes(d.visible)||i>0&&d.frame<=p.visibility![i-1].frame||!Array.isArray(d.raw)||d.raw.some(v=>!Number.isInteger(v)||v<0||v>255))fail();});
   }
   if (p.version === 1 && p.weights !== undefined) fail();
-  if (p.version === 2 || p.version === 3 && p.weights !== undefined) {
+  if (p.version === 2 || p.version >= 3 && p.weights !== undefined) {
     if (!Array.isArray(p.weights) || !p.weights.length || p.weights.length > 65536) fail();
     const seen = new Set<number>();
     for (const w of p.weights!) {

@@ -26,9 +26,10 @@ export interface SolverBone extends RestBone {
   ik?: IK;
 }
 export interface SolverProfile {
-  version: 1;
+  version: 1 | 2;
   bones: SolverBone[];
 }
+export const phaseOrder = (b: SolverBone) => b.flags & 0x1000 ? 1 : 0;
 const identity: Quat = [0, 0, 0, 1];
 export const mul = (a: Quat, b: Quat): Quat => [
   a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
@@ -87,7 +88,7 @@ export function validateSolver(
   };
   if (
     !p ||
-    p.version !== 1 ||
+    ![1, 2].includes(p.version) ||
     !Array.isArray(p.bones) ||
     !p.bones.length ||
     p.bones.length > 65536 ||
@@ -135,10 +136,10 @@ export function validateSolver(
       fail(i, "invalid/duplicate node");
     nodes.add(b.node!);
     byIndex.set(b.index, b);
-    if (b.flags & 0x3400)
+    if (b.flags & (p.version === 1 ? 0x3400 : 0x2400))
       fail(
         i,
-        "post-physics, external parent or fixed-axis dependency outside pre-physics-v1",
+        p.version === 1 ? "post-physics, external parent or fixed-axis dependency outside pre-physics-v1" : "external parent or fixed-axis dependency outside pre/post-physics-v2",
       );
     const a = b.append;
     if (
@@ -205,7 +206,7 @@ export function validateSolver(
   if (work > 20_000_000)
     fail(-1, "solver work budget exceeds 20000000 bone updates");
   const order = [...p.bones].sort(
-      (a, b) => a.layer - b.layer || a.index - b.index,
+      (a, b) => phaseOrder(a) - phaseOrder(b) || a.layer - b.layer || a.index - b.index,
     ),
     rank = new Map(order.map((b, i) => [b.index, i]));
   // Parent and append cycles/late dependencies are rejected instead of guessing an order.
@@ -240,6 +241,7 @@ export function validateSolver(
         fail(i, `links[${j}]: must be ordered effector ancestors`);
       ancestor = byIndex.get(l.index)!.parentIndex;
       links.add(l.index);
+      if (phaseOrder(b) !== phaseOrder(byIndex.get(l.index)!)) fail(i, `links[${j}]: IK cannot write across physics phases`);
       // An append consumer already evaluated would otherwise need a second pass.
       for (const consumer of p.bones) {
         if (!consumer.append || rank.get(consumer.index)! > rank.get(b.index)!)
@@ -266,6 +268,7 @@ export function solvePose(
   profile: SolverProfile | undefined,
   input: RestBone[],
   enabled: ReadonlyMap<number, boolean> = new Map(),
+  phase?: "pre" | "post",
 ): RestBone[] {
   if (!profile) return structuredClone(input);
   validateSolver(profile);
@@ -285,6 +288,7 @@ export function solvePose(
     const v = raw.get(b.index);
     if (
       !v ||
+      v.parentIndex !== b.parentIndex ||
       !finite(v.translation, 3) ||
       !finite(v.rotation, 4) ||
       Math.abs(Math.hypot(...v.rotation) - 1) > 1e-5 ||
@@ -304,7 +308,7 @@ export function solvePose(
     }),
   );
   const order = [...profile.bones].sort(
-    (a, b) => a.layer - b.layer || a.index - b.index,
+    (a, b) => phaseOrder(a) - phaseOrder(b) || a.layer - b.layer || a.index - b.index,
   );
   const hierarchy = order; // Validation guarantees parents precede children.
   const world = new Map<number, { t: Vec3; q: Quat }>(),
@@ -324,6 +328,7 @@ export function solvePose(
   update(rest, original);
   update(pose, world);
   for (const b of order) {
+    if (phase && phaseOrder(b) !== (phase === "post" ? 1 : 0)) continue;
     const dest = pose.get(b.index)!,
       a = b.append;
     if (a) {

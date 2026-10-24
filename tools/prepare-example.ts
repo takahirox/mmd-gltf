@@ -198,3 +198,26 @@ for(const rig of ['box','wedge'])for(const mode of ['bdef','sdef','qdef'] as con
 }
 await writeFile('public/solver/conversion.json',JSON.stringify({attribution:'Original synthetic works by mmd-gltf contributors, Issue #43. No third-party bytes; original-MMD unmeasured.',cases:solverEvidence},null,2)+'\n');
 console.log('Generated Issue #43 solver rigs, motions and poses across all skinning/output modes.');
+
+// Issue #45: pinned local backend and original physics variants, through the real converter.
+const { physicsPMX } = await import('./synthetic-physics');
+const backendBytes=await readFile('node_modules/ammojs-typed/ammo/ammo.js');
+const { BACKEND_SHA256 }=await import('../packages/three-mmd-physics/ammo');
+if(createHash('sha256').update(backendBytes).digest('hex')!==BACKEND_SHA256)throw new Error('Pinned Ammo artifact hash mismatch');
+await mkdir('public/runtime',{recursive:true});await writeFile('public/runtime/ammo.js',backendBytes);
+await copyFile('extensions/MMD_physics/BACKEND-LICENSE.txt','public/runtime/ammo-LICENSE.txt');
+await rm('public/physics',{recursive:true,force:true});await mkdir('public/physics',{recursive:true});
+const physicsEvidence:object[]=[];
+for(const rig of ['box','wedge'] as const)for(const mode of ['bdef','sdef','qdef'] as const){
+  const output=`public/physics/${rig}-${mode}`;await mkdir(output,{recursive:true});const source=physicsPMX(rig,mode);await writeFile(`${output}/source.pmx`,source);
+  for(const state of ['rest','a','b','pose-a','pose-b']){
+    const result=await convertModel(parsePMX(source),'.',{mode,scale:.2,physics:'rigid-body-v1',
+      vmd:state==='a'||state==='b'?await readFile(`tests/fixtures/solver-${state}.vmd`):undefined,
+      vpd:state.startsWith('pose-')?await readFile(`tests/fixtures/solver-${state.slice(-1)}.vpd`):undefined,vpdEncoding:'utf-8',physicsSettle:state.startsWith('pose-')?.25:0});
+    for(const ext of ['glb','gltf'])await result.io.write(`${output}/${state}.${ext}`,result.document);
+    physicsEvidence.push({rig,mode,state,sourceSHA256:createHash('sha256').update(source).digest('hex'),glbSHA256:createHash('sha256').update(await readFile(`${output}/${state}.glb`)).digest('hex'),warnings:result.warnings});
+  }
+}
+await writeFile('public/physics/conversion.json',JSON.stringify({backendSHA256:BACKEND_SHA256,attribution:'Original synthetic Issue 45 variants by mmd-gltf contributors. No third-party fixture bytes; original-MMD unmeasured.',cases:physicsEvidence},null,2)+'\n');
+console.log('Generated physics rigs, both motions and both VPD snapshots across BDEF/SDEF/QDEF and GLB/glTF.');
+const {writePhysicsReferences}=await import('./physics-reference');await writePhysicsReferences();

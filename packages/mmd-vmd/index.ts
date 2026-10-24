@@ -264,12 +264,12 @@ export function evaluateTrack(track: MotionTrack, seconds: number): { translatio
     rotation: slerp(a.rotation, b.rotation, bezier(b.curves[3], u)),
   };
 }
-export function evaluateMotion(motion: Motion, seconds: number, overrides?: ReadonlyMap<number,boolean>): RestBone[] {
+export function evaluateMotion(motion: Motion, seconds: number, overrides?: ReadonlyMap<number,boolean>, raw = false): RestBone[] {
   if (!Number.isFinite(seconds)) throw new Error('VMD: seek time must be finite');
   const values = new Map(motion.tracks.map((t) => [t.index, evaluateTrack(t, seconds)]));
   const input = motion.rest.map((b) => ({ ...structuredClone(b), ...values.get(b.index) }));
   const enabled = evaluateIK(motion, seconds); overrides?.forEach((v,k)=>enabled.set(k,v));
-  return solvePose(motion.solver, input, enabled);
+  return raw ? input : solvePose(motion.solver, input, enabled);
 }
 
 /** Defaults on; right-continuous at frame/30; omitted controls retain their last value. */
