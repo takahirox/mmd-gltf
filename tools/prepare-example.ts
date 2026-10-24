@@ -109,7 +109,7 @@ for (const [name,scale] of [['box',0.2],['wedge',0.125]] as const) {
     const mapping=motion==='rest'||motion==='only'?undefined:JSON.parse(await readFile(`tests/fixtures/motion-${motion}-map.json`,'utf8'));
     const result=await convertModel(parsePMX(await readFile(`tests/fixtures/morph-${name}.pmx`)),'.',{
       mode:'bdef',scale,vmd,vmdBinding:{mapping,morphMapping:JSON.parse(await readFile('tests/fixtures/morph-map.json','utf8'))},
-      vmdSampling:{translationTolerance:1e-7,rotationTolerance:2e-7},
+      vmdSampling:{translationTolerance:2e-8,rotationTolerance:2e-7},
     });
     result.document.getRoot().setExtras({...result.document.getRoot().getExtras(),
       attribution:'Original synthetic morph variants by mmd-gltf contributors, Issue #31; no third-party assets.',
@@ -170,7 +170,7 @@ for(const [rig,scale] of [['box',0.2],['wedge',0.125]] as const) {
       mode:'bdef',scale,vmd:motion==='rest'?undefined:await readFile(`tests/fixtures/group-${motion}.vmd`),
       vmdBinding:motion==='rest'?undefined:{mapping:JSON.parse(await readFile(`tests/fixtures/motion-${motion}-map.json`,'utf8')),
         morphMapping:JSON.parse(await readFile('tests/fixtures/group-map.json','utf8'))},
-      vmdSampling:{translationTolerance:1e-7,rotationTolerance:2e-7},
+      vmdSampling:{translationTolerance:2e-8,rotationTolerance:2e-7},
     });
     result.document.getRoot().getAsset().extras={attribution:'Original synthetic Issue #41 group fixtures by mmd-gltf contributors; no third-party bytes. No original-MMD parity claim.'};
     for(const ext of ['glb','gltf']) await result.io.write(`public/group/${rig}/${motion}.${ext}`,result.document);
