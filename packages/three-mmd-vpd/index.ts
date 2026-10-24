@@ -1,3 +1,4 @@
+export { MMDVPDExporterPlugin } from './exporter';
 import { releaseMotion } from './ownership';
 import { Matrix4, Quaternion, Vector3, type Object3D, type SkinnedMesh } from 'three';
 import { bindPose, resolvePose, validatePoseModel, type PoseModel, type RestBone, type VPD, type BindingOptions, type PoseBinding } from '../mmd-vpd';

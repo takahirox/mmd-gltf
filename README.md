@@ -96,7 +96,7 @@ Toon, core PBR and Outline. Use `--mode qdef` with `MMDQDEFPlugin` for the bound
 PMX 2.1 rigid dual-quaternion profile; see the [QDEF guide](docs/qdef.md) and
 [extension draft](extensions/MMD_skinning_qdef/README.md). Ordinary loaders retain
 an approximate BDEF4 fallback. General PMX 2.1, deformation layers, IK/append, physics,
-non-vertex morph evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs convert in static and all skinned modes; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
+other morph-family evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs and one-hop vertex-only groups convert in static and all skinned modes; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
 see the [VPD contract and APIs](docs/pipeline.md#vpd-bone-offsets). The outline effect
 also accepts core POSITION/NORMAL morph deformation from other assets.
 Source models and derivatives retain their own rights. Gene Light is
@@ -133,7 +133,7 @@ VMD curves with an explicitly approximate core TRS fallback. The
 play/pause, fractional seek, loop, reset, disposal and explicit VPD ownership handoff.
 See the [reader/name/evaluation/API contract](docs/vmd.md) and
 [measured validation](docs/validation.md#issue-29-vmd-bone-motion).
-All known sections are read; bone and vertex-morph tracks execute, while scene
+All known sections are read; bone, vertex and supported group-morph tracks execute, while scene
 execution is omitted with counts. Unmatched morphs fail by default; legacy samples
 explicitly ignore/report their preserved unused records. Continuous adjacent-frame
 curves are a project policy, not measured original-MMD equivalence.
@@ -152,3 +152,5 @@ inspection/apply/reset and VPD/VMD handoff. See the
 - [Pull request template](.github/pull_request_template.md)
 
 AI agents should start with [AGENTS.md](AGENTS.md).
+
+Issue #41 adds independent [vertex-group compilation and composition](docs/vmd.md#vertex-group-compilation-issue-41), two group-bearing motions on both Demo rigs, and [group validation](docs/group-validation.md).

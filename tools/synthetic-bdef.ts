@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' | 'mixed-sdef' | 'mixed-qdef' = 'bdef', encoding: 'utf16le' | 'utf8' = 'utf16le', textRecords = false, shape: 'box' | 'wedge' = 'box', vertexMorphs = false) {
+export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' | 'mixed-sdef' | 'mixed-qdef' = 'bdef', encoding: 'utf16le' | 'utf8' = 'utf16le', textRecords = false, shape: 'box' | 'wedge' = 'box', vertexMorphs: boolean | 'groups' = false) {
   const chunks: Buffer[] = [];
   const u8 = (v: number) => chunks.push(Buffer.from([v & 255]));
   const i16 = (v: number) => { const b = Buffer.alloc(2); b.writeInt16LE(v); chunks.push(b); };
@@ -71,8 +71,8 @@ export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' | 'mixed-sdef' | 'mi
     } else { i16(0); floats([7, 3, 2]); } // display tail is NOT a rest rotation
   }
   if (vertexMorphs) {
-    i32(5);
-    ['unsupported', '笑い', 'overlap', '笑い', 'untracked'].forEach((name, index) => {
+    i32(vertexMorphs === 'groups' ? 14 : 5);
+    [vertexMorphs === 'groups' ? 'group' : 'unsupported', '笑い', 'overlap', '笑い', 'untracked'].forEach((name, index) => {
       str(name); str(`Original morph ${index}`); u8(1); u8(index === 0 ? 0 : 1);
       if (index === 0) { i32(1); u8(1); f32(0.5); return; }
       i32(24);
@@ -82,6 +82,19 @@ export function syntheticPMX(mode: 'bdef' | 'sdef' | 'qdef' | 'mixed-sdef' | 'mi
           index === 2 ? [-0.1, 0.15, v % 2 ? -0.3 : 0.1] : [0.05, 0.02, -0.05]);
       }
     });
+    if (vertexMorphs === 'groups') {
+      const groups = [
+        {name:'shared',type:0,refs:[[1,0.25],[1,0.25],[2,-0.5],[4,0]]},
+        {name:'empty',type:0,refs:[]}, {name:'group',type:0,refs:[[2,1]]},
+        {name:'bone',type:2,refs:[]}, {name:'mixed',type:0,refs:[[1,0.5],[8,1]]},
+        {name:'nested',type:0,refs:[[0,1]]}, {name:'self',type:0,refs:[[11,1]]},
+        {name:'cycle-a',type:0,refs:[[13,1]]}, {name:'cycle-b',type:0,refs:[[12,1]]},
+      ];
+      for (const [i,g] of groups.entries()) {
+        str(g.name);str(`Original group fixture ${i+5}`);u8(1);u8(g.type);i32(g.refs.length);
+        for (const [index,rate] of g.refs) {u8(index);f32(rate);}
+      }
+    }
     i32(0); i32(0); i32(0);
   } else if (textRecords) {
     i32(9); // every PMX 2.0 morph record layout; retained only as unsupported data

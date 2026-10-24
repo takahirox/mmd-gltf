@@ -25,7 +25,7 @@ interface PMXMaterial {
   toonFlag: number; toonIndex: number; faceCount: number; edgeColor?: number[]; edgeSize?: number;
 }
 export interface PMXModel {
-  metadata: { modelName: string; comment: string; englishComment: string; version?: number; encoding?: number; softBodyCount?: number };
+  metadata: { modelName: string; comment: string; englishComment: string; version?: number; encoding?: number; morphCount?: number; softBodyCount?: number };
   vertices: Vertex[]; faces: { indices: number[] }[]; materials: PMXMaterial[]; textures: string[];
   bones: PMXBone[]; morphs: PMXMorph[]; rigidBodies: unknown[]; constraints: unknown[];
 }
@@ -132,7 +132,7 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
   }
   const morph = createMorphTargets(doc, buffer, mesh, meshNode, model, scale, skin?.poseModel.modelId);
   const unsupportedMorphs = morph.metadata.morphs.filter(m => m.target === null);
-  warnings.push(`Morphs: retained ${morph.targets.length} vertex POSITION targets; omitted unsupported source families ${JSON.stringify(unsupportedMorphs.map(m => ({ index: m.index, name: m.name, type: m.type })))}. Authored normals retained; no recomputation or morph normal targets.`);
+  warnings.push(`Morphs: retained ${morph.targets.length} vertex/group POSITION targets; omitted unsupported source families ${JSON.stringify(unsupportedMorphs.map(m => ({ index: m.index, name: m.name, type: m.type, group: m.group, unsupported: m.unsupported })))}. Authored normals retained; no recomputation or morph normal targets.`);
   if (vmd && skin) {
     const motion = parseVMD(vmd), binding = bindMotion(skin.poseModel, motion, vmdBinding, morph.metadata);
     const samples = addVMDAnimation(doc, buffer, binding, skin.nodes, vmdSampling, meshNode);

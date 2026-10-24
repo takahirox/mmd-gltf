@@ -98,7 +98,7 @@ for (const rig of ['qdef-box', 'qdef-wedge']) for (const motion of ['combined-a'
           expect((await image(`VPD ${pose} to VMD`)).equals(initial)).toBe(true);
         }
         await phase('reset motion', () => page.locator('#motion-reset').click());
-        await rendered({ rig, pose: 'rest', time: 0, playing: false, weights: [0, 0, 0, 0] });
+        await rendered({ rig, pose: 'rest', time: 0, playing: false, weights: [0, 0, 0, 0, 0] });
         expect((await image('reset rest')).equals(rest)).toBe(true);
       });
       evidence.source('recovery and rig replacement');
@@ -114,10 +114,10 @@ for (const rig of ['qdef-box', 'qdef-wedge']) for (const motion of ['combined-a'
         await page.locator('#morph-controls input').first().fill('0.7');
         await page.locator('#morph-controls input').first().dispatchEvent('change');
       });
-      await rendered({ rig, weights: [0.7, 0, 0, 0] });
+      await rendered({ rig, weights: [0.7, 0, 0, 0, 0] });
       expect((await image('manual morph')).equals(rest)).toBe(false);
       await phase('reset morph and bones', () => page.locator('#motion-reset').click());
-      await rendered({ rig, weights: [0, 0, 0, 0] });
+      await rendered({ rig, weights: [0, 0, 0, 0, 0] });
       expect((await image('recovered reset')).equals(rest)).toBe(true);
       const nextMotion = motion === 'combined-a' ? 'combined-b' : 'combined-a';
       await phase('load another motion after invalid file', async () => {

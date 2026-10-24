@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { fetchGene } from './fetch-gene';
 import { convertModel, parsePMX } from './pmx-to-gltf';
 import manifest from './gene-light-manifest.json';
+import { groupPMX } from './synthetic-group';
 
 const directory = await fetchGene();
 const { document, io, warnings } = await convertModel(parsePMX(await readFile(`${directory}/Gene_light.pmx`)), directory);
@@ -152,3 +153,27 @@ for (const profile of ['sdef', 'qdef'] as const) {
   await writeFile(`public/${profile}/conversion.json`, JSON.stringify({ cases: skinningEvidence }, null, 2) + '\n');
   console.log(`Generated both mixed ${profile.toUpperCase()} rigs, combined motions and VPD poses in GLB/glTF.`);
 }
+
+// Issue #41: independent group targets and complete dependency metadata.
+await rm('public/group',{recursive:true,force:true});
+await mkdir('public/group',{recursive:true});
+await copyFile('tests/fixtures/group-map.json','public/group/group-map.json');
+for(const motion of ['a','b']) await copyFile(`tests/fixtures/group-${motion}.vmd`,`public/group/group-${motion}.vmd`);
+for(const [rig,scale] of [['box',0.2],['wedge',0.125]] as const) {
+  await mkdir(`public/group/${rig}`,{recursive:true});
+  for(const mode of ['sdef','qdef'] as const) {
+    const result=await convertModel(parsePMX(groupPMX(rig,mode==='sdef'?'mixed-sdef':'mixed-qdef')),'.',{mode,scale});
+    await result.io.write(`public/group/${rig}/${mode}.glb`,result.document);
+  }
+  for(const motion of ['rest','a','b'] as const) {
+    const result=await convertModel(parsePMX(await readFile(`tests/fixtures/group-${rig}.pmx`)),'.',{
+      mode:'bdef',scale,vmd:motion==='rest'?undefined:await readFile(`tests/fixtures/group-${motion}.vmd`),
+      vmdBinding:motion==='rest'?undefined:{mapping:JSON.parse(await readFile(`tests/fixtures/motion-${motion}-map.json`,'utf8')),
+        morphMapping:JSON.parse(await readFile('tests/fixtures/group-map.json','utf8'))},
+      vmdSampling:{translationTolerance:2e-8,rotationTolerance:2e-7},
+    });
+    result.document.getRoot().getAsset().extras={attribution:'Original synthetic Issue #41 group fixtures by mmd-gltf contributors; no third-party bytes. No original-MMD parity claim.'};
+    for(const ext of ['glb','gltf']) await result.io.write(`public/group/${rig}/${motion}.${ext}`,result.document);
+  }
+}
+console.log('Generated Issue #41 group rigs and motions in GLB and unpacked glTF.');

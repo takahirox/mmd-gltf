@@ -156,14 +156,14 @@ share source order and zero default weights. Normals remain the authored base
 normals (including the existing surface/outline skin-normal conventions); no
 normal recomputation or NORMAL targets are invented. Repeated offsets at a vertex
 add. Invalid counts, references, vector lengths, nonfinite values and FLOAT overflow
-reject conversion. Bone, UV, material, group/flip and impulse morphs remain
+reject conversion. Bone, UV, material, unsupported groups/flip and impulse morphs remain
 unsupported; they have `target:null`, with source index/name/type loss diagnostics,
-rather than fake zero-effect targets. Advanced skinning, solvers, physics and
+rather than fake zero-effect targets. SDEF/QDEF now have bounded profiles; solvers, physics and
 representative fidelity remain outstanding.
 
-The mesh node's `extras.pmxMorph` version 1 stores a model ID and every exact
-`{index,name,englishName,type,target}` identity. Targets are contiguous in source
-order. Display dictionary names include source indices because Three.js overwrites
+The original mesh node's `extras.pmxMorph` version 1 stores a model ID and every exact
+`{index,name,englishName,type,target}` identity. Version 1 vertex targets are contiguous in source
+order; version 2 appends supported groups as specified below. Display dictionary names include source indices because Three.js overwrites
 duplicate dictionary names; dictionaries never establish binding identity.
 `getMorphModel(createMorphRig(gltf.scene))` returns a defensive snapshot. One
 model per handle is required, and every loaded material primitive is validated.
@@ -211,7 +211,7 @@ import { createMorphRig, getMorphWeights, applyMorphWeights,
   resetMorphWeights } from '../packages/three-mmd-morph';
 const morph = createMorphRig(gltf.scene);
 console.log(getMorphWeights(morph));
-applyMorphWeights(morph, [1.3, 0.9, 0, 0]); // full target-order vector; pauses VMD
+applyMorphWeights(morph, [1.3, 0.9, 0, 0, 0]); // full target-order vector; pauses VMD
 resetMorphWeights(morph); // zero baseline; pauses VMD
 const binding = bindVMD(rig, parseVMD(bytes), {mapping, morphMapping});
 const player = createVMDPlayer(rig, binding);
@@ -253,3 +253,95 @@ and identified MMD Tools source cited above support the bounded linear morph
 profile, not original-renderer equivalence. No new specification correction was
 established for this Issue; the existing FLOAT skin-weight sum SHOULD correction
 and stricter converter interoperability policy remain in force.
+
+## Vertex-group compilation (Issue #41)
+
+PMX type-0 groups whose immediate children are **all type-1 vertex morphs** compile
+to independent core `POSITION` targets in static, BDEF, SDEF and QDEF modes.
+For a source group, `groupDelta = sum(entry.rate * childDelta)`. Each source entry
+contributes, in source order, including duplicates. Forward references and shared
+children work. Empty groups compile to an explicit all-zero target. Zero-rate
+references are retained and must still reference supported children. Signed rates
+and independent signed weights compose additively; nothing normalizes, clamps or
+redistributes a group weight into its child controls. A direct child weight of
+`0.3` plus a group weight of `0.8` referencing that child at `0.5` therefore applies
+`0.7 * childDelta`, while the stored control weights remain `0.3` and `0.8`.
+Duplicate-entry summation and signed composition are **project policies**, without
+measured original-MMD equivalence.
+
+All targets start at zero and precede skinning. Type-1 targets retain their prior
+source order and indices; supported groups follow, also in source order. Every
+material primitive uses this same layout. Scale and parser Z reflection apply
+once to child offsets. Compilation sums scaled source deltas in JavaScript double
+precision, then casts each complete target to FLOAT. Counts must match the source
+tables and records, indices must be integral and in range, rates must be finite
+and representable as finite FLOAT, and every resulting target component must be
+finite after FLOAT conversion. The profile allows at most 65,536 morphs and
+1,000,000 total group entries. Control weights retain the existing absolute
+10,000 limit. Malformed input fails conversion before publishing an asset; the
+morph compiler validates and computes all targets before adding accessors.
+
+A group with any non-vertex child is **wholly unsupported**, even for a zero-rate
+entry. No supported subset executes. Its target is null, all immediate source
+entries remain in metadata, and dependency diagnostics identify child indices,
+families and nested/self/cyclic group dependencies. Graph traversal only diagnoses
+cycles; it never evaluates nested groups. Bone, UV, material, flip and impulse
+morph execution remains outside this profile. VMD binding still fails unsupported
+or missing tracks by default; explicit `morphUnmatched:'ignore'` retains unmatched
+byte keys and omitted-record counts.
+
+New conversion writes `extras.pmxMorph.version:2`. Each source identity retains
+`index`, both names, `type`, and `target`. Every type-0 identity additionally stores
+`group:[{index,rate},...]` with the full ordered list, and
+`unsupported:[{index,type,reason},...]` (empty for supported groups). Runtime
+validation checks references, target ordering and consistency of these diagnostics.
+Readers continue accepting version 1, including its null group targets, and
+vertex-only version-1 metadata. The `MMD_animation_vmd` transport remains version 2
+with ordinary core weight channels: it needs no new payload or recursive group
+runtime. Its prior version-1 bone payload remains readable. Exact source names and
+explicit byte-name maps, rather than display dictionaries, establish identity.
+
+The reusable `createMorphRig`, `getMorphModel`, `getMorphWeights`,
+`applyMorphWeights`, `resetMorphWeights`, `bindVMD`, and player APIs handle groups
+through the same target vectors. Manual apply/reset pauses motion; VPD apply/reset
+preserves both group and child weights; seeking/playing restores VMD ownership.
+Core `GLTFExporter` preserves applied weights and version-2 metadata in GLB and
+JSON glTF without baking targets into base positions. Register `MMDVPDExporterPlugin` from
+`packages/three-mmd-vpd` when exporting PMX rigs: pinned r186 GLTFExporter selects
+`bones[0]` for the optional `skin.skeleton` hint even when it is not a common root.
+The adapter omits that invalid hint for multi-root PMX skeletons, preserving joint
+order, inverse binds and transforms; no new glTF extension is emitted. Reloading and repeating
+VPD/VMD application does not double deformation. Existing SDEF/QDEF exporter
+plugins remain necessary for their skinning extensions.
+
+The built Demo offers **Vertex groups · box/wedge** and **Group A/B**, through VMD
+bytes and extension-aware GLB/glTF. Its exact-index controls expose groups alongside
+vertices. A complete vector for the group fixture is
+`[0.3,0,0,0,0.8,0,0,0]`: the first vertex and first group remain independent.
+
+```sh
+npm run convert -- tests/fixtures/group-box.pmx output/group.glb --mode bdef --scale 0.2 --vmd tests/fixtures/group-a.vmd --vmd-map tests/fixtures/motion-a-map.json --vmd-morph-map tests/fixtures/group-map.json --vmd-translation-tolerance 2e-8 --vmd-rotation-tolerance 2e-7
+```
+
+### Source reconciliation and limits
+
+The prior planning assumption was that group nesting remained unresolved. The
+corrected requirement is one-hop groups only: the mirrored
+[PMX format-author reference](https://raw.githubusercontent.com/hirakuni45/glfw3_app/master/glfw3_app/docs/PMX_spec.txt)
+defines referenced morph indices and rate multiplication and excludes grouping
+groups. It is a format reference, not measured original-MMD execution.
+[Core glTF](https://raw.githubusercontent.com/KhronosGroup/glTF/main/specification/2.0/Specification.adoc)
+defines additive targets before skinning; compiling weighted deltas is an inference
+from that representation. Historical official
+[Three.js r169 MMDLoader](https://raw.githubusercontent.com/mrdoob/three.js/r169/examples/jsm/loaders/MMDLoader.js)
+illustrates compilation, but its omission of unsupported children is deliberately
+not inherited. Official
+[r186 GLTFLoader](https://raw.githubusercontent.com/mrdoob/three.js/r186/examples/jsm/loaders/GLTFLoader.js)
+loads relative POSITION targets. Acceptance executes the lockfile's **0.186.1**;
+exact package/tag byte equivalence has not been established. The correction removes
+no pre-merge coverage and requires no recursive evaluator or independent AI review.
+
+See [group validation](group-validation.md) and
+[fixture provenance](../tests/fixtures/README.md#issue-41-vertex-group-fixtures).
+Original-MMD measurements, representative fidelity, remaining morph families,
+ordered IK/append, physics and scene controls remain outstanding overall work.

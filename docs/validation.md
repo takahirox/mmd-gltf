@@ -1295,3 +1295,21 @@ solver-free profile, remaining morph families, ordered IK/append, physics and
 representative fidelity remain mandatory overall work. No post-merge verification
 is required by Issue #39. External Issue/PR edits were not performed because this
 node expressly prohibits them; this retained correction is available downstream.
+
+## Issue #41 vertex-group expressions
+
+One-hop vertex-only groups compile into independent additive POSITION targets,
+with complete ordered references/rates and explicit unsupported dependency details.
+The [contract and source reconciliation](vmd.md#vertex-group-compilation-issue-41)
+separate project duplicate/signed-composition policies from unmeasured original-MMD
+execution. Existing fixtures retain their bytes and regression assertions; target
+layout expectations include newly supported groups.
+
+The new cases exercise both rigs and two motions at keys and the 1201-point grid,
+manual/direct/group composition, reusable lifecycle APIs, both VPD poses, ordinary
+fallback, retained GLB/glTF motion, applied-state export/reload, actual loop crossings,
+submitted Demo revisions and canvases, Toon/PBR and outlines, and group-before-SDEF/
+QDEF CPU/GPU deformation. See [measured validation](group-validation.md), the
+[machine-readable results](group-validation.json), and the
+[Demo frame/canvas record](group-demo-validation.json). Remaining overall work and
+original-MMD measurement limits remain explicit in that evidence.
