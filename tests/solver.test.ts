@@ -26,6 +26,7 @@ import {
 } from "../packages/mmd-solver";
 import {
   parseVMD,
+  bindIK,
   bindMotion,
   evaluateMotion,
   evaluateIK,
@@ -104,6 +105,46 @@ async function jsonOutput(r: Awaited<ReturnType<typeof convertModel>>) {
     b.uri = `data:application/octet-stream;base64,${Buffer.from(json.resources[b.uri!]).toString("base64")}`;
   }
   return JSON.stringify(json.json);
+}
+
+for (const path of ["binding", "payload"] as const) {
+  test(`large visibility-only VMD duration: ${path}`, async () => {
+    const minimal = JSON.parse(await readFile(
+      "extensions/MMD_skeleton_solver/examples/minimal.gltf", "utf8",
+    ));
+    const solver: SolverProfile = minimal.extensions[EXTENSION_NAME];
+    // Original synthetic VMD: empty bone/morph/camera/light/shadow sections,
+    // followed by 150,000 chronological display records with no IK controls.
+    const count = 150_000;
+    const bytes = Buffer.alloc(74 + count * 9);
+    bytes.write("Vocaloid Motion Data 0002");
+    bytes.writeUInt32LE(count, 70);
+    for (let frame = 0; frame < count; frame++) {
+      bytes.writeUInt32LE(frame, 74 + frame * 9);
+      bytes[74 + frame * 9 + 4] = frame % 2;
+    }
+    assert.equal(bytes.length, 1_350_074);
+    const vmd = parseVMD(bytes);
+    assert.equal(vmd.displays.length, count);
+    let motion;
+    if (path === "binding") {
+      motion = bindIK(solver, vmd);
+    } else {
+      const payload: VMDPayload = {
+        version: 3, solver,
+        rest: solver.bones.map(b => ({ node: b.node!, translation: b.translation, rotation: b.rotation })),
+        tracks: [], ik: [],
+        visibility: vmd.displays.map(d => ({ frame: d.frame, visible: d.visible, raw: d.raw })),
+      };
+      validatePayload(payload);
+      motion = payloadMotion(payload);
+    }
+    assert.equal(motion.duration, 4999.966666666666);
+    assert.equal(motion.visibility!.length, count);
+    assert.deepEqual(motion.visibility!.at(-1), {
+      frame: count - 1, visible: 1, raw: vmd.displays.at(-1)!.raw,
+    });
+  });
 }
 
 test("retained IK endpoints determine playback duration beyond all other channels", async () => {

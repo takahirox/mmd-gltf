@@ -125,7 +125,7 @@ export function payloadMotion(payload: VMDPayload, morphs: Motion['morphs'] = []
     rest,
     tracks: payload.tracks.map((t) => ({ index: id(t.node), keys: structuredClone(t.keys) })),
     morphs,
-    duration: Math.max(0, ...(payload.ik??[]).map(t=>t.keys.at(-1)!.frame/30), ...(payload.visibility??[]).map(d=>d.frame/30), ...payload.tracks.map((t) => t.keys.at(-1)!.frame / 30),
+    duration: Math.max((payload.visibility?.at(-1)?.frame ?? 0)/30, ...(payload.ik??[]).map(t=>t.keys.at(-1)!.frame/30), ...payload.tracks.map((t) => t.keys.at(-1)!.frame / 30),
       ...morphs.flatMap(g => g.tracks.map(t => t.keys.at(-1)!.frame / 30))),
   };
 }

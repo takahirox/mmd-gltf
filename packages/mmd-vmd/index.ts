@@ -301,5 +301,5 @@ export function bindIK(profile: SolverProfile,vmd: VMD,options: VMDBindingOption
     }
   }
   for(const key of Object.keys(mapping))if(!used.has(key))throw new Error(`VMD IK: unused mapping ${key}`);
-  return {tracks:[...tracks.values()],visibility,unmatched,duration:Math.max(0,...visibility.map(d=>d.frame/30))};
+  return {tracks:[...tracks.values()],visibility,unmatched,duration:(visibility.at(-1)?.frame ?? 0)/30};
 }
