@@ -1,0 +1,19 @@
+Vocaloid Pose Data file
+original.pmx;
+4;
+Bone0{root
+0,0,0;
+0,0,0,1;
+}
+Bone3{link
+.1,.2,.1;
+0,0,0,1;
+}
+Bone1{IK
+1,-1,0;
+0,0,0,1;
+}
+Bone2{append
+.2,.1,.3;
+0,0,0.3826834323650898,0.9238795325112867;
+}

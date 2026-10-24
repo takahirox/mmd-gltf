@@ -1,3 +1,5 @@
+import { getSolverModel } from '../three-mmd-solver';
+import { validateSolver } from '../mmd-solver';
 export { MMDVPDExporterPlugin } from './exporter';
 import { releaseMotion } from './ownership';
 import { Matrix4, Quaternion, Vector3, type Object3D, type SkinnedMesh } from 'three';
@@ -14,6 +16,12 @@ const bindings = new WeakMap<BoundVPD, { rig: VPDRig; pose: PoseBinding }>();
 export function createVPDRig(root: Object3D): VPDRig {
   const containers: Object3D[] = [];
   root.traverse(node => { if (node.userData.mmdPose) containers.push(node); });
+  const retained = getSolverModel(root);
+  if (!containers.length && retained) {
+    const model: PoseModel = { version: 1, modelId: 'MMD_skeleton_solver', metersPerPMXUnit: 1, bones: retained.profile.bones.map(({node,layer,flags,append,ik,...bone}) => structuredClone(bone)), solver: retained.profile };
+    const meshes = validateSkins(root, retained.nodes, model.bones, false);
+    const rig = Object.freeze({root,modelId:model.modelId}); rigs.set(rig,{model,nodes:retained.nodes,meshes}); return rig;
+  }
   if (containers.length !== 1) throw new Error('VPD: expected one model-scoped mmdPose baseline; missing metadata or multiple rigs');
   const container = containers[0], metadata = container.userData.mmdPose;
   const nodes = new Map<number, Object3D>(), bones: RestBone[] = [], meshes: SkinnedMesh[] = [];
@@ -27,32 +35,21 @@ export function createVPDRig(root: Object3D): VPDRig {
   });
   if (bones.length !== metadata.boneCount) throw new Error('VPD: inconsistent baseline bone count');
   const model: PoseModel = { version: metadata.version, modelId: metadata.modelId, metersPerPMXUnit: metadata.metersPerPMXUnit, bones };
-  validatePoseModel(model);
-  // Validate original inverse binds against ORIGINAL rest, not posed/dirty transforms.
-  const world = new Map<number, Matrix4>(), remaining = [...bones];
-  while (remaining.length) {
-    let progress = false;
-    for (let i = remaining.length - 1; i >= 0; i--) {
-      const b = remaining[i];
-      if (b.parentIndex !== -1 && !world.has(b.parentIndex)) continue;
-      const matrix = new Matrix4().compose(new Vector3(...b.translation), new Quaternion(...b.rotation), new Vector3(...b.scale));
-      if (b.parentIndex !== -1) matrix.premultiply(world.get(b.parentIndex)!);
-      world.set(b.index, matrix); remaining.splice(i, 1); progress = true;
-    }
-    if (!progress) throw new Error('VPD: cyclic rest hierarchy');
+  if (container.userData.mmdSolver) { validateSolver(container.userData.mmdSolver); model.solver = structuredClone(container.userData.mmdSolver); }
+  if (retained) {
+    // Converter extras omit glTF node references; all other solver data must agree.
+    const identity = (profile: NonNullable<PoseModel['solver']>) => JSON.stringify(
+      { ...profile, bones: [...profile.bones].sort((a,b) => a.index-b.index) },
+      (key,value) => key === 'node' ? undefined : value && typeof value === 'object' && !Array.isArray(value)
+        ? Object.fromEntries(Object.entries(value).sort(([a],[b]) => a.localeCompare(b))) : value,
+    );
+    if (model.solver && identity(model.solver) !== identity(retained.profile) ||
+        [...nodes].some(([index,node]) => retained.nodes.get(index) !== node))
+      throw new Error('VPD: solver metadata differs from root contract');
+    model.solver = retained.profile;
   }
-  root.traverse(node => {
-    const mesh = node as SkinnedMesh;
-    if (!mesh.isSkinnedMesh) return;
-    if (mesh.skeleton.bones.some(b => !nodes.has(b.userData.pmxBone?.index) || nodes.get(b.userData.pmxBone.index) !== b)) throw new Error('VPD: skin references a different model or missing source identity');
-    mesh.skeleton.bones.forEach((bone, i) => {
-      const inverse = mesh.skeleton.boneInverses[i];
-      const expected = world.get(bone.userData.pmxBone.index)!.clone().invert();
-      if (!inverse || inverse.elements.some((v, j) => !Number.isFinite(v) || Math.abs(v - expected.elements[j]) > 2e-6 * Math.max(1, Math.abs(expected.elements[j])))) throw new Error('VPD: inverse binds inconsistent with original baseline metadata');
-    });
-    meshes.push(mesh);
-  });
-  if (!meshes.length) throw new Error('VPD: no converter-produced BDEF skin in model scope');
+  validatePoseModel(model);
+  meshes.push(...validateSkins(root, nodes, bones, true));
   const rig = Object.freeze({ root, modelId: model.modelId });
   rigs.set(rig, { model, nodes, meshes }); return rig;
 }
@@ -64,7 +61,7 @@ export function bindVPD(rig: VPDRig, pose: VPD, options: BindingOptions = {}): B
 }
 /** Snapshot of validated ORIGINAL rest metadata; current transforms are never captured. */
 export function getVPDModel(rig: VPDRig): PoseModel { return structuredClone(state(rig).model); }
-/** Shared validated local-pose writer for solver-free VPD/VMD. */
+/** Shared validated local-pose writer for resolved VPD/VMD output. */
 export function prepareResolvedPose(rig: VPDRig, resolved: RestBone[]) {
   const s = state(rig);
   if (
@@ -98,3 +95,34 @@ export function applyVPD(rig: VPDRig, binding: BoundVPD) {
   applyResolvedPose(rig, resolvePose(state(rig).model, bound.pose));
 }
 export function resetVPD(rig: VPDRig) { applyResolvedPose(rig, resolvePose(state(rig).model)); }
+
+function validateSkins(root: Object3D, nodes: Map<number,Object3D>, bones: RestBone[], requireSkin: boolean): SkinnedMesh[] {
+  // Validate original inverse binds against ORIGINAL rest, not posed/dirty transforms.
+  const world = new Map<number, Matrix4>(), remaining = [...bones];
+  while (remaining.length) {
+    let progress = false;
+    for (let i = remaining.length - 1; i >= 0; i--) {
+      const b = remaining[i];
+      if (b.parentIndex !== -1 && !world.has(b.parentIndex)) continue;
+      const matrix = new Matrix4().compose(new Vector3(...b.translation), new Quaternion(...b.rotation), new Vector3(...b.scale));
+      if (b.parentIndex !== -1) matrix.premultiply(world.get(b.parentIndex)!);
+      world.set(b.index, matrix); remaining.splice(i, 1); progress = true;
+    }
+    if (!progress) throw new Error('VPD: cyclic rest hierarchy');
+  }
+  const indices = new Map([...nodes].map(([index,node])=>[node,index]));
+  const meshes: SkinnedMesh[] = [];
+  root.traverse(node => {
+    const mesh = node as SkinnedMesh;
+    if (!mesh.isSkinnedMesh) return;
+    if (mesh.skeleton.bones.some(b => !indices.has(b))) throw new Error('VPD: skin references a different model or missing source identity');
+    mesh.skeleton.bones.forEach((bone, i) => {
+      const inverse = mesh.skeleton.boneInverses[i];
+      const expected = world.get(indices.get(bone)!)!.clone().invert();
+      if (!inverse || inverse.elements.some((v, j) => !Number.isFinite(v) || Math.abs(v - expected.elements[j]) > 2e-6 * Math.max(1, Math.abs(expected.elements[j])))) throw new Error('VPD: inverse binds inconsistent with original baseline metadata');
+    });
+    meshes.push(mesh);
+  });
+  if (requireSkin && !meshes.length) throw new Error('VPD: no converter-produced BDEF skin in model scope');
+  return meshes;
+}

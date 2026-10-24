@@ -1,3 +1,4 @@
+import { solvePose, validateSolver, type SolverProfile } from '../mmd-solver';
 import { validatePoseModel, type PoseModel, type RestBone, type Vec3, type Quat } from '../mmd-vpd';
 import { byteName, validateBone, omittedRecords, type VMD } from './reader';
 import { validateMorphModel, validWeight, evaluateWeight, type MorphModel, type WeightTrack } from '../mmd-morph';
@@ -13,7 +14,11 @@ export interface MotionTrack {
   index: number;
   keys: MotionKey[];
 }
+export interface IKTrack { index: number; keys: { frame: number; enabled: boolean }[] }
 export interface Motion {
+  solver?: SolverProfile;
+  ik?: IKTrack[];
+  visibility?: { frame: number; visible: number; raw: number[] }[];
   rest: RestBone[];
   tracks: MotionTrack[];
   duration: number;
@@ -26,6 +31,8 @@ export interface MotionBinding extends Motion {
   omitted: ReturnType<typeof omittedRecords>;
 }
 export interface VMDBindingOptions {
+  ikMapping?: Record<string, number>;
+  ikUnmatched?: 'error' | 'ignore';
   /** Hex byte-name key (not decoded name or record ordinal) to source PMX index. */
   mapping?: Record<string, number>;
   unmatched?: 'error' | 'ignore';
@@ -120,15 +127,19 @@ export function bindMotion(model: PoseModel, vmd: VMD, options: VMDBindingOption
     );
   tracks.sort((a, b) => a.index - b.index);
   const weights = bindMorphMotion(morphModel ?? { version: 1, modelId: model.modelId, morphs: [] }, vmd, options);
+  const controls = model.solver ? bindIK(model.solver, vmd, options) : undefined;
   return {
+    solver: model.solver ? structuredClone(model.solver) : undefined,
+    ik: controls?.tracks,
+    visibility: controls?.visibility,
     modelId: model.modelId,
     rest: structuredClone(model.bones),
     tracks,
-    duration: Math.max(weights.duration, ...tracks.map((t) => t.keys.at(-1)!.frame / 30)),
+    duration: Math.max(weights.duration, controls?.duration ?? 0, ...tracks.map((t) => t.keys.at(-1)!.frame / 30)),
     unmatched,
     unmatchedMorphs: weights.unmatched,
     morphs: weights.count ? [{ node: 0, count: weights.count, tracks: weights.tracks }] : [],
-    omitted: { ...omittedRecords(vmd), morphs: weights.omitted },
+    omitted: { ...omittedRecords(vmd), morphs: weights.omitted, ik: controls ? controls.unmatched : omittedRecords(vmd).ik },
   };
 }
 /** Morph mappings are source PMX indices, never bone indices or target dictionary names. */
@@ -253,8 +264,42 @@ export function evaluateTrack(track: MotionTrack, seconds: number): { translatio
     rotation: slerp(a.rotation, b.rotation, bezier(b.curves[3], u)),
   };
 }
-export function evaluateMotion(motion: Motion, seconds: number): RestBone[] {
+export function evaluateMotion(motion: Motion, seconds: number, overrides?: ReadonlyMap<number,boolean>): RestBone[] {
   if (!Number.isFinite(seconds)) throw new Error('VMD: seek time must be finite');
   const values = new Map(motion.tracks.map((t) => [t.index, evaluateTrack(t, seconds)]));
-  return motion.rest.map((b) => ({ ...structuredClone(b), ...values.get(b.index) }));
+  const input = motion.rest.map((b) => ({ ...structuredClone(b), ...values.get(b.index) }));
+  const enabled = evaluateIK(motion, seconds); overrides?.forEach((v,k)=>enabled.set(k,v));
+  return solvePose(motion.solver, input, enabled);
+}
+
+/** Defaults on; right-continuous at frame/30; omitted controls retain their last value. */
+export function evaluateIK(motion: Motion, seconds: number): Map<number,boolean> {
+  const result=new Map<number,boolean>();
+  for(const track of motion.ik??[]) { let enabled=true; for(const k of track.keys) { if(seconds < k.frame/30) break; enabled=k.enabled; } result.set(track.index,enabled); }
+  return result;
+}
+export function bindIK(profile: SolverProfile,vmd: VMD,options: VMDBindingOptions={}) {
+  validateSolver(profile);
+  if(options.ikUnmatched!==undefined && !['error','ignore'].includes(options.ikUnmatched))throw new Error('VMD IK: invalid unmatched policy');
+  const mapping=options.ikMapping??{};
+  if(!mapping || typeof mapping!=='object' || Array.isArray(mapping))throw new Error('VMD IK: invalid mapping');
+  const tracks=new Map<number,IKTrack>(),frames=new Set<number>(),used=new Set<string>();let unmatched=0;
+  const visibility: NonNullable<Motion['visibility']>=[];
+  for(const [ordinal,d] of [...vmd.displays].sort((a,b)=>a.frame-b.frame).entries()) {
+    if(!Number.isInteger(d.frame)||d.frame<0||d.frame>0xffffffff||frames.has(d.frame)||![0,1].includes(d.visible))throw new Error(`VMD displays[${ordinal}]: invalid/duplicate frame or visibility`);
+    frames.add(d.frame);visibility.push({frame:d.frame,visible:d.visible,raw:[...d.raw]});
+    const targets=new Set<number>();
+    for(const r of d.ik){
+      const name=byteName(r.name.raw),explicit=Object.hasOwn(mapping,name.key);used.add(name.key);
+      if(name.raw.length!==20 || name.key!==r.name.key || name.text!==r.name.text || name.terminated!==r.name.terminated || ![0,1].includes(r.enabled))throw new Error(`VMD displays[${ordinal}]: invalid IK record`);
+      if(!explicit && (!name.terminated || name.text===null))throw new Error('VMD IK: truncated/undecodable name requires mapping');
+      const matches=profile.bones.filter(b=>b.ik && (explicit?b.index===mapping[name.key]:b.name===name.text));
+      if(matches.length>1 || explicit && (!Number.isInteger(mapping[name.key])||matches.length!==1))throw new Error('VMD IK: ambiguous/invalid controller binding');
+      if(!matches.length){unmatched++;if(options.ikUnmatched!=='ignore')throw new Error(`VMD IK: unmatched controller ${name.key}`);continue;}
+      const index=matches[0].index;if(targets.has(index))throw new Error(`VMD displays[${ordinal}]: duplicate IK target ${index}`);targets.add(index);
+      if(!tracks.has(index))tracks.set(index,{index,keys:[]});tracks.get(index)!.keys.push({frame:d.frame,enabled:!!r.enabled});
+    }
+  }
+  for(const key of Object.keys(mapping))if(!used.has(key))throw new Error(`VMD IK: unused mapping ${key}`);
+  return {tracks:[...tracks.values()],visibility,unmatched,duration:(visibility.at(-1)?.frame ?? 0)/30};
 }

@@ -1,9 +1,12 @@
+import { MMDSolverPlugin } from '../three-mmd-solver';
+import { solvePose, type SolverProfile } from '../mmd-solver';
 import { AnimationClip, type Object3D, type Mesh } from 'three';
 import type { GLTF, GLTFLoaderPlugin, GLTFParser } from 'three/addons/loaders/GLTFLoader.js';
 import {
   bindMotion,
   evaluateMotion,
   evaluateMorphs,
+  evaluateIK,
   type VMD,
   type Motion,
   type MotionBinding,
@@ -52,6 +55,16 @@ export class VMDPlayer {
   private disposed = false;
   private active = false;
   private current = 0;
+  private ikOverrides = new Map<number,boolean>();
+  get ikStates() { const values=evaluateIK(this.motion,this.current); this.motion.solver?.bones.filter(b=>b.ik).forEach(b=>{if(!values.has(b.index))values.set(b.index,true);});this.ikOverrides.forEach((v,k)=>values.set(k,v));return Object.fromEntries(values); }
+  setIKEnabled(index:number, enabled:boolean | undefined) {
+    this.check();
+    if(!this.motion.solver?.bones.some(b=>b.index===index && b.ik) || enabled!==undefined && typeof enabled!=='boolean')throw new Error('VMD IK: invalid controller override');
+    const previous=new Map(this.ikOverrides);
+    if(enabled===undefined)this.ikOverrides.delete(index);else this.ikOverrides.set(index,enabled);
+    try { this.seek(this.current); } catch(error) { this.ikOverrides=previous;throw error; }
+    return this;
+  }
   loop = false;
   readonly duration: number;
   constructor(
@@ -75,7 +88,7 @@ export class VMDPlayer {
     this.check();
     if (!Number.isFinite(seconds)) throw new Error('VMD: seek time must be finite');
     const time = Math.max(0, Math.min(this.duration, seconds)),
-      pose = evaluateMotion(this.motion, time);
+      pose = evaluateMotion(this.motion, time, this.ikOverrides);
     // Resolve and validate before claiming ownership or mutating transforms.
     if (
       pose.some((b) =>
@@ -118,7 +131,7 @@ export class VMDPlayer {
   stop() {
     this.check();
     const weights = (this.motion.morphs ?? []).map(g => ({ node: g.node, values: new Array(g.count).fill(0) }));
-    const write = this.prepare(structuredClone(this.motion.rest), weights);
+    const write = this.prepare(solvePose(this.motion.solver, this.motion.rest), weights);
     claimMotion(this.root!, this, () => { this.active = false; });
     write();
     this.active = false;
@@ -136,6 +149,7 @@ export class VMDPlayer {
     this.disposed = true;
     this.root = undefined;
     this.prepare = () => () => {};
+    this.ikOverrides.clear();
     this.motion = { rest: [], tracks: [], duration: 0 };
   }
 }
@@ -163,8 +177,10 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
       const payload = animation.extensions?.[EXTENSION_NAME];
       if (payload === undefined) continue;
       validatePayload(payload, json.nodes?.length ?? 0);
+      if (payload.solver) new MMDSolverPlugin(this.parser).beforeRoot();
+      if (payload.solver && (!json.extensions?.MMD_skeleton_solver || solverIdentity(payload.solver)!==solverIdentity(json.extensions.MMD_skeleton_solver))) throw new Error(`${EXTENSION_NAME}: solver differs from root contract`);
       const expected = new Set(
-        payload.tracks.flatMap((t) => [`${t.node}:translation`, `${t.node}:rotation`]),
+        (payload.solver ? payload.solver.bones.map(b=>({node:b.node!})) : payload.tracks).flatMap((t) => [`${t.node}:translation`, `${t.node}:rotation`]),
       );
       for (const w of payload.weights ?? []) {
         expected.add(`${w.node}:weights`);
@@ -249,7 +265,7 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
       const motion = payloadMotion(p, morphs),
         nodes = new Map<number, Object3D>();
       for (const b of motion.rest) {
-        const node = (await this.parser.getDependency('node', b.index)) as Object3D;
+        const node = (await this.parser.getDependency('node', motion.solver?.bones.find(v=>v.index===b.index)?.node ?? b.index)) as Object3D;
         if (!result.scene.getObjectById(node.id))
           throw new Error(`${EXTENSION_NAME}: node outside default scene`);
         nodes.set(b.index, node);
@@ -275,4 +291,10 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
     }
     loaded.set(result, Object.freeze(players));
   }
+}
+
+/** JSON property order and bone table order do not change solver identities. */
+function solverIdentity(profile: SolverProfile) {
+  return JSON.stringify({...profile,bones:[...profile.bones].sort((a,b)=>a.index-b.index)}, (_key,value)=>
+    value && typeof value==='object' && !Array.isArray(value) ? Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b))) : value);
 }

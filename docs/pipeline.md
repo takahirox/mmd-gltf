@@ -55,7 +55,8 @@ core `MASK` and `alphaCutoff`.
 Both extensions are used, never required, so ordinary glTF viewers can load the
 fallback. The default `static` mode keeps the stored base-pose geometry and reports omitted
 bones/skins and runtime features. The opt-in `bdef` mode is described below; [mixed SDEF](#mixed-sdef-conversion-and-runtime) adds spherical deformation.
-Neither mode evaluates SDEF, IK, grants or physics. Both retain PMX vertex and supported vertex-group POSITION morphs. BDEF mode supports synchronized solver-free VMD bones and vertex weights. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
+The default solver-free modes do not evaluate IK, append or physics; SDEF has its
+own opt-in mode. [The pre-physics profile](solver.md) adds ordered IK/append. Both retain PMX vertex and supported vertex-group POSITION morphs. BDEF mode supports synchronized solver-free VMD bones and vertex weights. PMX edge flag `0x10` enables `MMD_materials_outline`; edge RGBA and size are
 copied unchanged (defaults `[0,0,0,1]` and `1`). Signed per-vertex `edgeRatio`
 becomes a shared FLOAT/SCALAR `_MMD_EDGE_SCALE`, attached only to outlined
 primitives, omitted when every stored ratio is exactly one. Zero stays zero.
@@ -129,9 +130,11 @@ GLB/glTF reload preserves this data; pinned GLTFLoader exposes it as
 Bind future pose/motion data by source index and retained names, never runtime
 display names. This metadata does not promise deformation-layer ordering,
 IK/append/grants, fixed/local-axis constraints or external-parent semantics.
-Those solvers, other morph-family evaluation, physics and scene VMD execution remain
-unsupported. SDEF and QDEF are available in their separate opt-in modes; VPD supports only the solver-free contract below. They are listed in conversion warnings; parent hierarchy alone does
-not implement them. Core skin pose edits are supported with Toon, PBR and Outline
+Hierarchy metadata alone does not execute those features. SDEF and QDEF are
+available in separate opt-in modes; `--solver pre-physics-v1` adds bounded ordered
+IK/append for conversion and the same VPD/VMD APIs. See the [solver contract and
+runtime guide](solver.md). Other dependencies, remaining morph families, physics
+and scene VMD execution remain unsupported and appear in conversion diagnostics. Core skin pose edits are supported with Toon, PBR and Outline
 without a new material or skinning extension.
 
 BDEF mode rejects SDEF and any other unsupported source type, reporting mode,
@@ -191,8 +194,9 @@ retained `metersPerPMXUnit`, adds to ORIGINAL local rest translation, and compos
 `qLocal = qRest * qOffset`. PMX tails do not supply rest rotations. All joints are
 replaced: omitted bones return to original rest, even if current transforms have
 been edited. A→A, A→B→A and dirty-transform→A produce the same A. Original inverse
-binds never change. Solvers, append/grants, IK, deformation layers and physics are
-not evaluated, so raw offsets are not full MMD pose reproduction.
+binds never change. The default remains solver-free; optional solver metadata
+adds the shared pre-physics evaluation after these raw inputs. See the
+[solver guide](solver.md). Neither profile claims complete MMD pose reproduction.
 
 ### Converter workflow
 

@@ -104,7 +104,7 @@ export function createBDEFSkin(doc: Document, buffer: Buffer, scene: Scene, mesh
   });
   if (adjusted.length) warnings.push(`Normalized roundoff-sized BDEF weight sums (tolerance ${BDEF_WEIGHT_TOLERANCE}) at ${adjusted.length} vertices [${adjusted.slice(0, 32).join(', ')}${adjusted.length > 32 ? ', …' : ''}].`);
   return {
-    poseModel: { version: 1, modelId, metersPerPMXUnit: scale, bones: rest } as PoseModel, nodes,
+    root, poseModel: { version: 1, modelId, metersPerPMXUnit: scale, bones: rest } as PoseModel, nodes,
     joints: doc.createAccessor('PMX joints').setBuffer(buffer).setType('VEC4').setArray(joints),
     weights: doc.createAccessor('PMX weights').setBuffer(buffer).setType('VEC4').setArray(weights),
   };

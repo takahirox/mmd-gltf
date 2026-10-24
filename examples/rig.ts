@@ -1,3 +1,8 @@
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { MMDVPDExporterPlugin } from '../packages/three-mmd-vpd';
+import { MMDSDEFExporterPlugin } from '../packages/three-mmd-sdef';
+import { MMDQDEFExporterPlugin } from '../packages/three-mmd-qdef';
+import { MMDSolverPlugin } from '../packages/three-mmd-solver';
 import { MMDQDEFPlugin } from '../packages/three-mmd-qdef';
 import type { MMDSDEFPlugin } from '../packages/three-mmd-sdef';
 import {
@@ -97,6 +102,7 @@ async function start() {
     bones: [] as object[],
     weights: [] as number[],
     vertices: [] as number[][],
+    ik: {} as Record<string,boolean>,
     error: '',
     motion: '',
     source: '',
@@ -127,7 +133,7 @@ async function start() {
     localMotion: File | undefined,
     busy = false;
   const report = (message: string) => {
-    status.textContent = `Ready · ${message} · Solver-free bones + vertex morphs; IK/append/physics and other morph families unsupported`;
+    status.textContent = `Ready · ${message} · ${model.value.startsWith('solver-') ? 'Pre-physics-v1 IK/append + vertex groups; visibility retained without execution; original-MMD unmeasured' : 'Solver-free bones + vertex morphs; IK/append/physics and other morph families unsupported'}`;
   };
   const invalidate = () => { info.revision++; };
   const clearPlayback = () => {
@@ -147,10 +153,16 @@ async function start() {
         });
     });
     info.vertices = [];
-    if (model.value.startsWith('group-')) assets[0]?.scene.traverse(n => {
+    if (model.value.startsWith('group-') || model.value.startsWith('solver-')) assets[0]?.scene.traverse(n => {
       const mesh = n as Mesh;
       if (mesh.isMesh && !info.vertices.length) info.vertices = [0,1,2,3,9,23].map(i => mesh.getVertexPosition(i,new Vector3()).toArray());
     });
+    // A retained player's switches describe the bones only while its pose is applied.
+    const player = assets[0]?.player;
+    info.ik = info.pose === 'motion' ? player?.ikStates ?? {} : {};
+    document.querySelector('#ik-state')!.textContent = player && info.pose !== 'motion'
+      ? 'Motion IK controls inactive · override retained for resumed motion'
+      : Object.entries(info.ik).map(([k,v])=>`Controller ${k}: ${v ? 'enabled' : 'disabled'}`).join(', ') || 'No active IK motion';
     info.weights = assets[0] ? getMorphWeights(assets[0].morph) : [];
     document.querySelector('#morph-state')!.textContent = `Weights: ${info.weights.map(w => w.toFixed(4)).join(', ')} · source identity retained; sum is not normalized`;
     document.querySelectorAll<HTMLInputElement>('#morph-controls input').forEach((control,i) => { control.value = String(info.weights[Number(control.dataset.target)]); });
@@ -177,7 +189,8 @@ async function start() {
       });
       if (changed) refreshDeformation(a.scene);
     }
-    document.querySelector('#sdef-state')!.textContent = model.value.startsWith('group-') ? 'Core BDEF with independent vertex-group targets' : model.value.startsWith('qdef-') ? `Mixed BDEF/SDEF/QDEF · rigid-dq-v1 · ${comparison.checked ? 'BDEF4 approximation' : 'QDEF enabled'} · original-MMD unmeasured` : model.value.startsWith('sdef-') ? `Mixed BDEF/SDEF · ordered pairs · rigid joints · ${comparison.checked ? 'BDEF2 approximation' : 'SDEF enabled'} · original-MMD unmeasured` : 'Core BDEF rig';
+    document.querySelector('#sdef-state')!.textContent = model.value.startsWith('group-') ? 'Core BDEF with independent vertex-group targets' : (model.value.startsWith('qdef-') || model.value.endsWith('-qdef')) ? `Mixed BDEF/SDEF/QDEF · rigid-dq-v1 · ${comparison.checked ? 'BDEF4 approximation' : 'QDEF enabled'} · original-MMD unmeasured` : (model.value.startsWith('sdef-') || model.value.endsWith('-sdef')) ? `Mixed BDEF/SDEF · ordered pairs · rigid joints · ${comparison.checked ? 'BDEF2 approximation' : 'SDEF enabled'} · original-MMD unmeasured` : 'Core BDEF rig';
+    snapshot(); // Publish vertices from the selected deformation path.
   };
   comparison.onchange = updateComparison;
   const appearance = () => {
@@ -214,6 +227,7 @@ async function start() {
   async function loadAsset(url: string, toon: boolean): Promise<Asset> {
     let toonPlugin: MMDToonPlugin | undefined, outlinePlugin: MMDOutlinePlugin | undefined, sdefPlugin: MMDSDEFPlugin | undefined;
     const loader = new GLTFLoader()
+      .register((p) => new MMDSolverPlugin(p))
       .register((p) => new MMDVMDPlugin(p))
       .register((p) => (sdefPlugin = new MMDQDEFPlugin(p)))
       .register((p) => (outlinePlugin = new MMDOutlinePlugin(p)));
@@ -255,8 +269,13 @@ async function start() {
     for (const a of previous) await disposeAsset(a);
   }
   async function loadRig() {
-    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('group-') ? `group/${model.value.slice(6)}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
+    const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('solver-') ? `solver/${model.value.slice(7)}` : model.value.startsWith('group-') ? `group/${model.value.slice(6)}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
     await replace(next);
+    select('ik-override').value = 'motion';
+    configurePosePreset();
+    if (model.value.startsWith('solver-')) motionSample.value = 'solver-a';
+    else if (motionSample.value.startsWith('solver-')) motionSample.value = 'a';
+    await configureMotionPreset();
     clearPlayback();
     info.source = '';
     info.motion = '';
@@ -275,7 +294,7 @@ async function start() {
       if (!local) throw new Error('Select a local VPD file first');
       data = new Uint8Array(await local.arrayBuffer());
     } else {
-      const response = await fetch(`${import.meta.env.BASE_URL}vpd/pose-${sample.value}.vpd`);
+      const response = await fetch(`${import.meta.env.BASE_URL}${model.value.startsWith('solver-') ? 'solver/solver-' : 'vpd/pose-'}${sample.value}.vpd`);
       if (!response.ok) throw new Error(`VPD fetch failed: ${response.status}`);
       data = new Uint8Array(await response.arrayBuffer());
     }
@@ -298,14 +317,15 @@ async function start() {
     let diagnostic = '';
     const combined = motionSample.value.startsWith('combined-') || motionSample.value === 'only';
     const grouped = motionSample.value.startsWith('group-');
-    const motionId = motionSample.value.replace('combined-', '').replace('group-', '');
+    const solving = motionSample.value.startsWith('solver-');
+    const motionId = motionSample.value.replace('combined-', '').replace('group-', '').replace('solver-', '');
     if (motionSource.value === 'bytes') {
       let data: Uint8Array;
       if (motionSample.value === 'local') {
         if (!localMotion) throw new Error('Select a local VMD file first');
         data = new Uint8Array(await localMotion.arrayBuffer());
       } else {
-        const r = await fetch(`${import.meta.env.BASE_URL}${grouped ? `group/group-${motionId}` : combined ? `morph/${motionId === 'only' ? 'morph-only' : `combined-${motionId}`}` : `vmd/motion-${motionId}`}.vmd`);
+        const r = await fetch(`${import.meta.env.BASE_URL}${solving ? `solver/solver-${motionId}` : grouped ? `group/group-${motionId}` : combined ? `morph/${motionId === 'only' ? 'morph-only' : `combined-${motionId}`}` : `vmd/motion-${motionId}`}.vmd`);
         if (!r.ok) throw new Error(`VMD fetch failed: ${r.status}`);
         data = new Uint8Array(await r.arrayBuffer());
       }
@@ -330,7 +350,7 @@ async function start() {
           'Converted GLB/glTF sources are available for sample motions; use byte source for local VMD',
         );
       const next = await loadPair(
-        `${import.meta.env.BASE_URL}${grouped ? `group/${model.value.replace('group-', '')}/${motionId}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
+        `${import.meta.env.BASE_URL}${solving ? `solver/${model.value.slice(7)}/${motionId}` : grouped ? `group/${model.value.replace('group-', '')}/${motionId}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}/${combined ? motionId : `legacy-${motionId}`}` : `${combined ? 'morph' : 'vmd'}/${model.value}/${motionId}`}.${motionSource.value}`,
       );
       next.forEach((a) => a.player!.seek(0));
       await replace(next);
@@ -339,6 +359,8 @@ async function start() {
     assets.forEach((a) => {
       a.player!.loop = loop.checked;
     });
+    // Replacement players start without overrides, so reflect their motion controls.
+    select('ik-override').value = 'motion';
     clearPlayback();
     info.source = motionSource.value;
     seek.max = String(assets[0].player!.duration);
@@ -367,14 +389,18 @@ async function start() {
     select('motion-morph-unmatched'),
     document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!,
     button('morph-reset'),
+    button('rig-export-glb'),
+    button('rig-export-gltf'),
     button('motion-load'),
     button('motion-play'),
     button('motion-pause'),
     button('motion-reset'),
     seek,
     loop,
+    select('ik-override'),
   ];
   const guarded = (action: () => Promise<void> | void) => async () => {
+    if (busy) return;
     busy = true;
     invalidate();
     editable.forEach((c) => {
@@ -431,6 +457,12 @@ async function start() {
       snapshot();
       report('VMD transport updated');
     });
+  select('ik-override').onchange = transport(p=>{const value=select('ik-override').value;p.setIKEnabled(3,value==='motion'?undefined:value==='on');},true);
+  for(const format of ['glb','gltf']) button(`rig-export-${format}`).onclick=guarded(async()=>{
+    const encoded=await new GLTFExporter().register(w=>new MMDVPDExporterPlugin(w)).register(w=>new MMDSDEFExporterPlugin(w)).register(w=>new MMDQDEFExporterPlugin(w)).parseAsync(assets[1].scene,{binary:format==='glb',onlyVisible:false,includeCustomExtensions:true});
+    const data=encoded instanceof ArrayBuffer?encoded:JSON.stringify(encoded),blob=new Blob([data],{type:format==='glb'?'model/gltf-binary':'model/gltf+json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download=`${model.value}-applied.${format}`;link.click();URL.revokeObjectURL(url);report(`Exported applied ${format.toUpperCase()} state with original rest`);
+  });
   preset.onclick = guarded(apply);
   const resetAll = () => {
     clearPlayback();
@@ -449,7 +481,7 @@ async function start() {
   reset.onclick = guarded(() => {
     assets.forEach(a => resetVPD(a.rig));
     clearPlayback();
-    snapshot(); info.pose = 'rest'; info.error = ''; label.textContent = 'Rest state';
+    info.pose = 'rest'; info.error = ''; snapshot(); label.textContent = 'Rest state';
     report('VPD reset to original bone rest. Motion paused; morph weights preserved');
   });
   button('motion-reset').onclick = guarded(resetAll);
@@ -464,24 +496,27 @@ async function start() {
       if (a.player) a.player.loop = loop.checked;
     });
   };
-  sample.onchange = () => {
+  function configurePosePreset() {
     if (sample.value !== 'local') {
-      encoding.value = sample.value === 'a' ? 'shift_jis' : 'utf-8';
-      mapping.value = JSON.stringify(sample.value === 'a' ? { '2': 0, '3': 259 } : { '0': 259 });
+      encoding.value = model.value.startsWith('solver-') ? 'utf-8' : sample.value === 'a' ? 'shift_jis' : 'utf-8';
+      mapping.value = model.value.startsWith('solver-') ? '{}' : JSON.stringify(sample.value === 'a' ? { '2': 0, '3': 259 } : { '0': 259 });
     }
-  };
-  motionSample.onchange = guarded(async () => {
+  }
+  sample.onchange = configurePosePreset;
+  async function configureMotionPreset() {
     if (motionSample.value !== 'local') {
       // A subsequent selection of the same local file must emit change again.
       motionFile.value = '';
       localMotion = undefined;
-      const id = motionSample.value.replace('combined-', '').replace('group-', '');
+      const id = motionSample.value.replace('combined-', '').replace('group-', '').replace('solver-', '');
+      if(motionSample.value.startsWith('solver-')){motionMap.value='{}';document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value='{}';select('motion-morph-unmatched').value='error';return;}
       motionMap.value = id === 'only' ? '{}' : await (await fetch(`${import.meta.env.BASE_URL}vmd/motion-${id}-map.json`)).text();
       const legacy = motionSample.value === 'a' || motionSample.value === 'b';
       select('motion-morph-unmatched').value = legacy ? 'ignore' : 'error';
       document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value = legacy ? '{}' : motionSample.value.startsWith('group-') ? '{"8fce82a2":1,"67726f7570":0}' : '{"8fce82a2":1}';
     }
-  });
+  }
+  motionSample.onchange = guarded(configureMotionPreset);
   file.onchange = () => {
     local = file.files?.[0];
     sample.value = 'local';

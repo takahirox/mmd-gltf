@@ -1,8 +1,13 @@
+import { validateSolver, type SolverProfile } from '../mmd-solver';
+import type { IKTrack } from './index';
 import type { Vec3, Quat, RestBone } from '../mmd-vpd';
 import type { Motion, MotionKey } from './index';
 export const EXTENSION_NAME = 'MMD_animation_vmd';
 export interface VMDPayload {
-  version: 1 | 2;
+  version: 1 | 2 | 3;
+  solver?: SolverProfile;
+  ik?: IKTrack[];
+  visibility?: {frame:number;visible:number;raw:number[]}[];
   rest: { node: number; translation: Vec3; rotation: Quat }[];
   tracks: { node: number; keys: MotionKey[] }[];
   /** Reuse the complete corresponding core LINEAR weight sampler. */
@@ -19,8 +24,8 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
   if (!value || typeof value !== 'object') fail();
   const p = value as VMDPayload;
   if (
-    !properties(p, ['version', 'rest', 'tracks', 'weights']) ||
-    ![1, 2].includes(p.version) ||
+    !properties(p, ['version', 'rest', 'tracks', 'weights', 'solver', 'ik', 'visibility']) ||
+    ![1, 2, 3].includes(p.version) ||
     !Array.isArray(p.rest) ||
     (p.version === 1 && !p.rest.length) ||
     p.rest.length > 65536 ||
@@ -29,8 +34,21 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
     p.tracks.length > 65536
   )
     fail();
+  if (p.version !== 3 && (p.solver !== undefined || p.ik !== undefined || p.visibility !== undefined)) fail();
+  if (p.version === 3) {
+    validateSolver(p.solver,nodeCount);
+    const seen=new Set<number>();
+    if(!Array.isArray(p.ik) || p.ik.length>65536 || !Array.isArray(p.visibility) || p.visibility.length>1_000_000) fail();
+    let controls=0;
+    for(const t of p.ik!) {
+      if(!t || !properties(t,['index','keys']) || !p.solver!.bones.some(b=>b.index===t.index && b.ik) || seen.has(t.index) || !Array.isArray(t.keys) || !t.keys.length || (controls+=t.keys.length)>1_000_000)fail();
+      seen.add(t.index);
+      t.keys.forEach((k,i)=>{if(!k || !properties(k,['frame','enabled']) || !Number.isInteger(k.frame)||k.frame<0||k.frame>0xffffffff||typeof k.enabled!=='boolean'||i>0&&k.frame<=t.keys[i-1].frame)fail();});
+    }
+    p.visibility!.forEach((d,i)=>{if(!d || !properties(d,['frame','visible','raw']) || !Number.isInteger(d.frame)||d.frame<0||d.frame>0xffffffff||![0,1].includes(d.visible)||i>0&&d.frame<=p.visibility![i-1].frame||!Array.isArray(d.raw)||d.raw.some(v=>!Number.isInteger(v)||v<0||v>255))fail();});
+  }
   if (p.version === 1 && p.weights !== undefined) fail();
-  if (p.version === 2) {
+  if (p.version === 2 || p.version === 3 && p.weights !== undefined) {
     if (!Array.isArray(p.weights) || !p.weights.length || p.weights.length > 65536) fail();
     const seen = new Set<number>();
     for (const w of p.weights!) {
@@ -55,6 +73,7 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
       fail();
     nodes.add(b.node);
   }
+  if(p.solver && (p.solver.bones.length!==p.rest.length || p.solver.bones.some(b=>{const r=p.rest.find(r=>r.node===b.node);return !r || JSON.stringify([r.translation,r.rotation])!==JSON.stringify([b.translation,b.rotation]);})))fail();
   let total = 0;
   for (const t of p.tracks) {
     if (
@@ -92,19 +111,21 @@ export function payloadMotion(payload: VMDPayload, morphs: Motion['morphs'] = []
   if ((payload.weights?.length ?? 0) !== morphs.length ||
       payload.weights?.some(w => !morphs.some(g => g.node === w.node)))
     throw new Error(`${EXTENSION_NAME}: resolved core weight samplers required`);
+  const id = (node:number) => payload.solver?.bones.find(b=>b.node===node)?.index ?? node;
   const rest: RestBone[] = payload.rest.map((b) => ({
-    index: b.node,
+    index: id(b.node),
     name: '',
-    parentIndex: -1,
+    parentIndex: payload.solver?.bones.find(v=>v.node===b.node)?.parentIndex ?? -1,
     translation: [...b.translation],
     rotation: [...b.rotation],
     scale: [1, 1, 1],
   }));
   return {
+    solver: payload.solver, ik: payload.ik, visibility: payload.visibility,
     rest,
-    tracks: payload.tracks.map((t) => ({ index: t.node, keys: structuredClone(t.keys) })),
+    tracks: payload.tracks.map((t) => ({ index: id(t.node), keys: structuredClone(t.keys) })),
     morphs,
-    duration: Math.max(0, ...payload.tracks.map((t) => t.keys.at(-1)!.frame / 30),
+    duration: Math.max((payload.visibility?.at(-1)?.frame ?? 0)/30, ...(payload.ik??[]).map(t=>t.keys.at(-1)!.frame/30), ...payload.tracks.map((t) => t.keys.at(-1)!.frame / 30),
       ...morphs.flatMap(g => g.tracks.map(t => t.keys.at(-1)!.frame / 30))),
   };
 }
