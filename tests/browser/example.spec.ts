@@ -63,7 +63,7 @@ test('built comparison keeps the light-gray fallback while assets load', async (
   } finally {
     releaseAssets();
   }
-  await expect(page.locator('#status')).toContainText('Ready', { timeout: 90000 });
+  await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
   expect(errors).toEqual([]);
 });
 
@@ -78,10 +78,12 @@ for (const backend of ['webgl', 'webgpu']) {
       test.skip(!available, 'Native WebGPU adapter unavailable; WebGL2 is tested separately.');
     }
     await page.goto(`http://127.0.0.1:43180/mmd-gltf/?backend=${backend}`);
-    await expect(page.locator('#status')).toContainText('Ready', { timeout: 90000 });
+    await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
     await page.waitForFunction(() => (window as any).mmdExample?.frames > 4);
-    for (const label of ['Direct PMX reference', 'MMD glTF']) await expect(page.getByRole('heading', { name: label, exact: true })).toBeVisible();
+    for (const label of ['Direct PMX reference', 'MMD glTF']) await expect(page.locator('#viewport').getByRole('heading', { name: label, exact: true })).toBeVisible();
+    await page.locator('#about-demo > summary').click();
     await expect(page.getByRole('link', { name: '@takahirox/three-mmd@0.1.2', exact: true })).toBeVisible();
+    await page.locator('#about-demo > summary').click();
     for (const id of ['pmx', 'gltf']) await expect(page.locator(`#${id}-status`)).toContainText('Ready');
     const info = await page.evaluate(() => (window as any).mmdExample);
     expect(info.meshes).toBe(13);
@@ -145,14 +147,14 @@ for (const backend of ['webgl', 'webgpu']) {
     const pmxBefore = await page.locator('#pmx-pane').screenshot();
     const toon = await page.locator('#gltf-pane').screenshot();
     await page.selectOption('#material', 'pbr');
-    await expect(page.locator('#status')).toContainText('PBR fallback');
+    await expect(page.locator('#gene-status')).toContainText('PBR fallback');
     await page.waitForTimeout(600);
     const pbr = await page.locator('#gltf-pane').screenshot();
     expectLightGrayBackground(await page.locator('#viewport').screenshot());
     expect(pbr.equals(toon)).toBe(false);
     expect((await page.locator('#pmx-pane').screenshot()).equals(pmxBefore)).toBe(true);
     await page.selectOption('#material', 'toon');
-    await expect(page.locator('#status')).toContainText('MMD toon');
+    await expect(page.locator('#gene-status')).toContainText('MMD toon');
     await page.waitForTimeout(600);
     expect((await page.locator('#gltf-pane').screenshot()).equals(toon)).toBe(true);
     for (const file of manifest.files) {
@@ -180,5 +182,5 @@ test('missing PMX image reports the reference failure clearly', async ({ page })
   await page.route('**/gene-light/light/arm.png', (route) => route.fulfill({ status: 404, body: 'Missing test image' }));
   await page.goto('http://127.0.0.1:43180/mmd-gltf/?backend=webgl');
   await expect(page.locator('#pmx-status')).toContainText('Load failed', { timeout: 90000 });
-  await expect(page.locator('#status')).toContainText('Could not load/render the comparison');
+  await expect(page.locator('#gene-status')).toContainText('Could not load/render the comparison');
 });

@@ -1,3 +1,4 @@
+import { openRigDemo } from './demo-controls';
 import { test, expect } from "@playwright/test";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { validateBytes, validateString } from "gltf-validator";
@@ -7,7 +8,7 @@ const preview = "http://127.0.0.1:43180/mmd-gltf/";
 test("built Demo keeps IK and rig replacement locked during a delayed motion load", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
-  await page.goto(`${preview}rig.html`);
+  await openRigDemo(page, preview);
   await expect(page.locator("#rig-preset")).toBeEnabled();
   await page.locator("#rig-model").selectOption("solver-box-bdef");
   await expect(page.locator("#motion-load")).toBeEnabled();
@@ -33,17 +34,17 @@ test("built Demo keeps IK and rig replacement locked during a delayed motion loa
     await page.locator("#ik-override").dispatchEvent("change");
     await expect(page.locator("#rig-model")).toBeDisabled();
     await expect(page.locator("#motion-load")).toBeDisabled();
-    await expect(page.locator("#status")).toHaveText("Working…");
+    await expect(page.locator("#rig-status")).toHaveText("Working…");
     expect(await page.evaluate(() => (window as any).mmdRig.revision)).toBe(revision);
   } finally {
     releaseMotion();
   }
 
-  await expect(page.locator("#status")).toContainText("VMD loaded");
+  await expect(page.locator("#rig-status")).toContainText("VMD loaded");
   await expect(page.locator("#rig-model")).toBeEnabled();
   await page.locator("#rig-model").selectOption("solver-wedge-bdef");
-  await expect(page.locator("#status")).toContainText("Rig loaded");
-  await expect(page.locator("#ik-override")).toBeEnabled();
+  await expect(page.locator("#rig-status")).toContainText("Rig loaded");
+  await expect(page.locator("#ik-override")).toBeDisabled();
   await expect(page.locator("#ik-override")).toHaveValue("motion");
   await page.waitForFunction(() => {
     const state = (window as any).mmdRig;
@@ -82,20 +83,20 @@ test('built extension-only solver skins validate and reload GLB/glTF exports wit
 
 for (const source of ["bytes", "glb", "gltf"])
   test(`built Demo resets IK override on ${source} player replacement`, async ({ page }) => {
-    await page.goto(`${preview}rig.html`);
+    await openRigDemo(page, preview);
     await expect(page.locator("#rig-preset")).toBeEnabled();
     await page.locator("#rig-model").selectOption("solver-box-bdef");
     await expect(page.locator("#motion-load")).toBeEnabled();
     await page.locator("#motion-source").selectOption(source);
     await page.locator("#motion-load").click();
-    await expect(page.locator("#status")).toContainText("VMD loaded");
+    await expect(page.locator("#rig-status")).toContainText("VMD loaded");
     for (const [override, motion] of [["off", "b"], ["on", "a"]] as const) {
       await page.locator("#ik-override").selectOption(override);
       expect(await page.evaluate(() => (window as any).mmdRig.ik[3])).toBe(override === "on");
       await page.locator("#motion-sample").selectOption(`solver-${motion}`);
       await expect(page.locator("#motion-load")).toBeEnabled();
       await page.locator("#motion-load").click();
-      await expect(page.locator("#status")).toContainText("VMD loaded");
+      await expect(page.locator("#rig-status")).toContainText("VMD loaded");
       await expect(page.locator("#motion-load")).toBeEnabled();
       await expect(page.locator("#ik-override")).toHaveValue("motion");
       expect(await page.evaluate(() => (window as any).mmdRig.ik[3])).toBe(true);
@@ -111,7 +112,7 @@ for (const source of ["bytes", "glb", "gltf"])
     }
     await page.locator("#ik-override").selectOption("off");
     await page.locator("#rig-model").selectOption("solver-wedge-bdef");
-    await expect(page.locator("#status")).toContainText("Rig loaded");
+    await expect(page.locator("#rig-status")).toContainText("Rig loaded");
     await expect(page.locator("#motion-load")).toBeEnabled();
     await expect(page.locator("#ik-override")).toHaveValue("motion");
   });
@@ -136,7 +137,7 @@ for (const source of ["bytes", "glb", "gltf"])
         );
       }
     };
-    await page.goto(`${preview}rig.html`);
+    await openRigDemo(page, preview);
     await expect(page.locator("#rig-preset")).toBeEnabled();
     await page.locator("#rig-model").selectOption("solver-box-bdef");
     await expect(page.locator("#motion-load")).toBeEnabled();
@@ -146,7 +147,7 @@ for (const source of ["bytes", "glb", "gltf"])
       [0, 0, Math.SQRT1_2, Math.SQRT1_2])).toBeLessThanOrEqual(1e-5);
     await page.locator("#motion-source").selectOption(source);
     await page.locator("#motion-load").click();
-    await expect(page.locator("#status")).toContainText("VMD loaded");
+    await expect(page.locator("#rig-status")).toContainText("VMD loaded");
 
     for (const action of ["motion-reset", "vpd-a", "vpd-b", "rig-reset"]) {
       await page.locator("#motion-time").fill("0.371");
@@ -156,7 +157,7 @@ for (const source of ["bytes", "glb", "gltf"])
       if (action !== "motion-reset") {
         await page.locator("#rig-pose").selectOption(action === "vpd-a" ? "a" : "b");
         await page.locator("#rig-preset").click();
-        await expect(page.locator("#status")).toContainText("Applied VPD");
+        await expect(page.locator("#rig-status")).toContainText("Applied VPD");
       }
       if (action === "motion-reset" || action === "rig-reset") {
         await page.locator(`#${action}`).click();
@@ -189,7 +190,7 @@ for (const source of ["bytes", "glb", "gltf"])
 test("built Demo restores legacy pose and motion presets after solver rig replacement", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", e => errors.push(e.message));
-  await page.goto(`${preview}rig.html`);
+  await openRigDemo(page, preview);
   await expect(page.locator("#rig-preset")).toBeEnabled();
   for (const [rig, pose] of [["box", "a"], ["wedge", "b"]]) {
     await page.locator("#rig-model").selectOption(`solver-${rig}-bdef`);
@@ -208,13 +209,13 @@ test("built Demo restores legacy pose and motion presets after solver rig replac
     await expect(page.locator("#motion-morph-unmatched")).toHaveValue("ignore");
     const rest = await page.evaluate(() => (window as any).mmdRig.bones);
     await page.locator("#rig-preset").click();
-    await expect(page.locator("#status")).toContainText("Applied VPD");
+    await expect(page.locator("#rig-status")).toContainText("Applied VPD");
     expect(await page.evaluate(() => (window as any).mmdRig.bones)).not.toEqual(rest);
     // Load the restored motion selection directly, without triggering a selection change.
     for (const source of ["bytes", "glb", "gltf"]) {
       await page.locator("#motion-source").selectOption(source);
       await page.locator("#motion-load").click();
-      await expect(page.locator("#status")).toContainText("VMD loaded");
+      await expect(page.locator("#rig-status")).toContainText("VMD loaded");
       await page.locator("#motion-time").fill("0.371");
       await page.locator("#motion-time").dispatchEvent("input");
       await expect(page.locator("#motion-load")).toBeEnabled();
@@ -294,10 +295,10 @@ for (const rig of ["box", "wedge"] as const)
     test(`built solver Demo ${rig}/${id}: both poses, controls, transport, load recovery and disposal`, async ({
       page,
     }, info) => {
-      await page.goto(`${preview}rig.html`);
+      await openRigDemo(page, preview);
       await expect(page.locator("#rig-preset")).toBeEnabled();
       await page.locator("#rig-model").selectOption(`solver-${rig}-bdef`);
-      await expect(page.locator("#status")).toContainText("Rig loaded");
+      await expect(page.locator("#rig-status")).toContainText("Rig loaded");
       await expect(page.locator("#rig-preset")).toBeEnabled();
       const evidence: any[] = [];
       const rendered = async () => {
@@ -317,7 +318,7 @@ for (const rig of ["box", "wedge"] as const)
         await expect(page.locator("#motion-load")).toBeEnabled();
         await page.locator("#motion-source").selectOption(source);
         await page.locator("#motion-load").click();
-        await expect(page.locator("#status")).toContainText("VMD loaded");
+        await expect(page.locator("#rig-status")).toContainText("VMD loaded");
         await expect(page.locator("#motion-load")).toBeEnabled();
         for (const time of [0, 0.371, 0.5, 0.719, 1, 1.5, 0.371]) {
           const s = await seek(time),
@@ -397,7 +398,7 @@ for (const rig of ["box", "wedge"] as const)
         for (const pose of ["a", "b"] as const) {
           await page.locator("#rig-pose").selectOption(pose);
           await page.locator("#rig-preset").click();
-          await expect(page.locator("#status")).toContainText("Applied VPD");
+          await expect(page.locator("#rig-status")).toContainText("Applied VPD");
           const s = await rendered(),
             expected = solverExpected(rig, pose);
           for (const b of s.bones)
@@ -432,7 +433,7 @@ for (const rig of ["box", "wedge"] as const)
           buffer: Buffer.from("broken"),
         });
         await page.locator("#motion-load").click();
-        await expect(page.locator("#status")).toContainText("VMD:");
+        await expect(page.locator("#rig-status")).toContainText("VMD:");
         expect((await rendered()).bones).toEqual(before);
       }
       const captured = await rendered();
@@ -473,7 +474,7 @@ for (const rig of ["box", "wedge"] as const)
         .locator("canvas")
         .screenshot({ path: `docs/solver-captures/demo-${rig}-${id}.png` });
       await page.locator("#rig-model").selectOption("box");
-      await expect(page.locator("#status")).toContainText("Rig loaded");
+      await expect(page.locator("#rig-status")).toContainText("Rig loaded");
       expect((await rendered()).disposedPlayers).toBeGreaterThan(0);
       await info.attach("solver-demo.json", {
         body: JSON.stringify(evidence),

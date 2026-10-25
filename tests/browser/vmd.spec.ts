@@ -1,3 +1,4 @@
+import { openRigDemo } from './demo-controls';
 import { readRigBitmap } from './rig-bitmap';
 import { test, expect, type Page } from '@playwright/test';
 import { morphWeights } from '../morph-oracle';
@@ -37,7 +38,7 @@ for (const rig of ['box', 'wedge']) test(`built Demo VMD lifecycle: ${rig}, both
 }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto(`${preview}rig.html`);
+  await openRigDemo(page, preview);
   await expect(page.locator('#rig-preset')).toBeEnabled();
   const state = () => page.evaluate(() => (window as any).mmdRig),
     snapshot = async () => (await state()).bones;
@@ -72,7 +73,7 @@ for (const rig of ['box', 'wedge']) test(`built Demo VMD lifecycle: ${rig}, both
         await page.locator('#motion-source').selectOption(source);
         await page.locator('#motion-load').click();
         await expect(page.locator('#rig-state')).toContainText(`Motion ${motion.toUpperCase()} (${source})`);
-        await expect(page.locator('#status')).toContainText('Omitted execution');
+        await expect(page.locator('#motion-diagnostics')).toContainText('Omitted execution');
         await seek(0.371);
         const initial = await snapshot();
         expect(initial).not.toEqual(rest);
@@ -104,7 +105,7 @@ for (const rig of ['box', 'wedge']) test(`built Demo VMD lifecycle: ${rig}, both
         await page.locator('#motion-play').click();
         await page.locator('#rig-pose').selectOption('b');
         await page.locator('#rig-preset').click();
-        await expect(page.locator('#status')).toContainText('Applied VPD');
+        await expect(page.locator('#rig-status')).toContainText('Applied VPD');
         expect((await state()).playing).toBe(false);
         await seek(0.371);
         expect(await snapshot()).toEqual(initial);
@@ -130,17 +131,17 @@ for (const rig of ['box', 'wedge']) test(`built Demo VMD lifecycle: ${rig}, both
         buffer: Buffer.from('bad'),
       });
     await page.locator('#motion-load').click();
-    await expect(page.locator('#status')).toContainText('VMD: truncated');
+    await expect(page.locator('#rig-status')).toContainText('VMD: truncated');
     expect(await snapshot()).toEqual(before);
     await page.locator('#motion-file').setInputFiles('tests/fixtures/motion-a.vmd');
     await page.locator('#motion-load').click();
-    await expect(page.locator('#status')).toContainText('requires explicit mapping');
+    await expect(page.locator('#rig-status')).toContainText('requires explicit mapping');
     expect(await snapshot()).toEqual(before);
     await page
       .locator('#motion-map')
       .fill('{"93af96bc2e8d9c205b6475706c6963":0,"7469705f626f756e646172795f3135":259}');
     await page.locator('#motion-load').click();
-    await expect(page.locator('#status')).toContainText('VMD loaded');
+    await expect(page.locator('#rig-status')).toContainText('VMD loaded');
     await seek(0.371);
     expect(await snapshot()).not.toEqual(before);
     await page.locator('#motion-reset').click();
@@ -178,7 +179,7 @@ test('built morph conformance: combined weights and morph-before-BDEF prediction
 
 test('built Demo morph controls and combined lifecycle on both rigs, local motion recovery and morph-only source',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(`${preview}rig.html`);
+  await openRigDemo(page, preview);
   await expect(page.locator('#rig-preset')).toBeEnabled();
   const state=()=>page.evaluate(()=>(window as any).mmdRig);
   const snapshot=async()=>{const s=await state();return {bones:s.bones,weights:s.weights};};
@@ -192,7 +193,7 @@ test('built Demo morph controls and combined lifecycle on both rigs, local motio
     for(const motion of ['combined-a','combined-b']) for(const source of ['bytes','glb','gltf']) {
       await page.locator('#motion-sample').selectOption(motion);await expect(page.locator('#motion-load')).toBeEnabled();
       await page.locator('#motion-source').selectOption(source);await page.locator('#motion-load').click();
-      await expect(page.locator('#status')).toContainText('VMD loaded');
+      await expect(page.locator('#rig-status')).toContainText('VMD loaded');
       await seek(0.719);const desired=await snapshot();
       expect(desired.weights[0]+desired.weights[1]).toBeGreaterThan(1);
       expect(desired.weights.slice(2)).toEqual([0,0,0]);
@@ -218,7 +219,7 @@ test('built Demo morph controls and combined lifecycle on both rigs, local motio
     }
     await page.locator('#motion-sample').selectOption('only');await expect(page.locator('#motion-load')).toBeEnabled();
     await page.locator('#motion-source').selectOption('glb');await page.locator('#motion-load').click();
-    await expect(page.locator('#status')).toContainText('VMD loaded');const bones=(await state()).bones;
+    await expect(page.locator('#rig-status')).toContainText('VMD loaded');const bones=(await state()).bones;
     await seek(0.8);expect((await state()).bones).toEqual(bones);expect((await state()).weights[0]).toBeGreaterThan(1);
     await page.locator('#motion-loop').check();await seek(0.99);await page.locator('#motion-play').click();
     await expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)');await page.locator('#motion-pause').click();
@@ -229,9 +230,9 @@ test('built Demo morph controls and combined lifecycle on both rigs, local motio
     await expect(page.locator('#motion-morph-map')).toHaveValue('{}');
     await page.locator('#motion-map').fill('{"93af96bc2e8d9c205b6475706c6963":0,"7469705f626f756e646172795f3135":259}');
     const before=await snapshot();await page.locator('#motion-load').click();
-    await expect(page.locator('#status')).toContainText('ambiguous PMX name');expect(await snapshot()).toEqual(before);
+    await expect(page.locator('#rig-status')).toContainText('ambiguous PMX name');expect(await snapshot()).toEqual(before);
     await page.locator('#motion-morph-map').fill('{"8fce82a2":1}');await page.locator('#motion-load').click();
-    await expect(page.locator('#status')).toContainText('VMD loaded');
+    await expect(page.locator('#rig-status')).toContainText('VMD loaded');
     await seek(0.5);await page.locator('#morph-reset').click();expect((await state()).weights).toEqual([0,0,0,0,0]);
     await seek(0.5);expect((await state()).weights[0]).toBeGreaterThan(0);
   }
@@ -301,7 +302,7 @@ test('built Demo delayed real frames retain crossing/render/canvas evidence and 
   };
   try {
     for (const rig of ['box', 'wedge']) {
-      await page.goto(`${preview}rig.html`);
+      await openRigDemo(page, preview);
       await expect(page.locator('#rig-preset')).toBeEnabled();
       expect((await state()).playback.crossing).toBeNull();
       await page.locator('#rig-model').selectOption(rig);
@@ -378,7 +379,7 @@ test('built Demo delayed real frames retain crossing/render/canvas evidence and 
         generation = await cross();
         await page.locator('#rig-pose').selectOption(pose); await page.locator('#rig-preset').click();
         await expect(page.locator('#rig-preset')).toBeEnabled();
-        await expect(page.locator('#status')).toContainText('Applied VPD');
+        await expect(page.locator('#rig-status')).toContainText('Applied VPD');
         await cleared(generation); expect((await state()).playing).toBe(false);
       }
       generation = await cross(); await page.locator('#motion-reset').click(); await cleared(generation);

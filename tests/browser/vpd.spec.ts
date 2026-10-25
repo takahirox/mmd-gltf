@@ -1,3 +1,4 @@
+import { openRigDemo } from './demo-controls';
 import { readRigBitmap } from './rig-bitmap';
 import { test, expect } from '@playwright/test';
 const preview = 'http://127.0.0.1:43180/mmd-gltf/';
@@ -23,8 +24,8 @@ test('built VPD surfaces/outlines match independent scalar predictions for both 
 test('built VPD demo: both rigs/poses, repeat/reset, encoding, local errors and recovery, Toon/PBR and outlines', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
-  await page.goto(`${preview}rig.html`);
-  await expect(page.locator('#status')).toContainText('Ready');
+  await openRigDemo(page, preview);
+  await expect(page.locator('#rig-status')).toContainText('Ready');
   await page.waitForFunction(() => (window as any).mmdRig?.frames > 2);
   const snapshot = () => page.evaluate(() => (window as any).mmdRig.bones);
   const image = async () => { await page.waitForTimeout(200); await page.locator('canvas').screenshot(); return readRigBitmap(page); };
@@ -56,16 +57,17 @@ test('built VPD demo: both rigs/poses, repeat/reset, encoding, local errors and 
     // Real byte upload: malformed Shift_JIS, ambiguous exact Japanese names, explicit map, and recovery.
     await page.locator('#rig-file').setInputFiles({name:'bad.vpd',mimeType:'application/octet-stream',buffer:Buffer.from([0x82])});
     await page.locator('#rig-encoding').selectOption('shift_jis');
-    await page.locator('#rig-preset').click(); await expect(page.locator('#status')).toContainText('malformed shift_jis'); expect(await snapshot()).toEqual(a);
+    await page.locator('#rig-preset').click(); await expect(page.locator('#rig-status')).toContainText('malformed shift_jis'); expect(await snapshot()).toEqual(a);
     await page.locator('#rig-file').setInputFiles('tests/fixtures/pose-a.vpd');
-    await page.locator('#rig-preset').click(); await expect(page.locator('#status')).toContainText('ambiguous'); expect(await snapshot()).toEqual(a);
+    await page.locator('#rig-preset').click(); await expect(page.locator('#rig-status')).toContainText('ambiguous'); expect(await snapshot()).toEqual(a);
     await page.locator('#rig-map').fill('{"2":0,"3":259}');
-    await page.locator('#rig-preset').click(); await expect(page.locator('#status')).toContainText('Applied VPD'); expect(await snapshot()).toEqual(a);
+    await page.locator('#rig-preset').click(); await expect(page.locator('#rig-status')).toContainText('Applied VPD'); expect(await snapshot()).toEqual(a);
     await page.locator('#rig-file').setInputFiles('tests/fixtures/pose-b.vpd');
     await page.locator('#rig-encoding').selectOption('utf-8'); await page.locator('#rig-map').fill('{"0":259}');
-    await page.locator('#rig-preset').click(); await expect(page.locator('#rig-state')).toContainText('3 bone offsets'); await expect(page.locator('#status')).toContainText('Applied VPD'); expect(await snapshot()).not.toEqual(a);
+    await page.locator('#rig-preset').click(); await expect(page.locator('#rig-state')).toContainText('3 bone offsets'); await expect(page.locator('#rig-status')).toContainText('Applied VPD'); expect(await snapshot()).not.toEqual(a);
     await page.locator('#rig-reset').click(); await expect(page.locator('#rig-state')).toHaveText('Rest state'); expect(await snapshot()).toEqual(rest);
-    await expect(page.locator('#status')).toContainText('IK/append/physics and other morph families unsupported');
+    await expect(page.locator('#physics-panel')).toBeHidden();
+    await expect(page.locator('#ik-panel')).toBeHidden();
   }
   expect(errors).toEqual([]);
 });

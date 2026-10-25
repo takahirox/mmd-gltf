@@ -92,7 +92,7 @@ near a seam are reported as approximation, never original-MMD fidelity.
 
 ## Demo and evidence
 
-The built `rig.html` includes solver box/wedge presets, both motions, both poses,
+The built root demo’s **Synthetic rigs** view includes solver box/wedge presets, both motions, both poses,
 bytes/GLB/glTF sources, transport, controller state/override and applied-state
 GLB/glTF export. Export plugins retain original rest plus the solver contract;
 reload does not solve an applied state again. Both geometries and hierarchies

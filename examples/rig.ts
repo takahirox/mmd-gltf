@@ -1,3 +1,4 @@
+import { disposeScene } from './scene-resources';
 import { MMDPhysicsPlugin, PhysicsRig, getPhysicsModel, loadAmmoBrowser } from '../packages/three-mmd-physics';
 import { MMDPhysicsExporterPlugin } from '../packages/three-mmd-physics/exporter';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
@@ -10,13 +11,13 @@ import type { MMDSDEFPlugin } from '../packages/three-mmd-sdef';
 import {
   WebGPURenderer,
   Vector3,
+  Box3,
   Scene,
   Color,
   OrthographicCamera,
   DirectionalLight,
   type Group,
   type Mesh,
-  type Material,
 } from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -54,12 +55,12 @@ interface PlaybackUpdate {
   revision: number; frame: number; weights: number[];
 }
 
-async function start() {
+export async function startRig() {
   const renderer = new WebGPURenderer({
     antialias: true,
     forceWebGL: new URLSearchParams(location.search).get('backend') !== 'webgpu',
   });
-  await renderer.init();
+  try { await renderer.init(); } catch (error) { renderer.dispose(); throw error; }
   const viewport = document.querySelector<HTMLElement>('#rig-viewport')!;
   viewport.append(renderer.domElement);
   const scene = new Scene();
@@ -92,7 +93,7 @@ async function start() {
     motionLabel = document.querySelector('#motion-state')!;
   const preset = button('rig-preset'),
     reset = button('rig-reset');
-  const status = document.querySelector('#status')!,
+  const status = document.querySelector<HTMLElement>('#rig-status')!,
     label = document.querySelector('#rig-state')!;
   const info = {
     ready: false,
@@ -143,7 +144,8 @@ async function start() {
     localMotion: File | undefined,
     busy = false;
   const report = (message: string) => {
-    status.textContent = `Ready · ${message} · ${model.value.startsWith('physics-') ? 'Rigid-body-v1 + pre/post solver; fixed ticks; original-MMD unmeasured' : solverRig() ? 'Pre-physics-v1 IK/append + morphs; visibility retained without execution; original-MMD unmeasured' : model.value.startsWith('bone-') ? 'Bone and mixed morph controls; original-MMD unmeasured' : 'Solver-free bones + vertex morphs; IK/append/physics and other morph families unsupported'}`;
+    status.dataset.error = String(Boolean(info.error));
+    status.textContent = info.error || message;
   };
   const invalidate = () => { info.revision++; };
   const clearPlayback = () => {
@@ -174,13 +176,13 @@ async function start() {
       ? 'Motion IK controls inactive · override retained for resumed motion'
       : Object.entries(info.ik).map(([k,v])=>`Controller ${k}: ${v ? 'enabled' : 'disabled'}`).join(', ') || 'No active IK motion';
     info.weights = assets[0] ? getMorphWeights(assets[0].morph) : [];
-    document.querySelector('#morph-state')!.textContent = `Weights: ${info.weights.map(w => w.toFixed(4)).join(', ')} · source identity retained; sum is not normalized`;
-    document.querySelectorAll<HTMLInputElement>('#morph-controls input').forEach((control,i) => { control.value = String(info.weights[Number(control.dataset.target)]); });
+    document.querySelector('#morph-state')!.textContent = `Weights: ${info.weights.map(w => w.toFixed(4)).join(', ')}`;
+    document.querySelectorAll<HTMLInputElement>('#morph-controls input').forEach((control,i) => { control.value = String(Number(info.weights[Number(control.dataset.target)].toFixed(4))); });
     info.time = assets[0]?.player?.time ?? 0;
     info.physics = assets[0]?.physics ? { enabled:assets[0].physics.enabled,time:assets[0].physics.time,bodies:Object.fromEntries(assets[0].physics.timeline.bodyTransforms()) } : null;
     info.playing = assets[0]?.player?.playing ?? false;
-    seek.value = String(info.time);
-    motionLabel.textContent = `${info.motion || 'No motion'} · ${info.time.toFixed(4)} s · ${info.playing ? 'Playing' : 'Paused'}`;
+    seek.value = String(Number(info.time.toFixed(4)));
+    motionLabel.textContent = info.motion ? (info.playing ? 'Playing' : 'Paused') : 'Load a motion to play';
   };
   const comparison = input('sdef-comparison');
   const updateComparison = () => {
@@ -225,15 +227,7 @@ async function start() {
     scene.remove(a.scene);
     a.sdef?.dispose();
     a.outlines.dispose();
-    a.scene.traverse((n) => {
-      const mesh = n as Mesh;
-      if (mesh.isMesh) {
-        mesh.geometry.dispose();
-        (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).forEach((m: Material) =>
-          m.dispose(),
-        );
-      }
-    });
+    disposeScene(a.scene);
     await a.toon?.dispose();
   }
   async function loadAsset(url: string, toon: boolean): Promise<Asset> {
@@ -245,9 +239,10 @@ async function start() {
       .register((p) => (sdefPlugin = new MMDQDEFPlugin(p)))
       .register((p) => (outlinePlugin = new MMDOutlinePlugin(p)));
     if (toon) loader.register((p) => (toonPlugin = new MMDToonPlugin(p)));
-    const loaded = await loader.loadAsync(url);
+    let loaded: Awaited<ReturnType<GLTFLoader['loadAsync']>> | undefined;
     let physics:PhysicsRig|undefined;
     try {
+      loaded = await loader.loadAsync(url);
       const rig=createVPDRig(loaded.scene),morph=createMorphRig(loaded.scene);
       physics=getPhysicsModel(loaded.scene)?new PhysicsRig(loaded.scene,(await backend()).api):undefined;
       if(physics)physics.enabled=input('physics-enabled').checked;
@@ -267,6 +262,10 @@ async function start() {
       await toonPlugin?.dispose();
       sdefPlugin?.dispose();
       outlinePlugin?.dispose();
+      if (loaded) {
+        getVMDPlayers(loaded).forEach(player => player.dispose());
+        disposeScene(loaded.scene);
+      }
       throw error;
     }
   }
@@ -290,22 +289,27 @@ async function start() {
   async function loadRig() {
     const next = await loadPair(`${import.meta.env.BASE_URL}${model.value.startsWith('bone-') ? `bone/${model.value.slice(5)}` : model.value.startsWith('physics-') ? `physics/${model.value.slice(8)}` : solverRig() ? `solver/${model.value.slice(7)}` : model.value.startsWith('group-') ? `group/${model.value.slice(6)}` : model.value.startsWith('qdef-') ? `qdef/${model.value.slice(5)}` : model.value.startsWith('sdef-') ? `sdef/${model.value.slice(5)}` : `morph/${model.value}`}/rest.glb`);
     await replace(next);
+    // Once ownership changes, diagnostics and the picker must identify this asset,
+    // even if fetching its sample binding map subsequently fails.
+    clearPlayback();
+    Object.assign(info, { source: '', motion: '', rig: model.value, pose: 'rest', deformed: false, ready: true, error: '' });
+    label.textContent = 'Rest state';
     select('ik-override').value = 'motion';
     configurePosePreset();
-    if (solverRig()) motionSample.value = 'solver-a';
-    else if (motionSample.value.startsWith('solver-')) motionSample.value = 'a';
-    await configureMotionPreset();
-    clearPlayback();
-    info.source = '';
-    info.motion = '';
-    info.rig = model.value;
-    info.pose = 'rest';
-    info.deformed = false;
-    info.ready = true;
-    info.error = '';
+    const motionFamily = solverRig() ? 'solver-' : model.value.startsWith('bone-') ? 'bone-' : model.value.startsWith('group-') ? 'group-' : '';
+    for (const option of Array.from(motionSample.options)) {
+      const supported = option.value === 'local' || (motionFamily ? option.value.startsWith(motionFamily) : ['a','b','combined-a','combined-b','only'].includes(option.value));
+      option.disabled = option.hidden = !supported;
+    }
+    if (motionSample.selectedOptions[0].disabled) motionSample.value = `${motionFamily}a`;
+    comparison.checked = false;
+    updateComparison();
+    configureContext();
+    setView('orbit');
+    fitView();
     snapshot();
-    label.textContent = 'Rest state';
-    report('Rig loaded');
+    await configureMotionPreset();
+    report('Ready · Rig loaded');
   }
   async function apply() {
     let data: Uint8Array;
@@ -329,8 +333,8 @@ async function start() {
     info.pose = sample.value;
     info.error = '';
     snapshot();
-    label.textContent = `Pose ${sample.value.toUpperCase()} · ${bound[0].appliedRecords} bone offsets · parent filename ${pose.parentFile} (informational)`;
-    report(`Applied VPD. Motion paused. Unmatched: ${bound[0].unmatched.join(', ') || 'none'}`);
+    label.textContent = `Pose ${sample.value.toUpperCase()} · ${bound[0].appliedRecords} bone offsets`;
+    report(`Applied VPD · Motion paused${bound[0].unmatched.length ? ` · Unmatched: ${bound[0].unmatched.join(', ')}` : ''}`);
   }
   async function loadMotion() {
     let diagnostic = '';
@@ -390,10 +394,12 @@ async function start() {
     info.error = '';
     snapshot();
     label.textContent = info.motion;
-    report(`VMD loaded. ${diagnostic}`);
+    document.querySelector('#motion-diagnostics')!.textContent = diagnostic;
+    report('VMD loaded');
   }
   const editable = [
     model,
+    material, outline, comparison, input('physics-seconds'), select('rig-viewpoint'), button('rig-fit'),
     sample,
     encoding,
     file,
@@ -424,30 +430,58 @@ async function start() {
     if (busy) return;
     busy = true;
     invalidate();
-    editable.forEach((c) => {
-      c.disabled = true;
-    });
+    const editables = () => [...editable, ...Array.from(document.querySelectorAll<HTMLInputElement>('#morph-controls input'))];
+    editables().forEach(c => { c.disabled = true; });
+    status.dataset.error = 'false';
     status.textContent = 'Working…';
     try {
+      info.error = '';
       await action();
+      if (status.textContent === 'Working…') report('Ready');
     } catch (error) {
       info.error = String(error);
       info.ready = assets.length > 0;
+      if (info.ready) model.value = info.rig;
       report(info.error);
     } finally {
       busy = false;
-      editable.forEach((c) => {
-        c.disabled = !info.ready;
-      });
+      editables().forEach(c => { c.disabled = !info.ready; });
+      model.disabled = false; // Keep another preset reachable after an initial load failure.
+      document.querySelector('#rig-retry')?.remove();
+      if (!info.ready) {
+        const retry = document.createElement('button');
+        retry.id = 'rig-retry';
+        retry.textContent = 'Retry loading';
+        retry.onclick = guarded(loadRig);
+        status.append(' ', retry);
+      }
+      configureAvailability();
       invalidate();
     }
   };
+  function configureAvailability() {
+    const hasMotion = Boolean(assets[0]?.player);
+    for (const id of ['motion-play','motion-pause','motion-time']) {
+      const control = document.getElementById(id) as HTMLButtonElement | HTMLInputElement;
+      control.disabled = busy || !info.ready || !hasMotion;
+      control.title = hasMotion ? '' : 'Load a motion first';
+    }
+    select('ik-override').disabled = busy || !info.ready || !hasMotion;
+    for (const option of Array.from(motionSource.options)) option.disabled = motionSample.value === 'local' && option.value !== 'bytes';
+  }
+  function configureContext() {
+    document.querySelector<HTMLElement>('#physics-panel')!.hidden = !assets[0]?.physics;
+    document.querySelector<HTMLElement>('#ik-panel')!.hidden = !solverRig();
+    document.querySelector<HTMLElement>('#morph-panel')!.hidden = !document.querySelector('#morph-controls input');
+    document.querySelector<HTMLElement>('#skinning-panel')!.hidden = !/(sdef|qdef)/.test(model.value);
+  }
   function rebuildMorphControls() {
     const container = document.querySelector('#morph-controls')!;
     container.replaceChildren();
     for (const m of getMorphModel(assets[0].morph).morphs.filter(m => controlIndex(m) !== null).sort((a,b) => controlIndex(a)! - controlIndex(b)!)) {
       const label = document.createElement('label'), control = document.createElement('input');
       label.textContent = `${m.index}: ${m.name} `;
+      control.disabled = busy;
       control.type = 'number'; control.step = '0.05'; control.value = '0';
       control.dataset.target = String(controlIndex(m));
       control.onchange = guarded(() => {
@@ -528,16 +562,22 @@ async function start() {
   }
   sample.onchange = configurePosePreset;
   async function configureMotionPreset() {
+    configureAvailability();
     if (motionSample.value !== 'local') {
       // A subsequent selection of the same local file must emit change again.
       motionFile.value = '';
       localMotion = undefined;
       const id = motionSample.value.replace('combined-', '').replace('group-', '').replace('solver-', '').replace('bone-', '');
       if(motionSample.value.startsWith('solver-')){motionMap.value='{}';document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value='{}';select('motion-morph-unmatched').value='error';return;}
-      motionMap.value = id === 'only' ? '{}' : await (await fetch(`${import.meta.env.BASE_URL}vmd/motion-${id}-map.json`)).text();
+      motionMap.value = '{}';
       const legacy = motionSample.value === 'a' || motionSample.value === 'b';
       select('motion-morph-unmatched').value = legacy ? 'ignore' : 'error';
       document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value = legacy || motionSample.value.startsWith('bone-') ? '{}' : motionSample.value.startsWith('group-') ? '{"8fce82a2":1,"67726f7570":0}' : '{"8fce82a2":1}';
+      if (id !== 'only') {
+        const response = await fetch(`${import.meta.env.BASE_URL}vmd/motion-${id}-map.json`);
+        if (!response.ok) throw new Error(`Motion binding map failed: ${response.status}. Choose a sample again or provide an explicit binding.`);
+        motionMap.value = await response.text();
+      }
     }
   }
   motionSample.onchange = guarded(configureMotionPreset);
@@ -550,6 +590,7 @@ async function start() {
     localMotion = motionFile.files?.[0];
     motionSample.value = 'local';
     motionSource.value = 'bytes';
+    configureAvailability();
     motionMap.value = '{}';
     document.querySelector<HTMLTextAreaElement>('#motion-morph-map')!.value = '{}';
   };
@@ -560,10 +601,40 @@ async function start() {
     invalidate();
   };
   material.disabled = outline.disabled = false;
+  function setView(view: string) {
+    controls.target.set(0.2, 0.25, -0.4);
+    camera.zoom = 1;
+    camera.position.copy(controls.target).add(view === 'orbit' ? new Vector3(2, 1.55, 4) : view === 'side' ? new Vector3(4,0,0) : new Vector3(0,0,view === 'back' ? -4 : 4));
+    camera.up.set(0,1,0);
+    controls.update();
+    camera.updateProjectionMatrix();
+    select('rig-viewpoint').value = view;
+    invalidate();
+  }
+  function fitView() {
+    if (!assets[0]) return;
+    const bounds = new Box3().setFromObject(assets[0].scene, true);
+    if (bounds.isEmpty()) return;
+    const center = bounds.getCenter(new Vector3());
+    const diameter = bounds.getSize(new Vector3()).length() * 1.15;
+    camera.position.add(center.clone().sub(controls.target));
+    controls.target.copy(center);
+    camera.zoom = 1.2 * Math.min(1, viewport.clientWidth / viewport.clientHeight) / Math.max(diameter, 0.01);
+    controls.update();
+    camera.updateProjectionMatrix();
+    invalidate();
+  }
+  button('rig-fit').onclick = fitView;
+  select('rig-viewpoint').onchange = () => { setView(select('rig-viewpoint').value); fitView(); };
+  controls.addEventListener('start', () => { select('rig-viewpoint').value = 'orbit'; });
   const resize = () => {
+    if (viewport.closest('[hidden]')) return;
     const width = viewport.clientWidth,
       height = viewport.clientHeight;
     renderer.setSize(width, height);
+    const previousAspect = (camera.right - camera.left) / (camera.top - camera.bottom);
+    // Preserve the user's zoom relative to the available short edge on resize.
+    camera.zoom *= Math.min(1, width / height) / Math.min(1, previousAspect);
     camera.left = (-0.6 * width) / height;
     camera.right = (0.6 * width) / height;
     camera.updateProjectionMatrix();
@@ -574,7 +645,7 @@ async function start() {
   resize();
   await guarded(loadRig)();
   let last = performance.now();
-  renderer.setAnimationLoop(() => {
+  const render = () => {
     const now = performance.now(),
       delta = (now - last) / 1000;
     last = now;
@@ -611,21 +682,38 @@ async function start() {
       if (info.playback.updates.length > 8) info.playback.updates.shift();
       if (update.crossings > 0) info.playback.crossing = update;
     }
-  });
-  window.addEventListener(
-    'pagehide',
-    () => {
+  };
+  let active = false, suspended = false;
+  const setActive = (enabled: boolean) => {
+    active = enabled;
+    renderer.setAnimationLoop(null);
+    controls.enabled = active && !suspended;
+    if (active && !suspended) {
+      last = performance.now();
+      resize();
+      renderer.setAnimationLoop(render);
+    } else if (!active) {
+      assets.forEach(asset => asset.player?.pause());
+      snapshot();
+    }
+  };
+  const events = new AbortController();
+  window.addEventListener('pagehide', event => {
+    if (event.persisted) {
+      suspended = true;
+      setActive(active);
+    } else {
+      events.abort();
       renderer.setAnimationLoop(null);
       observer.disconnect();
       controls.dispose();
       assets.forEach((a) => void disposeAsset(a));
       effect.dispose();
       renderer.dispose();
-    },
-    { once: true },
-  );
+    }
+  }, { signal: events.signal });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) { suspended = false; setActive(active); }
+  }, { signal: events.signal });
+  return { setActive };
 }
-start().catch((error) => {
-  console.error(error);
-  document.querySelector('#status')!.textContent = `Rig failed: ${String(error)}`;
-});

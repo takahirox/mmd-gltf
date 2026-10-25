@@ -1,7 +1,7 @@
 # VMD bone and vertex-morph contract
 
 Issue #29 adds VMD 0002 solver-free translation/rotation through PMX BDEF conversion,
-retained glTF curves, reusable Three.js playback and the built `rig.html` Demo.
+retained glTF curves, reusable Three.js playback and the built root demo’s **Synthetic rigs** view.
 Issue #31 extends this with vertex morphs and synchronized weight playback below.
 These sections describe the solver-free default. Issue #43 adds optional
 [pre-physics IK/append and bound IK-enable execution](solver.md), including
