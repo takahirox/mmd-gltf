@@ -66,6 +66,28 @@ Native WebGPU was skipped because no adapter was available. WebGL2 ran through
 all required paths. Historical numerical evidence files are retained; new UI
 captures are stored separately below.
 
+### Mobile control overlap revision
+
+The review found that Motion's nested label grid expanded its select beyond the
+mobile column, covering part of the adjacent Source select. Label grids now use
+`minmax(0, 1fr)` so their controls fit the available column width. Browser checks
+assert that both selects stay inside their labels and do not overlap at 390px,
+both on initial mobile layout and after resizing the physics view from desktop.
+The new check failed against the previous build (Motion's right edge was 255px
+while its label ended at 190px).
+
+Revision checks: `npm run typecheck`, `npm run build`, `npm test` (118 tests plus
+Toon/Outline fixtures), `npm run check:links` (404 links) and `git diff --check`
+passed. Two early unit runs overlapped asset generation and failed with missing
+generated bone/group files; the final run after generation completed passed.
+The build retains its existing large-chunk warning.
+The focused four-file browser command above passed again: **13 passed, one
+optional native WebGPU check skipped** (4.4 minutes), including both new layout
+assertions. Inspected all three fresh mobile captures; the rig and resized
+physics PNGs below are updated, while the landing capture is unchanged. The full
+browser numerical suite was not repeated for this CSS-only revision; prior
+conformance evidence above remains applicable.
+
 ## Visual inspection
 
 Inspected the actual browser PNGs, not only DOM measurements:
@@ -76,8 +98,8 @@ Inspected the actual browser PNGs, not only DOM measurements:
 | [Motion and morphs](unified-demo/morph-desktop.png) | The deformed rig fills the viewport; playback and independent weights are legible in the adjacent scrollable controls. Four-decimal display avoids long float noise. |
 | [IK and physics](unified-demo/physics-desktop.png) | After motion, IK override and settling, **Fit view** centers the visible snapshot. Physics, IK, morphs and export remain reachable without a second page. |
 | [Mobile landing](unified-demo/landing-mobile.png) | At 390 × 844, both references remain usable in stacked panes; controls wrap without horizontal overflow. Credits and methodology remain in an accessible disclosure. |
-| [Mobile rig](unified-demo/rig-mobile.png) | A large viewer precedes compact disclosures. Mode/shape stay visible in the preset label; morph fields and playback controls remain readable. |
-| [Resized physics view](unified-demo/physics-resized-mobile.png) | Desktop → narrow resize preserves framing and the selected PBR/Outline/camera state. Physics and export remain accessible below the viewport. |
+| [Mobile rig](unified-demo/rig-mobile.png) | Refreshed after the overlap fix: Motion and Source fit separate columns with visible dropdown arrows. A large viewer precedes the disclosures; morph fields and playback remain readable. |
+| [Resized physics view](unified-demo/physics-resized-mobile.png) | Refreshed after the overlap fix: the long Solver A motion label stays within its select, clear of Source. Desktop → narrow resize preserves framing and PBR/Outline/camera state; physics and export remain accessible below the viewport. |
 
 Visual review caught an off-screen settled fixture in an early capture; the
 explicit **Fit view** operation now frames it. Initial model framing also fits

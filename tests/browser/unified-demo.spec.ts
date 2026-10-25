@@ -2,6 +2,17 @@ import { test, expect, type Page } from '@playwright/test';
 
 const preview = 'http://127.0.0.1:43180/mmd-gltf/';
 const rigState = (page: Page) => page.evaluate(() => (window as any).mmdRig);
+async function expectMotionControlsToFit(page: Page) {
+  const motion = (await page.locator('#motion-sample').boundingBox())!;
+  const source = (await page.locator('#motion-source').boundingBox())!;
+  for (const id of ['motion-sample', 'motion-source']) {
+    const control = (await page.locator(`#${id}`).boundingBox())!;
+    const label = (await page.locator(`label:has(>#${id})`).boundingBox())!;
+    expect(control.x).toBeGreaterThanOrEqual(label.x);
+    expect(control.x + control.width).toBeLessThanOrEqual(label.x + label.width + 1);
+  }
+  expect(motion.x + motion.width).toBeLessThanOrEqual(source.x);
+}
 async function selectRig(page: Page, value: string) {
   await page.locator('#rig-model').selectOption(value);
   await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
@@ -90,6 +101,7 @@ test('one built page: both directions, every preset, contextual controls and ina
   await expect.poll(async () => (await rigState(page)).frames).toBeGreaterThan(paused.frames + 1);
   expect((await page.locator('#rig-viewport').boundingBox())!.height).toBeGreaterThanOrEqual(340);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  await expectMotionControlsToFit(page);
   await page.screenshot({ path: testInfo.outputPath('physics-resized-mobile.png'), fullPage: true });
   expect(await page.locator('canvas').count()).toBe(2);
   expect(await page.evaluate(() => (window as any).demoDocument)).toBe('same document');
@@ -106,6 +118,7 @@ test('mobile viewport, keyboard disclosures, local error recovery and export', a
   await page.locator('#demo-model').selectOption('rig');
   await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
   await selectRig(page, 'bone-wedge-qdef');
+  await expectMotionControlsToFit(page);
   const viewport = (await page.locator('#rig-viewport').boundingBox())!;
   expect(viewport.height).toBeGreaterThanOrEqual(340);
   expect(viewport.y).toBeLessThan(300);
