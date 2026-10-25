@@ -21,6 +21,8 @@ test('SDEF actual GPU positions/normals, independent rasters, VMD/VPD and serial
 // give each rig/motion its own existing test budget and identifiable source steps.
 for (const rig of ['sdef-box', 'sdef-wedge']) for (const motion of ['combined-a', 'combined-b']) {
   test(`built SDEF Demo: ${rig} / ${motion} / bytes + glb + gltf`, async ({ page }, info) => {
+    // Three source formats and their GPU screenshot checks exceed the default 180s on CI.
+    test.setTimeout(300_000);
     const evidence = demoEvidence(page, info);
     const { phase, image, rendered } = evidence;
     const errors: string[] = [];
