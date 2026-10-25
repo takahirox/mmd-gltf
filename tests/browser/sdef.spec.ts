@@ -1,3 +1,4 @@
+import { openRigDemo } from './demo-controls';
 import { readRigBitmap } from './rig-bitmap';
 import { test, expect, type Page, type TestInfo } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
@@ -26,10 +27,10 @@ for (const rig of ['sdef-box', 'sdef-wedge']) for (const motion of ['combined-a'
     page.on('pageerror', e => errors.push(e.message));
     try {
       await phase('load Demo and selected rig', async () => {
-        await page.goto(`${preview}rig.html`);
+        await openRigDemo(page, preview);
         await expect(page.locator('#rig-preset')).toBeEnabled();
         await page.locator('#rig-model').selectOption(rig);
-        await expect(page.locator('#status')).toContainText('Rig loaded');
+        await expect(page.locator('#rig-status')).toContainText('Rig loaded');
         await expect(page.locator('#rig-preset')).toBeEnabled();
       });
       await rendered({ rig, pose: 'rest' });
@@ -41,7 +42,7 @@ for (const rig of ['sdef-box', 'sdef-wedge']) for (const motion of ['combined-a'
           await expect(page.locator('#motion-load')).toBeEnabled();
           await page.locator('#motion-source').selectOption(source);
           await page.locator('#motion-load').click();
-          await expect(page.locator('#status')).toContainText('VMD loaded');
+          await expect(page.locator('#rig-status')).toContainText('VMD loaded');
           await expect(page.locator('#motion-load')).toBeEnabled();
         });
         const selected = { rig, motion: `Motion ${motion.toUpperCase()} (${source})`, pose: 'motion', time: 0.719, playing: false };
@@ -85,7 +86,7 @@ for (const rig of ['sdef-box', 'sdef-wedge']) for (const motion of ['combined-a'
           await phase(`apply VPD ${pose}`, async () => {
             await page.locator('#rig-pose').selectOption(pose);
             await page.locator('#rig-preset').click();
-            await expect(page.locator('#status')).toContainText('Applied VPD');
+            await expect(page.locator('#rig-status')).toContainText('Applied VPD');
           });
           await rendered({ rig, pose, playing: false });
           const poseImage = await image(`VPD ${pose}`);
@@ -104,7 +105,7 @@ for (const rig of ['sdef-box', 'sdef-wedge']) for (const motion of ['combined-a'
       await phase('invalid file recovery', async () => {
         await page.locator('#motion-file').setInputFiles({ name: 'bad.vmd', mimeType: 'application/octet-stream', buffer: Buffer.from('bad') });
         await page.locator('#motion-load').click();
-        await expect(page.locator('#status')).toContainText('VMD: truncated');
+        await expect(page.locator('#rig-status')).toContainText('VMD: truncated');
         await expect(page.locator('#motion-load')).toBeEnabled();
       });
       await rendered({ rig, pose: 'rest' });
@@ -124,7 +125,7 @@ for (const rig of ['sdef-box', 'sdef-wedge']) for (const motion of ['combined-a'
         await expect(page.locator('#motion-load')).toBeEnabled();
         await page.locator('#motion-source').selectOption('bytes');
         await page.locator('#motion-load').click();
-        await expect(page.locator('#status')).toContainText('VMD loaded');
+        await expect(page.locator('#rig-status')).toContainText('VMD loaded');
         await expect(page.locator('#motion-load')).toBeEnabled();
         await page.locator('#motion-time').fill('0.719');
         await page.locator('#motion-time').dispatchEvent('input');
@@ -232,7 +233,7 @@ test('built SDEF Demo acknowledges fractional state and appearance only after re
   const { phase, rendered, image } = evidence;
   try {
     await phase('load regression motion', async () => {
-      await page.goto(`${preview}rig.html`);
+      await openRigDemo(page, preview);
       await expect(page.locator('#rig-preset')).toBeEnabled();
       await page.locator('#rig-model').selectOption('sdef-box');
       await expect(page.locator('#rig-preset')).toBeEnabled();

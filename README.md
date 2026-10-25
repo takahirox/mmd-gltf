@@ -92,8 +92,14 @@ Use `--mode sdef` for mixed BDEF/SDEF and register `MMDSDEFPlugin` for accurate
 deformation; ordinary loaders use an approximate BDEF2 fallback. See the
 [SDEF draft](extensions/MMD_skinning_sdef/README.md) and
 [runtime/export API](docs/pipeline.md#mixed-sdef-conversion-and-runtime).
-The [synthetic rig](examples/rig.html) demonstrates the converter output with
-Toon, core PBR and Outline. Use `--mode qdef` with `MMDQDEFPlugin` for the bounded
+The [unified demo](examples/index.html) opens with the synchronized Gene Light
+comparison. Choose **Synthetic rigs**, then a grouped **Preset**, to explore
+skinning, morphs, IK/append and physics in place. Motion, Pose, local-file/binding,
+and export controls are available in disclosures beside (or below) the viewport.
+Both views support Toon, PBR and Outline; the old `rig.html` URL redirects to
+the root with `?demo=rig`. See the [UI validation record](docs/unified-demo.md).
+
+Use `--mode qdef` with `MMDQDEFPlugin` for the bounded
 PMX 2.1 rigid dual-quaternion profile; see the [QDEF guide](docs/qdef.md) and
 [extension draft](extensions/MMD_skinning_qdef/README.md). Ordinary loaders retain
 an approximate BDEF4 fallback. Ordered pre-physics IK/append is available with

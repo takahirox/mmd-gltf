@@ -150,10 +150,10 @@ contract; use the separate [QDEF profile](qdef.md) for mixed 2.1 deformation.
 The [attributed binary fixtures](../tests/fixtures/README.md) and
 [validation evidence](validation.md#issue-25-bdef-core-skinning) document numerical
 tolerances, parser regressions and independent surface/outline measurements.
-The linked `rig.html` demo loads two actual converted rigs and two VPD byte
-fixtures, with local file loading, encoding selection, explicit binding maps,
-apply/reset, Toon/PBR and Outline controls. This is synthetic solver-free VPD
-conformance. The existing Gene comparison remains static.
+For solver-free VPD, choose **BDEF box** or **BDEF sheared wedge** in the root
+demo’s **Synthetic rigs** view. These converted fixtures offer local file loading,
+encoding selection, explicit binding maps, apply/reset, Toon/PBR and Outline
+controls. The Gene comparison remains static.
 
 ## VPD bone offsets
 

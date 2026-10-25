@@ -9,7 +9,7 @@ let checked = 0;
 async function check(file: string, href: string, html = false) {
   if (/^(https?:|mailto:|data:)/.test(href)) return;
   const [path, hash] = href.split('#');
-  const target = html ? resolve('dist', path.replace(/^\/mmd-gltf\//, '')) : path ? resolve(dirname(file), decodeURIComponent(path)) : resolve(file);
+  const target = html ? resolve('dist', path.replace(/\?.*$/, '').replace(/^\/mmd-gltf\//, '')) : path ? resolve(dirname(file), decodeURIComponent(path)) : resolve(file);
   const entry = await stat(target);
   assert.ok(entry.isFile() || entry.isDirectory(), `${file}: missing ${href}`);
   if (hash && extname(target) === '.md') {

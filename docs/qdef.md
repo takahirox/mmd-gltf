@@ -108,7 +108,7 @@ and four distinct active joints. `pmx21-fixture.ts` independently writes small
 binaries for both text encodings and all nine vertex/other-index-width combinations.
 No third-party model bytes were added.
 
-The built [rig Demo](../examples/rig.html) offers both QDEF rigs, both combined VMD
+The built [unified demo](../examples/index.html), under **Synthetic rigs**, offers both QDEF rigs, both combined VMD
 motions, both VPD poses, byte/GLB/glTF sources, fractional transport, morphs,
 Toon/PBR, Outline and an explicitly approximate linear-skinning comparison. Its
 rendered-state acknowledgement updates only after submitting the frame; browser

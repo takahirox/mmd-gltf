@@ -1,3 +1,4 @@
+import { openRigDemo } from './demo-controls';
 import { test, expect } from "@playwright/test";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { validateBytes, validateString } from "gltf-validator";
@@ -67,7 +68,7 @@ test("built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, trans
       await readFile("public/physics/reference.json", "utf8"),
     ).poses,
     evidence: object[] = [];
-  await page.goto(`${preview}rig.html`);
+  await openRigDemo(page, preview);
   await expect(page.locator("#rig-model")).toBeEnabled();
   const ready = async () => {
     await expect(page.locator("#motion-load")).toBeEnabled();
