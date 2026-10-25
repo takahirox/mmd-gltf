@@ -62,6 +62,8 @@ for (const mode of ["bdef", "sdef", "qdef"])
 test("built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery", async ({
   page,
 }) => {
+  // This single test covers 12 rig/motion/source combinations with screenshot evidence.
+  test.setTimeout(360_000);
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   const reference = JSON.parse(
