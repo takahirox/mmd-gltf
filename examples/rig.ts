@@ -683,29 +683,37 @@ export async function startRig() {
       if (update.crossings > 0) info.playback.crossing = update;
     }
   };
-  const setActive = (active: boolean) => {
+  let active = false, suspended = false;
+  const setActive = (enabled: boolean) => {
+    active = enabled;
     renderer.setAnimationLoop(null);
-    controls.enabled = active;
-    if (active) {
+    controls.enabled = active && !suspended;
+    if (active && !suspended) {
       last = performance.now();
       resize();
       renderer.setAnimationLoop(render);
-    } else {
+    } else if (!active) {
       assets.forEach(asset => asset.player?.pause());
       snapshot();
     }
   };
-  window.addEventListener(
-    'pagehide',
-    () => {
+  const events = new AbortController();
+  window.addEventListener('pagehide', event => {
+    if (event.persisted) {
+      suspended = true;
+      setActive(active);
+    } else {
+      events.abort();
       renderer.setAnimationLoop(null);
       observer.disconnect();
       controls.dispose();
       assets.forEach((a) => void disposeAsset(a));
       effect.dispose();
       renderer.dispose();
-    },
-    { once: true },
-  );
+    }
+  }, { signal: events.signal });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) { suspended = false; setActive(active); }
+  }, { signal: events.signal });
   return { setActive };
 }

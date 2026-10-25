@@ -179,12 +179,21 @@ export async function startComparison() {
       renderer.setScissorTest(false);
       info.frames++;
     };
-    const setActive = (active: boolean) => {
-      orbit.enabled = active;
+    let active = false, suspended = false;
+    const setActive = (enabled: boolean) => {
+      active = enabled;
+      orbit.enabled = active && !suspended;
       renderer.setAnimationLoop(null);
-      if (active) { resize(); renderer.setAnimationLoop(render); }
+      if (active && !suspended) { resize(); renderer.setAnimationLoop(render); }
     };
-    window.addEventListener('pagehide', () => { void dispose(); }, { once: true, signal: events.signal });
+    // Cached documents keep their GPU resources and resume only the selected viewer.
+    window.addEventListener('pagehide', event => {
+      if (event.persisted) { suspended = true; setActive(active); }
+      else void dispose();
+    }, { signal: events.signal });
+    window.addEventListener('pageshow', event => {
+      if (event.persisted) { suspended = false; setActive(active); }
+    }, { signal: events.signal });
     return { setActive };
   } catch (error) {
     await dispose();
