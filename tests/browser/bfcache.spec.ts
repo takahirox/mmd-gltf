@@ -58,6 +58,9 @@ for (const demo of ['gene', 'rig']) {
       await expect(page.locator('#viewport canvas')).toHaveCount(1);
       await expect(page.locator('#rig-viewport canvas')).toHaveCount(1);
       expect(await page.evaluate(() => (window as any).cacheTest.canvases.every((canvas: HTMLCanvasElement) => canvas.isConnected))).toBe(true);
+      // The README link scrolls to the footer. Measure the selected viewer's
+      // rendering with its viewport visible after history restores that scroll.
+      await page.locator(demo === 'gene' ? '#viewport' : '#rig-viewport').scrollIntoViewIfNeeded();
       await expect.poll(() => page.evaluate(demo => {
         const w = window as any;
         return (demo === 'gene' ? w.mmdExample : w.mmdRig).frames - w.cacheTest.frames[demo];

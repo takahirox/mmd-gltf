@@ -5,8 +5,9 @@ export async function readComparisonBitmap(page:Page) {
   const actual=await page.evaluate(()=>(window as any).captureMMDComparisonCanvas());
   expect(actual.frame).toBeGreaterThan(0);
   const bytes=Buffer.from(actual.png.split(',')[1],'base64'),png=PNG.sync.read(bytes);
-  const size=await page.locator('#viewport canvas').evaluate(element=>({width:(element as HTMLCanvasElement).width,height:(element as HTMLCanvasElement).height}));
-  expect({width:png.width,height:png.height}).toEqual(size);
+  // ResizeObserver can change the live canvas after the captured draw. Validate
+  // against dimensions recorded in that draw, not a later browser round trip.
+  expect({width:png.width,height:png.height}).toEqual({width:actual.width,height:actual.height});
   return bytes;
 }
 /** Compare pane pixels independently; labels and controls are checked through the DOM. */

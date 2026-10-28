@@ -35,7 +35,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
   const events = new AbortController();
   const scenes = [new Scene(), new Scene()];
   const plugins: (MMDToonPlugin | MMDOutlinePlugin)[] = [];
-  const captures: {resolve(value:{png:string;frame:number}):void;reject(error:Error):void}[] = [];
+  type Capture = {png:string;frame:number;width:number;height:number};
+  const captures: {resolve(value:Capture):void;reject(error:Error):void}[] = [];
   let disposed = false;
   let controls: OrbitControls | undefined;
   let observer: ResizeObserver | undefined;
@@ -211,7 +212,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
     toon.scene.traverse((object: Object3D) => { if ((object as Mesh).isMesh) info.meshes++; });
     Object.assign(window, { mmdExample: info,
       captureMMDComparisonCanvas: () => disposed ? Promise.reject(new Error('Comparison disposed'))
-        : new Promise<{png:string;frame:number}>((resolve,reject) => captures.push({resolve,reject})),
+        : new Promise<Capture>((resolve,reject) => captures.push({resolve,reject})),
     });
     if (isUka) {
       expression.disabled = false;
@@ -239,6 +240,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
     }, { signal: events.signal });
     const render = () => {
       if (viewport.clientWidth <= 0 || viewport.clientHeight <= 0) return;
+      // A requested capture must use current layout even before ResizeObserver runs.
+      if (captures.length) resize();
       orbit.update();
       const container = viewport.getBoundingClientRect();
       renderer.setScissorTest(true);
@@ -258,7 +261,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
       info.frames++;
       // Read after both real draws, before WebGL discards its drawing buffer.
       if (captures.length) {
-        const value = {png:renderer.domElement.toDataURL('image/png'),frame:info.frames};
+        const value = {png:renderer.domElement.toDataURL('image/png'),frame:info.frames,
+          width:renderer.domElement.width,height:renderer.domElement.height};
         captures.splice(0).forEach(capture => capture.resolve(value));
       }
     };
