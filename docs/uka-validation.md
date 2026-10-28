@@ -68,7 +68,7 @@ reporter writes `test-results/browser-summary.json` with wall duration, environm
 status, per-test durations and test counts, comparing to the approximate run #66
 baseline. The existing workflow uploads this summary with browser diagnostics on
 every CI run. A local duration is not an Ubuntu CI measurement. The completed
-Ubuntu measurements and their failures are recorded below and in the
+Ubuntu measurements and their outcomes are recorded below and in the
 [CI reports with revision, check outcomes and artifact provenance](uka-browser-ci-validation.json).
 
 - `npm run build`: passed (normal Uka and Gene pipeline; pinned source verification).
@@ -83,6 +83,7 @@ Ubuntu measurements and their failures are recorded below and in the
 | After matrix reduction, before CI-driven corrections | macOS, Node v26.12.1, pinned Playwright Chromium, SwiftShader WebGL2, one worker | 73 (71 passed, 2 skipped) | 32.94 minutes |
 | After: run #68, attempt 1 | Ubuntu 24.04, Node v22.23.3, pinned Playwright Chromium, SwiftShader WebGL2, one worker | 73 (70 passed, 2 skipped, 1 failed) | 35.97 minutes; failed |
 | After: run #68, attempt 2 | Same CI configuration and PR revision | 73 (69 passed, 2 skipped, 2 failed) | 34.66 minutes; failed |
+| After corrections: run #69 | Ubuntu 24.04, Node v22.23.4, pinned Playwright Chromium, SwiftShader WebGL2, one worker | 73 (71 passed, 2 optional WebGPU skips) | 35.75 minutes; passed |
 
 The baseline browser step ran from 03:57:32 to 05:15:00 UTC on 2026-10-25
 (77 minutes 28 seconds); its approximately 77-minute value remains the reporter's
@@ -120,15 +121,32 @@ and Uka's expressions/material/Outline and image-recovery checks passed. Its
 complete summary is included separately from the CI attempts in the linked
 record. This is targeted local verification, not a new full browser run.
 
-**A successful complete Ubuntu CI run for the corrected revision remains
-required after publication.** The original review finding remains open until
-that new run passes all required checks; neither failed attempt satisfies it.
+[Run #69](https://github.com/takahirox/mmd-gltf/actions/runs/40697950655)
+completed successfully for corrected PR head
+`c9272333928e904c60049c45a3a747154c96c95b` (checkout merge
+`ed60f9a866e24012e7c05edfe07657cf01527773`). All six mandatory checks passed:
+build, typecheck, 121 Node tests, the complete browser suite, 425 local
+documentation/built-asset links, and whitespace. The browser reporter measured
+**2145.078 seconds (35.75 minutes), 71 passed, 2 skipped, 0 failed**, with 73
+registered tests on one worker. The only skips were the explicitly optional
+native WebGPU comparison and Outline conformance tests. Both retained-viewer
+Back-navigation tests, the Gene mobile comparison, both Uka checks, and the
+retained synthetic numerical/conformance suites passed.
+
+This successful Ubuntu browser run took **53.6% less time** than the approximate
+77-minute run #66 baseline, with 73 rather than 79 registered tests. It resolves
+the required full-CI validation gap; the earlier failed attempts remain recorded
+as failures. The linked CI record includes the complete per-test report, all
+required-step outcomes/timestamps, and the downloaded artifact and summary
+SHA-256 values. This evidence update changes no application or test code.
 
 The remaining large cost is deliberate GPU conformance: the solver file consumed 11.14 minutes locally, including all three skinning modes, both rigs/materials, independent CPU/GPU rasters and exports. Standalone QDEF took 3.76 minutes with large palettes and analytical degeneracies retained. Uka cannot replace these numerical/unsupported-feature checks.
-In the two Ubuntu runs, solver tests consumed 8.80 / 8.28 minutes, VMD tests
+In the two failed Ubuntu attempts, solver tests consumed 8.80 / 8.28 minutes, VMD tests
 5.27 / 5.11 minutes and QDEF tests 3.45 / 3.22 minutes. The retained numerical
 coverage, rather than repeated screenshots, accounts for much of the remaining
 browser time.
+In successful run #69, those suites consumed 8.71, 5.21 and 3.41 minutes,
+respectively.
 
 ## Visual record
 
