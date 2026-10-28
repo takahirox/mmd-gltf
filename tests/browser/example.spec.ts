@@ -1,7 +1,8 @@
+import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
 import { test, expect } from '@playwright/test';
 import { PNG } from 'pngjs';
 import { createHash } from 'node:crypto';
-import { mkdir, copyFile } from 'node:fs/promises';
+import { mkdir, copyFile, writeFile } from 'node:fs/promises';
 import manifest from '../../tools/gene-light-manifest.json' with { type: 'json' };
 
 function errorsFrom(page: import('@playwright/test').Page) {
@@ -53,7 +54,7 @@ test('built comparison keeps the light-gray fallback while assets load', async (
     await route.continue();
   });
   try {
-    await page.goto('http://127.0.0.1:43180/mmd-gltf/?backend=webgl');
+    await page.goto('http://127.0.0.1:43180/mmd-gltf/?demo=gene&backend=webgl');
     await expect(page.locator('canvas')).toBeVisible();
     await expect(page.locator('#viewport')).toHaveCSS('background-color', 'rgb(208, 208, 208)');
     for (const id of ['pmx', 'gltf']) await expect(page.locator(`#${id}-status`)).toContainText('Loading');
@@ -73,11 +74,11 @@ for (const backend of ['webgl', 'webgpu']) {
     const errors = errorsFrom(page);
     page.on('requestfailed', (request) => errors.push(`${request.url()}: ${request.failure()?.errorText}`));
     if (backend === 'webgpu') {
-      await page.goto('http://127.0.0.1:43180/mmd-gltf/');
+      await page.goto('http://127.0.0.1:43180/mmd-gltf/?demo=gene');
       const available = await page.evaluate(async () => !!await (navigator as any).gpu?.requestAdapter());
       test.skip(!available, 'Native WebGPU adapter unavailable; WebGL2 is tested separately.');
     }
-    await page.goto(`http://127.0.0.1:43180/mmd-gltf/?backend=${backend}`);
+    await page.goto(`http://127.0.0.1:43180/mmd-gltf/?demo=gene&backend=${backend}`);
     await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
     await page.waitForFunction(() => (window as any).mmdExample?.frames > 4);
     for (const label of ['Direct PMX reference', 'MMD glTF']) await expect(page.locator('#viewport').getByRole('heading', { name: label, exact: true })).toBeVisible();
@@ -117,7 +118,8 @@ for (const backend of ['webgl', 'webgpu']) {
       await page.selectOption('#viewpoint', view);
       await page.waitForTimeout(600);
       const path = `test-results/gene-${backend}-${view}.png`;
-      const capture = await page.locator('#viewport').screenshot({ path });
+      const capture = await readComparisonBitmap(page);
+      await writeFile(path,capture);
       expectLightGrayBackground(capture);
       captures.push(capture);
       const left = silhouette(capture, 0), right = silhouette(capture, 1);
@@ -133,30 +135,30 @@ for (const backend of ['webgl', 'webgpu']) {
     expect(captures[0].equals(captures[2])).toBe(false);
     await page.selectOption('#viewpoint', 'front');
     await page.waitForTimeout(600);
-    const outlineOn = await page.locator('#viewport').screenshot();
+    const outlineOn = await readComparisonBitmap(page);
     await page.selectOption('#outlines', 'off');
     await page.waitForTimeout(300);
-    const outlineOff = await page.locator('#viewport').screenshot({ path: `test-results/gene-${backend}-front-outline-off.png` });
+    const outlineOff = await readComparisonBitmap(page);
     expectLightGrayBackground(outlineOff);
     // Require a visible contour change in each pane, excluding labels and hints.
     for (const half of [0, 1]) expect(silhouette(outlineOn, half).count).toBeGreaterThan(silhouette(outlineOff, half).count);
     expect(await page.evaluate(() => (window as any).mmdExample.reference.outlines)).toBe(false);
     await page.selectOption('#outlines', 'on');
     await page.waitForTimeout(300);
-    expect((await page.locator('#viewport').screenshot()).equals(outlineOn)).toBe(true);
-    const pmxBefore = await page.locator('#pmx-pane').screenshot();
-    const toon = await page.locator('#gltf-pane').screenshot();
+    expect((await readComparisonBitmap(page)).equals(outlineOn)).toBe(true);
+    const pmxBefore = comparisonHalf(await readComparisonBitmap(page),0);
+    const toon = comparisonHalf(await readComparisonBitmap(page),1);
     await page.selectOption('#material', 'pbr');
     await expect(page.locator('#gene-status')).toContainText('PBR fallback');
     await page.waitForTimeout(600);
-    const pbr = await page.locator('#gltf-pane').screenshot();
-    expectLightGrayBackground(await page.locator('#viewport').screenshot());
+    const pbr = comparisonHalf(await readComparisonBitmap(page),1);
+    expectLightGrayBackground(await readComparisonBitmap(page));
     expect(pbr.equals(toon)).toBe(false);
-    expect((await page.locator('#pmx-pane').screenshot()).equals(pmxBefore)).toBe(true);
+    expect((comparisonHalf(await readComparisonBitmap(page),0)).equals(pmxBefore)).toBe(true);
     await page.selectOption('#material', 'toon');
     await expect(page.locator('#gene-status')).toContainText('MMD toon');
     await page.waitForTimeout(600);
-    expect((await page.locator('#gltf-pane').screenshot()).equals(toon)).toBe(true);
+    expect((comparisonHalf(await readComparisonBitmap(page),1)).equals(toon)).toBe(true);
     for (const file of manifest.files) {
       const response = await page.request.get(`http://127.0.0.1:43180/mmd-gltf/gene-light/${file.path}`);
       expect(response.status()).toBe(200);
@@ -173,14 +175,14 @@ for (const backend of ['webgl', 'webgpu']) {
     expect(left.x).toBe(right.x); expect(right.y).toBeGreaterThanOrEqual(left.y + left.height);
     cameras = await page.evaluate(() => (window as any).mmdExample.cameras);
     expect(cameras[0]).toEqual(cameras[1]);
-    expectLightGrayBackground(await page.locator('#viewport').screenshot(), true);
+    expectLightGrayBackground(await readComparisonBitmap(page), true);
     expect(errors).toEqual([]);
   });
 }
 
 test('missing PMX image reports the reference failure clearly', async ({ page }) => {
   await page.route('**/gene-light/light/arm.png', (route) => route.fulfill({ status: 404, body: 'Missing test image' }));
-  await page.goto('http://127.0.0.1:43180/mmd-gltf/?backend=webgl');
+  await page.goto('http://127.0.0.1:43180/mmd-gltf/?demo=gene&backend=webgl');
   await expect(page.locator('#pmx-status')).toContainText('Load failed', { timeout: 90000 });
   await expect(page.locator('#gene-status')).toContainText('Could not load/render the comparison');
 });

@@ -1,0 +1,1539 @@
+{
+  "environment": {
+    "ci": false,
+    "platform": "darwin",
+    "node": "v26.12.1",
+    "workers": 1
+  },
+  "status": "passed",
+  "durationMs": 1976323.118,
+  "baselineRun66ApproximateMs": 4620000,
+  "baselineTestCount": 79,
+  "testCount": 73,
+  "reductionFromApproximateBaselinePercent": 57.22244333333333,
+  "cases": [
+    {
+      "title": "bdef.spec.ts / converted PMX skins match analytic surface and outline predictions through pinned GLTFLoader",
+      "status": "passed",
+      "durationMs": 3849
+    },
+    {
+      "title": "bone-morph.spec.ts / built bone Demo: bone-box / bone-a / bytes",
+      "status": "passed",
+      "durationMs": 11587
+    },
+    {
+      "title": "bone-morph.spec.ts / built bone Demo: bone-wedge / bone-b / glb + gltf",
+      "status": "passed",
+      "durationMs": 17945
+    },
+    {
+      "title": "bone-morph.spec.ts / built bone morph raster and exports: both rigs/motions, bytes/GLB/glTF, Toon/PBR, Outline and both VPD handoffs",
+      "status": "passed",
+      "durationMs": 55973
+    },
+    {
+      "title": "bone-morph.spec.ts / bone morph actual SDEF/QDEF GPU positions and normals",
+      "status": "passed",
+      "durationMs": 16417
+    },
+    {
+      "title": "demo-loading.spec.ts / binding map failure after rig replacement keeps asset, controls and diagnostics consistent",
+      "status": "passed",
+      "durationMs": 3790
+    },
+    {
+      "title": "example.spec.ts / production TSL graph matches independent numerical fixtures on WebGL2",
+      "status": "passed",
+      "durationMs": 2459
+    },
+    {
+      "title": "example.spec.ts / built comparison keeps the light-gray fallback while assets load",
+      "status": "passed",
+      "durationMs": 10939
+    },
+    {
+      "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgl site",
+      "status": "passed",
+      "durationMs": 28734
+    },
+    {
+      "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgpu site",
+      "status": "skipped",
+      "durationMs": 774
+    },
+    {
+      "title": "example.spec.ts / missing PMX image reports the reference failure clearly",
+      "status": "passed",
+      "durationMs": 1689
+    },
+    {
+      "title": "group.spec.ts / built group Demo: group-box / group-a / bytes",
+      "status": "passed",
+      "durationMs": 10889
+    },
+    {
+      "title": "group.spec.ts / built group Demo: group-wedge / group-b / glb + gltf",
+      "status": "passed",
+      "durationMs": 17836
+    },
+    {
+      "title": "group.spec.ts / built group Demo acknowledges fractional state and appearance only after rendering",
+      "status": "passed",
+      "durationMs": 4810
+    },
+    {
+      "title": "group.spec.ts / built group conformance: independent scalar rasters and applied GLB/glTF export round trips",
+      "status": "passed",
+      "durationMs": 30969
+    },
+    {
+      "title": "group.spec.ts / built group targets precede actual SDEF/QDEF GPU positions and normals",
+      "status": "passed",
+      "durationMs": 16043
+    },
+    {
+      "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgl",
+      "status": "passed",
+      "durationMs": 8853
+    },
+    {
+      "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgpu",
+      "status": "skipped",
+      "durationMs": 656
+    },
+    {
+      "title": "physics.spec.ts / physics GPU bdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+      "status": "passed",
+      "durationMs": 14070
+    },
+    {
+      "title": "physics.spec.ts / physics GPU sdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+      "status": "passed",
+      "durationMs": 25223
+    },
+    {
+      "title": "physics.spec.ts / physics GPU qdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+      "status": "passed",
+      "durationMs": 58982
+    },
+    {
+      "title": "physics.spec.ts / built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery",
+      "status": "passed",
+      "durationMs": 41996
+    },
+    {
+      "title": "qdef.spec.ts / QDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads",
+      "status": "passed",
+      "durationMs": 225710
+    },
+    {
+      "title": "qdef.spec.ts / built QDEF Demo: qdef-box / combined-a / bytes",
+      "status": "passed",
+      "durationMs": 20939
+    },
+    {
+      "title": "qdef.spec.ts / built QDEF Demo: qdef-wedge / combined-b / glb + gltf",
+      "status": "passed",
+      "durationMs": 37675
+    },
+    {
+      "title": "qdef.spec.ts / built QDEF Demo acknowledges fractional state and appearance only after rendering",
+      "status": "passed",
+      "durationMs": 9608
+    },
+    {
+      "title": "sdef.spec.ts / SDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads",
+      "status": "passed",
+      "durationMs": 78273
+    },
+    {
+      "title": "sdef.spec.ts / built SDEF Demo: sdef-box / combined-a / bytes",
+      "status": "passed",
+      "durationMs": 13397
+    },
+    {
+      "title": "sdef.spec.ts / built SDEF Demo: sdef-wedge / combined-b / glb + gltf",
+      "status": "passed",
+      "durationMs": 22731
+    },
+    {
+      "title": "sdef.spec.ts / built SDEF Demo acknowledges fractional state and appearance only after rendering",
+      "status": "passed",
+      "durationMs": 6264
+    },
+    {
+      "title": "solver.spec.ts / built Demo keeps IK and rig replacement locked during a delayed motion load",
+      "status": "passed",
+      "durationMs": 3818
+    },
+    {
+      "title": "solver.spec.ts / built extension-only solver skins validate and reload GLB/glTF exports without PMX extras",
+      "status": "passed",
+      "durationMs": 608
+    },
+    {
+      "title": "solver.spec.ts / built Demo resets IK override on bytes player replacement",
+      "status": "passed",
+      "durationMs": 4259
+    },
+    {
+      "title": "solver.spec.ts / built Demo resets IK override on glb player replacement",
+      "status": "passed",
+      "durationMs": 5861
+    },
+    {
+      "title": "solver.spec.ts / built Demo resets IK override on gltf player replacement",
+      "status": "passed",
+      "durationMs": 5700
+    },
+    {
+      "title": "solver.spec.ts / built Demo marks retained bytes IK controls inactive through VPD and resets",
+      "status": "passed",
+      "durationMs": 5327
+    },
+    {
+      "title": "solver.spec.ts / built Demo marks retained glb IK controls inactive through VPD and resets",
+      "status": "passed",
+      "durationMs": 6041
+    },
+    {
+      "title": "solver.spec.ts / built Demo marks retained gltf IK controls inactive through VPD and resets",
+      "status": "passed",
+      "durationMs": 5879
+    },
+    {
+      "title": "solver.spec.ts / built Demo restores legacy pose and motion presets after solver rig replacement",
+      "status": "passed",
+      "durationMs": 10130
+    },
+    {
+      "title": "solver.spec.ts / built solver bdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 16912
+    },
+    {
+      "title": "solver.spec.ts / built solver bdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 17810
+    },
+    {
+      "title": "solver.spec.ts / built solver bdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 27516
+    },
+    {
+      "title": "solver.spec.ts / built solver bdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 18701
+    },
+    {
+      "title": "solver.spec.ts / built solver sdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 34018
+    },
+    {
+      "title": "solver.spec.ts / built solver sdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 36515
+    },
+    {
+      "title": "solver.spec.ts / built solver sdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 34692
+    },
+    {
+      "title": "solver.spec.ts / built solver sdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 35866
+    },
+    {
+      "title": "solver.spec.ts / built solver qdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 82178
+    },
+    {
+      "title": "solver.spec.ts / built solver qdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 84101
+    },
+    {
+      "title": "solver.spec.ts / built solver qdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 82415
+    },
+    {
+      "title": "solver.spec.ts / built solver qdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "durationMs": 85226
+    },
+    {
+      "title": "solver.spec.ts / built solver Demo box/a: both poses, controls, transport, load recovery and disposal",
+      "status": "passed",
+      "durationMs": 21752
+    },
+    {
+      "title": "solver.spec.ts / built solver Demo box/b: both poses, controls, transport, load recovery and disposal",
+      "status": "passed",
+      "durationMs": 15465
+    },
+    {
+      "title": "solver.spec.ts / built solver Demo wedge/a: both poses, controls, transport, load recovery and disposal",
+      "status": "passed",
+      "durationMs": 13746
+    },
+    {
+      "title": "solver.spec.ts / built solver Demo wedge/b: both poses, controls, transport, load recovery and disposal",
+      "status": "passed",
+      "durationMs": 14017
+    },
+    {
+      "title": "uka.spec.ts / default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outline and shared camera",
+      "status": "passed",
+      "durationMs": 72208
+    },
+    {
+      "title": "uka.spec.ts / missing Uka texture fails visibly and retry recovers",
+      "status": "passed",
+      "durationMs": 28358
+    },
+    {
+      "title": "unified-demo.spec.ts / one built page: both directions, every preset, contextual controls and inactive viewer cleanup",
+      "status": "passed",
+      "durationMs": 64831
+    },
+    {
+      "title": "unified-demo.spec.ts / mobile viewport, keyboard disclosures, local error recovery and export",
+      "status": "passed",
+      "durationMs": 18500
+    },
+    {
+      "title": "unified-demo.spec.ts / comparison failure releases its canvas and can retry in place",
+      "status": "passed",
+      "durationMs": 14746
+    },
+    {
+      "title": "unified-demo.spec.ts / legacy rig URL preserves backend and selects the unified rig view",
+      "status": "passed",
+      "durationMs": 2469
+    },
+    {
+      "title": "unified-demo.spec.ts / failed rig loads can retry and failed replacement preserves the current rig",
+      "status": "passed",
+      "durationMs": 6796
+    },
+    {
+      "title": "unified-demo.spec.ts / motion finishing after a model switch stays paused in its own viewer",
+      "status": "passed",
+      "durationMs": 14845
+    },
+    {
+      "title": "vmd.spec.ts / built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines",
+      "status": "passed",
+      "durationMs": 25472
+    },
+    {
+      "title": "vmd.spec.ts / built Demo VMD lifecycle: box, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup",
+      "status": "passed",
+      "durationMs": 25231
+    },
+    {
+      "title": "vmd.spec.ts / built Demo VMD lifecycle: wedge, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup",
+      "status": "passed",
+      "durationMs": 27693
+    },
+    {
+      "title": "vmd.spec.ts / built morph conformance: combined weights and morph-before-BDEF predictions through Toon/PBR and Outline",
+      "status": "passed",
+      "durationMs": 26241
+    },
+    {
+      "title": "vmd.spec.ts / built Demo morph controls and combined lifecycle on both rigs, local motion recovery and morph-only source",
+      "status": "passed",
+      "durationMs": 50680
+    },
+    {
+      "title": "vmd.spec.ts / built Demo delayed real frames retain crossing/render/canvas evidence and isolate ownership",
+      "status": "passed",
+      "durationMs": 36548
+    },
+    {
+      "title": "vpd.spec.ts / built VPD surfaces/outlines match independent scalar predictions for both rigs/poses through runtime and GLB/glTF reloads",
+      "status": "passed",
+      "durationMs": 38225
+    },
+    {
+      "title": "vpd.spec.ts / built VPD demo: both rigs/poses, repeat/reset, encoding, local errors and recovery, Toon/PBR and outlines",
+      "status": "passed",
+      "durationMs": 14040
+    },
+    {
+      "title": "bfcache.spec.ts / cached gene viewer resumes after repeated Back navigation",
+      "status": "passed",
+      "durationMs": 19447
+    },
+    {
+      "title": "bfcache.spec.ts / cached rig viewer resumes after repeated Back navigation",
+      "status": "passed",
+      "durationMs": 18982
+    }
+  ],
+  "counts": {
+    "passed": 71,
+    "skipped": 2
+  },
+  "command": "PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser -- --max-failures=1",
+  "comparisonNote": "Local macOS SwiftShader result; not a controlled before/after Ubuntu CI speedup. New PR CI timing remains pending; the same reporter uploads its actual result in browser-evidence.",
+  "nodeTests": {
+    "passed": 121,
+    "failed": 0
+  },
+  "sourceCommit": "659f0d1a740fec68bb2817dc9c694a35e7a15f12",
+  "artifacts": [
+    {
+      "path": "model.gltf",
+      "bytes": 1210136,
+      "sha256": "2f60b1c1db5e4ee73d962ed8b365bea6637d6a1d231cf89756296b359ff2b7de"
+    },
+    {
+      "path": "model.bin",
+      "bytes": 5119560,
+      "sha256": "f71f7004d0f0a97dbab9f2486da628add834772030c470e8021e9fc5c4e9d702"
+    }
+  ],
+  "gpu": {
+    "qdef": {
+      "passed": 64,
+      "maximumPosition": 0.00007996936788362552,
+      "maximumNormal": 0.00013919622870173232,
+      "fallbackDifference": 0.3882122800953001,
+      "analyticalProbes": 10,
+      "evidence": [
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "glb",
+          "state": "a",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "glb",
+          "state": "a",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "glb",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "glb",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "export-glb",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "export-glb",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "export-glb",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "export-glb",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 2
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "export-gltf",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 2
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "export-gltf",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 2
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "gltf",
+          "state": "b",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "gltf",
+          "state": "b",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "gltf",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "gltf",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "export-gltf",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "export-gltf",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        }
+      ]
+    },
+    "sdef": {
+      "passed": 60,
+      "maximumPosition": 0.00007996936788362552,
+      "maximumNormal": 0.00013919622870173232,
+      "fallbackDifference": 0.32842715404709455,
+      "evidence": [
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 4
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "glb",
+          "state": "a",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "glb",
+          "state": "a",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "glb",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "toon",
+          "source": "glb",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 5
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "export-glb",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "box",
+          "mode": "pbr",
+          "source": "export-glb",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 1
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "export-gltf",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 1
+        },
+        {
+          "rig": "wedge",
+          "mode": "toon",
+          "source": "export-gltf",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-a",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "surface",
+          "oraclePixelMismatches": 2
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "pose-b",
+          "time": 0,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "a",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "bytes",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "gltf",
+          "state": "b",
+          "time": 0.371,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "gltf",
+          "state": "b",
+          "time": 0.371,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "gltf",
+          "state": "b",
+          "time": 0.719,
+          "pass": "surface",
+          "oraclePixelMismatches": 0
+        },
+        {
+          "rig": "wedge",
+          "mode": "pbr",
+          "source": "gltf",
+          "state": "b",
+          "time": 0.719,
+          "pass": "outline",
+          "oraclePixelMismatches": 0
+        }
+      ]
+    }
+  }
+}

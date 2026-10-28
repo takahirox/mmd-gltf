@@ -1,7 +1,8 @@
 import { defineConfig } from '@playwright/test';
 export default defineConfig({
+  reporter: [['list'], ['./tools/browser-report.ts']],
   testDir: './tests/browser', timeout: 180000, workers: 1,
-  use: { browserName: 'chromium', channel: process.env.PLAYWRIGHT_CHROMIUM_CHANNEL || 'chrome', headless: true,
+  use: { screenshot: 'only-on-failure', browserName: 'chromium', channel: process.env.PLAYWRIGHT_CHROMIUM_CHANNEL || 'chrome', headless: true,
     launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] },
     baseURL: 'http://127.0.0.1:43179/mmd-gltf/' },
   webServer: [

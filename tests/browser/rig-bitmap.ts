@@ -2,8 +2,8 @@ import { expect, type Page } from "@playwright/test";
 import { PNG } from "pngjs";
 
 /** Read inside the actual render callback, before WebGL discards its buffer. */
-export async function readRigBitmap(page: Page) {
-  const actual = await page.evaluate(() =>
+export async function readRigBitmap(page: Page, capture?: {png:string;revision:number;frame:number}) {
+  const actual = capture ?? await page.evaluate(() =>
     (window as any).captureMMDRigCanvas(),
   );
   expect(actual.revision).toBe(

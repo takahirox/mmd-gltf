@@ -1,14 +1,13 @@
 import { openRigDemo } from './demo-controls';
 import { readRigBitmap } from './rig-bitmap';
 import { test, expect, type Page, type TestInfo } from '@playwright/test';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { bonePrediction, boneControls } from '../bone-morph-oracle';
-import { PNG } from 'pngjs';
 const preview='http://127.0.0.1:43180/mmd-gltf/';
-// Keep all three source paths in one page to exercise replacement/disposal, but
-// give each rig/motion its own existing test budget and identifiable source steps.
-for (const rig of ['bone-box', 'bone-wedge']) for (const motion of ['bone-a', 'bone-b']) {
-  test(`built bone Demo: ${rig} / ${motion} / bytes + glb + gltf`, async ({ page }, info) => {
+// Exercise all three source paths across pairwise UI scenarios. Detailed
+// cross-products remain in Node and independent GPU/raster conformance tests.
+for (const [rig, motion, sources] of [['bone-box','bone-a',['bytes']], ['bone-wedge','bone-b',['glb','gltf']]] as const) {
+  test(`built bone Demo: ${rig} / ${motion} / ${sources.join(" + ")}`, async ({ page }, info) => {
     const evidence = demoEvidence(page, info);
     const { phase, image, rendered } = evidence;
     const errors: string[] = [];
@@ -23,7 +22,7 @@ for (const rig of ['bone-box', 'bone-wedge']) for (const motion of ['bone-a', 'b
       });
       await rendered({ rig, pose: 'rest' });
       const rest = await image('rig rest');
-      for (const source of ['bytes', 'glb', 'gltf']) await test.step(source, async () => {
+      for (const source of sources) await test.step(source, async () => {
         evidence.source(source);
         await phase('load motion', async () => {
           await page.locator('#motion-sample').selectOption(motion);
@@ -188,33 +187,10 @@ function demoEvidence(page: Page, info: TestInfo) {
   }
   async function image(name: string) {
     await rendered();
-    return phase(`screenshot ${name}`, async () => {
-      const canvas = page.locator('canvas');
-      const bounds = (await canvas.boundingBox())!;
-      // Element screenshots round fractional CSS bounds outwards. Align the
-      // viewport and remove its decorative corner clip so no surrounding UI enters
-      // exact restoration comparisons. This does not resize the framebuffer.
-      const dx = Math.ceil(bounds.x) - bounds.x, dy = Math.ceil(bounds.y) - bounds.y;
-      const capture = await canvas.screenshot({
-        timeout: 30000,
-        style: `#rig-viewport { transform: translate(${dx}px, ${dy}px); border-radius: 0; }`,
-        path: info.outputPath(`${source}-${name.replaceAll(' ', '-')}.png`),
-      });
-      const pixels = PNG.sync.read(capture);
-      const size = await canvas.evaluate(element => ({ width: (element as HTMLCanvasElement).width, height: (element as HTMLCanvasElement).height }));
-      expect({ width: pixels.width, height: pixels.height }).toEqual(size);
-      // Restoration concerns the rendered bitmap. Chromium's CSS compositor can
-      // resample an identical canvas after scrolling, even with aligned bounds.
-      // Keep the screen capture above as evidence and retain exact PNG equality
-      // on the intrinsic bitmap (no tolerance, crop, or pixel mask).
+    return phase(`bitmap ${name}`, async () => {
+      // Read the real render callback directly. Avoid redundant compositor captures
+      // for every lifecycle state; failure screenshots and render traces remain.
       const intrinsic = await readRigBitmap(page);
-      await writeFile(info.outputPath(`${source}-${name.replaceAll(' ', '-')}-bitmap.png`), intrinsic);
-      if(source==='bytes' && ['fractional bone','VPD a','VPD b'].includes(name)) {
-        await mkdir('docs/bone-canvas',{recursive:true});
-        const slug=info.title.replaceAll(/[^a-zA-Z0-9]+/g,'-');
-        await writeFile(`docs/bone-canvas/${slug}-${name.replaceAll(' ','-')}-intrinsic.png`,intrinsic);
-        await writeFile(`docs/bone-canvas/${slug}-${name.replaceAll(' ','-')}-display.png`,capture);
-      }
       return intrinsic;
     });
   }

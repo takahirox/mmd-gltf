@@ -28,7 +28,7 @@ test('built VPD demo: both rigs/poses, repeat/reset, encoding, local errors and 
   await expect(page.locator('#rig-status')).toContainText('Ready');
   await page.waitForFunction(() => (window as any).mmdRig?.frames > 2);
   const snapshot = () => page.evaluate(() => (window as any).mmdRig.bones);
-  const image = async () => { await page.waitForTimeout(200); await page.locator('canvas').screenshot(); return readRigBitmap(page); };
+  const image = async () => { await page.waitForTimeout(200); return readRigBitmap(page); };
   for (const rig of ['box','wedge']) {
     if (rig==='wedge') {
       await page.locator('#rig-model').selectOption(rig);

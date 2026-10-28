@@ -1,6 +1,11 @@
 # Unified public demo (Issue #49)
 
-The root `/mmd-gltf/` now exposes Gene Light and all 24 synthetic presets without
+Issue #52 changes the default landing comparison to Uka. The historical UI evidence
+below remains a record of the Gene/rig implementation; current Uka coverage and
+full-suite timing are recorded in [Uka validation](uka-validation.md).
+
+The root `/mmd-gltf/` defaults to [Uka](uka.md), with Gene Light selectable,
+and exposes all 24 synthetic presets without
 navigation. **Model** selects the comparison or rigs; **Preset** groups skinning,
 morphs, IK/append and physics. The former `rig.html` entry redirects to the root
 with `?demo=rig`, preserving backend selection.

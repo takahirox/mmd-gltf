@@ -58,6 +58,15 @@ async function run() {
     savedVisibility.forEach((v,m)=>m.visible=v);g.dispose();material.dispose();return values;
   };
   for(const rig of ['box','wedge'] as const)for(const mode of ['toon','pbr'])for(const source of ['bytes','glb','gltf','export-glb','export-gltf'])for(const state of ['pose-a','pose-b','a','b'] as const) {
+    // Every rig/material/pose/motion/time remains in the canonical bytes path.
+    // Serialization is a Node cross-product plus representative GPU reloads;
+    // recompiling identical skinning shaders for every encoding adds no oracle.
+    const reloads = [
+      ['box','toon','glb','a'], ['wedge','pbr','gltf','b'],
+      ['box','pbr','export-glb','pose-a'], ['wedge','toon','export-gltf','pose-b'],
+      ['box','toon','export-glb','a'], ['wedge','pbr','export-gltf','b'],
+    ];
+    if (source !== 'bytes' && !reloads.some(c => c[0]===rig && c[1]===mode && c[2]===source && c[3]===state)) continue;
     Object.assign(window,{qdefProgress:{rig,mode,source,state,comparisons:evidence.length,stage:'load'}});
     let sdef!:MMDQDEFPlugin;
     const loader=new GLTFLoader().register(p=>new MMDVMDPlugin(p)).register(p=>sdef=new MMDQDEFPlugin(p)).register(p=>new MMDOutlinePlugin(p));
@@ -123,6 +132,7 @@ async function run() {
     player?.dispose();effect.release(asset.scene);sdef.dispose();
   }
   // Force the >64 KiB bone texture path, nonidentity rigid bind and scene placement.
+  Object.assign(window,{qdefProgress:{stage:'large-palette/bind/placement',comparisons:evidence.length}});
   const stress=await new GLTFLoader().register(p=>new MMDQDEFPlugin(p)).register(p=>new MMDOutlinePlugin(p)).loadAsync(`${base}qdef/box/pose-a.glb`);
   const stressMeshes:SkinnedMesh[]=[];stress.scene.traverse(n=>{if((n as SkinnedMesh).isSkinnedMesh)stressMeshes.push(n as SkinnedMesh);});
   const old=stressMeshes[0].skeleton, bones=[...old.bones], inverses=old.boneInverses.map(m=>m.clone());
@@ -145,6 +155,7 @@ async function run() {
   }
   if(!skeleton.boneTexture)throw new Error('Large palette did not exercise bone texture');
   effect.release(stress.scene);
+  Object.assign(window,{qdefProgress:{stage:'analytical degeneracies',comparisons:evidence.length}});
   const analytic=await new GLTFLoader().register(p=>new MMDQDEFPlugin(p)).loadAsync(`${base}qdef/box/rest.glb`);
   const analyticalMeshes:SkinnedMesh[]=[];analytic.scene.traverse(n=>{if((n as SkinnedMesh).isSkinnedMesh)analyticalMeshes.push(n as SkinnedMesh);});
   const analyticalBones=Array.from({length:4},()=>new Bone());analyticalBones.forEach(b=>analytic.scene.add(b));
@@ -178,6 +189,7 @@ async function run() {
   }
   if(maximumPosition>1e-4||maximumNormal>5e-4)throw new Error(`Analytical QDEF GPU mismatch ${maximumPosition}/${maximumNormal}`);
   // Ordinary loader is measured separately as the documented approximation.
+  Object.assign(window,{qdefProgress:{stage:'ordinary fallback',comparisons:evidence.length}});
   const fallback=await new GLTFLoader().loadAsync(`${base}qdef/box/pose-a.glb`);fallback.scene.updateMatrixWorld(true);
   fallback.scene.traverse(n=>{const mesh=n as SkinnedMesh;if(!mesh.isSkinnedMesh)return;for(let i=0;i<24;i++){const actual=mesh.getVertexPosition(i,new Vector3());const predicted=qdefPrediction('box','pose-a',i,0,true).p;if(actual.distanceTo(predicted)>2e-6)throw new Error('Core fallback differs from BDEF4');fallbackDifference=Math.max(fallbackDifference,actual.distanceTo(qdefPrediction('box','pose-a',i).p));}});
   if(fallbackDifference<=0.001)throw new Error('Insufficient QDEF/BDEF4 separation');

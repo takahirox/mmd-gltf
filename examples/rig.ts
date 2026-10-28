@@ -612,7 +612,7 @@ export async function startRig() {
     invalidate();
   }
   function fitView() {
-    if (!assets[0]) return;
+    if (!assets[0] || viewport.clientWidth <= 0 || viewport.clientHeight <= 0) return;
     const bounds = new Box3().setFromObject(assets[0].scene, true);
     if (bounds.isEmpty()) return;
     const center = bounds.getCenter(new Vector3());
@@ -631,6 +631,9 @@ export async function startRig() {
     if (viewport.closest('[hidden]')) return;
     const width = viewport.clientWidth,
       height = viewport.clientHeight;
+    // Collapsed/reflowing viewers can report zero even without a hidden attribute.
+    // Retain the valid frustum until layout has dimensions again.
+    if (width <= 0 || height <= 0) return;
     renderer.setSize(width, height);
     const previousAspect = (camera.right - camera.left) / (camera.top - camera.bottom);
     // Preserve the user's zoom relative to the available short edge on resize.
@@ -649,6 +652,7 @@ export async function startRig() {
     const now = performance.now(),
       delta = (now - last) / 1000;
     last = now;
+    if (viewport.clientWidth <= 0 || viewport.clientHeight <= 0) return;
     let update: PlaybackUpdate | undefined;
     if (!busy && assets.some((a) => a.player?.playing)) {
       const player = assets[0].player!, before = player.time, playingBefore = player.playing;
