@@ -1,6 +1,0 @@
-[
-  {"version":2,"rest":[],"tracks":[]},
-  {"version":1,"rest":[{"node":-1,"translation":[0,0,0],"rotation":[0,0,0,1]}],"tracks":[]},
-  {"version":1,"rest":[{"node":0,"translation":[0,0,0],"rotation":[0,0,0,0]}],"tracks":[{"node":0,"keys":[{"frame":0,"translation":[0,0,0],"rotation":[0,0,0,1],"curves":[[0,0,127,127],[0,0,127,127],[0,0,127,127],[0,0,127,127]]}]}]},
-  {"version":1,"rest":[{"node":0,"translation":[0,0,0],"rotation":[0,0,0,1]}],"tracks":[{"node":1,"keys":[{"frame":0,"translation":[0,0,0],"rotation":[0,0,0,1],"curves":[[0,0,128,127],[0,0,127,127],[0,0,127,127],[0,0,127,127]]}]}]}
-]

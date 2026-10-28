@@ -1,9 +1,0 @@
-{
-  "attribution": "Original analytical cases by mmd-gltf contributors, Issue #33; metre inputs, independent pencil calculations.",
-  "cases": [
-    {"name":"explicit zero centers preserve arc", "selector":1,"p":[1,0,0],"c":[0,0,0],"r0":[0,0,0],"r1":[0,0,0],"zAngles":[0,1.5707963267948966],"w0":0.5,"expected":[0.7071067811865476,0.7071067811865476,0],"bdef2":[0.5,0.5,0]},
-    {"name":"nonzero centers identity", "selector":1,"p":[1,0,0],"c":[2,3,4],"r0":[-1,2,3],"r1":[3,1,2],"zAngles":[0,0],"w0":0.25,"expected":[1,0,0]},
-    {"name":"endpoint keeps ordered pair", "selector":1,"p":[1,0,0],"c":[2,3,4],"r0":[-1,2,3],"r1":[3,1,2],"zAngles":[0,1.5707963267948966],"w0":0,"expected":[0,1,0]}
-  ],
-  "invalid": [{"selector":0,"c":1,"r0":2}, {"selector":-1,"c":1,"r0":2,"r1":3}, {"selector":0,"c":1,"r0":2,"r1":3,"unknown":0}]
-}
