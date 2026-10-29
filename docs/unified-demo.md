@@ -4,11 +4,14 @@ Issue #52 changes the default landing comparison to Uka. The historical UI evide
 below remains a record of the Gene/rig implementation; current Uka coverage and
 full-suite timing are recorded in [Uka validation](uka-validation.md).
 
-The root `/mmd-gltf/` defaults to [Uka](uka.md), with Gene Light selectable,
-and exposes all 24 synthetic presets without
-navigation. **Model** selects the comparison or rigs; **Preset** groups skinning,
-morphs, IK/append and physics. The former `rig.html` entry redirects to the root
-with `?demo=rig`, preserving backend selection.
+The root `/mmd-gltf/` defaults to [Uka](uka.md), with Gene Light selectable.
+The **public Model picker contains only these real-character comparisons**.
+The 24 synthetic box/wedge presets and their workflows remain available only to
+internal browser conformance tests through `?demo=rig` or the historical
+`rig.html` redirect (which preserves the backend selection). They are not linked
+from the normal public UI, and the rig-only methods/source section is hidden
+outside internal rig mode. This preserves existing test coverage without
+presenting synthetic artifacts as a public demo feature.
 
 The viewport comes before controls. Rig actions live in native keyboard-accessible
 Motion, Pose, Morph weights, IK/append, Physics, Skinning comparison and Export
