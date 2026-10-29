@@ -8,6 +8,7 @@ import {
   type Buffer,
   type Node,
   type Animation,
+  type AnimationChannel,
   type WriterContext,
 } from '@gltf-transform/core';
 import { evaluateTrack, evaluateMotion, slerp, type MotionBinding, type MotionTrack } from '../packages/mmd-vmd';
@@ -28,12 +29,12 @@ export function orientationError(a: Quat, b: Quat) {
 export class VMDWriter extends Extension {
   static EXTENSION_NAME = EXTENSION_NAME;
   readonly extensionName = EXTENSION_NAME;
-  records = new Map<Animation, { motion: MotionBinding; nodes: Node[]; weights: { node: Node; sampler: number }[]; diagnostics: Diagnostic[] }>();
+  records = new Map<Animation, { motion: MotionBinding; nodes: Node[]; weights: { node: Node; sampler: number }[]; diagnostics: Diagnostic[]; channels: AnimationChannel[] }>();
   read(): this {
     throw new Error('VMDWriter is converter-only');
   }
   write(context: WriterContext): this {
-    for (const [animation, { motion, nodes, weights, diagnostics }] of this.records) {
+    for (const [animation, { motion, nodes, weights, diagnostics, channels }] of this.records) {
       const payload: VMDPayload = {
         version: motion.source || diagnostics.length || motion.solver?.version===3 ? 6 : motion.morphModel ? 5 : motion.solver?.version === 2 ? 4 : motion.solver ? 3 : weights.length ? 2 : 1,
         rest: motion.rest.map((b) => ({
@@ -49,7 +50,7 @@ export class VMDWriter extends Extension {
       if(payload.version===6) {
         payload.source=motion.source;
         payload.diagnostics=structuredClone(diagnostics);
-        payload.owned=animation.listChannels().map(c=>({node:context.nodeIndexMap.get(c.getTargetNode()!)!,path:c.getTargetPath() as 'translation'|'rotation'|'weights'}));
+        payload.owned=channels.map(c=>({node:context.nodeIndexMap.get(c.getTargetNode()!)!,path:c.getTargetPath() as 'translation'|'rotation'|'weights'}));
         payload.morphs=(motion.morphs??[]).map(g=>({...structuredClone(g),node:context.nodeIndexMap.get(weights[0]?.node ?? nodes[0])!}));
       }
       if(motion.morphModel) payload.controls={model:structuredClone(motion.morphModel),nodes:motion.rest.map(b=>({index:b.index,node:context.nodeIndexMap.get(nodes[b.index])!})),tracks:structuredClone(motion.morphs?.[0]?.tracks??[])};
@@ -354,7 +355,8 @@ export function addVMDAnimation(
     weights.push({ node: meshNode, sampler: animation.listSamplers().indexOf(sampler) });
   }
   const extras=animation.getExtras() as any;extras.vmd.diagnostics=diagnostics;animation.setExtras(extras);
-  doc.createExtension(VMDWriter).records.set(animation, { motion, nodes, weights, diagnostics });
+  // Capture only the fallback channels generated here; callers may add ordinary tracks later.
+  doc.createExtension(VMDWriter).records.set(animation, { motion, nodes, weights, diagnostics, channels: animation.listChannels() });
   return count;
 }
 

@@ -185,6 +185,34 @@ test('backend numeric limits preserve binary PMX physics through GLB/glTF reload
   }
 });
 
+test('initial solver overflow retains binary PMX and a safe rest fallback through GLB/glTF reload', async () => {
+  const raw = solverPMX('box');
+  const bone4 = raw.indexOf('Original bone 4') + 'Original bone 4'.length;
+  const bone5 = raw.indexOf('Original bone 5') + 'Original bone 5'.length;
+  raw.writeFloatLE(100, bone4);
+  raw.writeFloatLE(3e38, bone5 + 12 + 1 + 4 + 2 + 12 + 1);
+  const source = parsePMX(raw);
+  assert.equal(source.bones[4].position[0], 100);
+  assert.equal(source.bones[5].grant!.ratio, Math.fround(3e38));
+  const r = await convertModel(source, '.', { mode: 'bdef', solver: 'pre-physics-v1' });
+  assert.ok(r.diagnostics.some(d => d.category === 'unsupported-capability' && d.code === 'solver-numeric-range'));
+  const j = await json(r), profile = j.extensions.MMD_skeleton_solver as SolverProfile;
+  assert.equal(profile.bones[5].append!.rate, Math.fround(3e38));
+  for (const asset of [await glb(r), await load(JSON.stringify(j))]) {
+    const retained = getSolverModel(asset.scene)!;
+    assert.deepEqual(retained.profile, profile);
+    assert.deepEqual(Buffer.from(asset.userData.mmdSource.data, 'base64'), raw);
+    assert.ok(asset.userData.diagnostics.some((d: any) => d.code === 'solver-numeric-range'));
+    for (const bone of profile.bones) {
+      const node = retained.nodes.get(bone.index)!;
+      assert.deepEqual(node.position.toArray(), bone.translation);
+      assert.deepEqual(node.quaternion.toArray(), bone.rotation);
+      assert.ok([...node.position.toArray(), ...node.quaternion.toArray()].every(Number.isFinite));
+    }
+    assert.throws(() => solvePose(profile, profile.bones), error => error instanceof MMDDiagnosticError && error.diagnostic.code === 'solver-numeric-range');
+  }
+});
+
 test('solver numeric overflow retains binary PMX/VMD and a diagnosed usable fallback through GLB/glTF reload', async () => {
   const rawPMX = solverPMX('box'), rawVMD = solverVMD('a');
   // Bone 4 append ratio follows its position, parent/layer/flags, tail and source index.
@@ -232,6 +260,34 @@ test('impulse morphs, soft bodies, multiple writers and cross-phase dependencies
   const repeated=parsePMX(physicsPMX('box'));(repeated.rigidBodies[2] as any).boneIndex=4;repeated.bones[5].flag!&=~0x1000;
   const unsupported=await convertModel(repeated,'.',{mode:'bdef',physics:'rigid-body-v1'});assert.ok(unsupported.diagnostics.some(d=>d.code==='physics-dependency'));
   const broken=structuredClone(model);(broken.softBodies![0] as any).anchors[0].body=999;await assert.rejects(convertModel(broken,'.',{mode:'qdef'}),category('malformed-data'));
+});
+
+test('VMD writer preserves unrelated channels added to the converted Document through GLB/glTF reload', async () => {
+  const r = await convertModel(parsePMX(solverPMX('box')), '.', { mode: 'bdef', vmd: solverVMD('a') });
+  const doc = r.document, animation = doc.getRoot().listAnimations()[0];
+  const ownedCount = animation.listChannels().length;
+  const node = doc.createNode('unrelated');
+  doc.getRoot().listScenes()[0].addChild(node);
+  const buffer = doc.getRoot().listBuffers()[0];
+  const input = doc.createAccessor().setBuffer(buffer).setType('SCALAR').setArray(new Float32Array([0, 10]));
+  const output = doc.createAccessor().setBuffer(buffer).setType('VEC3').setArray(new Float32Array([0, 0, 0, 10, 0, 0]));
+  const sampler = doc.createAnimationSampler().setInput(input).setOutput(output).setInterpolation('LINEAR');
+  animation.addSampler(sampler).addChannel(doc.createAnimationChannel().setTargetNode(node).setTargetPath('translation').setSampler(sampler));
+  const j = await json(r), payload = j.animations[0].extensions.MMD_animation_vmd;
+  assert.equal(payload.owned.length, ownedCount);
+  assert.equal(j.animations[0].channels.length, ownedCount + 1);
+  assert.ok(payload.owned.every((c: any) => j.nodes[c.node].name !== 'unrelated'));
+  for (const asset of [await glb(r), await load(JSON.stringify(j))]) {
+    const clip = asset.animations[0];
+    assert.equal(clip.tracks.length, 1);
+    assert.equal(clip.tracks[0].name, 'unrelated.position');
+    assert.equal(clip.duration, 10);
+    const mixer = new AnimationMixer(asset.scene);
+    mixer.clipAction(clip).play(); mixer.setTime(5);
+    assert.equal(asset.scene.getObjectByName('unrelated')!.position.x, 5);
+    getVMDPlayers(asset)[0].seek(0.5);
+    assert.equal(asset.scene.getObjectByName('unrelated')!.position.x, 5);
+  }
 });
 
 test('fallback budget, FLOAT collapse and scene sections retain exact VMD and allow unrelated core channels',async()=>{

@@ -156,7 +156,15 @@ async function convertModelInternal(model: PMXModel, textureDirectory: string, o
     skin.root.setExtras({ ...skin.root.getExtras(), mmdSolver: skin.poseModel.solver });
     warnings[0] = `Pre-physics-v1 ordered IK and rotation/translation append enabled. Physics bodies (${model.rigidBodies.length}) and joints (${model.constraints.length}) retained in mmdSource; simulation and scene controls do not execute.`;
     diagnostics.push(...solverDiagnostics(skin.poseModel.solver));
-    (diagnostics.length ? skin.poseModel.bones : solvePose(skin.poseModel.solver, skin.poseModel.bones)).forEach(b => skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));
+    let restPose = skin.poseModel.bones;
+    if (!diagnostics.length) try {
+      restPose = solvePose(skin.poseModel.solver, skin.poseModel.bones);
+    } catch (error) {
+      if (!(error instanceof MMDDiagnosticError) || !['unsupported-capability', 'resource-exhaustion'].includes(error.diagnostic.category)) throw error;
+      diagnostics.push(error.diagnostic);
+    }
+    // A failed execution leaves the original rest pose and retained solver intact.
+    restPose.forEach(b => skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));
   }
   const physicsProfile = skin && physics !== 'none' ? createPhysics(model, skin.poseModel.solver!, scale) : undefined;
   let physicsBackend: Awaited<ReturnType<typeof loadAmmoNode>> | undefined;
