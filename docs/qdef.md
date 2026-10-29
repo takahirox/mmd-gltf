@@ -108,9 +108,11 @@ and four distinct active joints. `pmx21-fixture.ts` independently writes small
 binaries for both text encodings and all nine vertex/other-index-width combinations.
 No third-party model bytes were added.
 
-The built [unified demo](../examples/index.html), under **Synthetic rigs**, offers both QDEF rigs, both combined VMD
-motions, both VPD poses, byte/GLB/glTF sources, fractional transport, morphs,
-Toon/PBR, Outline and an explicitly approximate linear-skinning comparison. Its
+The internal automated conformance harness retains both QDEF rigs, both combined
+VMD motions, both VPD poses, byte/GLB/glTF sources, fractional transport, morphs,
+Toon/PBR, Outline and an explicitly approximate linear-skinning comparison for
+automated tests. These fixtures are absent from public demo navigation, whose
+model picker offers only Uka and Gene Light comparisons. The harness's
 rendered-state acknowledgement updates only after submitting the frame; browser
 checks also compare canvas images, restoration, error recovery and replacement.
 The comparison disables both SDEF and QDEF selectors, then restores both exactly.

@@ -61,8 +61,8 @@ The example defaults to WebGL2; append `?backend=webgpu` to try native WebGPU,
 which tests explicitly skip without an adapter. Views stack on narrow screens.
 The direct PMX is a practical reference, not a bit-identical MikuMikuDance oracle;
 independent ambient/toon/specular models produce documented shading differences.
-Neither Gene view animates or steps IK/physics/morphs. The linked synthetic BDEF
-rig loads two VPD poses and two VMD bone motions, two combined bone/morph motions and morph-only motion on two distinct BDEF rigs, supports local files with explicit
+Neither Gene view animates or steps IK/physics/morphs. The internal synthetic BDEF
+test harness loads two VPD poses and two VMD bone motions, two combined bone/morph motions and morph-only motion on two distinct BDEF rigs, supports local files with explicit
 encoding/binding maps, and provides pose apply/reset plus motion transport and fractional seeking. It applies raw
 bone offsets without solvers by default. Additional IK/append presets execute the
 bounded pre-physics profile; complete MMD reproduction remains outstanding.
@@ -82,7 +82,7 @@ remains pending until merge.
 - `tools/`: generic PMX converter and verified example acquisition/generation.
 - `packages/three-mmd-toon/`: reusable TypeScript GLTFLoader plugin and TSL material.
 - `packages/three-mmd-outline/`: independent loader plugin, metadata integration and TSL outline effect.
-- `examples/`: static Vite example; its conformance entry is development-only.
+- `examples/`: public character comparisons and internal automated conformance harnesses.
 - `extensions/`: runtime-independent proposals, schemas and numerical fixtures.
 - `tests/`: converter, resource, plugin and browser integration checks.
 
@@ -100,12 +100,14 @@ deformation; ordinary loaders use an approximate BDEF2 fallback. See the
 [SDEF draft](extensions/MMD_skinning_sdef/README.md) and
 [runtime/export API](docs/pipeline.md#mixed-sdef-conversion-and-runtime).
 The [unified demo](examples/index.html) opens with the synchronized Uka
-comparison. Choose **Gene Light comparison** for the existing static example.
-Choose **Synthetic rigs**, then a grouped **Preset**, to explore
-skinning, morphs, IK/append and physics in place. Motion, Pose, local-file/binding,
-and export controls are available in disclosures beside (or below) the viewport.
-Both views support Toon, PBR and Outline; the old `rig.html` URL redirects to
-the root with `?demo=rig`. See the [UI validation record](docs/unified-demo.md).
+comparison. The public **Model** picker offers only **Uka comparison** and
+**Gene Light comparison**, with Toon, PBR and Outline controls. **About & credits**
+contains the character models' attribution, rights and comparison methodology.
+Synthetic box/wedge fixtures and their 24 technical presets are retained solely
+for automated conformance tests. The internal `?demo=rig` entry and legacy
+`rig.html` redirect preserve rig controls, diagnostics and viewer-switching
+coverage; they are not linked from public navigation. See the
+[UI validation record](docs/unified-demo.md).
 
 Use `--mode qdef` with `MMDQDEFPlugin` for the bounded
 PMX 2.1 rigid dual-quaternion profile; see the [QDEF guide](docs/qdef.md) and

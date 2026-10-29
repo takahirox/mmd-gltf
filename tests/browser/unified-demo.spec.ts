@@ -30,10 +30,52 @@ function errorsFrom(page: Page) {
   return errors;
 }
 
+test('public character picker and credits exclude fixtures; explicit rig entry retains the harness', async ({ page }, testInfo) => {
+  const errors = errorsFrom(page);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(preview);
+  await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
+  await expect(page.locator('#demo-model')).toHaveValue('uka');
+  await page.locator('#about-demo > summary').click();
+  await expect(page.locator('#about-demo h2')).toHaveText([
+    'Uka · source & rights', 'Gene Light · source & rights',
+  ]);
+  await expect(page.locator('#about-demo')).not.toContainText(/synthetic|box|wedge|rig diagnostics/i);
+  await expect(page.locator('#about-demo a').filter({ hasText: /box|wedge|pose|motion|solver|physics|sdef|qdef/i })).toHaveCount(0);
+  await expect(page.locator('a[href*="demo=rig"], a[href$="rig.html"], a[href*="conformance.html"]')).toHaveCount(0);
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await expect(page.locator('#demo-model option')).toHaveText(['Uka comparison', 'Gene Light comparison']);
+    await expect(page.locator('#preset-picker')).toBeHidden();
+    await expect(page.locator('#rig-demo')).toBeHidden();
+    expect(await rigState(page)).toBeUndefined();
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: testInfo.outputPath(`public-${width}.png`), fullPage: true });
+  }
+  await page.locator('#demo-model').selectOption('gene');
+  await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
+  await expect(page.locator('#demo-model option')).toHaveText(['Uka comparison', 'Gene Light comparison']);
+  await expect(page.locator('#preset-picker')).toBeHidden();
+
+  await page.goto(`${preview}?demo=rig`);
+  await expect(page.locator('#demo-model')).toHaveValue('rig');
+  await expect(page.locator('#rig-status')).toContainText('Rig loaded', { timeout: 30000 });
+  await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
+  await expect(page.locator('#preset-picker')).toBeVisible();
+  await expect(page.locator('#rig-model option')).toHaveCount(24);
+  await expect.poll(async () => (await rigState(page))?.frames).toBeGreaterThan(1);
+  await expect(page.locator('#rig-demo #rig-state')).toHaveText('Rest state');
+  await expect(page.locator('#rig-demo #morph-state')).toContainText('Weights:');
+  await expect(page.locator('#rig-demo #motion-diagnostics')).toHaveCount(1);
+  expect(errors).toEqual([]);
+});
+
 test('one built page: both directions, every preset, contextual controls and inactive viewer cleanup', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   const errors = errorsFrom(page);
-  await page.goto(`${preview}?demo=gene`);
+  await page.goto(`${preview}?demo=rig`);
+  await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
+  await page.locator('#demo-model').selectOption('gene');
   await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
   await expect(page.locator('#preset-picker')).toBeHidden();
   await page.screenshot({ path: testInfo.outputPath('landing-desktop.png') });
@@ -112,7 +154,9 @@ test('one built page: both directions, every preset, contextual controls and ina
 test('mobile viewport, keyboard disclosures, local error recovery and export', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const errors = errorsFrom(page);
-  await page.goto(`${preview}?demo=gene`);
+  await page.goto(`${preview}?demo=rig`);
+  await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
+  await page.locator('#demo-model').selectOption('gene');
   await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
   await page.screenshot({ path: testInfo.outputPath('landing-mobile.png'), fullPage: true });
   await page.locator('#demo-model').selectOption('rig');
@@ -170,7 +214,9 @@ test('comparison failure releases its canvas and can retry in place', async ({ p
   const pageErrors: string[] = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   await page.route('**/gene-light/light/arm.png', route => route.fulfill({ status: 404, body: 'Missing test image' }));
-  await page.goto(`${preview}?demo=gene`);
+  await page.goto(`${preview}?demo=rig`);
+  await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
+  await page.locator('#demo-model').selectOption('gene');
   await expect(page.locator('#gene-status')).toContainText('Could not load/render the comparison', { timeout: 90000 });
   await expect(page.locator('#viewport canvas')).toHaveCount(0);
   await page.unroute('**/gene-light/light/arm.png');
@@ -215,7 +261,9 @@ test('failed rig loads can retry and failed replacement preserves the current ri
 
 test('motion finishing after a model switch stays paused in its own viewer', async ({ page }, info) => {
   const errors = errorsFrom(page);
-  await page.goto(`${preview}?demo=gene`);
+  await page.goto(`${preview}?demo=rig`);
+  await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
+  await page.locator('#demo-model').selectOption('gene');
   await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
   await page.locator('#demo-model').selectOption('rig');
   await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
