@@ -34,6 +34,29 @@ The summary records environment, full-run wall time, per-suite sums, pass/skip/f
 statuses and retries, plus phase timing for Solver, VMD, morph and group tests.
 A filtered run's duration is not a full-suite speed measurement.
 
+For repeatable Ubuntu evidence, add the `browser-performance` label to the PR
+after publishing the measurement workflow. The label event (or a subsequent PR
+update while labeled) runs the normal full validation, then
+[`measure-browser-ci.sh`](../tools/measure-browser-ci.sh) on that **same**
+Ubuntu 24.04 runner. A manual workflow dispatch can also enable
+`compare_browser_matrices` once the dispatch trigger is available on the default
+branch. Normal unlabeled PR runs do not pay for these diagnostic repetitions.
+Remove the label after collecting the evidence.
+
+The script archives the full default run and two matched 15-case Solver/VMD/
+morph/group pairs in the `browser-performance` artifact. Pair order is
+full → representative, then representative → full to expose ordering/cache
+effects. Each directory retains the summary, phase timings, oracle attachments
+and command exit code. `commit.txt` and `order.txt` identify the source and
+execution order. The full
+matrix replays the previous permutations on the instrumented implementation;
+it is not an uninstrumented historical-commit measurement. A failed repetition
+fails the job and preserves its evidence. The original complete-suite results
+are restored for the separate `browser-evidence` artifact even on failure.
+Compare both pairs' phase counts/times and variability; use the archived default
+run, rather than a filtered repetition, for #69/#70 wall-time and per-suite deltas.
+Adding this collection path does not itself satisfy the pending Ubuntu gate.
+
 `phase-timing.json` records navigation and explicit page waits separately from
 page-side renderer initialization, load/parse/bind (including export for Solver),
 vertex render submission/readback, oracle evaluation/baking, first/subsequent
