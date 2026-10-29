@@ -1,11 +1,52 @@
-# Unified public demo (Issue #49)
+# Public character demo and internal conformance harness
+
+Issue #55 limits the public **Model** picker to **Uka comparison** and
+**Gene Light comparison**. Normal navigation offers no synthetic fixtures or
+technical presets. **About & credits** retains both characters' attribution,
+rights, source records and comparison methodology; rig tutorials and test-model
+downloads have been removed from that visitor-facing section.
+
+The box/wedge assets, 24 presets and numerical, renderer, IK/physics and animation
+tests remain intact. Automated tests enter the internal harness with `?demo=rig`;
+the legacy `rig.html` redirect preserves query parameters and the fragment.
+Only an explicit rig entry adds the internal model option, allowing existing
+same-document viewer-switching tests to run. Rig diagnostics live inside the
+hidden fixture section. Neither internal entry is linked from public navigation.
+
+## Issue #55 validation
+
+Local validation on 2026-10-29 used Node 26.12.1 on macOS, pinned Playwright
+Chromium with SwiftShader WebGL2 and the existing single-worker suite. The default
+browser-test ports were occupied by an unrelated worktree. An ignored copy of the tests remaps only
+`43179`/`43180` to `45179`/`45180`, with both Vite servers serving this worktree;
+repository test configuration is unchanged.
+
+- `npm run typecheck`: passed.
+- `npm test`: 121 Node tests passed, plus Toon/Outline fixture checks.
+- `npm run build`: passed; the existing large-chunk warning remains.
+- `npm run check:links`: passed, 404 local links, anchors and built asset links.
+- Full Playwright suite: **72 passed, 2 optional native WebGPU checks skipped,
+  0 failed** (74 registered tests, 42.8 minutes). Both native WebGPU checks lacked
+  an adapter; all required WebGL2 checks passed. This includes all 24 presets,
+  numerical/rendering/animation coverage, legacy entry and both Back-navigation
+  cases. No numerical thresholds or existing test matrices were changed.
+- `git diff --check`: passed.
+- The new public-picker/internal-entry regression passed. Desktop and mobile
+  full-page captures were inspected with About & credits open: both character
+  credits remain, with no synthetic-model section or preset control visible.
+
+Required post-merge verification remains pending: confirm the merge-triggered
+Pages workflow succeeds, then inspect the deployed model selector and credits.
+No hardware-GPU review is required for this UI change.
+
+## Historical UI implementation and evidence (Issue #49)
 
 Issue #52 changes the default landing comparison to Uka. The historical UI evidence
 below remains a record of the Gene/rig implementation; current Uka coverage and
 full-suite timing are recorded in [Uka validation](uka-validation.md).
 
-The root `/mmd-gltf/` defaults to [Uka](uka.md), with Gene Light selectable,
-and exposes all 24 synthetic presets without
+Before Issue #55, the root `/mmd-gltf/` defaulted to [Uka](uka.md), with Gene Light selectable,
+and exposed all 24 synthetic presets without
 navigation. **Model** selects the comparison or rigs; **Preset** groups skinning,
 morphs, IK/append and physics. The former `rig.html` entry redirects to the root
 with `?demo=rig`, preserving backend selection.
@@ -30,7 +71,7 @@ implementation; this change concerns demo layout, integration and lifecycle.
 
 Gene Light's full creator attribution, license, additional usage guidance,
 original notices, source hashes and conversion record remain in **About &
-credits**, alongside methodology and synthetic source/report links. The visible
+credits**. Before Issue #55 this also contained synthetic source/report links. The visible
 fidelity note appears once; detailed qualifications remain in that disclosure.
 
 ## Validation

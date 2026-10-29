@@ -1,4 +1,7 @@
 const model = document.querySelector<HTMLSelectElement>('#demo-model')!;
+const requested = new URLSearchParams(location.search).get('demo');
+// Only explicit conformance entry points expose the internal fixture navigation.
+if (requested === 'rig') model.add(new Option('Synthetic rigs', 'rig'));
 const picker = document.querySelector<HTMLElement>('#preset-picker')!;
 const sections = {
   uka: document.querySelector<HTMLElement>('#gene-demo')!,
@@ -63,5 +66,4 @@ async function show(demo: Demo) {
   }
 }
 model.addEventListener('change', () => { void show(model.value as Demo); });
-const requested = new URLSearchParams(location.search).get('demo');
 void show(requested === 'rig' || requested === 'gene' ? requested : 'uka');

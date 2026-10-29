@@ -19,7 +19,9 @@ for (const demo of ['gene', 'rig']) {
     });
     page.on('response', response => { if (response.status() >= 400 && !isFavicon(response.url())) errors.push(`${response.status()} ${response.url()}`); });
     page.on('requestfailed', request => errors.push(`${request.url()}: ${request.failure()?.errorText}`));
-    await page.goto(`${preview}?demo=gene`);
+    await page.goto(`${preview}?demo=rig`);
+    await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
+    await page.locator('#demo-model').selectOption('gene');
     await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
     await page.locator('#material').selectOption('pbr');
     await page.locator('#demo-model').selectOption('rig');
@@ -50,7 +52,7 @@ for (const demo of ['gene', 'rig']) {
       await expect(page).toHaveURL(`${preview}gene-light/README.md`);
       // A cache restore commits without firing a new document load event.
       await page.goBack({ waitUntil: 'commit' });
-      await expect(page).toHaveURL(`${preview}?demo=gene`);
+      await expect(page).toHaveURL(`${preview}?demo=rig`);
       // A fresh document must fail: persisted=true and this token survive only in the cache.
       await expect.poll(() => page.evaluate(() => (window as any).cacheTest?.restores)).toBe(visit);
       expect(await page.evaluate(() => (window as any).cacheTest.persisted)).toBe(true);
