@@ -16,6 +16,8 @@ async function show(demo: Demo) {
   current = demo;
   model.value = demo;
   picker.hidden = demo !== 'rig';
+  // Internal fixture details are available only through ?demo=rig.
+  document.querySelector<HTMLElement>('#synthetic-methods')!.hidden = demo !== 'rig';
   sections.gene.hidden = demo === 'rig';
   sections.rig.hidden = demo !== 'rig';
   const status = document.querySelector<HTMLElement>(`#${demo === 'rig' ? 'rig' : 'gene'}-status`)!;
