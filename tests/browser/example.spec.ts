@@ -81,7 +81,9 @@ for (const backend of ['webgl', 'webgpu']) {
     await page.goto(`http://127.0.0.1:43180/mmd-gltf/?demo=gene&backend=${backend}`);
     await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
     await page.waitForFunction(() => (window as any).mmdExample?.frames > 4);
-    for (const label of ['Direct PMX reference', 'MMD glTF']) await expect(page.locator('#viewport').getByRole('heading', { name: label, exact: true })).toBeVisible();
+    for (const label of ['MMD', 'glTF']) await expect(page.locator('#viewport').getByRole('heading', { name: label, exact: true })).toBeVisible();
+    await expect(page.locator('#uka-features > p')).toHaveCount(0);
+    await expect(page.locator('footer > p.method-note')).toHaveCount(0);
     await page.locator('#about-demo > summary').click();
     await expect(page.getByRole('link', { name: '@takahirox/three-mmd@0.1.2', exact: true })).toBeVisible();
     await page.locator('#about-demo > summary').click();
