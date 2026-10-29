@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import Ajv from 'ajv';
+import { Document } from '@gltf-transform/core';
+import { addVMDAnimation } from '../tools/vmd-animation';
+import { boneMorphPMX, boneMorphVMD } from '../tools/synthetic-bone-morph';
 import { Euler, Quaternion, AnimationMixer } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
@@ -22,8 +25,9 @@ import { MMDPhysicsPlugin, getPhysicsModel } from '../packages/three-mmd-physics
 import { PhysicsTimeline, PhysicsWorld } from '../packages/three-mmd-physics/world';
 import { loadAmmoNode } from '../packages/three-mmd-physics/node';
 import { MMDVMDPlugin, getVMDPlayers, bindVMD, retargetVMD, createVMDPlayer } from '../packages/three-mmd-vmd';
+import { type RestBone } from '../packages/mmd-vpd';
 import { createVPDRig, getVPDModel } from '../packages/three-mmd-vpd';
-import { parseVMD, evaluateMotion, bindMotion } from '../packages/mmd-vmd';
+import { parseVMD, evaluateMotion, bindMotion, omittedRecords, type MotionBinding } from '../packages/mmd-vmd';
 import { validatePayload, payloadMotion } from '../packages/mmd-vmd/payload';
 
 globalThis.ProgressEvent ??= class extends Event {} as any;
@@ -192,4 +196,89 @@ test('scene-only VMD retains source duration/visibility without inventing a bone
   const raw=Buffer.alloc(54+5*4+9);raw.write('Vocaloid Motion Data 0002');raw.writeUInt32LE(1,70);raw.writeUInt32LE(60,74);raw[78]=0;raw.writeUInt32LE(0,79);
   const r=await convertModel(parsePMX(solverPMX('box')),'.',{mode:'bdef',vmd:raw}),j=await json(r),p=j.animations[0].extensions.MMD_animation_vmd;
   assert.deepEqual(p.tracks,[]);const asset=await glb(r),player=getVMDPlayers(asset)[0];assert.equal(player.duration,2);player.seek(2);assert.equal(player.visibility,0);assert.equal(player.source!.displays[0].frame,60);
+});
+
+
+test('valid large group bone rates retain PMX/VMD controls and usable core fallback through GLB/glTF reload',async()=>{
+  const source=parsePMX(boneMorphPMX('box')),raw=boneMorphVMD('a');
+  const mixed=source.morphs.find(m=>m.name==='mixed')!;
+  for(const entry of mixed.elements as {index:number;ratio:number}[]) if(source.morphs[entry.index].type===2) entry.ratio=20000;
+  const r=await convertModel(source,'.',{mode:'bdef',vmd:raw,vmdBinding:{mapping:motionMappings.a}}),j=await json(r),p=j.animations[0].extensions.MMD_animation_vmd;
+  assert.ok(r.diagnostics.some(d=>d.category==='unsupported-capability' && d.code==='morph-contribution-range'));
+  assert.ok(r.diagnostics.some(d=>d.code==='unexecuted-morph-or-solver'));
+  const group=p.controls.model.morphs.find((m:any)=>m.name==='mixed');
+  assert.ok(group.group.filter((e:any)=>p.controls.model.morphs[e.index].type===2).every((e:any)=>e.rate===20000));
+  assert.deepEqual(decodeSource(p.source),new Uint8Array(raw));
+  for(const asset of [await glb(r),await load(JSON.stringify(j))]) {
+    const player=getVMDPlayers(asset)[0];
+    assert.deepEqual(decodeSource(player.source!.source!),new Uint8Array(raw));
+    assert.ok(player.diagnostics.some(d=>d.code==='morph-contribution-range'));
+    assert.throws(()=>player.seek(0),category('unsupported-capability'));
+  }
+  const ordinary=await new GLTFLoader().parseAsync(JSON.stringify(j),'');
+  const mixer=new AnimationMixer(ordinary.scene);mixer.clipAction(ordinary.animations[0]).play();mixer.setTime(0.5);
+  assert.ok(ordinary.animations[0].tracks.some(t=>t.name.includes('morphTargetInfluences')));
+  ordinary.scene.traverse(n=>assert.ok([...n.position.toArray(),...n.quaternion.toArray()].every(Number.isFinite)));
+});
+
+const coarseMotion=(count:number)=>{
+  let reads=0;
+  const rest:RestBone[]=Array.from({length:count},(_,index)=>({index,name:`bone-${index}`,parentIndex:-1,get translation():RestBone['translation'] {reads++;return [0,0,0];},rotation:[0,0,0,1],scale:[1,1,1]}));
+  const motion:MotionBinding={rest,tracks:rest.map(b=>({index:b.index,keys:[0,30].map(frame=>({frame,translation:[frame/30,0,0],rotation:[0,0,0,1],curves:Array.from({length:4},()=>[0,0,127,127]) as any}))})),duration:1,modelId:'coarse',unmatched:[],unmatchedMorphs:[],omitted:omittedRecords(parseVMD(syntheticVMD('a')))};
+  const doc=new Document(),buffer=doc.createBuffer(),nodes=rest.map(b=>doc.createNode(b.name));
+  return {motion,doc,buffer,nodes,reads:()=>reads};
+};
+
+test('coarse fallback evaluates each shared pose once across all remaining channels',()=>{
+  for(const count of [100,300]) {
+    const c=coarseMotion(count);
+    addVMDAnimation(c.doc,c.buffer,c.motion,c.nodes,{maxSamples:1});
+    assert.ok(c.reads()<=count*2,`${count} bones caused ${c.reads()} rest reads`);
+    const channels=c.doc.getRoot().listAnimations()[0].listChannels();assert.equal(channels.length,count*2);
+    for(const channel of channels) assert.deepEqual([...channel.getSampler()!.getInput()!.getArray()!],[0]);
+  }
+});
+
+test('coarse recovery respects work already spent by adaptive solver sampling',async()=>{
+  const r=await convertModel(parsePMX(solverPMX('box')),'.',{mode:'bdef',solver:'pre-physics-v1'}),solver=(await json(r)).extensions.MMD_skeleton_solver as SolverProfile;
+  solver.version=3;
+  solver.bones.find(b=>b.ik)!.ik!.iterations=Math.floor(20_000_000/solver.bones.length)-2;
+  const motion=bindMotion({version:1,modelId:'budget',metersPerPMXUnit:0.08,bones:solver.bones,solver},parseVMD(solverVMD('a')),{preserveUnbound:true});
+  motion.ik=solver.bones.filter(b=>b.ik).map(b=>({index:b.index,keys:[{frame:0,enabled:false}]}));
+  const doc=new Document(),buffer=doc.createBuffer(),nodes=solver.bones.map(b=>doc.createNode(b.name));
+  addVMDAnimation(doc,buffer,motion,nodes);
+  const diagnostics=(doc.getRoot().listAnimations()[0].getExtras() as any).vmd.diagnostics;
+  assert.ok(diagnostics.some((d:any)=>d.code==='fallback-evaluation-budget'));
+  assert.ok(diagnostics.some((d:any)=>d.code==='fallback-rest-pose'));
+  for(const channel of doc.getRoot().listAnimations()[0].listChannels()) assert.equal(channel.getSampler()!.getInput()!.getCount(),1);
+});
+
+test('physics carries the configured solver budget through capability checks and pre/post execution',async()=>{
+  const source=parsePMX(physicsPMX('box'));source.bones[3].ik!.iteration=4_000_000;
+  const r=await convertModel(source,'.',{mode:'bdef',physics:'rigid-body-v1'}),j=await json(r),p=j.extensions.MMD_physics as PhysicsProfile,s=j.extensions.MMD_skeleton_solver as SolverProfile;
+  const budget={maxBoneUpdates:100_000_000};
+  assert.deepEqual(solverDiagnostics(s,budget),[]);assert.deepEqual(physicsDiagnostics(p,s,budget),[]);
+  assert.ok(physicsDiagnostics(p,s).some(d=>d.code==='solver-work-budget'));
+  const {api}=await loadAmmoNode();assert.throws(()=>new PhysicsTimeline(api,p,s),category('resource-exhaustion'));
+  const timeline=new PhysicsTimeline(api,p,s,budget);
+  try {
+    const disabled=new Map(s.bones.filter(b=>b.ik).map(b=>[b.index,false]));
+    const pose=timeline.seek(p.fixedStep,()=>s.bones,()=>disabled);
+    assert.equal(pose.length,s.bones.length);assert.ok(pose.every(b=>[...b.translation,...b.rotation].every(Number.isFinite)));
+    assert.throws(()=>timeline.preflight(1),category('resource-exhaustion'));
+  } finally {timeline.dispose();}
+  assert.equal(PhysicsWorld.allocations,0);
+});
+
+test('solver-free visibility uses the latest qualifying frame in unsorted retained records',async()=>{
+  const raw=Buffer.alloc(54+5*4+18);raw.write('Vocaloid Motion Data 0002');raw.writeUInt32LE(2,70);
+  raw.writeUInt32LE(60,74);raw[78]=0;raw.writeUInt32LE(0,79);
+  raw.writeUInt32LE(0,83);raw[87]=1;raw.writeUInt32LE(0,88);
+  const r=await convertModel(parsePMX(solverPMX('box')),'.',{mode:'bdef',vmd:raw}),j=await json(r);
+  for(const asset of [await glb(r),await load(JSON.stringify(j))]) {
+    const player=getVMDPlayers(asset)[0];
+    assert.deepEqual(player.source!.displays.map(k=>k.frame),[60,0]);
+    player.seek(0);assert.equal(player.visibility,1);player.seek(1);assert.equal(player.visibility,1);player.seek(2);assert.equal(player.visibility,0);
+    assert.deepEqual(player.source!.displays.map(k=>k.frame),[60,0]);
+  }
 });

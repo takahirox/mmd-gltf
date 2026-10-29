@@ -72,12 +72,12 @@ export class PhysicsWorld {
     readonly solver: SolverProfile,
     initial: RestBone[],
     enabled: ReadonlyMap<number, boolean> = new Map(),
-    budget: PhysicsBudget = {},
+    private budget: PhysicsBudget = {},
   ) {
     checkAmmo(api);
     validatePhysics(profile, solver);
     assertPhysicsExecutable(profile, solver, budget);
-    const pre = solvePose(solver, initial, enabled, "pre"),
+    const pre = solvePose(solver, initial, enabled, "pre", this.budget),
       poseWorld = worlds(pre);
     try {
       const config = this.own(new api.btDefaultCollisionConfiguration()),
@@ -208,7 +208,7 @@ export class PhysicsWorld {
     step = true,
   ) {
     if (this.disposed) throw new Error("MMD_physics: disposed world");
-    const pre = solvePose(this.solver, raw, enabled, "pre"),
+    const pre = solvePose(this.solver, raw, enabled, "pre", this.budget),
       animated = worlds(pre);
     for (const b of this.profile.bodies) {
       const body = this.bodies.get(b.index)!;
@@ -260,7 +260,7 @@ export class PhysicsWorld {
         pending.splice(i, 1);
       }
     }
-    return solvePose(this.solver, result, enabled, "post");
+    return solvePose(this.solver, result, enabled, "post", this.budget);
   }
   private align(index: number, animated: Matrix4) {
     const b = this.profile.bodies.find((b) => b.index === index)!,
@@ -308,7 +308,6 @@ export interface PhysicsExecutionBudget extends PhysicsBudget {
   maxSeekSteps?: number;
   maxUpdateSteps?: number;
   maxPoseScalars?: number;
-  maxBoneUpdates?: number;
 }
 export type PoseSampler = (time: number) => RestBone[];
 export type ControlSampler = (time: number) => ReadonlyMap<number, boolean>;

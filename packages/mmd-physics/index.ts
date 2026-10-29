@@ -1,6 +1,6 @@
 /** Runtime-independent, bounded rigid-body-v1 contract. Metres, kilograms, seconds. */
 import { diagnosticError, MMDDiagnosticError, validateBudget, type Diagnostic } from "../mmd-diagnostics";
-import { validateSolver, solverDiagnostics, phaseOrder, type SolverProfile } from "../mmd-solver";
+import { validateSolver, solverDiagnostics, phaseOrder, type SolverProfile, type SolverBudget } from "../mmd-solver";
 import type { Vec3, Quat } from "../mmd-vpd";
 export const EXTENSION_NAME = "MMD_physics";
 export interface Frame {
@@ -276,10 +276,10 @@ function validatePhysicsInternal(
   });
 }
 
-export interface PhysicsBudget { maxBodies?: number; maxJoints?: number }
+export interface PhysicsBudget extends SolverBudget { maxBodies?: number; maxJoints?: number }
 export function physicsDiagnostics(profile: PhysicsProfile, solver: SolverProfile, budget: PhysicsBudget = {}): Diagnostic[] {
   validatePhysics(profile,solver);
-  const result=solverDiagnostics(solver);
+  const result=solverDiagnostics(solver,budget);
   const maxBodies=budget.maxBodies??1024, maxJoints=budget.maxJoints??4096;
   validateBudget(maxBodies,EXTENSION_NAME);validateBudget(maxJoints,EXTENSION_NAME);
   if(profile.bodies.length>maxBodies || profile.joints.length>maxJoints) result.push({category:'resource-exhaustion',code:'physics-count-budget',path:EXTENSION_NAME,message:`body/joint execution budget exceeded (${maxBodies}/${maxJoints})`});

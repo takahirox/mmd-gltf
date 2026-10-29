@@ -90,7 +90,16 @@ export class VMDPlayer {
   /** Original sections, including controls and scene animation unsupported by this player. */
   get source() { return structuredClone(this.retainedSource()); }
   get diagnostics() { return structuredClone(this.motion.diagnostics??[]); }
-  get visibility() { return (this.motion.visibility??this.retainedSource()?.displays)?.filter(k=>k.frame<=this.current*30).at(-1)?.visible ?? 1; }
+  get visibility() {
+    let frame = -1, visible = 1;
+    for (const key of this.motion.visibility ?? this.retainedSource()?.displays ?? []) {
+      if (key.frame <= this.current * 30 && key.frame >= frame) {
+        frame = key.frame;
+        visible = key.visible;
+      }
+    }
+    return visible;
+  }
   get playing() {
     return this.active;
   }

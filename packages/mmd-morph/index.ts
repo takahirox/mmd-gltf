@@ -1,3 +1,4 @@
+import { diagnosticError } from '../mmd-diagnostics';
 import type { RestBone, Vec3, Quat } from '../mmd-vpd';
 /** Exact PMX source identity, independent of a loader's name dictionary. */
 export interface MorphIdentity {
@@ -159,7 +160,7 @@ export function reduceMorphs(model: MorphModel, weights: readonly number[]) {
     const w=weights[controlIndex(m)!];
     for(const e of m.group!) if(model.morphs[e.index].type===2) bones.set(e.index,(bones.get(e.index)??0)+w*e.rate);
   }
-  if([...targets,...bones.values()].some(v=>!validWeight(v))) throw new Error('Morph: reduced contribution exceeds weight limit');
+  if([...targets,...bones.values()].some(v=>!validWeight(v))) diagnosticError('unsupported-capability','morph-contribution-range','Morph','reduced contribution exceeds weight limit');
   return {targets,bones};
 }
 /** Project policy: shortest identity axis-angle power (canonical sign at pi),
@@ -178,7 +179,7 @@ export function applyBoneMorphs(model: MorphModel, weights: readonly number[], r
       const [x,y,z,t]=b.rotation,[u,v,s,r]=d;
       const product=[x*r+t*u+y*s-z*v,y*r+t*v+z*u-x*s,z*r+t*s+x*v-y*u,t*r-x*u-y*v-z*s];
       const length=Math.hypot(...product); b.rotation=product.map(v=>v/length) as Quat;
-      if(!finiteVector(b.translation,3) || !finiteVector(b.rotation,4)) throw new Error('Morph: unsupported resolved numeric range');
+      if(!finiteVector(b.translation,3) || !finiteVector(b.rotation,4)) diagnosticError('unsupported-capability','morph-resolved-range','Morph','unsupported resolved numeric range');
     }
   }
   return result;

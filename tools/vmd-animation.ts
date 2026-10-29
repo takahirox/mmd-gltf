@@ -13,7 +13,7 @@ import {
 import { evaluateTrack, evaluateMotion, slerp, type MotionBinding, type MotionTrack } from '../packages/mmd-vmd';
 import { EXTENSION_NAME, validatePayload, type VMDPayload } from '../packages/mmd-vmd/payload';
 import type { Quat } from '../packages/mmd-vpd';
-import { reduceMorphs, evaluateWeight } from '../packages/mmd-morph';
+import { reduceMorphs, evaluateWeight, controlIndex } from '../packages/mmd-morph';
 export interface SamplingOptions {
   translationTolerance?: number;
   rotationTolerance?: number;
@@ -215,28 +215,71 @@ export function addVMDAnimation(
   // Avoid retaining whole unused skeletons at each adaptive probe time.
   const samplingMotion=fallbackMotion.morphModel && !fallbackMotion.solver ? {...fallbackMotion,rest:motion.rest.filter(b=>affected.has(b.index))} : fallbackMotion;
   let evaluationWork=0;
-  const poseWork=Math.max(1,samplingMotion.rest.length)*(1+(samplingMotion.solver?.bones.reduce((n,b)=>n+(b.ik ? b.ik.iterations*b.ik.links.length : 0),0)??0));
+  const maxEvaluationWork=20_000_000;
+  const workFor=(value: MotionBinding)=>Math.max(1,value.rest.length)*(1+(value.solver?.bones.reduce((n,b)=>n+(b.ik ? (b.ik.iterations+1)*b.ik.links.length : 0),0)??0));
+  const poseWork=workFor(samplingMotion);
+  const charge=(work:number)=>{
+    if(work>maxEvaluationWork-evaluationWork) diagnosticError('fallback-limit','fallback-evaluation-budget','VMD','fallback solver evaluation budget exceeded; retained curves unaffected');
+    evaluationWork+=work;
+  };
   const cache=new Map<number,ReturnType<typeof evaluateMotion>>();
-  const resolved=(time:number)=>{if(!cache.has(time)){if((evaluationWork+=poseWork)>20_000_000)diagnosticError('fallback-limit','fallback-evaluation-budget','VMD','fallback solver evaluation budget exceeded; retained curves unaffected');if(cache.size*Math.max(1,samplingMotion.rest.length)>1_000_000)cache.clear();cache.set(time,physics ? physics.seek(time,t=>evaluateMotion(motion,t,undefined,true),t=>evaluateIK(motion,t)) : evaluateMotion(samplingMotion,time));}return cache.get(time)!;};
-  const tracks=motion.solver || motion.morphModel ? motion.rest.filter(b=>motion.solver || affected.has(b.index)).map(b=>({index:b.index,keys:motion.tracks.find(t=>t.index===b.index)?.keys??[]})) : [...motion.tracks];
+  const resolved=(time:number)=>{
+    if(!cache.has(time)) {
+      charge(poseWork);
+      if(cache.size*Math.max(1,samplingMotion.rest.length)>1_000_000)cache.clear();
+      cache.set(time,physics ? physics.seek(time,t=>evaluateMotion(motion,t,undefined,true),t=>evaluateIK(motion,t)) : evaluateMotion(samplingMotion,time));
+    }
+    return cache.get(time)!;
+  };
+  const rawTracks=new Map(motion.tracks.map(t=>[t.index,t]));
+  const rest=new Map(motion.rest.map(b=>[b.index,b]));
+  const tracks=motion.solver || motion.morphModel ? motion.rest.filter(b=>motion.solver || affected.has(b.index)).map(b=>({index:b.index,keys:rawTracks.get(b.index)?.keys??[]})) : [...motion.tracks];
   if(!tracks.length && !(motion.morphs??[]).some(g=>g.tracks.length) && motion.rest.length) tracks.push({index:motion.rest[0].index,keys:[]});
+  const recoverable=(error:unknown): error is MMDDiagnosticError=>error instanceof MMDDiagnosticError && ['fallback-limit','resource-exhaustion','unsupported-capability'].includes(error.diagnostic.category);
+  // Build the coarse poses once for all remaining channels. Every attempt shares
+  // the adaptive work counter, including failed evaluations and reduced retries.
+  let coarsePoses: {time:number;pose:Map<number,ReturnType<typeof evaluateMotion>[number]>}[] | undefined;
+  const recover=(error:MMDDiagnosticError)=>{
+    diagnostics.push(error.diagnostic);
+    if(physics)diagnostics.push({category:'fallback-limit',code:'physics-fallback-reduced',path:'VMD',message:'reduced core samples omit physics; simulation transport remains retained'});
+    let reduced=samplingMotion;
+    const withoutExecution=()=>({...samplingMotion,solver:undefined,morphModel:undefined});
+    if(error.diagnostic.category==='unsupported-capability' || error.diagnostic.category==='resource-exhaustion') reduced=withoutExecution();
+    for(;;) {
+      const work=workFor(reduced);
+      const available=Math.max(0,Math.min(256,options.maxSamples??200_000,Math.max(1,budget.remaining),Math.floor((maxEvaluationWork-evaluationWork)/work),Math.floor(1_000_000/Math.max(1,reduced.rest.length))));
+      const times=[...new Set(Array.from({length:available},(_,i)=>Math.fround(available===1 ? 0 : motion.duration*i/(available-1))))];
+      try {
+        coarsePoses=times.map(time=>{
+          let pose;
+          if(reduced===samplingMotion && !physics) pose=resolved(time);
+          else { charge(work);pose=evaluateMotion(reduced,time); }
+          return {time,pose:new Map(pose.map(b=>[b.index,b]))};
+        });
+        break;
+      } catch(failure) {
+        if(!recoverable(failure))throw failure;
+        diagnostics.push(failure.diagnostic);
+        if(!reduced.solver && !reduced.morphModel) { coarsePoses=[];break; }
+        reduced=withoutExecution();
+      }
+    }
+    if(reduced!==samplingMotion) diagnostics.push({category:'fallback-limit',code:'unexecuted-morph-or-solver',path:'VMD',message:'reduced core TRS omits unavailable morph/solver execution; exact controls and source remain retained'});
+    if(!coarsePoses!.length) diagnostics.push({category:'fallback-limit',code:'fallback-rest-pose',path:'VMD',message:'evaluation budget exhausted; remaining core TRS channels retain rest values'});
+  };
+  const coarseSamples=(index:number)=>{
+    const samples=coarsePoses!.length ? coarsePoses!.map(({time,pose})=>({time,...pose.get(index)!})) : [{time:0,...rest.get(index)!}];
+    budget.remaining=Math.max(0,budget.remaining-samples.length);
+    return samples;
+  };
   for (const track of tracks) {
     let samples;
-    try { samples = physics ? seeds.map(time=>{if(--budget.remaining<0)diagnosticError('fallback-limit','sample-budget','MMD_physics','fallback sample budget exceeded');const at=resolved(time).find(b=>b.index===track.index)!;return {time:Math.fround(time),translation:at.translation,rotation:at.rotation};}) : motion.solver || motion.morphModel ? sampleTrack(track,options,budget,time=>resolved(time).find(b=>b.index===track.index)!,seeds,seams) : sampleTrack(track, options, budget, track.keys.length ? undefined : time=>resolved(time).find(b=>b.index===track.index)!, track.keys.length ? undefined : [0]);
+    try {
+      samples=coarsePoses ? coarseSamples(track.index) : physics ? seeds.map(time=>{if(--budget.remaining<0)diagnosticError('fallback-limit','sample-budget','MMD_physics','fallback sample budget exceeded');const at=resolved(time).find(b=>b.index===track.index)!;return {time:Math.fround(time),translation:at.translation,rotation:at.rotation};}) : motion.solver || motion.morphModel ? sampleTrack(track,options,budget,time=>resolved(time).find(b=>b.index===track.index)!,seeds,seams) : sampleTrack(track, options, budget, track.keys.length ? undefined : time=>resolved(time).find(b=>b.index===track.index)!, track.keys.length ? undefined : [0]);
     } catch(error) {
-      if(!(error instanceof MMDDiagnosticError) || !['fallback-limit','resource-exhaustion','unsupported-capability'].includes(error.diagnostic.category)) throw error;
-      diagnostics.push(error.diagnostic);
-      if(physics)diagnostics.push({category:'fallback-limit',code:'physics-fallback-reduced',path:'VMD',message:'reduced core samples use solver/bone motion without physics; simulation transport remains retained'});
-      // A bounded uniform approximation retains endpoints where FLOAT permits.
-      // Exact curves and original VMD remain independent of this optional fallback.
-      const available=Math.max(1,Math.min(256,options.maxSamples??200_000,Math.max(1,budget.remaining),Math.max(1,Math.floor(20_000_000/poseWork))));
-      const duration=motion.duration;
-      const coarse=[...new Set(Array.from({length:available},(_,i)=>Math.fround(available===1 ? 0 : duration*i/(available-1))))];
-      samples=coarse.map(time=>{
-        const value=evaluateMotion(error.diagnostic.code==='fallback-evaluation-budget' ? {...fallbackMotion,solver:undefined} : fallbackMotion,time).find(b=>b.index===track.index)!;
-        return {time,translation:value.translation,rotation:value.rotation};
-      });
-      budget.remaining=Math.max(0,budget.remaining-samples.length);
+      if(!recoverable(error)) throw error;
+      recover(error);
+      samples=coarseSamples(track.index);
     }
     if(samples.some((v,i)=>!Number.isFinite(v.time)||i>0&&v.time<=samples[i-1].time))throw new Error("VMD: fallback FLOAT timestamps must increase strictly");
     count += samples.length;
@@ -284,7 +327,17 @@ export function addVMDAnimation(
     const values = times.flatMap(time => {
       const row = new Array(group.count).fill(0);
       for (const track of group.tracks) row[track.index] = evaluateWeight(track, time);
-      return motion.morphModel ? reduceMorphs(motion.morphModel,row).targets : row;
+      if(!motion.morphModel)return row;
+      try { return reduceMorphs(motion.morphModel,row).targets; }
+      catch(error) {
+        if(!recoverable(error))throw error;
+        if(!diagnostics.some(d=>d.code===error.diagnostic.code))diagnostics.push(error.diagnostic);
+        // Vertex/group targets are already compiled independently of bone offsets.
+        // Retain these usable weights without executing unsupported bone reduction.
+        const targets=new Array(targetCount).fill(0);
+        for(const morph of motion.morphModel.morphs) if(morph.target!==null) targets[morph.target]=row[controlIndex(morph)!];
+        return targets;
+      }
     });
     const array = new Float32Array(values);
     if (!array.every(Number.isFinite)) throw new Error('VMD: unsupported FLOAT weight numeric range');
