@@ -22,6 +22,9 @@ test('default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outli
   page.on('requestfailed',r=>errors.push(`${r.url()}: ${r.failure()?.errorText}`));
   await page.goto(preview);
   await expect(page.locator('#demo-model')).toHaveValue('uka');
+  expect(await page.locator('#demo-model option:not([hidden])').evaluateAll(options =>
+    options.map(option => (option as HTMLOptionElement).value))).toEqual(['uka', 'gene']);
+  await expect(page.locator('#synthetic-methods')).toBeHidden();
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   await page.waitForFunction(()=>(window as any).mmdExample?.frames>3);
   const state=()=>page.evaluate(()=>(window as any).mmdExample);
