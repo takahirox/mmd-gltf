@@ -213,7 +213,7 @@ test('failed rig loads can retry and failed replacement preserves the current ri
   await expect(page.locator('#rig-viewport canvas')).toHaveCount(1);
 });
 
-test('motion finishing after a model switch stays paused in its own viewer', async ({ page }) => {
+test('motion finishing after a model switch stays paused in its own viewer', async ({ page }, info) => {
   const errors = errorsFrom(page);
   await page.goto(`${preview}?demo=gene`);
   await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
@@ -224,6 +224,7 @@ test('motion finishing after a model switch stays paused in its own viewer', asy
   let release!: () => void;
   const pending = new Promise<void>(resolve => { release = resolve; });
   let requests = 0;
+  let resumeWaitMs: number | undefined;
   await page.route('**/solver/box-bdef/a.glb', async route => {
     requests++;
     await pending;
@@ -243,10 +244,29 @@ test('motion finishing after a model switch stays paused in its own viewer', asy
     expect((await rigState(page)).frames).toBe(frames);
     expect((await rigState(page)).playing).toBe(false);
     await page.locator('#demo-model').selectOption('rig');
-    await expect.poll(async () => (await rigState(page)).rendered.motion).toContain('(glb)');
+    // A resumed software-rendered frame can take longer than expect.poll's
+    // five seconds. Use the normal render acknowledgement wait, as selectRig
+    // does, and reject a stale marker from an earlier revision or motion.
+    const resumeStarted = performance.now();
+    try {
+      await page.waitForFunction(() => {
+        const state = (window as any).mmdRig, rendered = state.rendered;
+        return rendered?.revision === state.revision && rendered.rig === state.rig &&
+          rendered.motion === state.motion && rendered.motion.includes('(glb)');
+      });
+    } finally { resumeWaitMs = performance.now() - resumeStarted; }
+    expect((await rigState(page)).rendered.motion).toContain('(glb)');
     expect((await rigState(page)).playing).toBe(false);
     expect(errors).toEqual([]);
   } finally {
     release();
+    const observed = await page.evaluate(() => {
+      const s = (window as any).mmdRig;
+      return { rig: s.rig, motion: s.motion, playing: s.playing, frames: s.frames,
+        revision: s.revision, rendered: s.rendered, error: s.error };
+    }).catch(() => undefined);
+    await info.attach('inactive-motion-frame.json', {
+      body: JSON.stringify({ resumeWaitMs, observed }), contentType: 'application/json',
+    });
   }
 });

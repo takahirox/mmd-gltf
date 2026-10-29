@@ -1,0 +1,1091 @@
+{
+  "scope": "15 targeted Solver, VMD, morph and group conformance cases on the same local host. Not a full-suite baseline or GitHub Actions speed claim.",
+  "comparableToUbuntuCI": false,
+  "before": {
+    "status": "passed",
+    "durationMs": 760563.3219999999,
+    "testCount": 15,
+    "statuses": {
+      "passed": 15
+    },
+    "suites": {
+      "group.spec.ts": {
+        "durationMs": 34187,
+        "attempts": 1,
+        "statuses": {
+          "passed": 1
+        }
+      },
+      "solver.spec.ts": {
+        "durationMs": 612075,
+        "attempts": 12,
+        "statuses": {
+          "passed": 12
+        }
+      },
+      "vmd.spec.ts": {
+        "durationMs": 111078,
+        "attempts": 2,
+        "statuses": {
+          "passed": 2
+        }
+      }
+    },
+    "environment": {
+      "ci": false,
+      "platform": "darwin",
+      "release": "25.6.0",
+      "node": "v26.12.1",
+      "cpu": "Apple M4 Max",
+      "logicalCPUs": 16,
+      "workers": 1,
+      "channel": "chromium",
+      "renderer": "ANGLE SwiftShader (CPU)"
+    },
+    "conformancePhasesBySuite": {
+      "solver.spec.ts": {
+        "renderer-init": {
+          "count": 12,
+          "totalMs": 334.89999866485596,
+          "maximumMs": 244.80000019073486
+        },
+        "load-parse-bind-export": {
+          "count": 240,
+          "totalMs": 2501.0000076293945,
+          "maximumMs": 99.5
+        },
+        "vertex-render-submit": {
+          "count": 624,
+          "totalMs": 8239.299993515015,
+          "maximumMs": 47
+        },
+        "vertex-readback": {
+          "count": 624,
+          "totalMs": 253841.69999027252,
+          "maximumMs": 1594.6000003814697
+        },
+        "evaluate-oracle": {
+          "count": 312,
+          "totalMs": 134.2000036239624,
+          "maximumMs": 5.199999809265137
+        },
+        "bake-oracle": {
+          "count": 624,
+          "totalMs": 164.99999237060547,
+          "maximumMs": 6.40000057220459
+        },
+        "first-render-submit": {
+          "count": 960,
+          "totalMs": 8417.799997329712,
+          "maximumMs": 80.80000019073486
+        },
+        "raster-readback": {
+          "count": 1248,
+          "totalMs": 329536.3999929428,
+          "maximumMs": 2491.1000003814697
+        },
+        "raster-comparison": {
+          "count": 624,
+          "totalMs": 319.80000495910645,
+          "maximumMs": 14.300000190734863
+        },
+        "subsequent-render-submit": {
+          "count": 288,
+          "totalMs": 209.60000705718994,
+          "maximumMs": 3.40000057220459
+        }
+      },
+      "vmd.spec.ts": {
+        "renderer-init": {
+          "count": 2,
+          "totalMs": 243.60000038146973,
+          "maximumMs": 168.10000038146973
+        },
+        "load-parse-bind": {
+          "count": 48,
+          "totalMs": 1049.8000011444092,
+          "maximumMs": 81.60000038146973
+        },
+        "evaluate-oracle": {
+          "count": 144,
+          "totalMs": 264.2999963760376,
+          "maximumMs": 5.5
+        },
+        "bake-oracle": {
+          "count": 288,
+          "totalMs": 206.8000020980835,
+          "maximumMs": 5.300000190734863
+        },
+        "first-render-submit": {
+          "count": 192,
+          "totalMs": 1613.5999994277954,
+          "maximumMs": 81.80000019073486
+        },
+        "raster-readback": {
+          "count": 576,
+          "totalMs": 104850.69999885559,
+          "maximumMs": 1178.1000003814697
+        },
+        "raster-comparison": {
+          "count": 384,
+          "totalMs": 159.4999942779541,
+          "maximumMs": 7.700000762939453
+        },
+        "subsequent-render-submit": {
+          "count": 384,
+          "totalMs": 413.39999866485596,
+          "maximumMs": 4.699999809265137
+        }
+      }
+    },
+    "phaseTimedCaseCount": 14,
+    "cases": [
+      {
+        "title": "group.spec.ts / built group conformance: independent scalar rasters and applied GLB/glTF export round trips",
+        "suite": "group.spec.ts",
+        "status": "passed",
+        "durationMs": 34187
+      },
+      {
+        "title": "solver.spec.ts / built solver bdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 18849
+      },
+      {
+        "title": "solver.spec.ts / built solver bdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 18799
+      },
+      {
+        "title": "solver.spec.ts / built solver bdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 17595
+      },
+      {
+        "title": "solver.spec.ts / built solver bdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 17556
+      },
+      {
+        "title": "solver.spec.ts / built solver sdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 33000
+      },
+      {
+        "title": "solver.spec.ts / built solver sdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 35246
+      },
+      {
+        "title": "solver.spec.ts / built solver sdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 33963
+      },
+      {
+        "title": "solver.spec.ts / built solver sdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 35552
+      },
+      {
+        "title": "solver.spec.ts / built solver qdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 83281
+      },
+      {
+        "title": "solver.spec.ts / built solver qdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 94193
+      },
+      {
+        "title": "solver.spec.ts / built solver qdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 92017
+      },
+      {
+        "title": "solver.spec.ts / built solver qdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 132024
+      },
+      {
+        "title": "vmd.spec.ts / built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines",
+        "suite": "vmd.spec.ts",
+        "status": "passed",
+        "durationMs": 53161
+      },
+      {
+        "title": "vmd.spec.ts / built morph conformance: combined weights and morph-before-BDEF predictions through Toon/PBR and Outline",
+        "suite": "vmd.spec.ts",
+        "status": "passed",
+        "durationMs": 57917
+      }
+    ],
+    "matrix": "Original full Cartesian products with phase instrumentation"
+  },
+  "after": {
+    "status": "passed",
+    "durationMs": 457123.193,
+    "testCount": 15,
+    "statuses": {
+      "passed": 15
+    },
+    "suites": {
+      "group.spec.ts": {
+        "durationMs": 20712,
+        "attempts": 1,
+        "statuses": {
+          "passed": 1
+        }
+      },
+      "solver.spec.ts": {
+        "durationMs": 391494,
+        "attempts": 12,
+        "statuses": {
+          "passed": 12
+        }
+      },
+      "vmd.spec.ts": {
+        "durationMs": 42973,
+        "attempts": 2,
+        "statuses": {
+          "passed": 2
+        }
+      }
+    },
+    "environment": {
+      "ci": false,
+      "platform": "darwin",
+      "release": "25.6.0",
+      "node": "v26.12.1",
+      "cpu": "Apple M4 Max",
+      "logicalCPUs": 16,
+      "workers": 1,
+      "channel": "chromium",
+      "conformanceMatrix": "representative",
+      "renderer": "ANGLE SwiftShader (CPU)",
+      "browserVersions": [
+        "141.0.7390.37"
+      ]
+    },
+    "conformancePhasesBySuite": {
+      "group.spec.ts": {
+        "renderer-init": {
+          "count": 1,
+          "totalMs": 621.4000005722046,
+          "maximumMs": 621.4000005722046
+        },
+        "load-parse-bind": {
+          "count": 12,
+          "totalMs": 118.60000133514404,
+          "maximumMs": 22.100000381469727
+        },
+        "evaluate-oracle": {
+          "count": 36,
+          "totalMs": 61.69999599456787,
+          "maximumMs": 5
+        },
+        "bake-oracle": {
+          "count": 72,
+          "totalMs": 41.50000286102295,
+          "maximumMs": 2.3000001907348633
+        },
+        "first-render-submit": {
+          "count": 48,
+          "totalMs": 380.0999994277954,
+          "maximumMs": 25.90000057220459
+        },
+        "raster-readback": {
+          "count": 144,
+          "totalMs": 12724.300004959106,
+          "maximumMs": 522.3999996185303
+        },
+        "raster-comparison": {
+          "count": 96,
+          "totalMs": 30.000001907348633,
+          "maximumMs": 1.8000001907348633
+        },
+        "subsequent-render-submit": {
+          "count": 96,
+          "totalMs": 94.7999963760376,
+          "maximumMs": 3.8999996185302734
+        },
+        "group-export": {
+          "count": 1,
+          "totalMs": 5674,
+          "maximumMs": 5674
+        }
+      },
+      "solver.spec.ts": {
+        "renderer-init": {
+          "count": 12,
+          "totalMs": 561.8999996185303,
+          "maximumMs": 202.80000019073486
+        },
+        "load-parse-bind-export": {
+          "count": 144,
+          "totalMs": 2029.599998474121,
+          "maximumMs": 101
+        },
+        "vertex-render-submit": {
+          "count": 384,
+          "totalMs": 5102.900002479553,
+          "maximumMs": 117.69999980926514
+        },
+        "vertex-readback": {
+          "count": 384,
+          "totalMs": 160438.9000005722,
+          "maximumMs": 1405
+        },
+        "evaluate-oracle": {
+          "count": 192,
+          "totalMs": 98.49999332427979,
+          "maximumMs": 3.700000762939453
+        },
+        "bake-oracle": {
+          "count": 384,
+          "totalMs": 104.50000286102295,
+          "maximumMs": 7.699999809265137
+        },
+        "first-render-submit": {
+          "count": 576,
+          "totalMs": 5403.100010871887,
+          "maximumMs": 89.19999980926514
+        },
+        "raster-readback": {
+          "count": 768,
+          "totalMs": 208317.8999786377,
+          "maximumMs": 2281.9000005722046
+        },
+        "raster-comparison": {
+          "count": 384,
+          "totalMs": 381.90000343322754,
+          "maximumMs": 88
+        },
+        "subsequent-render-submit": {
+          "count": 192,
+          "totalMs": 150.80000591278076,
+          "maximumMs": 4.300000190734863
+        }
+      },
+      "vmd.spec.ts": {
+        "renderer-init": {
+          "count": 2,
+          "totalMs": 198.69999980926514,
+          "maximumMs": 150.5
+        },
+        "load-parse-bind": {
+          "count": 24,
+          "totalMs": 583.8000040054321,
+          "maximumMs": 70.79999923706055
+        },
+        "evaluate-oracle": {
+          "count": 72,
+          "totalMs": 131.80000019073486,
+          "maximumMs": 6
+        },
+        "bake-oracle": {
+          "count": 144,
+          "totalMs": 96.10000419616699,
+          "maximumMs": 2.3000001907348633
+        },
+        "first-render-submit": {
+          "count": 96,
+          "totalMs": 863.0999956130981,
+          "maximumMs": 63.39999961853027
+        },
+        "raster-readback": {
+          "count": 288,
+          "totalMs": 39126.70000267029,
+          "maximumMs": 794.1000003814697
+        },
+        "raster-comparison": {
+          "count": 192,
+          "totalMs": 71.60000324249268,
+          "maximumMs": 2.3000001907348633
+        },
+        "subsequent-render-submit": {
+          "count": 192,
+          "totalMs": 202.39999294281006,
+          "maximumMs": 3.90000057220459
+        }
+      }
+    },
+    "phaseTimedCaseCount": 15,
+    "cases": [
+      {
+        "title": "group.spec.ts / built group conformance: independent scalar rasters and applied GLB/glTF export round trips",
+        "suite": "group.spec.ts",
+        "status": "passed",
+        "durationMs": 20712
+      },
+      {
+        "title": "solver.spec.ts / built solver bdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 11584
+      },
+      {
+        "title": "solver.spec.ts / built solver bdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 12704
+      },
+      {
+        "title": "solver.spec.ts / built solver bdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 11329
+      },
+      {
+        "title": "solver.spec.ts / built solver bdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 11991
+      },
+      {
+        "title": "solver.spec.ts / built solver sdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 21847
+      },
+      {
+        "title": "solver.spec.ts / built solver sdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 23225
+      },
+      {
+        "title": "solver.spec.ts / built solver sdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 21704
+      },
+      {
+        "title": "solver.spec.ts / built solver sdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 21741
+      },
+      {
+        "title": "solver.spec.ts / built solver qdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 48691
+      },
+      {
+        "title": "solver.spec.ts / built solver qdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 60101
+      },
+      {
+        "title": "solver.spec.ts / built solver qdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 76710
+      },
+      {
+        "title": "solver.spec.ts / built solver qdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+        "suite": "solver.spec.ts",
+        "status": "passed",
+        "durationMs": 69867
+      },
+      {
+        "title": "vmd.spec.ts / built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines",
+        "suite": "vmd.spec.ts",
+        "status": "passed",
+        "durationMs": 20637
+      },
+      {
+        "title": "vmd.spec.ts / built morph conformance: combined weights and morph-before-BDEF predictions through Toon/PBR and Outline",
+        "suite": "vmd.spec.ts",
+        "status": "passed",
+        "durationMs": 22336
+      }
+    ],
+    "matrix": "representative"
+  },
+  "fullValidation": {
+    "environment": {
+      "ci": false,
+      "platform": "darwin",
+      "release": "25.6.0",
+      "node": "v26.12.1",
+      "cpu": "Apple M4 Max",
+      "logicalCPUs": 16,
+      "workers": 1,
+      "channel": "chromium",
+      "conformanceMatrix": "representative",
+      "renderer": "ANGLE SwiftShader (CPU)"
+    },
+    "status": "passed",
+    "durationMs": 2102039.0480000004,
+    "testCount": 73,
+    "attemptCount": 73,
+    "statuses": {
+      "passed": 71,
+      "skipped": 2
+    },
+    "suites": {
+      "bdef.spec.ts": {
+        "durationMs": 4516,
+        "attempts": 1,
+        "statuses": {
+          "passed": 1
+        }
+      },
+      "bone-morph.spec.ts": {
+        "durationMs": 128920,
+        "attempts": 4,
+        "statuses": {
+          "passed": 4
+        }
+      },
+      "demo-loading.spec.ts": {
+        "durationMs": 5178,
+        "attempts": 1,
+        "statuses": {
+          "passed": 1
+        }
+      },
+      "example.spec.ts": {
+        "durationMs": 78586,
+        "attempts": 5,
+        "statuses": {
+          "passed": 4,
+          "skipped": 1
+        }
+      },
+      "group.spec.ts": {
+        "durationMs": 107940,
+        "attempts": 5,
+        "statuses": {
+          "passed": 5
+        }
+      },
+      "outline.spec.ts": {
+        "durationMs": 11571,
+        "attempts": 2,
+        "statuses": {
+          "passed": 1,
+          "skipped": 1
+        }
+      },
+      "physics.spec.ts": {
+        "durationMs": 200269,
+        "attempts": 4,
+        "statuses": {
+          "passed": 4
+        }
+      },
+      "qdef.spec.ts": {
+        "durationMs": 347868,
+        "attempts": 4,
+        "statuses": {
+          "passed": 4
+        }
+      },
+      "sdef.spec.ts": {
+        "durationMs": 152723,
+        "attempts": 4,
+        "statuses": {
+          "passed": 4
+        }
+      },
+      "solver.spec.ts": {
+        "durationMs": 512069,
+        "attempts": 25,
+        "statuses": {
+          "passed": 25
+        }
+      },
+      "uka.spec.ts": {
+        "durationMs": 123124,
+        "attempts": 2,
+        "statuses": {
+          "passed": 2
+        }
+      },
+      "unified-demo.spec.ts": {
+        "durationMs": 129404,
+        "attempts": 6,
+        "statuses": {
+          "passed": 6
+        }
+      },
+      "vmd.spec.ts": {
+        "durationMs": 176344,
+        "attempts": 6,
+        "statuses": {
+          "passed": 6
+        }
+      },
+      "vpd.spec.ts": {
+        "durationMs": 63309,
+        "attempts": 2,
+        "statuses": {
+          "passed": 2
+        }
+      },
+      "bfcache.spec.ts": {
+        "durationMs": 55890,
+        "attempts": 2,
+        "statuses": {
+          "passed": 2
+        }
+      }
+    },
+    "explicitSkips": [
+      "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgpu site",
+      "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgpu"
+    ],
+    "savedJSONAttachments": 59,
+    "resumeObservations": [
+      {
+        "resumeWaitMs": 317.1286249998957,
+        "observed": {
+          "rig": "solver-box-bdef",
+          "motion": "Motion SOLVER-A (glb)",
+          "playing": false,
+          "frames": 12,
+          "revision": 32,
+          "rendered": {
+            "revision": 32,
+            "frame": 12,
+            "durationMs": 0.40000057220458984,
+            "rig": "solver-box-bdef",
+            "motion": "Motion SOLVER-A (glb)",
+            "pose": "motion",
+            "time": 0,
+            "playing": false,
+            "mode": "toon",
+            "outlines": true,
+            "comparison": false,
+            "weights": [
+              0.10000000149011612,
+              0.6000000238418579
+            ],
+            "vertices": [
+              [
+                0.40248182758962014,
+                0.0988367547707521,
+                -0.2028276735085065
+              ],
+              [
+                0.3133576818437155,
+                0.2255812754133838,
+                -0.17194980954720362
+              ],
+              [
+                0.18741497244301247,
+                0.24613962312895582,
+                -0.2188601060695889
+              ],
+              [
+                0.19735306089485075,
+                0.06682705170486707,
+                -0.22840420079446222
+              ],
+              [
+                0.46054317954853496,
+                0.1995411904146166,
+                -0.05267298258946443
+              ],
+              [
+                0.20845473030346767,
+                0.03796675907718429,
+                -0.17997939580365524
+              ]
+            ]
+          },
+          "error": ""
+        }
+      }
+    ]
+  },
+  "notes": [
+    "The baseline group case has whole-test timing but no phase attachment; all baseline Solver/VMD/morph cases have phase measurements.",
+    "This is one local pair, not repeatable Ubuntu runner evidence. First-render submission is not isolated shader-compilation time."
+  ],
+  "targetedComparison": {
+    "wallDeltaMs": -303440.1289999999,
+    "wallReductionPercent": 39.89676075912584,
+    "suites": {
+      "group.spec.ts": {
+        "durationDeltaMs": -13475
+      },
+      "solver.spec.ts": {
+        "durationDeltaMs": -220581
+      },
+      "vmd.spec.ts": {
+        "durationDeltaMs": -68105
+      }
+    }
+  },
+  "fullMatrixSmoke": {
+    "status": "passed",
+    "testCount": 2,
+    "statuses": {
+      "passed": 2
+    },
+    "durationMs": 66672.504,
+    "matrix": "full",
+    "caseTitles": [
+      "solver.spec.ts / built solver bdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "vmd.spec.ts / built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines"
+    ]
+  },
+  "initialFullValidation": {
+    "environment": {
+      "ci": false,
+      "platform": "darwin",
+      "release": "25.6.0",
+      "node": "v26.12.1",
+      "cpu": "Apple M4 Max",
+      "logicalCPUs": 16,
+      "workers": 1,
+      "channel": "chromium",
+      "conformanceMatrix": "representative",
+      "renderer": "ANGLE SwiftShader (CPU)"
+    },
+    "status": "failed",
+    "durationMs": 2416331.003,
+    "testCount": 73,
+    "statuses": {
+      "passed": 70,
+      "skipped": 2,
+      "failed": 1
+    },
+    "suites": {
+      "bdef.spec.ts": {
+        "durationMs": 5994,
+        "attempts": 1,
+        "statuses": {
+          "passed": 1
+        }
+      },
+      "bone-morph.spec.ts": {
+        "durationMs": 178777,
+        "attempts": 4,
+        "statuses": {
+          "passed": 4
+        }
+      },
+      "demo-loading.spec.ts": {
+        "durationMs": 5679,
+        "attempts": 1,
+        "statuses": {
+          "passed": 1
+        }
+      },
+      "example.spec.ts": {
+        "durationMs": 112484,
+        "attempts": 5,
+        "statuses": {
+          "passed": 4,
+          "skipped": 1
+        }
+      },
+      "group.spec.ts": {
+        "durationMs": 132257,
+        "attempts": 5,
+        "statuses": {
+          "passed": 5
+        }
+      },
+      "outline.spec.ts": {
+        "durationMs": 12200,
+        "attempts": 2,
+        "statuses": {
+          "passed": 1,
+          "skipped": 1
+        }
+      },
+      "physics.spec.ts": {
+        "durationMs": 243551,
+        "attempts": 4,
+        "statuses": {
+          "passed": 4
+        }
+      },
+      "qdef.spec.ts": {
+        "durationMs": 322018,
+        "attempts": 4,
+        "statuses": {
+          "passed": 4
+        }
+      },
+      "sdef.spec.ts": {
+        "durationMs": 122196,
+        "attempts": 4,
+        "statuses": {
+          "passed": 4
+        }
+      },
+      "solver.spec.ts": {
+        "durationMs": 531776,
+        "attempts": 25,
+        "statuses": {
+          "passed": 25
+        }
+      },
+      "uka.spec.ts": {
+        "durationMs": 120507,
+        "attempts": 2,
+        "statuses": {
+          "passed": 2
+        }
+      },
+      "unified-demo.spec.ts": {
+        "durationMs": 242652,
+        "attempts": 6,
+        "statuses": {
+          "passed": 5,
+          "failed": 1
+        }
+      },
+      "vmd.spec.ts": {
+        "durationMs": 220927,
+        "attempts": 6,
+        "statuses": {
+          "passed": 6
+        }
+      },
+      "vpd.spec.ts": {
+        "durationMs": 67744,
+        "attempts": 2,
+        "statuses": {
+          "passed": 2
+        }
+      },
+      "bfcache.spec.ts": {
+        "durationMs": 87377,
+        "attempts": 2,
+        "statuses": {
+          "passed": 2
+        }
+      }
+    },
+    "failure": {
+      "case": "motion finishing after a model switch stays paused in its own viewer",
+      "assertion": "rendered.motion contains (glb)",
+      "received": "",
+      "timeoutMs": 5000
+    }
+  },
+  "resumeRegression": {
+    "status": "passed",
+    "testCount": 3,
+    "statuses": {
+      "passed": 3
+    },
+    "durationMs": 110857.041,
+    "observations": [
+      {
+        "resumeWaitMs": 689.304333,
+        "observed": {
+          "rig": "solver-box-bdef",
+          "motion": "Motion SOLVER-A (glb)",
+          "playing": false,
+          "frames": 12,
+          "revision": 32,
+          "rendered": {
+            "revision": 32,
+            "frame": 12,
+            "durationMs": 0.39999961853027344,
+            "rig": "solver-box-bdef",
+            "motion": "Motion SOLVER-A (glb)",
+            "pose": "motion",
+            "time": 0,
+            "playing": false,
+            "mode": "toon",
+            "outlines": true,
+            "comparison": false,
+            "weights": [
+              0.10000000149011612,
+              0.6000000238418579
+            ],
+            "vertices": [
+              [
+                0.40248182758962014,
+                0.0988367547707521,
+                -0.2028276735085065
+              ],
+              [
+                0.3133576818437155,
+                0.2255812754133838,
+                -0.17194980954720362
+              ],
+              [
+                0.18741497244301247,
+                0.24613962312895582,
+                -0.2188601060695889
+              ],
+              [
+                0.19735306089485075,
+                0.06682705170486707,
+                -0.22840420079446222
+              ],
+              [
+                0.46054317954853496,
+                0.1995411904146166,
+                -0.05267298258946443
+              ],
+              [
+                0.20845473030346767,
+                0.03796675907718429,
+                -0.17997939580365524
+              ]
+            ]
+          },
+          "error": ""
+        }
+      },
+      {
+        "resumeWaitMs": 6802.606292000004,
+        "observed": {
+          "rig": "solver-box-bdef",
+          "motion": "Motion SOLVER-A (glb)",
+          "playing": false,
+          "frames": 14,
+          "revision": 32,
+          "rendered": {
+            "revision": 32,
+            "frame": 14,
+            "durationMs": 0.5999994277954102,
+            "rig": "solver-box-bdef",
+            "motion": "Motion SOLVER-A (glb)",
+            "pose": "motion",
+            "time": 0,
+            "playing": false,
+            "mode": "toon",
+            "outlines": true,
+            "comparison": false,
+            "weights": [
+              0.10000000149011612,
+              0.6000000238418579
+            ],
+            "vertices": [
+              [
+                0.40248182758962014,
+                0.0988367547707521,
+                -0.2028276735085065
+              ],
+              [
+                0.3133576818437155,
+                0.2255812754133838,
+                -0.17194980954720362
+              ],
+              [
+                0.18741497244301247,
+                0.24613962312895582,
+                -0.2188601060695889
+              ],
+              [
+                0.19735306089485075,
+                0.06682705170486707,
+                -0.22840420079446222
+              ],
+              [
+                0.46054317954853496,
+                0.1995411904146166,
+                -0.05267298258946443
+              ],
+              [
+                0.20845473030346767,
+                0.03796675907718429,
+                -0.17997939580365524
+              ]
+            ]
+          },
+          "error": ""
+        }
+      },
+      {
+        "resumeWaitMs": 1011.7498750000013,
+        "observed": {
+          "rig": "solver-box-bdef",
+          "motion": "Motion SOLVER-A (glb)",
+          "playing": false,
+          "frames": 10,
+          "revision": 31,
+          "rendered": {
+            "revision": 31,
+            "frame": 10,
+            "durationMs": 0.5,
+            "rig": "solver-box-bdef",
+            "motion": "Motion SOLVER-A (glb)",
+            "pose": "motion",
+            "time": 0,
+            "playing": false,
+            "mode": "toon",
+            "outlines": true,
+            "comparison": false,
+            "weights": [
+              0.10000000149011612,
+              0.6000000238418579
+            ],
+            "vertices": [
+              [
+                0.40248182758962014,
+                0.0988367547707521,
+                -0.2028276735085065
+              ],
+              [
+                0.3133576818437155,
+                0.2255812754133838,
+                -0.17194980954720362
+              ],
+              [
+                0.18741497244301247,
+                0.24613962312895582,
+                -0.2188601060695889
+              ],
+              [
+                0.19735306089485075,
+                0.06682705170486707,
+                -0.22840420079446222
+              ],
+              [
+                0.46054317954853496,
+                0.1995411904146166,
+                -0.05267298258946443
+              ],
+              [
+                0.20845473030346767,
+                0.03796675907718429,
+                -0.17997939580365524
+              ]
+            ]
+          },
+          "error": ""
+        }
+      }
+    ]
+  },
+  "checks": {
+    "build": "passed",
+    "typecheck": "passed",
+    "npmTest": {
+      "passed": 125,
+      "failed": 0,
+      "skipped": 0
+    },
+    "reporterRegression": "passed",
+    "links": "passed",
+    "diffCheck": "passed",
+    "githubPRCI": "pending; pushing and opening PRs are prohibited for this node",
+    "comparableUbuntuPhasePair": "pending"
+  }
+}

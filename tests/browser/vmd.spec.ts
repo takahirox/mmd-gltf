@@ -1,7 +1,8 @@
 import { writeFile } from 'node:fs/promises';
 import { openRigDemo } from './demo-controls';
 import { readRigBitmap } from './rig-bitmap';
-import { test, expect, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+import { test, expect, fullConformance, conformanceURL } from './timed-test';
 import { morphWeights } from '../morph-oracle';
 const preview = 'http://127.0.0.1:43180/mmd-gltf/';
 test('built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines', async ({
@@ -9,7 +10,7 @@ test('built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, indepen
 }, testInfo) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto(`${preview}vmd-conformance.html`);
+  await page.goto(conformanceURL(`${preview}vmd-conformance.html`));
   await page.waitForFunction(
     () => (window as any).vmdConformance || (window as any).vmdConformanceError,
     undefined,
@@ -18,7 +19,7 @@ test('built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, indepen
   expect(await page.evaluate(() => (window as any).vmdConformanceError)).toBeUndefined();
   expect(errors).toEqual([]);
   const result = await page.evaluate(() => (window as any).vmdConformance);
-  expect(result.passed).toBe(144);
+  expect(result.passed).toBe(fullConformance ? 144 : 72);
   console.log(
     'VMD GPU evidence:',
     JSON.stringify({
@@ -165,12 +166,12 @@ for (const rig of ['box', 'wedge']) test(`built Demo VMD lifecycle: ${rig}, both
 
 test('built morph conformance: combined weights and morph-before-BDEF predictions through Toon/PBR and Outline', async ({page},testInfo) => {
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(`${preview}vmd-conformance.html?morph`);
+  await page.goto(conformanceURL(`${preview}vmd-conformance.html?morph`));
   await page.waitForFunction(()=> (window as any).vmdConformance || (window as any).vmdConformanceError,undefined,{timeout:180000});
   expect(await page.evaluate(()=> (window as any).vmdConformanceError)).toBeUndefined();
   expect(errors).toEqual([]);
   const result=await page.evaluate(()=> (window as any).vmdConformance);
-  expect(result.passed).toBe(144);
+  expect(result.passed).toBe(fullConformance ? 144 : 72);
   console.log('Morph GPU evidence:',JSON.stringify({comparisons:result.passed,
     maximumWeightError:Math.max(...result.evidence.map((e:any)=>e.maximumWeightError)),
     maximumPositionError:Math.max(...result.evidence.map((e:any)=>e.maximumPositionError)),
@@ -286,7 +287,7 @@ async function seekDemo(page: Page, time: number) {
   await page.locator('#motion-time').dispatchEvent('input');
 }
 
-test('built Demo delayed real frames retain crossing/render/canvas evidence and isolate ownership', async ({ page }, info) => {
+test('built Demo delayed real frames retain crossing/render/canvas evidence and isolate ownership', async ({ page, phaseTiming }, info) => {
   await installPlaybackGate(page);
   const traces: object[] = [], errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
@@ -330,7 +331,7 @@ test('built Demo delayed real frames retain crossing/render/canvas evidence and 
       const beforePixels = await stepPixels(0); // Prime the same real frame while paused.
       const before = await state();
       const canvas = page.locator('canvas');
-      const beforeImage = await canvas.screenshot({ path: info.outputPath(`${rig}-before.png`) });
+      const beforeImage = await phaseTiming.async('screenshot', () => canvas.screenshot({ path: info.outputPath(`${rig}-before.png`) }));
       await page.locator('#motion-play').click();
       const held = await state();
       expect(held.time).toBe(0.99); expect(held.playing).toBe(true);
@@ -348,7 +349,7 @@ test('built Demo delayed real frames retain crossing/render/canvas evidence and 
       s.weights.forEach((w: number, i: number) => expect(Math.abs(w - morphWeights('a', 0.35)[i])).toBeLessThan(1e-7));
       expect(c.revision).toBe(s.rendered.revision); expect(c.frame).toBe(s.rendered.frame);
       expect(c.after).toBe(s.rendered.time); expect(c.weights).toEqual(s.rendered.weights);
-      const drawn = await canvas.screenshot({ path: info.outputPath(`${rig}-crossing.png`) });
+      const drawn = await phaseTiming.async('screenshot', () => canvas.screenshot({ path: info.outputPath(`${rig}-crossing.png`) }));
       expect(drawn.equals(beforeImage)).toBe(false);
       expect(drawnPixels.equals(beforePixels)).toBe(false);
       await writeFile(info.outputPath(`${rig}-crossing-bitmap.png`),drawnPixels);

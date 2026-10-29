@@ -1,6 +1,7 @@
 import { openRigDemo } from './demo-controls';
 import { readRigBitmap } from './rig-bitmap';
-import { test, expect, type Page, type TestInfo } from '@playwright/test';
+import { type Page, type TestInfo } from '@playwright/test';
+import { test, expect, fullConformance, conformanceURL } from './timed-test';
 import { writeFile } from 'node:fs/promises';
 import { sourceVertex } from '../sdef-oracle';
 import { groupPosition, groupWeights } from '../group-oracle';
@@ -288,11 +289,11 @@ test('built group conformance: independent scalar rasters and applied GLB/glTF e
     await writeFile(info.outputPath(name),bytes);
     return {errors:report.issues.numErrors,warnings:report.issues.numWarnings,messages:report.issues.messages.filter((m:any)=>m.severity<2)};
   });
-  await page.goto(`${preview}vmd-conformance.html?group`);
+  await page.goto(conformanceURL(`${preview}vmd-conformance.html?group`));
   await page.waitForFunction(()=>(window as any).vmdConformance||(window as any).vmdConformanceError,undefined,{timeout:180000});
   expect(await page.evaluate(()=>(window as any).vmdConformanceError)).toBeUndefined();
   const result=await page.evaluate(()=>(window as any).vmdConformance);
-  expect(result.passed).toBe(144);expect(result.exports.cases.length).toBe(24);
+  expect(result.passed).toBe(fullConformance ? 144 : 72);expect(result.exports.cases.length).toBe(24);
   console.log('Group GPU/export evidence:',JSON.stringify({...result,evidence:undefined}));
   await writeFile(info.outputPath('group-conformance.json'),JSON.stringify(result,null,2));
   await info.attach('group-conformance.json',{body:JSON.stringify(result,null,2),contentType:'application/json'});
