@@ -1,13 +1,16 @@
-/** Bounded PMX 2.1 reader. Layout follows the format-author PMX_spec.txt (see
+/** Resource-bounded PMX 2.1 reader. Layout follows the format-author PMX_spec.txt (see
  * docs/qdef.md). This reads the original bytes, including the mandatory tail;
  * it never rewrites a version or substitutes linear skinning for QDEF. */
+import { diagnosticError } from "../packages/mmd-diagnostics";
 import { Parser } from 'mmd-parser';
 import type { PMXModel, Vertex } from './pmx-to-gltf';
 export const PMX21 = Math.fround(2.1);
 export function parsePMX21(bytes: Uint8Array): PMXModel {
+  if(bytes.byteLength>64*1024*1024) diagnosticError('resource-exhaustion','pmx-input-budget','PMX','input exceeds 64 MiB parser budget');
+  let recordBudget=2_000_000;
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let offset = 0, section = 'header';
-  const fail = (message: string): never => { throw new Error(`PMX 2.1 ${section} at byte ${offset}: ${message}`); };
+  const fail = (message: string): never => { diagnosticError('malformed-data','invalid-pmx-record',`PMX 2.1 ${section} at byte ${offset}`,message); };
   const take = (size: number) => {
     if (!Number.isSafeInteger(size) || size < 0 || size > bytes.length - offset) fail('truncated/invalid record');
     const start = offset; offset += size; return start;
@@ -20,6 +23,7 @@ export function parsePMX21(bytes: Uint8Array): PMXModel {
   const count = () => { const n = i32(); if (n < 0 || n > bytes.length - offset) fail(`invalid count ${n}`); return n; };
   const records = <T>(name: string, read: (i: number) => T): T[] => {
     const previous = section; section = name; const n = count();
+    if((recordBudget-=n)<0) diagnosticError('resource-exhaustion','pmx-record-budget',`PMX ${name}`,'parser record budget exceeded');
     const result = Array.from({ length: n }, (_, i) => { section = `${name}[${i}]`; return read(i); });
     section = previous; return result;
   };
@@ -70,7 +74,7 @@ export function parsePMX21(bytes: Uint8Array): PMXModel {
   const materials = records('materials', () => {
     const result = { ...names(), diffuse: vector(4), specular: vector(3), shininess: f32(), ambient: vector(3), flag: u8(), edgeColor: vector(4), edgeSize: f32(),
       textureIndex: ref(texture, 'textures', true), envTextureIndex: ref(texture, 'textures', true), envFlag: u8() };
-    if (result.flag & 0xe0) fail(`unsupported 2.1 drawing flags 0x${result.flag.toString(16)}`);
+
     const toonFlag = u8(); if (toonFlag > 1) fail(`invalid toon flag ${toonFlag}`);
     const toonIndex = toonFlag ? u8() : ref(texture, 'textures', true);
     if (toonFlag && (toonIndex < 0 || toonIndex > 9)) fail('shared toon index out of bounds');
@@ -93,9 +97,10 @@ export function parsePMX21(bytes: Uint8Array): PMXModel {
   });
   const morphs = records('morphs', () => {
     const result = { ...names(), panel: u8(), type: u8() }, type = result.type;
-    if (type > 8) fail(`unsupported ${type === 9 ? 'flip' : type === 10 ? 'impulse' : 'unknown'} morph type ${type}`);
+    if (type > 10) fail(`unknown morph type ${type}`);
     const elements = records(`${section}.elements`, () => {
-      if (type === 0) return { index: ref(morph, 'morphs'), ratio: f32() };
+      if (type === 10) { const index=ref(body,'rigidBodies'), local=u8(); if(local>1)fail('invalid impulse local flag'); return {index,local,velocity:vector(3),torque:vector(3)}; }
+      if (type === 0 || type === 9) return { index: ref(morph, 'morphs'), ratio: f32() };
       if (type === 1) return { index: ref(vertex, 'vertices'), position: vector(3) };
       if (type === 2) return { index: ref(bone, 'bones'), position: vector(3), rotation: vector(4) };
       if (type < 8) return { index: ref(vertex, 'vertices'), uv: vector(4) };
@@ -111,28 +116,36 @@ export function parsePMX21(bytes: Uint8Array): PMXModel {
   const rigidBodies = records('rigidBodies', () => ({ ...names(), boneIndex: ref(bone, 'bones', true), groupIndex: u8(), groupTarget: u16(), shapeType: u8(),
     width: f32(), height: f32(), depth: f32(), position: vector(3), rotation: vector(3), weight: f32(), positionDamping: f32(), rotationDamping: f32(), restitution: f32(), friction: f32(), type: u8() }));
   const constraints = records('joints', () => {
-    const name = names(), type = u8(); if (type !== 0) fail(`unsupported nonzero joint type ${type}`);
+    const name = names(), type = u8(); if (type > 5) fail(`unknown joint type ${type}`);
     return { ...name, type, rigidBodyIndex1: ref(body, 'rigidBodies', true), rigidBodyIndex2: ref(body, 'rigidBodies', true), position: vector(3), rotation: vector(3),
       translationLimitation1: vector(3), translationLimitation2: vector(3), rotationLimitation1: vector(3), rotationLimitation2: vector(3), springPosition: vector(3), springRotation: vector(3) };
   });
-  section = 'softBodies'; if (i32() !== 0) fail('bounded profile requires zero soft-body count');
+  const softBodies = records('softBodies',()=>{
+    const result={...names(),shape:u8(),material:ref(material,'materials'),group:u8(),mask:u16(),flags:u8(),linkDistance:i32(),clusters:i32(),mass:f32(),margin:f32(),aeroModel:i32(),
+      config:vector(12),cluster:vector(6),iterations:Array.from({length:4},i32),stiffness:vector(3)};
+    if(result.shape>1 || result.group>15 || result.linkDistance<0 || result.clusters<0 || result.aeroModel<0 || result.aeroModel>4 || result.iterations.some(v=>v<0)) fail('invalid soft-body enum/count');
+    const anchors=records(`${section}.anchors`,()=>{const result={body:ref(body,'rigidBodies'),vertex:ref(vertex,'vertices'),near:u8()};if(result.near>1)fail('invalid anchor flag');return result;});
+    const pins=records(`${section}.pins`,()=>ref(vertex,'vertices'));
+    return {...result,anchors,pins};
+  });
+  metadata.softBodyCount=softBodies.length;
   if (offset !== bytes.length) fail('unexpected trailing bytes');
   const tables = { vertices, textures, materials, bones, morphs, rigidBodies };
   for (const r of references) if (!(r.optional && r.value === -1) && (r.value < 0 || r.value >= tables[r.target].length)) {
     section = r.section; fail(`invalid ${r.target} reference ${r.value} (count ${tables[r.target].length})`);
   }
   if (materials.reduce((sum, m) => sum + m.faceCount, 0) !== faces.length) { section = 'materials'; fail('face ranges do not cover triangles'); }
-  const model = { metadata: { ...metadata, vertexCount: vertices.length, faceCount: faces.length, boneCount: bones.length, morphCount: morphs.length, rigidBodyCount: rigidBodies.length, constraintCount: constraints.length }, vertices, faces, textures, materials, bones, morphs, frames, rigidBodies, constraints };
+  const model = { metadata: { ...metadata, vertexCount: vertices.length, faceCount: faces.length, boneCount: bones.length, morphCount: morphs.length, rigidBodyCount: rigidBodies.length, constraintCount: constraints.length }, vertices, faces, textures, materials, bones, morphs, frames, rigidBodies, constraints, softBodies };
+  Object.defineProperty(model,"source",{value:Buffer.from(bytes).toString("base64"),enumerable:false,writable:true,configurable:true});
   new Parser().leftToRightModel(model);
   return model;
 }
 
-/** Apply the same section exclusions to callers supplying parsed model objects. */
+/** Check source versions and declared retained-section counts for parsed model callers. */
 export function assertPMX21Profile(model: PMXModel) {
   if (model.metadata.version !== undefined && ![2, PMX21].includes(model.metadata.version)) throw new Error(`Unsupported PMX source version ${model.metadata.version}`);
   if (model.metadata.version !== PMX21) return;
-  if (model.metadata.softBodyCount !== 0) throw new Error('PMX 2.1 softBodies: bounded profile requires explicit zero soft-body count');
-  model.materials.forEach((m,i)=>{if(m.flag & 0xe0)throw new Error(`PMX 2.1 materials[${i}]: unsupported 2.1 drawing flags 0x${m.flag.toString(16)}`);});
-  model.morphs.forEach((m,i)=>{if(!Number.isInteger(m.type)||m.type<0||m.type>8)throw new Error(`PMX 2.1 morphs[${i}]: unsupported morph type ${m.type}`);});
-  model.constraints.forEach((j,i)=>{if(!j || (j as {type:number}).type!==0)throw new Error(`PMX 2.1 joints[${i}]: bounded profile requires joint type zero`);});
+  if (!Array.isArray(model.softBodies ?? []) || (model.metadata.softBodyCount ?? 0) !== (model.softBodies?.length ?? 0)) throw new Error('PMX 2.1 softBodies: count mismatch');
+  model.morphs.forEach((m,i)=>{if(!Number.isInteger(m.type)||m.type<0||m.type>10)throw new Error(`PMX 2.1 morphs[${i}]: unknown morph type ${m.type}`);});
+  model.constraints.forEach((j,i)=>{const type=(j as {type:number})?.type;if(!Number.isInteger(type)||type<0||type>5)throw new Error(`PMX 2.1 joints[${i}]: invalid joint type`);});
 }

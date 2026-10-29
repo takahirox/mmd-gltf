@@ -1,5 +1,15 @@
 # VMD bone and vertex-morph contract
 
+## Source transport update (#58)
+
+[Source transport and capabilities](source-transport.md) specifies VMD version 6,
+retained original motion sections, historical headers, separate fallback limits,
+unrelated glTF channels and opt-in name-based retargeting. The converter preserves
+unresolved tracks by default; direct binding APIs retain their strict defaults.
+Quality/sample/FLOAT limits now produce a bounded fallback and diagnostics rather
+than rejecting transport of exact VMD. The historical versions below remain
+compatible.
+
 Issue #29 adds VMD 0002 solver-free translation/rotation through PMX BDEF conversion,
 retained glTF curves, reusable Three.js playback and the built root demo’s **Synthetic rigs** view.
 Issue #31 extends this with vertex morphs and synchronized weight playback below.
@@ -13,7 +23,8 @@ families, physics and representative fidelity remain mandatory overall work.
 
 `parseVMD(Uint8Array)` in [mmd-vmd](../packages/mmd-vmd/reader.ts) accepts the
 30-byte zero-padded `Vocaloid Motion Data 0002` signature, a 20-byte informational
-model name and a mandatory bone count/section. Other versions fail explicitly.
+model name and a mandatory bone count/section. It also accepts the historical
+`Vocaloid Motion Data file` signature with a 10-byte model name. Unknown headers fail explicitly.
 It reads bone (111 bytes), morph (23), camera (61), light (28), self-shadow (9),
 and variable visibility/IK (9-byte prefix, 21 bytes per IK entry) sections in order.
 EOF is allowed **only after a complete section**, beginning after the mandatory
@@ -47,7 +58,7 @@ is `{ "hexByteKey": sourcePMXIndex }`, not a VPD record ordinal. Invalid keys,
 invalid indices and multiple tracks targeting one joint fail. If two names collide
 within 15 bytes they are one byte track; mapping cannot recover lost identity.
 Duplicate frames within a **bound** track fail rather than selecting a winner.
-Unmatched tracks fail by default; `{unmatched:'ignore'}` explicitly permits partial
+Direct binding APIs reject unmatched tracks by default; `{unmatched:'ignore'}` explicitly permits partial
 playback with diagnostics. Ambiguity/truncation are never guessed by that policy.
 Bindings are scoped to a model instance; rebind when loading another instance.
 

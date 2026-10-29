@@ -1,5 +1,17 @@
 # MMD_skeleton_solver
 
+## Version 3: source transport
+
+Version 3 separates structural validity from execution support. It retains XYZ
+`limits` (including locked triples), fixed/local axes, external-parent keys and
+source order/layer/phase metadata. Iteration/link/work budgets are runtime policy;
+unsupported dependencies load and roundtrip with machine-readable diagnostics.
+The schema accepts versions 1–3 without reinterpreting versions 1/2.
+See [source transport, budgets and evidence](../../docs/source-transport.md) for
+the normative new fields, runtime capabilities, fallback behavior and tests.
+The bounded version-1/2 contracts below continue to describe those old versions;
+their exclusions are not PMX source-format validity rules.
+
 Draft, optional, root-level glTF extension. Version 1 specifies the bounded
 `pre-physics-v1` project policy. It transports original inputs and solver behavior
 that core glTF joints, TRS and sampled animation cannot represent. Core node TRS

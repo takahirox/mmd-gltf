@@ -204,7 +204,7 @@ test('bone inputs reach IK/append and pinned physics at initialization/every tic
   }
 });
 
-test('all generated bone/mixed GLB and external glTF outputs validate across skinning and motions; fallback budgets reject before publication',async()=>{
+test('all generated bone/mixed GLB and external glTF outputs validate across skinning and motions; fallback budgets preserve retained motion',async()=>{
   const morphSchema=JSON.parse(await readFile('extensions/MMD_morphs/schema/glTF.MMD_morphs.schema.json','utf8'));
   const vmdSchema=JSON.parse(await readFile('extensions/MMD_animation_vmd/schema/animation.MMD_animation_vmd.schema.json','utf8'));
   const ajv=new Ajv({strict:false}),check=ajv.compile(morphSchema),vmdCheck=ajv.compile(vmdSchema);let count=0;
@@ -226,7 +226,8 @@ test('all generated bone/mixed GLB and external glTF outputs validate across ski
     }
   } finally {await rm(directory,{recursive:true,force:true});}
   assert.equal(count,36);assert.equal(cliCount,12);console.log('Bone morph generated validation:',JSON.stringify({count,cliCount,errors:0}));
-  await assert.rejects(convertModel(parsePMX(boneMorphPMX('box')),'.',{mode:'bdef',scale:.2,vmd:boneMorphVMD('a'),vmdBinding:{mapping:motionMappings.a},vmdSampling:{maxSamples:1}}),/budget|sampling/);
+  const limited=await convertModel(parsePMX(boneMorphPMX('box')),'.',{mode:'bdef',scale:.2,vmd:boneMorphVMD('a'),vmdBinding:{mapping:motionMappings.a},vmdSampling:{maxSamples:1}});
+  assert.ok((limited.document.getRoot().listAnimations()[0].getExtras() as any).vmd.diagnostics.some((d:any)=>d.category==='fallback-limit'));
 });
 
 test('standalone mixed contract scopes controls to explicit mesh references without PMX extras',async()=>{

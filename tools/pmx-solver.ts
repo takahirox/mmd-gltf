@@ -33,19 +33,25 @@ const sourceAngle = (v: number) =>
   Math.abs(v) <= Math.fround(Math.PI)
     ? Math.max(-Math.PI, Math.min(Math.PI, v))
     : v;
-export function createSolver(model: PMXModel, pose: PoseModel, version: 1 | 2 = 1): SolverProfile {
+export function createSolver(model: PMXModel, pose: PoseModel, version: 1 | 2 | 3 = 1): SolverProfile {
   const bones: SolverBone[] = model.bones.map((b, i) => {
     const fail = (why: string): never => {
       throw new Error(`PMX bones[${i}]: ${why}`);
     };
     const flags = b.flag ?? 0;
+    for(const [field,value] of [['layer',b.transformationClass],['externalParent',b.key]] as const)
+      if(value!==undefined && (!Number.isInteger(value) || value < -2147483648 || value > 4294967295)) fail(`invalid source ${field}`);
     if (!!(flags & 0x300) !== !!b.grant || !!(flags & 0x20) !== !!b.ik)
       fail("solver flags and records disagree");
     const result: SolverBone = {
       ...structuredClone(pose.bones[i]),
-      layer: b.transformationClass ?? 0,
+      layer: (b.transformationClass ?? 0) | 0,
       flags,
     };
+    if (flags & 0x400) result.fixedAxis = b.fixAxis?.map((v,k)=>k===2 ? -v : v) as SolverBone['fixedAxis'];
+    if (flags & 0x800) result.localAxes = {x:b.localXVector?.map((v,k)=>k===2 ? -v : v) as [number,number,number],z:b.localZVector?.map((v,k)=>k===2 ? -v : v) as [number,number,number]};
+    if (flags & 0x2000) result.externalParent = b.key === undefined ? undefined : b.key | 0;
+    if (flags & 0x400 && !result.fixedAxis || flags & 0x2000 && result.externalParent === undefined) fail('missing axis/external-parent record');
     if (b.grant) {
       const a = b.grant;
       if (
@@ -85,10 +91,13 @@ export function createSolver(model: PMXModel, pose: PoseModel, version: 1 | 2 = 
           )
             fail(`ik.links[${j}]: invalid limits`);
           const axes = [0, 1, 2].filter((k) => lo![k] !== 0 || hi![k] !== 0);
-          if (axes.length !== 1)
-            fail(
-              `ik.links[${j}]: general multi-axis/locked limits outside profile`,
-            );
+          if (axes.length !== 1 || version === 3 || [...lo!,...hi!].some(v=>Math.abs(v)>Math.fround(Math.PI))) {
+            link.limits = {
+              lower: lo!.map((v,k)=>k===2 ? v : -hi![k] || 0) as [number,number,number],
+              upper: hi!.map((v,k)=>k===2 ? v : -lo![k] || 0) as [number,number,number],
+            };
+            return link;
+          }
           const axis = axes[0] as 0 | 1 | 2;
           // Pinned parser reflects bone positions but leaves IK limits in source coordinates.
           link.hinge =
@@ -116,7 +125,9 @@ export function createSolver(model: PMXModel, pose: PoseModel, version: 1 | 2 = 
     return result;
   });
   const profile: SolverProfile = { version, bones };
-  validateSolver(profile);
+  // Keep serialized versions 1/2 unchanged when they can faithfully carry this source.
+  try { validateSolver(profile); }
+  catch { profile.version = 3; validateSolver(profile); }
   return profile;
 }
 export class SolverWriter extends Extension {

@@ -66,9 +66,8 @@ export function createPhysics(
   if (
     !Array.isArray(model.rigidBodies) ||
     !Array.isArray(model.constraints) ||
-    model.rigidBodies.length < 1 ||
-    model.rigidBodies.length > 1024 ||
-    model.constraints.length > 4096
+    model.rigidBodies.length > 2147483647 ||
+    model.constraints.length > 2147483647
   )
     throw new Error("PMX physics: body/joint count outside bounded profile");
   if (model.metadata.coordinateSystem !== "right")
@@ -84,14 +83,6 @@ export function createPhysics(
       model.metadata[field] !== records.length
     )
       throw new Error(`PMX ${field}: declared count differs from records`);
-  if (model.metadata.softBodyCount)
-    throw new Error("PMX softBodies: unsupported by rigid-body-v1");
-  model.morphs.forEach((m, i) => {
-    if (m.type === 10)
-      throw new Error(
-        `PMX morphs[${i}]: impulse morph unsupported by rigid-body-v1`,
-      );
-  });
   const rest = new Map<number, Matrix4>();
   const remaining = [...solver.bones];
   while (remaining.length)
@@ -182,7 +173,7 @@ export function createPhysics(
     const j = value as SourceJoint;
     if (
       !j ||
-      j.type !== 0 ||
+      !Number.isInteger(j.type) || j.type < 0 || j.type > 5 ||
       ![
         j.position,
         j.rotation,
@@ -195,8 +186,8 @@ export function createPhysics(
       ].every(vector) ||
       !Number.isInteger(j.rigidBodyIndex1) ||
       !Number.isInteger(j.rigidBodyIndex2) ||
-      !originals[j.rigidBodyIndex1] ||
-      !originals[j.rigidBodyIndex2]
+      !(originals[j.rigidBodyIndex1] || j.rigidBodyIndex1 === -1) ||
+      !(originals[j.rigidBodyIndex2] || j.rigidBodyIndex2 === -1)
     )
       throw new Error(
         `PMX joints[${i}]: unsupported type, endpoints or transform`,
@@ -205,14 +196,14 @@ export function createPhysics(
     return {
       index: i,
       name: j.name,
-      type: 0,
+      type: j.type as Joint["type"],
       bodyA: j.rigidBodyIndex1,
       bodyB: j.rigidBodyIndex2,
       frameA: frame(
-        originals[j.rigidBodyIndex1].clone().invert().multiply(original),
+        (originals[j.rigidBodyIndex1] ?? new Matrix4()).clone().invert().multiply(original),
       ),
       frameB: frame(
-        originals[j.rigidBodyIndex2].clone().invert().multiply(original),
+        (originals[j.rigidBodyIndex2] ?? new Matrix4()).clone().invert().multiply(original),
       ),
       linearLower: j.translationLimitation1.map(
         (v) => v * scale,
@@ -220,8 +211,8 @@ export function createPhysics(
       linearUpper: j.translationLimitation2.map(
         (v) => v * scale,
       ) as Joint["linearUpper"],
-      angularLower: j.rotationLimitation1.map(angle) as Joint["angularLower"],
-      angularUpper: j.rotationLimitation2.map(angle) as Joint["angularUpper"],
+      angularLower: [...j.rotationLimitation1] as Joint["angularLower"],
+      angularUpper: [...j.rotationLimitation2] as Joint["angularUpper"],
       linearSpring: [...j.springPosition] as Joint["linearSpring"],
       angularSpring: j.springRotation.map(
         (v) => v * scale * scale,
@@ -235,13 +226,14 @@ export function createPhysics(
     bodies,
     joints,
   };
-  validatePhysics(profile, solver);
+  if (model.morphs.some(m=>m.type===10) || model.softBodies?.length) {
+    profile.version=2;
+    profile.retained={coordinateSystem:"pmx-source",metersPerPMXUnit:scale,vertexCount:model.vertices.length,materialCount:model.materials.length,impulseMorphs:structuredClone(model.morphs.filter(m=>m.type===10)),softBodies:structuredClone(model.softBodies??[])};
+  }
+  try { validatePhysics(profile, solver); }
+  catch { profile.version=2; validatePhysics(profile,solver); }
   return profile;
 }
-const angle = (v: number) =>
-  Math.abs(v) <= Math.fround(Math.PI)
-    ? Math.max(-Math.PI, Math.min(Math.PI, v))
-    : v;
 export class PhysicsWriter extends Extension {
   static EXTENSION_NAME = EXTENSION_NAME;
   readonly extensionName = EXTENSION_NAME;

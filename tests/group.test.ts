@@ -166,7 +166,6 @@ test('group fixtures: exact references, whole-group diagnostics, empty defaults,
     (m:any)=>m.morphs[0].elements[0].index=1.5, (m:any)=>m.morphs[0].elements[0].ratio=NaN,
     (m:any)=>m.morphs[0].elements[0].ratio=Infinity,(m:any)=>m.morphs[0].elements[0].ratio=1e300,
     (m:any)=>delete m.morphs[0].elements[0].ratio,
-    (m:any)=>{m.morphs[0].elements[0].ratio=3e38;m.morphs[1].elements[0].position=[3e38,0,0];},
     (m:any)=>m.morphs[13].name=null, (m:any)=>delete m.morphs[1].elements[0].position[0], (m:any)=>delete m.morphs[0].elements[0], (m:any)=>delete m.morphs[13],
   ]) {
     const m=parsePMX(groupPMX('box'));mutate(m);
@@ -175,6 +174,15 @@ test('group fixtures: exact references, whole-group diagnostics, empty defaults,
     assert.equal(doc.getRoot().listAccessors().length,0);assert.deepEqual(node.getExtras(),{});assert.deepEqual(mesh.getWeights(),[]);
     await assert.rejects(convertModel(m,'.'),/Morph/);
   }
+  // Finite source rates/deltas may overflow only the compiled core group target.
+  const wide=parsePMX(groupPMX('box'));
+  wide.morphs[0].elements[0].ratio=3e38;wide.morphs[1].elements[0].position=[3e38,0,0];
+  const result=await convertModel(wide,'.',{scale:0.2}),doc=result.document;
+  assert.ok(result.diagnostics.some(d=>d.category==='fallback-limit' && d.code==='morph-target-numeric-range' && d.path==='PMX morphs[0]'));
+  const mesh=doc.getRoot().listMeshes()[0],target=mesh.listPrimitives()[0].listTargets()[4];
+  assert.ok(target.getAttribute('POSITION')!.getArray()!.every(v=>v===0));
+  const vertex=mesh.listPrimitives()[0].listTargets()[0].getAttribute('POSITION')!.getArray()!;
+  assert.ok(vertex.every(Number.isFinite));assert.ok(vertex.some(v=>v!==0));
 });
 
 test('binary group rates and declared source limits reject malformed data',async()=>{

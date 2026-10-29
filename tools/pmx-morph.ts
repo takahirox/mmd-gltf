@@ -3,6 +3,7 @@ import type { Document, Buffer, Mesh, Node } from '@gltf-transform/core';
 import { validateMorphModel, groupIssues, type MorphModel } from '../packages/mmd-morph';
 import type { RestBone, Vec3, Quat } from '../packages/mmd-vpd';
 import type { PMXModel } from './pmx-to-gltf';
+import type { Diagnostic } from '../packages/mmd-diagnostics';
 
 export interface PMXMorph {
   name: string; englishName: string; type: number; elementCount: number;
@@ -25,6 +26,33 @@ export function createMorphTargets(doc: Document, buffer: Buffer, mesh: Mesh, no
         ...(m.type === 0 ? { group: m.elements.map(e => ({ index: e?.index, rate: e?.ratio as number })) } : {}) };
     }),
   };
+  const diagnostics: Diagnostic[] = [];
+  if (metadata.version === 3) {
+    // Validate every source offset before deciding whether the executable contract fits.
+    // Keep v3's FLOAT validation unchanged; wider offsets use mmdSource retention.
+    for (const m of metadata.morphs) if (m.type === 2) {
+      m.bone = model.morphs[m.index].elements.map(e => {
+        if (!e || !Number.isInteger(e.index) || e.index < 0 || e.index >= model.bones.length ||
+            !Array.isArray(e.position) || e.position.length !== 3 || !Array.isArray(e.rotation) || e.rotation.length !== 4 ||
+            ![...e.position, ...e.rotation].every(Number.isFinite) || Math.abs(Math.hypot(...e.rotation) - 1) > 1e-5)
+          throw new Error(`Morph ${m.index}: invalid bone offset/reference/quaternion`);
+        const length = Math.hypot(...e.rotation);
+        // Both pinned parser paths already reflect position Z and quaternion X/Y.
+        return { index: e.index, translation: e.position.map(v => v * scale) as Vec3, rotation: e.rotation.map(v => v / length) as Quat };
+      });
+      const offset = m.bone.findIndex(e => e.translation.some(v => !Number.isFinite(Math.fround(v))));
+      if (offset !== -1) diagnostics.push({
+        category: 'unsupported-capability', code: 'bone-morph-numeric-range', path: `PMX morphs[${m.index}].elements[${offset}]`,
+        message: 'scaled bone offset exceeds FLOAT execution range; all bone morphs and dependent groups remain in mmdSource without execution; vertex-only morphs remain available',
+      });
+    }
+    if (diagnostics.length) {
+      metadata.version = 2;
+      delete metadata.bones;
+      delete metadata.metersPerPMXUnit;
+      for (const m of metadata.morphs) delete m.bone;
+    }
+  }
   // Validate all source identities/references before inspecting dependencies or mutating doc.
   // Assign temporary legal layout/diagnostics only after the reference pass below.
   let entries = 0;
@@ -48,16 +76,6 @@ export function createMorphTargets(doc: Document, buffer: Buffer, mesh: Mesh, no
     let count=0;
     for(const m of order) m.control=count++;
     for(const m of metadata.morphs) {
-      if(m.type===2) {
-        m.bone=model.morphs[m.index].elements.map(e=>{
-          if(!e || !Number.isInteger(e.index) || !e.position || e.position.length!==3 || !e.rotation || e.rotation.length!==4 ||
-              ![...e.position,...e.rotation].every(Number.isFinite) || Math.abs(Math.hypot(...e.rotation)-1)>1e-5)
-            throw new Error(`Morph ${m.index}: invalid bone offset/quaternion`);
-          const length=Math.hypot(...e.rotation);
-          // Both pinned parser paths already reflect position Z and quaternion X/Y.
-          return {index:e.index,translation:e.position.map(v=>v*scale) as Vec3,rotation:e.rotation.map(v=>v/length) as Quat};
-        });
-      }
       if(m.control===undefined) m.control=m.type===2 || m.type===0 && !m.unsupported!.length ? count++ : null;
     }
   }
@@ -69,7 +87,8 @@ export function createMorphTargets(doc: Document, buffer: Buffer, mesh: Mesh, no
     const values = new Array(model.vertices.length * 3).fill(0);
     if (m.type === 1) for (const e of model.morphs[m.index].elements) {
       if (!e || !Number.isInteger(e.index) || e.index < 0 || e.index >= model.vertices.length ||
-          !Array.isArray(e.position) || e.position.length !== 3 || !Array.from(e.position).every(Number.isFinite))
+          !Array.isArray(e.position) || e.position.length !== 3 ||
+          !Array.from(e.position).every(v => Number.isFinite(v) && Number.isFinite(Math.fround(v))))
         throw new Error(`Morph ${m.index}: invalid vertex reference or position delta`);
       // Pinned parsers already reflect Z. Scale each source delta once.
       e.position.forEach((v, axis) => { values[e.index * 3 + axis] += v * scale; });
@@ -79,18 +98,28 @@ export function createMorphTargets(doc: Document, buffer: Buffer, mesh: Mesh, no
       const child = deltas.get(e.index)!;
       for (let i = 0; i < values.length; i++) values[i] += e.rate * child[i];
     }
-    if (!values.every(Number.isFinite) || !new Float32Array(values).every(Number.isFinite))
-      throw new Error(`Morph ${m.index}: unsupported FLOAT delta numeric range`);
+    // Keep the unrounded deltas for group compilation: a small group rate can
+    // bring an overflowing vertex target back into representable FLOAT range.
     deltas.set(m.index, values);
   }
-  const targets = order.map(m => doc.createPrimitiveTarget(`PMX morph ${m.index}`).setAttribute('POSITION',
-    doc.createAccessor(`PMX morph ${m.index} delta`).setBuffer(buffer).setType('VEC3')
-      .setArray(new Float32Array(deltas.get(m.index)!))));
+  const targets = order.map(m => {
+    const values = new Float32Array(deltas.get(m.index)!);
+    if (!values.every(Number.isFinite)) {
+      diagnostics.push({
+        category: 'fallback-limit', code: 'morph-target-numeric-range', path: `PMX morphs[${m.index}]`,
+        message: 'compiled vertex/group delta exceeds FLOAT range; this core target uses zero displacement; exact source records remain in mmdSource and other targets and bone controls remain available',
+      });
+      // Keep the existing target/control layout without serializing invalid FLOATs.
+      values.fill(0);
+    }
+    return doc.createPrimitiveTarget(`PMX morph ${m.index}`).setAttribute('POSITION',
+      doc.createAccessor(`PMX morph ${m.index} delta`).setBuffer(buffer).setType('VEC3').setArray(values));
+  });
   node.setExtras({ ...node.getExtras(), pmxMorph: { ...metadata, morphs: metadata.morphs.map(m => ({ ...m })) } });
   if (targets.length) {
     mesh.setWeights(targets.map(() => 0));
     // Unique display names avoid GLTFLoader dictionary loss; original names live in metadata.
     mesh.setExtras({ targetNames: order.map(m => `${m.index}: ${m.name}`) });
   }
-  return { metadata, targets };
+  return { metadata, targets, diagnostics };
 }

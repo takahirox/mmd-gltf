@@ -20,7 +20,7 @@ test('Uka allowlist, real source inventory, supported subset and reproducible no
   assert.deepEqual(inventory.skinningTypes,{'0':21434,'1':28521});
   assert.deepEqual(inventory.morphTypes,{'0':20,'1':184,'2':7,'8':5});
   for(const options of [{solver:'pre-physics-v1'},{physics:'rigid-body-v1'}] as const)
-    await assert.rejects(convertModel(source,directory,{mode:'bdef',...options}),/bones\[9\]: invalid IK caps\/count/);
+    { const retained=await convertModel(source,directory,{mode:'bdef',...options});assert.equal((retained.document.getRoot().getExtras() as any).sourceSolvers.length,302);assert.ok(retained.warnings.some(w=>w.includes('Execution limitations'))); }
   const before=JSON.parse(await readFile('public/uka/conversion.json','utf8'));
   await prepareUka();
   const record=JSON.parse(await readFile('public/uka/conversion.json','utf8'));

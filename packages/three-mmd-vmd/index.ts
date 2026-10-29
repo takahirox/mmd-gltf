@@ -1,3 +1,5 @@
+import { decodeSource } from '../mmd-diagnostics/bytes';
+import { parseVMD } from '../mmd-vmd/reader';
 import { retainedMorph, ensureMorphLoaded, MMDMorphPlugin } from '../three-mmd-morph/plugin';
 import { retainRawMorphPose } from '../three-mmd-morph/state';
 import { morphIdentity } from '../mmd-morph/payload';
@@ -31,6 +33,7 @@ export interface BoundVMD {
   readonly unmatched: readonly string[];
   readonly unmatchedMorphs: readonly string[];
   readonly omitted: MotionBinding['omitted'];
+  readonly diagnostics: readonly import('../mmd-diagnostics').Diagnostic[];
 }
 const bound = new WeakMap<BoundVMD, { rig: VPDRig; motion: MotionBinding; morph?: MorphRig }>();
 export function bindVMD(rig: VPDRig, vmd: VMD, options: VMDBindingOptions = {}): BoundVMD {
@@ -51,6 +54,7 @@ export function bindVMD(rig: VPDRig, vmd: VMD, options: VMDBindingOptions = {}):
     unmatched: Object.freeze([...motion.unmatched]),
     unmatchedMorphs: Object.freeze([...motion.unmatchedMorphs]),
     omitted: Object.freeze({ ...motion.omitted }),
+    diagnostics: Object.freeze(structuredClone(motion.diagnostics??[])),
   });
   bound.set(result, { rig, motion, morph: morphRig });
   return result;
@@ -60,6 +64,8 @@ export class VMDPlayer {
   private disposed = false;
   private active = false;
   private current = 0;
+  private sourceValue?: VMD;
+  private retainedSource() { return this.sourceValue ??= this.motion.source ? parseVMD(decodeSource(this.motion.source)) : undefined; }
   private ikOverrides = new Map<number,boolean>();
   private sampledTime(time:number) { const p=this.root ? getPhysicsSession(this.root) : undefined;return p?.enabled ? Math.floor(time/p.timeline.profile.fixedStep+1e-9)*p.timeline.profile.fixedStep : time; }
   get ikStates() { const values=evaluateIK(this.motion,this.sampledTime(this.current)); this.motion.solver?.bones.filter(b=>b.ik).forEach(b=>{if(!values.has(b.index))values.set(b.index,true);});this.ikOverrides.forEach((v,k)=>values.set(k,v));return Object.fromEntries(values); }
@@ -80,6 +86,19 @@ export class VMDPlayer {
   ) {
     this.motion = structuredClone(motion);
     this.duration = motion.duration;
+  }
+  /** Original sections, including controls and scene animation unsupported by this player. */
+  get source() { return structuredClone(this.retainedSource()); }
+  get diagnostics() { return structuredClone(this.motion.diagnostics??[]); }
+  get visibility() {
+    let frame = -1, visible = 1;
+    for (const key of this.motion.visibility ?? this.retainedSource()?.displays ?? []) {
+      if (key.frame <= this.current * 30 && key.frame >= frame) {
+        frame = key.frame;
+        visible = key.visible;
+      }
+    }
+    return visible;
   }
   get playing() {
     return this.active;
@@ -166,8 +185,15 @@ export class VMDPlayer {
     this.root = undefined;
     this.prepare = () => () => {};
     this.ikOverrides.clear();
+    this.sourceValue=undefined;
     this.motion = { rest: [], tracks: [], duration: 0 };
   }
+}
+/** Opt-in cross-model binding uses original byte-name tracks and the target rest. */
+export function retargetVMD(rig: VPDRig, source: BoundVMD | VMDPlayer, options: VMDBindingOptions = {}): BoundVMD {
+  const data=source instanceof VMDPlayer ? source.source : (()=>{const motion=bound.get(source)?.motion;return motion?.source ? parseVMD(decodeSource(motion.source)) : undefined;})();
+  if(!data) throw new Error('VMD: retargeting requires retained original VMD source');
+  return bindVMD(rig,data,options);
 }
 export function createVMDPlayer(rig: VPDRig, binding: BoundVMD) {
   const b = bound.get(binding);
@@ -205,6 +231,16 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
       const expected = new Set(
         (payload.solver ? payload.solver.bones.map(b=>({node:b.node!})) : payload.controls ? payload.rest.filter(r=>payload.tracks.some(t=>t.node===r.node) || payload.controls!.model.morphs.some(m=>m.bone?.some(b=>payload.controls!.nodes.find(n=>n.index===b.index)?.node===r.node))) : payload.tracks).flatMap((t) => [`${t.node}:translation`, `${t.node}:rotation`]),
       );
+      if(payload.version===6) {
+        expected.clear();
+        for(const c of payload.owned??[]) expected.add(`${c.node}:${c.path}`);
+      }
+      if(payload.version===6 && !payload.controls) for(const g of payload.morphs??[]) {
+        const mesh=json.meshes?.[json.nodes[g.node]?.mesh];
+        if(!payload.weights?.some(w=>w.node===g.node) || mesh?.primitives?.[0]?.targets?.length!==g.count)
+          throw new Error(`${EXTENSION_NAME}: retained weight layout differs from core mesh`);
+      }
+      const owned=new Set(expected);
       for (const w of payload.weights ?? []) {
         expected.add(`${w.node}:weights`);
         const channel = animation.channels?.find((c: any) => c.target?.node === w.node && c.target.path === 'weights');
@@ -222,8 +258,9 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
       }
       for (const channel of animation.channels ?? []) {
         const key = `${channel.target?.node}:${channel.target?.path}`;
-        if (!expected.delete(key))
-          throw new Error(`${EXTENSION_NAME}: fallback must contain exactly the corresponding TRS/weight channels`);
+        if (expected.delete(key)) continue;
+        if (payload.version<6 || owned.has(key) || payload.rest.some(b=>b.node===channel.target?.node && ['translation','rotation','scale'].includes(channel.target?.path)) || payload.weights?.some(w=>w.node===channel.target?.node && channel.target?.path==='weights'))
+          throw new Error(`${EXTENSION_NAME}: fallback must contain exactly the corresponding TRS/weight channels; conflicting owned channel`);
       }
       if (expected.size) throw new Error(`${EXTENSION_NAME}: missing corresponding fallback channels`);
       for (const rest of payload.rest) {
@@ -242,8 +279,23 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
     const def = this.parser.json.animations[index],
       payload = def.extensions?.[EXTENSION_NAME];
     if (payload === undefined) return null;
-    // Returning a clip with no fallback tracks makes double-driving impossible via result.animations.
-    return Promise.resolve(new AnimationClip(def.name ?? 'VMD', -1, []));
+    if(payload.version<6) return Promise.resolve(new AnimationClip(def.name ?? 'VMD', -1, []));
+    // Load ordinary channels using the public parser, then remove extension-owned
+    // tracks by their generated binding names (including multi-primitive weights).
+    return this.parser.loadAnimation(index).then(async clip=>{
+      const ownedNames=new Set<string>();
+      for(const c of payload.owned??[]) {
+        const node=await this.parser.getDependency('node',c.node);
+        const property=c.path==='translation' ? 'position' : c.path==='rotation' ? 'quaternion' : 'morphTargetInfluences';
+        const targets=c.path==='weights' && node.isGroup
+          ? [node,...node.children.filter((n:Object3D)=>this.parser.associations.get(n)?.nodes===undefined)]
+          : [node];
+        for(const n of targets) ownedNames.add(`${n.name||n.uuid}.${property}`);
+      }
+      clip.tracks=clip.tracks.filter(t=>!ownedNames.has(t.name));
+      clip.resetDuration();
+      return clip;
+    });
   }
   async afterRoot(result: GLTF) {
     await ensureMorphLoaded(this.parser,result);
@@ -294,7 +346,7 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
           throw new Error(`${EXTENSION_NAME}: node outside default scene`);
         nodes.set(b.index, node);
       }
-      result.animations[animationIndex].duration = motion.duration;
+      result.animations[animationIndex].duration = Math.max(result.animations[animationIndex].duration,motion.duration);
       const controlRig=p.controls ? createMorphRig(result.scene) : undefined;
       players.push(
         new VMDPlayer(result.scene, motion, (pose, weights) => {

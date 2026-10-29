@@ -1,5 +1,19 @@
 # MMD_animation_vmd v0.3 (draft)
 
+## Version 6: source transport and independent fallback
+
+Version 6 retains original VMD bytes (`source`, base64), exact bound TRS and
+weight curves (`morphs`), diagnostics and explicit core fallback ownership
+(`owned`). Solver versions 1–3 and optional bone-morph controls are supported.
+Fallback sample/quality/FLOAT limits produce diagnostics and a bounded usable
+approximation; they do not reject retained motion. Unrelated core animation
+channels coexist with the owned channels. Scene sections and historical VMD
+headers remain available through the retained source. See the normative
+[source transport contract](../../docs/source-transport.md), including opt-in
+retargeting and explicit unavailable execution. Versions 1–5 keep their existing
+meaning; the older complete-clip ownership and conversion-failure policies below
+are historical contracts, not current source acceptance rules.
+
 An optional, runtime-independent **animation-level** extension retaining VMD bone
 curves and synchronized weights, alongside approximate core glTF fallback.
 Versions 1/2 are solver-free; version 3 adds the bounded solver profile below. It is independent

@@ -1,8 +1,11 @@
+import { diagnosticError, validateBudget } from "../mmd-diagnostics";
 import { Matrix4, Quaternion, Vector3 } from "three";
 import type Ammo from "ammojs-typed";
 import { solvePose, type SolverProfile } from "../mmd-solver";
 import {
   validatePhysics,
+  assertPhysicsExecutable,
+  type PhysicsBudget,
   type PhysicsProfile,
   type Frame,
   MAX_SEEK_STEPS,
@@ -69,10 +72,12 @@ export class PhysicsWorld {
     readonly solver: SolverProfile,
     initial: RestBone[],
     enabled: ReadonlyMap<number, boolean> = new Map(),
+    private budget: PhysicsBudget = {},
   ) {
     checkAmmo(api);
     validatePhysics(profile, solver);
-    const pre = solvePose(solver, initial, enabled, "pre"),
+    assertPhysicsExecutable(profile, solver, budget);
+    const pre = solvePose(solver, initial, enabled, "pre", this.budget),
       poseWorld = worlds(pre);
     try {
       const config = this.own(new api.btDefaultCollisionConfiguration()),
@@ -142,10 +147,10 @@ export class PhysicsWorld {
         for (const [method, values] of [
           ["setLinearLowerLimit", j.linearLower],
           ["setLinearUpperLimit", j.linearUpper],
-          ["setAngularLowerLimit", j.angularLower],
-          ["setAngularUpperLimit", j.angularUpper],
+          ["setAngularLowerLimit", j.angularLower.map((v,k)=>v>j.angularUpper[k]?1:Math.max(-Math.PI,Math.min(Math.PI,v)))],
+          ["setAngularUpperLimit", j.angularUpper.map((v,k)=>j.angularLower[k]>v?-1:Math.max(-Math.PI,Math.min(Math.PI,v)))],
         ] as const) {
-          this.vector.setValue(...values);
+          this.vector.setValue(values[0],values[1],values[2]);
           constraint[method](this.vector);
         }
         [...j.linearSpring, ...j.angularSpring].forEach((value, i) => {
@@ -203,7 +208,7 @@ export class PhysicsWorld {
     step = true,
   ) {
     if (this.disposed) throw new Error("MMD_physics: disposed world");
-    const pre = solvePose(this.solver, raw, enabled, "pre"),
+    const pre = solvePose(this.solver, raw, enabled, "pre", this.budget),
       animated = worlds(pre);
     for (const b of this.profile.bodies) {
       const body = this.bodies.get(b.index)!;
@@ -255,7 +260,7 @@ export class PhysicsWorld {
         pending.splice(i, 1);
       }
     }
-    return solvePose(this.solver, result, enabled, "post");
+    return solvePose(this.solver, result, enabled, "post", this.budget);
   }
   private align(index: number, animated: Matrix4) {
     const b = this.profile.bodies.find((b) => b.index === index)!,
@@ -299,6 +304,11 @@ export class PhysicsWorld {
     this.api = undefined!;
   }
 }
+export interface PhysicsExecutionBudget extends PhysicsBudget {
+  maxSeekSteps?: number;
+  maxUpdateSteps?: number;
+  maxPoseScalars?: number;
+}
 export type PoseSampler = (time: number) => RestBone[];
 export type ControlSampler = (time: number) => ReadonlyMap<number, boolean>;
 /** Reset/replay makes seeks reproducible. Candidate worlds commit only after successful resolution. */
@@ -310,9 +320,13 @@ export class PhysicsTimeline {
     private api: AmmoAPI,
     readonly profile: PhysicsProfile,
     readonly solver: SolverProfile,
+    readonly budget: PhysicsExecutionBudget = {},
   ) {
     checkAmmo(api);
     validatePhysics(profile, solver);
+    assertPhysicsExecutable(profile,solver,budget);
+    for(const v of Object.values(budget)) validateBudget(v,'MMD_physics');
+    this.budget={...budget};
     this.profile = structuredClone(profile);
     this.solver = structuredClone(solver);
   }
@@ -332,23 +346,19 @@ export class PhysicsTimeline {
       this.disposed ||
       !Number.isFinite(time) ||
       time < 0 ||
-      samples - 1 > MAX_SEEK_STEPS ||
-      samples * this.solver.bones.length > 1_000_000 ||
-      samples * solverWork > 20_000_000
+      samples - 1 > (this.budget.maxSeekSteps??MAX_SEEK_STEPS) ||
+      samples * this.solver.bones.length > (this.budget.maxPoseScalars??1_000_000) ||
+      samples * solverWork > (this.budget.maxBoneUpdates??20_000_000)
     )
-      throw new Error(
-        "MMD_physics: invalid/over-budget seek or disposed timeline",
-      );
+      diagnosticError('resource-exhaustion','physics-seek-budget','MMD_physics','invalid/over-budget seek or disposed timeline');
   }
   validateDelta(delta: number) {
     if (
       !Number.isFinite(delta) ||
       delta < 0 ||
-      Math.ceil(delta / this.profile.fixedStep - 1e-10) > MAX_UPDATE_STEPS
+      Math.ceil(delta / this.profile.fixedStep - 1e-10) > (this.budget.maxUpdateSteps??MAX_UPDATE_STEPS)
     )
-      throw new Error(
-        "MMD_physics: update exceeds 240-step budget or invalid delta",
-      );
+      diagnosticError('resource-exhaustion','physics-update-budget','MMD_physics','update exceeds step budget or invalid delta');
   }
   seek(
     time: number,
@@ -356,24 +366,13 @@ export class PhysicsTimeline {
     controls: ControlSampler = () => new Map(),
   ) {
     this.preflight(time);
-    const ticks = Math.floor(time / this.profile.fixedStep + 1e-9),
-      inputs = Array.from({ length: ticks + 1 }, (_, i) => ({
-        pose: sample(i * this.profile.fixedStep),
-        enabled: controls(i * this.profile.fixedStep),
-      }));
-    // Validate complete raw inputs before allocating/mutating native simulation.
-    for (const v of inputs) solvePose(this.solver, v.pose, v.enabled, "pre");
-    const candidate = new PhysicsWorld(
-      this.api,
-      this.profile,
-      this.solver,
-      inputs[0].pose,
-      inputs[0].enabled,
-    );
+    const ticks = Math.floor(time / this.profile.fixedStep + 1e-9);
+    const initial=sample(0), initialControls=controls(0);
+    const candidate = new PhysicsWorld(this.api,this.profile,this.solver,initial,initialControls,this.budget);
     try {
-      let pose = candidate.resolve(inputs[0].pose, inputs[0].enabled, false);
+      let pose = candidate.resolve(initial, initialControls, false);
       for (let i = 1; i <= ticks; i++)
-        pose = candidate.resolve(inputs[i].pose, inputs[i].enabled);
+        pose = candidate.resolve(sample(i*this.profile.fixedStep), controls(i*this.profile.fixedStep));
       this.world?.dispose();
       this.world = candidate;
       this.time = time;

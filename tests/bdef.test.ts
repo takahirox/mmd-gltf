@@ -203,8 +203,8 @@ test('BDEF validation rejects unsupported modes, malformed hierarchy, active ref
   await reject(m => { m.vertices[0].type = 9; }, /unknown \(9\)/);
   await reject(m => { m.bones[0].parentIndex = 260; }, /Bone 0: invalid parent/);
   await reject(m => { m.bones[0].parentIndex = -2; }, /invalid parent/);
-  await reject(m => { m.bones[0].parentIndex = 0; }, /parent cycle/);
-  await reject(m => { m.bones[1].parentIndex = 259; }, /parent cycle/);
+  await reject(m => { m.bones[0].parentIndex = 0; }, /parent.*cycle/);
+  await reject(m => { m.bones[1].parentIndex = 259; }, /parent.*cycle/);
   await reject(m => { m.bones[0].position[0] = NaN; }, /Bone 0: non-finite/);
   await reject(m => { m.bones[0].position[0] = 1e100; }, /numeric range/);
   await reject(m => { m.bones = []; }, /1..65536 bones/);

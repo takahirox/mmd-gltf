@@ -315,7 +315,8 @@ test('morph-only VMD needs no dummy bone keys and restores original rest and zer
   // The writer must reject distinct source keys that collapse to one FLOAT time.
   const {addVMDAnimation}=await import('../tools/vmd-animation');
   const bound=bindMotion(getVPDModel(b.rig!),bad,{morphMapping},getMorphModel(b.morph));
-  assert.throws(()=>addVMDAnimation(b.result.document,b.result.document.getRoot().listBuffers()[0],bound,[],{},b.result.document.getRoot().listNodes()[0]),/FLOAT/);
+  addVMDAnimation(b.result.document,b.result.document.getRoot().listBuffers()[0],bound,[],{},b.result.document.getRoot().listNodes()[0]);
+  assert.ok((b.result.document.getRoot().listAnimations().at(-1)!.getExtras() as any).vmd.diagnostics.some((d:any)=>d.code==='weight-sampling'));
 });
 
 test('morph-only real player: exact/multiple crossings, independent weights, original-rest bones, pause and endpoint', async () => {

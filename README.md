@@ -163,6 +163,11 @@ cover separate byte-name mappings, independent additive weights, model-scoped
 inspection/apply/reset and VPD/VMD handoff. See the
 [combined synthetic validation](docs/validation.md#issue-31-vertex-morphs-and-combined-motion).
 
+Source preservation, playback capability and approximate core fallback are separate.
+See [versioned source transport and diagnostics](docs/source-transport.md) for
+full XYZ IK limits, free physics axes, retained unexecuted features and VMD
+fallback recovery. Runtime budgets do not define MMD source validity.
+
 ## Contributing
 
 - [Development flow and English collaboration convention](docs/development-flow.md)

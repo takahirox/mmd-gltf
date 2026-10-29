@@ -209,17 +209,15 @@ test('bounded PMX 2.1 accepts exact UTF-16LE/UTF-8 and every 1/2/4-byte index wi
   } finally {await rm(directory,{recursive:true,force:true});}
 });
 
-test('bounded PMX 2.1 rejects unsupported sections, truncations, counts, references, encodings and versions',async()=>{
+test('PMX 2.1 rejects malformed sections, truncations, counts, references, encodings and versions',async()=>{
   const {pmx21Fixture}=await import('./pmx21-fixture');
   for(const encoding of ['utf16le','utf8'] as const) {
     const {bytes,offsets:o}=pmx21Fixture(encoding,2,2);
     const mutations:[string,(b:Buffer)=>void,RegExp][]=[
-      ['drawing flags',b=>b[o.drawingFlag]|=0x20,/materials\[0\].*drawing flags/],
-      ['flip',b=>b[o.morphType]=9,/morphs\[0\].*flip/],
-      ['impulse',b=>b[o.morphType]=10,/morphs\[0\].*impulse/],
-      ['joint',b=>b[o.jointType]=1,/joints\[0\].*joint type/],
-      ['soft body',b=>b.writeInt32LE(1,o.softBodies),/softBodies.*zero/],
-      ['negative tail',b=>b.writeInt32LE(-1,o.softBodies),/softBodies.*zero/],
+      ['flip',b=>b[o.morphType]=9,/PMX/],
+      ['impulse',b=>b[o.morphType]=10,/PMX/],
+      ['soft body',b=>b.writeInt32LE(1,o.softBodies),/softBodies.*(truncated|count)/],
+      ['negative tail',b=>b.writeInt32LE(-1,o.softBodies),/softBodies.*(truncated|count)/],
       ['count',b=>b.writeInt32LE(0x7fffffff,o.boneCount),/bones.*count/],
       ['negative count',b=>b.writeInt32LE(-1,o.vertexCount),/vertices.*count/],
       ['faces',b=>b.writeInt32LE(2,o.faceCount),/faces.*divisible/],
@@ -282,20 +280,20 @@ test('historical pinned-parser header failure stays distinct; rejected 2.1 sourc
   const {pmx21Fixture}=await import('./pmx21-fixture'),{bytes,offsets}=pmx21Fixture('utf8',1,1);
   const {writeFile,stat}=await import('node:fs/promises'),directory=await mkdtemp(join(tmpdir(),'mmd-qdef-rejection-'));
   try {
-    for(const mutate of [(b:Buffer)=>b[offsets.drawingFlag]=0x20,(b:Buffer)=>b[offsets.morphType]=9,(b:Buffer)=>b[offsets.morphType]=10,(b:Buffer)=>b[offsets.jointType]=1,(b:Buffer)=>b.writeInt32LE(1,offsets.softBodies)]) {
+    for(const mutate of [(b:Buffer)=>b[offsets.morphType]=9,(b:Buffer)=>b[offsets.morphType]=10,(b:Buffer)=>b.writeInt32LE(1,offsets.softBodies)]) {
       const b=Buffer.from(bytes);mutate(b);const input=join(directory,'input.pmx'),output=join(directory,'never.glb');await writeFile(input,b);
       const cli=spawnSync(process.execPath,['node_modules/tsx/dist/cli.mjs','tools/pmx-to-gltf.ts',input,output,'--mode','qdef'],{encoding:'utf8'});
-      assert.notEqual(cli.status,0);assert.match(cli.stderr,/PMX 2.1 (materials|morphs|joints|softBodies)/);await assert.rejects(stat(output),/ENOENT/);
+      assert.notEqual(cli.status,0);assert.match(cli.stderr,/PMX 2.1 (materials|morphs|frames|joints|softBodies)/);await assert.rejects(stat(output),/ENOENT/);
     }
   } finally {await rm(directory,{recursive:true,force:true});}
 });
 
-test('parsed-object API enforces the bounded 2.1 section exclusions before output',async()=>{
+test('parsed-object API rejects malformed retained 2.1 records before output',async()=>{
   const source=parsePMX(await readFile('tests/fixtures/qdef-box.pmx'));
   for(const version of [1,2.2,NaN,Infinity]) {const m=structuredClone(source);m.metadata.version=version;await assert.rejects(convertModel(m,'.',{mode:'qdef'}),/Unsupported PMX source version/);}
   for(const version of [2,undefined]) {const m=structuredClone(source);m.metadata.version=version;await assert.rejects(convertModel(m,'.',{mode:'qdef'}),/QDEF records require actual PMX 2.1/);}
-  for(const mutate of [(m:any)=>m.metadata.softBodyCount=1,(m:any)=>delete m.metadata.softBodyCount,(m:any)=>m.materials[0].flag|=0x40,(m:any)=>m.morphs[0].type=9,(m:any)=>m.morphs[0].type=10,(m:any)=>m.constraints=[{type:1}]]) {
-    const m=structuredClone(source);mutate(m);await assert.rejects(convertModel(m,'.',{mode:'qdef'}),/PMX 2.1 (softBodies|materials\[0\]|morphs\[0\]|joints\[0\])/);
+  for(const mutate of [(m:any)=>m.metadata.softBodyCount=1,(m:any)=>m.morphs[0].type=11,(m:any)=>m.constraints=[{type:1}]]) {
+    const m=structuredClone(source);mutate(m);await assert.rejects(convertModel(m,'.',{mode:'qdef'}),/PMX.*(softBodies|morphs\[0\]|joints\[0\])/);
   }
 });
 
