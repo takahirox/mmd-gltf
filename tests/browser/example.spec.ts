@@ -95,7 +95,7 @@ for (const backend of ['webgl', 'webgpu']) {
     await expect(accuracy).toContainText('not native MikuMikuDance');
     await expect(accuracy).toContainText('Exact MMD visual/physics fidelity is unverified');
     await expect(accuracy).toContainText('solvers and physics use bounded profiles');
-    await expect(accuracy).toContainText('do not run VMD playback, IK or physics');
+    await expect(accuracy).toContainText('IK, grant/append and physics are off');
     await expect(accuracy).toBeHidden();
     await page.locator('#about-demo > summary').click();
     await expect(accuracy).toBeVisible();

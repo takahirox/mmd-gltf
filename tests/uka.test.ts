@@ -35,7 +35,10 @@ test('Uka allowlist, real source inventory, supported subset and reproducible no
   assert.ok(json.extensionsUsed.includes('MMD_materials_toon'));
   assert.ok(json.extensionsUsed.includes('MMD_materials_outline'));
   assert.ok(!json.extensionsUsed.includes('MMD_skeleton_solver'));
-  assert.ok(!json.animations?.length);
+  assert.equal(json.animations.length,1);
+  assert.equal(json.animations[0].extensions.MMD_animation_vmd.version,6);
+  assert.equal(json.animations[0].extensions.MMD_animation_vmd.tracks.length,301);
+  assert.ok(!json.animations[0].extensions.MMD_animation_vmd.solver);
   assert.match(record.warnings.join('\n'),/"index":215/);
   assert.match(record.warnings.join('\n'),/"type":8/);
   for(const artifact of record.artifacts) {
@@ -49,7 +52,7 @@ test('Uka allowlist, real source inventory, supported subset and reproducible no
     const bytes=await readFile(`public/uka/${file.path}`);
     assert.equal(bytes.length,file.size);assert.equal(sha(bytes),file.sha256);
   }
-  const expected=[...manifest.files.map(f=>f.path),'model.gltf','model.bin','source-manifest.json','inventory.json','conversion.json'].sort();
+  const expected=[...manifest.files.map(f=>f.path),'model.gltf','model.bin','source-manifest.json','inventory.json','conversion.json','motion.json'].sort();
   const files=(await readdir('public/uka',{recursive:true,withFileTypes:true})).filter(f=>f.isFile()).map(f=>`${f.parentPath}/${f.name}`.replace(/^public\/uka\//,'')).sort();
   assert.deepEqual(files,expected,'only allowlisted source and generated output may ship');
   // Independently compare the two displayed vertex expressions after sparse

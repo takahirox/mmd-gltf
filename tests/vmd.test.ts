@@ -568,3 +568,25 @@ test('pre-v2 bone-only converter assets remain bindable without morph identity m
     {mapping:motionMappings.a,morphUnmatched:'ignore'}));
   player.seek(0.371);player.stop();player.dispose();
 });
+
+test('caller-managed bounds preserve exact posed vertices without per-seek bounds scans', async () => {
+  const data=await readFile('public/morph/box/a.glb');
+  const normal=await load(data,true);
+  const fast=await new GLTFLoader().register(p=>new MMDVMDPlugin(p,{updateBounds:false}))
+    .parseAsync(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength) as ArrayBuffer,'');
+  const meshes=(root:Object3D)=>{const result:SkinnedMesh[]=[];root.traverse(n=>{if((n as SkinnedMesh).isSkinnedMesh)result.push(n as SkinnedMesh);});return result;};
+  const normalMeshes=meshes(normal.scene),fastMeshes=meshes(fast.scene);
+  let normalScans=0,fastScans=0;
+  for(const [items,increment] of [[normalMeshes,()=>normalScans++],[fastMeshes,()=>fastScans++]] as const) for(const mesh of items) {
+    const compute=mesh.computeBoundingBox.bind(mesh);
+    mesh.computeBoundingBox=()=>{increment();compute();};
+  }
+  fastMeshes.forEach(mesh=>mesh.frustumCulled=false);
+  for(const time of [0,.1,.4,1]) {
+    getVMDPlayers(normal)[0].seek(time);getVMDPlayers(fast)[0].seek(time);
+    for(const [i,mesh] of normalMeshes.entries())for(let v=0;v<mesh.geometry.getAttribute('position').count;v++)
+      near(mesh.getVertexPosition(v,new Vector3()).toArray(),fastMeshes[i].getVertexPosition(v,new Vector3()).toArray(),1e-8);
+  }
+  assert.ok(normalScans>0);assert.equal(fastScans,0);
+  for(const gltf of [normal,fast])getVMDPlayers(gltf).forEach(p=>p.dispose());
+});

@@ -66,6 +66,11 @@
       "path": "tex/iraira.png",
       "size": 11819,
       "sha256": "6a5c3153169d903eaae6a566ee0104ceb0ffcc414f69ce9135ce0312e6f69e8e"
+    },
+    {
+      "path": "motion/04_littlesmile.vmd",
+      "size": 40719,
+      "sha256": "42cf0e2e2a6ca5b050ddeb0782ffb490d82e304d2299e4278ff456a0f67e0607"
     }
   ]
 }

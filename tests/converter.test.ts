@@ -87,6 +87,10 @@ test('pinned Gene conversion is deterministic, valid, attributed and has complet
     assert.ok(expected, 'image must come from the source allowlist');
     assert.equal(createHash('sha256').update(texture.getImage()!).digest('hex'), expected.sha256);
   }
+  assert.equal(deployedJSON.skins[0].joints.length,224);
+  assert.equal(deployedJSON.animations[0].extensions.MMD_animation_vmd.version,6);
+  assert.equal(deployedJSON.animations[0].extensions.MMD_animation_vmd.tracks.length,212);
+  assert.ok(!deployedJSON.animations[0].extensions.MMD_animation_vmd.solver);
   assert.equal(deployedJSON.extras.sourceManifest.commit, manifest.commit);
   assert.match(deployedJSON.extras.attribution, /Nagoya Institute of Technology/);
   for (const file of manifest.files) {
@@ -94,7 +98,7 @@ test('pinned Gene conversion is deterministic, valid, attributed and has complet
     assert.equal(bytes.length, file.size);
     assert.equal(createHash('sha256').update(bytes).digest('hex'), file.sha256);
   }
-  const expectedFiles = [...manifest.files.map((file) => file.path), 'model.glb', 'source-manifest.json', 'conversion.json'].sort();
+  const expectedFiles = [...manifest.files.map((file) => file.path), 'model.glb', 'source-manifest.json', 'conversion.json', 'motion.json'].sort();
   const actualFiles = (await readdir('public/gene-light', { recursive: true, withFileTypes: true }))
     .filter((file) => file.isFile()).map((file) => join(file.parentPath, file.name).replace(/^public\/gene-light\//, '')).sort();
   assert.deepEqual(actualFiles, expectedFiles, 'publish only the reviewed allowlist and generated records');
