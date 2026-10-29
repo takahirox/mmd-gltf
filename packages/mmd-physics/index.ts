@@ -144,9 +144,9 @@ function validatePhysicsInternal(
       !integer(b.mode, 0, 2) ||
       !["sphere", "box", "capsule"].includes(b.shape) ||
       !vector(b.size, 3) ||
-      Math.fround(b.size[0]) <= 0 ||
+      b.size[0] <= 0 ||
       (b.shape === "box"
-        ? b.size.some((v) => Math.fround(v) <= 0)
+        ? b.size.some((v) => v <= 0)
         : b.shape === "capsule"
           ? b.size[1] < 0 || b.size[2] !== 0
           : b.size[1] !== 0 || b.size[2] !== 0) ||
@@ -157,8 +157,6 @@ function validatePhysicsInternal(
       !integer(b.mask, 0, 65535) ||
       !finite(b.mass) ||
       b.mass < 0 ||
-      (b.mode !== 0 && (Math.fround(b.mass) <= 0 || !finite(1 / b.mass))) ||
-      !finite((b.mass + 1) * Math.max(...b.size) ** 2) ||
       ![b.linearDamping, b.angularDamping, b.restitution].every(
         (v) => finite(v) && v >= 0 && v <= 1,
       ) ||
@@ -173,6 +171,18 @@ function validatePhysicsInternal(
         `bodies[${i}]`,
         "invalid identity, reference, shape, dimensions, filter, transform or material",
       );
+    // Reciprocal mass, FLOAT underflow and inertia bounds constrain Bullet
+    // execution, not version-2 transport of finite source records.
+    if (strict && (
+      Math.fround(b.size[0]) <= 0 ||
+      (b.shape === "box" && b.size.some(v => Math.fround(v) <= 0)) ||
+      (b.mode !== 0 && (Math.fround(b.mass) <= 0 || !finite(1 / b.mass))) ||
+      !finite((b.mass + 1) * Math.max(...b.size) ** 2)
+    )) {
+      if (p.version === 2)
+        diagnosticError('unsupported-capability', 'physics-numeric-range', `${EXTENSION_NAME} bodies[${i}]`, 'mass, dimensions or inertia exceed backend numeric range; source records retained');
+      fail(`bodies[${i}]`, 'mass, dimensions or inertia exceed backend numeric range');
+    }
     bodies.set(b.index, b);
     if (strict && b.mode !== 0 && b.bone !== -1) {
       if (writers.has(b.bone))
@@ -287,7 +297,7 @@ export function physicsDiagnostics(profile: PhysicsProfile, solver: SolverProfil
   if(profile.joints.some(j=>j.type!==0 || j.bodyA===-1 || j.bodyB===-1 || j.bodyA===j.bodyB)) result.push({category:'unsupported-capability',code:'joint-type-or-binding',path:EXTENSION_NAME,message:'joint type, world binding or identical endpoints are not executed'});
   if(profile.joints.some(j=>j.angularLower.some((v,k)=>v<=j.angularUpper[k] && (v < -Math.fround(Math.PI) || j.angularUpper[k] > Math.fround(Math.PI))))) result.push({category:'unsupported-capability',code:'joint-angular-range',path:EXTENSION_NAME,message:'bounded angular ranges outside [-pi,pi] are retained without Bullet normalization'});
   if(profile.version===2) try {validatePhysicsInternal(profile,solver,true);} catch(error) {
-    result.push({category:'unsupported-capability',code:'physics-dependency',path:EXTENSION_NAME,message:error instanceof Error ? error.message : String(error)});
+    result.push(error instanceof MMDDiagnosticError && error.diagnostic.category==='unsupported-capability' ? error.diagnostic : {category:'unsupported-capability',code:'physics-dependency',path:EXTENSION_NAME,message:error instanceof Error ? error.message : String(error)});
   }
   return result;
 }

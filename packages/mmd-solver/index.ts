@@ -504,9 +504,8 @@ export function solvePose(
     ),
   );
   if (invalid)
-    throw new Error(
-      `${EXTENSION_NAME} bones[${invalid.index}]: evaluated numeric range`,
-    );
+    diagnosticError('unsupported-capability', 'solver-numeric-range',
+      `${EXTENSION_NAME} bones[${invalid.index}]`, 'evaluated numeric range exceeds finite FLOAT execution; source records retained');
   return result;
 }
 

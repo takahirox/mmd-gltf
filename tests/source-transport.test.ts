@@ -145,6 +145,79 @@ test('inverted joint ranges stay free in transport and execute; long seek/settle
   const extended=new PhysicsTimeline(api,p,s,{maxSeekSteps:4000,maxBoneUpdates:100_000_000});extended.seek(31,()=>s.bones);assert.equal(extended.time,31);extended.dispose();assert.equal(PhysicsWorld.allocations,0);
 });
 
+test('backend numeric limits preserve binary PMX physics through GLB/glTF reload', async () => {
+  const { api } = await loadAmmoNode();
+  for (const { mass, width, scale } of [
+    { mass: 0, width: 0.25, scale: 1 },
+    { mass: 1e-40, width: 0.25, scale: 1 },
+    { mass: 3e38, width: 4, scale: 1 }, // Finite mass/size, overflowing backend inertia bound.
+    { mass: 1, width: 1e-44, scale: 0.001 }, // Positive scaled size underflows in Bullet FLOAT.
+  ]) {
+    const raw = physicsPMX('box');
+    // Body 1: two length-prefixed names, filter/shape bytes, size and frame.
+    const fields = raw.indexOf('physics body 1') + 'physics body 1'.length + 4 + 'Original Issue 45'.length;
+    raw.writeFloatLE(mass, fields + 5 + 12 + 12 + 12);
+    raw.writeFloatLE(width, fields + 5);
+    const source = parsePMX(raw);
+    assert.equal((source.rigidBodies[1] as any).weight, Math.fround(mass));
+    assert.equal((source.rigidBodies[1] as any).type, 1);
+    const r = await convertModel(source, '.', { mode: 'bdef', physics: 'rigid-body-v1', scale });
+    const j = await json(r), p = j.extensions.MMD_physics as PhysicsProfile, s = j.extensions.MMD_skeleton_solver as SolverProfile;
+    assert.equal(p.version, 2);
+    assert.equal(p.bodies[1].mass, Math.fround(mass));
+    assert.equal(p.bodies[1].size[0], Math.fround(width) * scale);
+    validatePhysics(p, s);
+    await schema('MMD_physics', p);
+    const diagnostic = r.diagnostics.find(d => d.code === 'physics-numeric-range')!;
+    assert.equal(diagnostic.category, 'unsupported-capability');
+    assert.match(diagnostic.path, /bodies\[1\]/);
+    assert.throws(() => validatePhysics({ ...p, version: 1 }, s), category('malformed-data'));
+    const corrupt = structuredClone(p); corrupt.bodies[1].mass = -1;
+    assert.throws(() => validatePhysics(corrupt, s), category('malformed-data'));
+    for (const asset of [await glb(r), await load(JSON.stringify(j))]) {
+      const retained = getPhysicsModel(asset.scene)!;
+      assert.deepEqual(retained.profile, p);
+      assert.deepEqual(Buffer.from(asset.userData.mmdSource.data, 'base64'), raw);
+      assert.ok(asset.userData.diagnostics.some((d: any) => d.code === 'physics-numeric-range'));
+      assert.throws(() => new PhysicsTimeline(api, retained.profile, retained.solver), category('unsupported-capability'));
+      assert.equal(PhysicsWorld.allocations, 0);
+    }
+  }
+});
+
+test('solver numeric overflow retains binary PMX/VMD and a diagnosed usable fallback through GLB/glTF reload', async () => {
+  const rawPMX = solverPMX('box'), rawVMD = solverVMD('a');
+  // Bone 4 append ratio follows its position, parent/layer/flags, tail and source index.
+  const fields = rawPMX.indexOf('Original bone 4') + 'Original bone 4'.length;
+  rawPMX.writeFloatLE(3e38, fields + 12 + 1 + 4 + 2 + 12 + 1);
+  const link = rawVMD.indexOf(Buffer.from('link\0'));
+  for (const offset of [link, link + 111]) rawVMD.writeFloatLE(100, offset + 15 + 4);
+  const source = parsePMX(rawPMX);
+  assert.equal(source.bones[4].grant!.ratio, Math.fround(3e38));
+  assert.equal(parseVMD(rawVMD).bones.find(b => b.name.text === 'link')!.translation[0], 100);
+  const r = await convertModel(source, '.', { mode: 'bdef', solver: 'pre-physics-v1', scale: 0.2, vmd: rawVMD });
+  const j = await json(r), p = j.animations[0].extensions.MMD_animation_vmd;
+  assert.equal(p.solver.bones[4].append.rate, Math.fround(3e38));
+  assert.deepEqual(decodeSource(p.source), new Uint8Array(rawVMD));
+  assert.ok(r.diagnostics.some(d => d.category === 'unsupported-capability' && d.code === 'solver-numeric-range'));
+  assert.ok(p.diagnostics.some((d: any) => d.code === 'unexecuted-morph-or-solver'));
+  for (const asset of [await glb(r), await load(JSON.stringify(j))]) {
+    const retained = getSolverModel(asset.scene)!, player = getVMDPlayers(asset)[0];
+    assert.equal(retained.profile.bones[4].append!.rate, Math.fround(3e38));
+    assert.deepEqual(Buffer.from(asset.userData.mmdSource.data, 'base64'), rawPMX);
+    assert.deepEqual(decodeSource(player.source!.source!), new Uint8Array(rawVMD));
+    assert.ok(player.diagnostics.some(d => d.code === 'solver-numeric-range'));
+    const before = [...retained.nodes.values()].map(n => n.position.toArray());
+    assert.throws(() => player.seek(0), error => error instanceof MMDDiagnosticError && error.diagnostic.code === 'solver-numeric-range');
+    assert.deepEqual([...retained.nodes.values()].map(n => n.position.toArray()), before);
+  }
+  const ordinary = await new GLTFLoader().parseAsync(JSON.stringify(j), '');
+  const mixer = new AnimationMixer(ordinary.scene);
+  mixer.clipAction(ordinary.animations[0]).play(); mixer.setTime(0.5);
+  assert.ok(Math.abs(ordinary.scene.getObjectByName('link')!.position.x - 20) < 2e-6);
+  ordinary.scene.traverse(n => assert.ok([...n.position.toArray(), ...n.quaternion.toArray()].every(Number.isFinite)));
+});
+
 test('impulse morphs, soft bodies, multiple writers and cross-phase dependencies survive conversion without claiming simulation',async()=>{
   const bytes=pmx21Fixture('utf8',1,1,true).bytes,model=parsePMX(bytes);
   assert.equal(model.morphs[0].type,10);assert.equal(model.softBodies!.length,1);

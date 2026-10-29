@@ -86,6 +86,11 @@ impulse velocity/torque and soft-body margin/configuration are not glTF body
 frames and are not silently scaled or reflected; PMX 2.1 parsing
 consumes/validates these complete sections, including anchors and pin references.
 
+Finite nonnegative body mass (including zero for dynamic modes) and positive
+dimensions transport in version 2 even when reciprocal mass, FLOAT underflow or
+computed inertia exceeds the backend's range. `physics-numeric-range` reports
+unavailable execution; version 1 retains its stricter numeric contract.
+
 `PhysicsTimeline`'s fourth argument configures `maxBodies`, `maxJoints`,
 `maxSeekSteps`, `maxUpdateSteps`, `maxPoseScalars`, and `maxBoneUpdates`. Defaults
 remain 1024/4096, 3600 replay ticks, 240 update ticks, 1,000,000 pose units and
@@ -106,6 +111,10 @@ malformed options still fail; no tolerance or FLOAT failure relabels the source
 as invalid. A minimum sample per output channel can exceed a requested sampling
 budget smaller than the channel count; the channel count is bounded by the
 transport's joint/morph limits and this relaxation is always diagnosed.
+If valid solver inputs produce transforms outside finite FLOAT range,
+`solver-numeric-range` reports an execution capability failure. Conversion retains
+the exact PMX/VMD data and emits a reduced core approximation with
+`unexecuted-morph-or-solver`; explicit playback still reports the numeric failure.
 
 Version 6 lists exactly the emitted fallback channels in `owned:[{node,path}]`.
 The loader removes these tracks and leaves unrelated glTF channels in the
