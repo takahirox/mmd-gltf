@@ -19,13 +19,11 @@
     </div>
     <div id="uka-features">
       <label>Expression <select id="expression" disabled><option value="rest">Rest · A pose</option><option value="blink">Blink · まばたき</option><option value="smile">Smile · 笑い</option></select></label>
-      <p>Uka: compare the original PMX with converter-produced glTF. Blink and smile deform the face in both views. Toon/PBR changes the converted material; Outline changes both contours.</p>
-      <p class="method-note">Solver-free BDEF subset: no IK, append, physics or VMD playback. Material morphs and the dependent ear-storage group are unsupported. Only two vertex expressions are exposed in this preview to bound GPU memory; all supported morph data is retained in the download. Preview textures are resized to at most 1024 px; downloadable source textures are unchanged.</p>
     </div>
     <p id="gene-status" class="status" role="status">Loading PMX and converted glTF…</p>
     <section id="viewport" aria-label="Synchronized PMX and glTF comparison">
-      <div id="pmx-pane" class="pane"><h2>Direct PMX reference</h2><p id="pmx-status" role="status">Loading original PMX and images…</p></div>
-      <div id="gltf-pane" class="pane"><h2>MMD glTF</h2><p id="gltf-status" role="status">Loading converted glTF…</p></div>
+      <div id="pmx-pane" class="pane"><h2>MMD</h2><p id="pmx-status" role="status">Loading original PMX and images…</p></div>
+      <div id="gltf-pane" class="pane"><h2>glTF</h2><p id="gltf-status" role="status">Loading converted glTF…</p></div>
       <div class="hint">Drag to orbit · Scroll to zoom · Synchronized views</div>
     </section>
   </section>
@@ -81,8 +79,8 @@
     </div>
   </section>
   <footer>
-    <p class="method-note">PMX is a secondary reference, not original MMD. Exact MMD visual/physics fidelity is unverified; solvers and physics use bounded profiles.</p>
     <details id="about-demo"><summary>About &amp; credits</summary>
+      <p>The left MMD view uses a direct PMX renderer, not the original MikuMikuDance application. Exact MMD visual and physics fidelity is unverified; solver and physics features use bounded profiles. The public character comparison shows static models and Uka expressions, not VMD motion playback.</p>
       <h2>Uka · source &amp; rights</h2>
       <p class="credit">CG-CA Uka (c) 2023-2024 by Nagoya Institute of Technology, Moonshot R&amp;D Goal 1 Avatar Symbiotic Society</p>
       <p>Original PMX, selected motion, images and converted glTF: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Preserve the <a href="https://github.com/mmdagent-ex/uka/tree/659f0d1a740fec68bb2817dc9c694a35e7a15f12">source and full usage guidelines</a>. No endorsement is implied. Model assets have separate terms from repository code.</p>
