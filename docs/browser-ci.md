@@ -201,7 +201,7 @@ before/after comparison. Only the matched 15-case pair above measures the
 matrix change locally.
 
 A successful full PR workflow and repeatable before/after phase measurements on comparable
-Ubuntu 24.04 GitHub-hosted CPU runners remain a mandatory pre-merge gate. This
-worktree execution is explicitly prohibited from pushing or opening a PR, so it
-cannot produce that external CI evidence. Local macOS results must not be used
+Ubuntu 24.04 GitHub-hosted CPU runners remain a mandatory pre-merge gate. The
+implementation-stage validation did not produce that external CI evidence.
+Local macOS results must not be used
 to claim a percentage improvement against #69/#70 or to mark Issue #54 complete.
