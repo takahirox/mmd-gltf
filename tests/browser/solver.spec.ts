@@ -278,12 +278,14 @@ for (const mode of ["bdef", "sdef", "qdef"])
           `docs/solver-captures/${mode}-${rig}-${material}.json`,
           JSON.stringify(result, null, 2) + "\n",
         );
-        await page.locator("canvas[data-pass=outline]").screenshot({
-          path: `docs/solver-captures/${mode}-${rig}-${material}-outline.png`,
-        });
-        await page.locator("canvas[data-pass=surface]").screenshot({
-          path: `docs/solver-captures/${mode}-${rig}-${material}.png`,
-        });
+        if (process.env.UPDATE_SYNTHETIC_EVIDENCE === '1') {
+          await page.locator("canvas[data-pass=outline]").screenshot({
+            path: `docs/solver-captures/${mode}-${rig}-${material}-outline.png`,
+          });
+          await page.locator("canvas[data-pass=surface]").screenshot({
+            path: `docs/solver-captures/${mode}-${rig}-${material}.png`,
+          });
+        }
         await info.attach(`solver-${mode}-${rig}-${material}.json`, {
           body: JSON.stringify(result),
           contentType: "application/json",
@@ -470,9 +472,11 @@ for (const rig of ["box", "wedge"] as const)
         `docs/solver-captures/demo-${rig}-${id}.json`,
         JSON.stringify(evidence, null, 2) + "\n",
       );
-      await page
-        .locator("canvas")
-        .screenshot({ path: `docs/solver-captures/demo-${rig}-${id}.png` });
+      if (process.env.UPDATE_SYNTHETIC_EVIDENCE === '1') {
+        await page
+          .locator("canvas")
+          .screenshot({ path: `docs/solver-captures/demo-${rig}-${id}.png` });
+      }
       await page.locator("#rig-model").selectOption("box");
       await expect(page.locator("#rig-status")).toContainText("Rig loaded");
       expect((await rendered()).disposedPlayers).toBeGreaterThan(0);

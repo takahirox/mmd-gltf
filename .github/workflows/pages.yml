@@ -1,4 +1,4 @@
-name: Validate and deploy Gene Light
+name: Validate and deploy MMD demos
 on:
   push:
     branches: [main]
@@ -19,6 +19,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - uses: actions/cache@v4
+        with:
+          path: |
+            .cache/gene-light
+            .cache/uka
+          key: mmd-sources-${{ hashFiles('tools/gene-light-manifest.json', 'tools/uka-manifest.json') }}
       - run: npm run build
       - run: npm run typecheck
       - run: npm test

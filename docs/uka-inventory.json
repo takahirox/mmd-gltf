@@ -1,0 +1,4264 @@
+{
+  "vertices": 49955,
+  "faces": 77909,
+  "materials": 13,
+  "skinningTypes": {
+    "0": 21434,
+    "1": 28521
+  },
+  "textures": [
+    "tex/eye.png",
+    "tex/face.png",
+    "tex/FP.png",
+    "tex/body.png",
+    "tex/top.png",
+    "tex/acce.png",
+    "tex/btm.png",
+    "tex/hair_s01.png",
+    "tex/iraira.png"
+  ],
+  "materialReferences": [
+    {
+      "name": "目",
+      "texture": 0,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 1664
+    },
+    {
+      "name": "頭",
+      "texture": 1,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 6116
+    },
+    {
+      "name": "頭モーフ",
+      "texture": 2,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 2842
+    },
+    {
+      "name": "手足",
+      "texture": 3,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 8032
+    },
+    {
+      "name": "トップス1",
+      "texture": 4,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 15812
+    },
+    {
+      "name": "トップス2",
+      "texture": 4,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 1160
+    },
+    {
+      "name": "胸マーク",
+      "texture": 5,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 1272
+    },
+    {
+      "name": "ボトムス",
+      "texture": 6,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 9434
+    },
+    {
+      "name": "髪",
+      "texture": 7,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 23159
+    },
+    {
+      "name": "耳",
+      "texture": 7,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 7266
+    },
+    {
+      "name": "青ざめ",
+      "texture": 2,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 826
+    },
+    {
+      "name": "頬照り2",
+      "texture": 2,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 324
+    },
+    {
+      "name": "イライラ",
+      "texture": 8,
+      "sphere": -1,
+      "sphereMode": 0,
+      "toon": {
+        "texture": -1
+      },
+      "faces": 2
+    }
+  ],
+  "morphTypes": {
+    "0": 20,
+    "1": 184,
+    "2": 7,
+    "8": 5
+  },
+  "morphs": [
+    {
+      "index": 0,
+      "name": "真面目",
+      "type": 1,
+      "elements": 52
+    },
+    {
+      "index": 1,
+      "name": "困る眉",
+      "type": 1,
+      "elements": 52
+    },
+    {
+      "index": 2,
+      "name": "にこり",
+      "type": 1,
+      "elements": 52
+    },
+    {
+      "index": 3,
+      "name": "怒り眉",
+      "type": 1,
+      "elements": 52
+    },
+    {
+      "index": 4,
+      "name": "困り眉",
+      "type": 1,
+      "elements": 52
+    },
+    {
+      "index": 5,
+      "name": "困り眉左",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 6,
+      "name": "困り眉右",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 7,
+      "name": "上",
+      "type": 1,
+      "elements": 52
+    },
+    {
+      "index": 8,
+      "name": "下",
+      "type": 1,
+      "elements": 52
+    },
+    {
+      "index": 9,
+      "name": "怒り眉左",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 10,
+      "name": "怒り眉右",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 11,
+      "name": "まばたき",
+      "type": 1,
+      "elements": 950
+    },
+    {
+      "index": 12,
+      "name": "笑い",
+      "type": 1,
+      "elements": 907
+    },
+    {
+      "index": 13,
+      "name": "ウィンク右",
+      "type": 1,
+      "elements": 453
+    },
+    {
+      "index": 14,
+      "name": "ｳｨﾝｸ２右",
+      "type": 1,
+      "elements": 475
+    },
+    {
+      "index": 15,
+      "name": "ウィンク",
+      "type": 1,
+      "elements": 454
+    },
+    {
+      "index": 16,
+      "name": "ウィンク２",
+      "type": 1,
+      "elements": 475
+    },
+    {
+      "index": 17,
+      "name": "びっくり",
+      "type": 1,
+      "elements": 1747
+    },
+    {
+      "index": 18,
+      "name": "じと目元",
+      "type": 1,
+      "elements": 884
+    },
+    {
+      "index": 19,
+      "name": "キラキラ目元",
+      "type": 1,
+      "elements": 2071
+    },
+    {
+      "index": 20,
+      "name": "〇〇",
+      "type": 1,
+      "elements": 772
+    },
+    {
+      "index": 21,
+      "name": "ｺｯﾁﾐﾝﾅ",
+      "type": 1,
+      "elements": 836
+    },
+    {
+      "index": 22,
+      "name": "HLなし",
+      "type": 1,
+      "elements": 578
+    },
+    {
+      "index": 23,
+      "name": "瞳小",
+      "type": 1,
+      "elements": 834
+    },
+    {
+      "index": 24,
+      "name": "見開き目",
+      "type": 1,
+      "elements": 1747
+    },
+    {
+      "index": 25,
+      "name": "驚き目",
+      "type": 1,
+      "elements": 834
+    },
+    {
+      "index": 26,
+      "name": "絶望目",
+      "type": 1,
+      "elements": 772
+    },
+    {
+      "index": 27,
+      "name": "まば左",
+      "type": 1,
+      "elements": 475
+    },
+    {
+      "index": 28,
+      "name": "まば右",
+      "type": 1,
+      "elements": 475
+    },
+    {
+      "index": 29,
+      "name": "グル目",
+      "type": 1,
+      "elements": 772
+    },
+    {
+      "index": 30,
+      "name": "耳細め",
+      "type": 1,
+      "elements": 851
+    },
+    {
+      "index": 31,
+      "name": "あ",
+      "type": 1,
+      "elements": 1360
+    },
+    {
+      "index": 32,
+      "name": "い",
+      "type": 1,
+      "elements": 1004
+    },
+    {
+      "index": 33,
+      "name": "う",
+      "type": 1,
+      "elements": 1336
+    },
+    {
+      "index": 34,
+      "name": "え",
+      "type": 1,
+      "elements": 1418
+    },
+    {
+      "index": 35,
+      "name": "お",
+      "type": 1,
+      "elements": 1376
+    },
+    {
+      "index": 36,
+      "name": "おお~",
+      "type": 1,
+      "elements": 1376
+    },
+    {
+      "index": 37,
+      "name": "∧口",
+      "type": 1,
+      "elements": 611
+    },
+    {
+      "index": 38,
+      "name": "はんっ！",
+      "type": 1,
+      "elements": 1451
+    },
+    {
+      "index": 39,
+      "name": "えー",
+      "type": 1,
+      "elements": 1464
+    },
+    {
+      "index": 40,
+      "name": "にやり",
+      "type": 1,
+      "elements": 302
+    },
+    {
+      "index": 41,
+      "name": "ワ",
+      "type": 1,
+      "elements": 1337
+    },
+    {
+      "index": 42,
+      "name": "にっこり",
+      "type": 1,
+      "elements": 302
+    },
+    {
+      "index": 43,
+      "name": "叫び",
+      "type": 1,
+      "elements": 1337
+    },
+    {
+      "index": 44,
+      "name": "ああ",
+      "type": 1,
+      "elements": 1360
+    },
+    {
+      "index": 45,
+      "name": "いい",
+      "type": 1,
+      "elements": 1004
+    },
+    {
+      "index": 46,
+      "name": "にたり",
+      "type": 1,
+      "elements": 1451
+    },
+    {
+      "index": 47,
+      "name": "頬照り1",
+      "type": 1,
+      "elements": 200
+    },
+    {
+      "index": 48,
+      "name": "頬照り2",
+      "type": 1,
+      "elements": 200
+    },
+    {
+      "index": 49,
+      "name": "照れ",
+      "type": 1,
+      "elements": 200
+    },
+    {
+      "index": 50,
+      "name": "汗",
+      "type": 1,
+      "elements": 24
+    },
+    {
+      "index": 51,
+      "name": "歯なし",
+      "type": 1,
+      "elements": 701
+    },
+    {
+      "index": 52,
+      "name": "上歯なし",
+      "type": 1,
+      "elements": 391
+    },
+    {
+      "index": 53,
+      "name": "下歯なし",
+      "type": 1,
+      "elements": 310
+    },
+    {
+      "index": 54,
+      "name": "頬照り1総",
+      "type": 1,
+      "elements": 500
+    },
+    {
+      "index": 55,
+      "name": "頬照り2総",
+      "type": 1,
+      "elements": 500
+    },
+    {
+      "index": 56,
+      "name": "キラキラ総1",
+      "type": 1,
+      "elements": 3408
+    },
+    {
+      "index": 57,
+      "name": "キラキラ総2",
+      "type": 1,
+      "elements": 2371
+    },
+    {
+      "index": 58,
+      "name": "笑顔総",
+      "type": 1,
+      "elements": 2296
+    },
+    {
+      "index": 59,
+      "name": "驚き総",
+      "type": 1,
+      "elements": 3263
+    },
+    {
+      "index": 60,
+      "name": "怒り総",
+      "type": 1,
+      "elements": 1063
+    },
+    {
+      "index": 61,
+      "name": "困り顔総",
+      "type": 1,
+      "elements": 2314
+    },
+    {
+      "index": 62,
+      "name": "悲しい総",
+      "type": 1,
+      "elements": 1104
+    },
+    {
+      "index": 63,
+      "name": "じと目総",
+      "type": 1,
+      "elements": 2387
+    },
+    {
+      "index": 64,
+      "name": "キメ顔総",
+      "type": 1,
+      "elements": 352
+    },
+    {
+      "index": 65,
+      "name": "とじ目",
+      "type": 1,
+      "elements": 950
+    },
+    {
+      "index": 66,
+      "name": "にっこり口",
+      "type": 1,
+      "elements": 302
+    },
+    {
+      "index": 67,
+      "name": "通常",
+      "type": 1,
+      "elements": 300
+    },
+    {
+      "index": 68,
+      "name": "通常Revers",
+      "type": 1,
+      "elements": 300
+    },
+    {
+      "index": 69,
+      "name": "eye_wink_geo_L",
+      "type": 1,
+      "elements": 454
+    },
+    {
+      "index": 70,
+      "name": "eye_wink_geo_R",
+      "type": 1,
+      "elements": 453
+    },
+    {
+      "index": 71,
+      "name": "eye_close_geo_L",
+      "type": 1,
+      "elements": 475
+    },
+    {
+      "index": 72,
+      "name": "eye_close_geo_R",
+      "type": 1,
+      "elements": 475
+    },
+    {
+      "index": 73,
+      "name": "eye_surprise_geo_L",
+      "type": 1,
+      "elements": 665
+    },
+    {
+      "index": 74,
+      "name": "eye_surprise_geo_R",
+      "type": 1,
+      "elements": 471
+    },
+    {
+      "index": 75,
+      "name": "eye_sad_geo_L",
+      "type": 1,
+      "elements": 441
+    },
+    {
+      "index": 76,
+      "name": "eye_sad_geo_R",
+      "type": 1,
+      "elements": 441
+    },
+    {
+      "index": 77,
+      "name": "eye_angry_geo_L",
+      "type": 1,
+      "elements": 201
+    },
+    {
+      "index": 78,
+      "name": "eye_angry_geo_R",
+      "type": 1,
+      "elements": 201
+    },
+    {
+      "index": 79,
+      "name": "eye_downcast_geo_L",
+      "type": 1,
+      "elements": 442
+    },
+    {
+      "index": 80,
+      "name": "eye_downcast_geo_R",
+      "type": 1,
+      "elements": 442
+    },
+    {
+      "index": 81,
+      "name": "eye_shine_geo_C",
+      "type": 1,
+      "elements": 1156
+    },
+    {
+      "index": 82,
+      "name": "eye_guruguru_geo_C",
+      "type": 1,
+      "elements": 194
+    },
+    {
+      "index": 83,
+      "name": "mouth_a_geo_C",
+      "type": 1,
+      "elements": 1358
+    },
+    {
+      "index": 84,
+      "name": "mouth_i_geo_C",
+      "type": 1,
+      "elements": 1006
+    },
+    {
+      "index": 85,
+      "name": "mouth_u_geo_C",
+      "type": 1,
+      "elements": 1336
+    },
+    {
+      "index": 86,
+      "name": "mouth_e_geo_C",
+      "type": 1,
+      "elements": 1418
+    },
+    {
+      "index": 87,
+      "name": "mouth_o_geo_C",
+      "type": 1,
+      "elements": 1376
+    },
+    {
+      "index": 88,
+      "name": "mouth_oh_geo_C",
+      "type": 1,
+      "elements": 1391
+    },
+    {
+      "index": 89,
+      "name": "mouth_flat_geo_C",
+      "type": 1,
+      "elements": 300
+    },
+    {
+      "index": 90,
+      "name": "mouth_smile_geo_C",
+      "type": 1,
+      "elements": 1335
+    },
+    {
+      "index": 91,
+      "name": "mouth_angry_geo_C",
+      "type": 1,
+      "elements": 604
+    },
+    {
+      "index": 92,
+      "name": "mouth_surprise_geo_",
+      "type": 1,
+      "elements": 1464
+    },
+    {
+      "index": 93,
+      "name": "mouth_worried_geo_C",
+      "type": 1,
+      "elements": 1331
+    },
+    {
+      "index": 94,
+      "name": "mouth_ridcule_geo_C",
+      "type": 1,
+      "elements": 1451
+    },
+    {
+      "index": 95,
+      "name": "mouth_laugh_geo_C",
+      "type": 1,
+      "elements": 180
+    },
+    {
+      "index": 96,
+      "name": "mouth_sed_geo_C",
+      "type": 1,
+      "elements": 300
+    },
+    {
+      "index": 97,
+      "name": "mouth_shine_geo_C",
+      "type": 1,
+      "elements": 56
+    },
+    {
+      "index": 98,
+      "name": "brow_smile_geo_L",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 99,
+      "name": "brow_smile_geo_R",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 100,
+      "name": "brow_angry_geo_L",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 101,
+      "name": "brow_angry_geo_R",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 102,
+      "name": "brow_ridcule_geo_L",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 103,
+      "name": "brow_ridcule_geo_R",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 104,
+      "name": "brow_sad_geo_L",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 105,
+      "name": "brow_sad_geo_R",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 106,
+      "name": "brow_worried_geo_L",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 107,
+      "name": "brow_worried_geo_R",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 108,
+      "name": "tooth_up_geo_C",
+      "type": 1,
+      "elements": 391
+    },
+    {
+      "index": 109,
+      "name": "tooth_down_geo_C",
+      "type": 1,
+      "elements": 310
+    },
+    {
+      "index": 110,
+      "name": "tooth_upDown_geo_C",
+      "type": 1,
+      "elements": 701
+    },
+    {
+      "index": 111,
+      "name": "cheek_blushA_geo_C",
+      "type": 1,
+      "elements": 200
+    },
+    {
+      "index": 112,
+      "name": "cheek_blushB_geo_C",
+      "type": 1,
+      "elements": 200
+    },
+    {
+      "index": 113,
+      "name": "pupil_decrease_geo_",
+      "type": 1,
+      "elements": 834
+    },
+    {
+      "index": 114,
+      "name": "pupil_surprise_geo_",
+      "type": 1,
+      "elements": 834
+    },
+    {
+      "index": 115,
+      "name": "pupil_nonHilisht_ge",
+      "type": 1,
+      "elements": 578
+    },
+    {
+      "index": 116,
+      "name": "pupil_lookat_geo_C",
+      "type": 1,
+      "elements": 836
+    },
+    {
+      "index": 117,
+      "name": "extra_sweat_geo_C",
+      "type": 1,
+      "elements": 24
+    },
+    {
+      "index": 118,
+      "name": "extra_pale_geo_C",
+      "type": 1,
+      "elements": 444
+    },
+    {
+      "index": 119,
+      "name": "耳困り左",
+      "type": 2,
+      "elements": 4
+    },
+    {
+      "index": 120,
+      "name": "耳困り右",
+      "type": 2,
+      "elements": 4
+    },
+    {
+      "index": 121,
+      "name": "耳怒り左",
+      "type": 2,
+      "elements": 4
+    },
+    {
+      "index": 122,
+      "name": "耳怒り右",
+      "type": 2,
+      "elements": 4
+    },
+    {
+      "index": 123,
+      "name": "耳悲しみ",
+      "type": 2,
+      "elements": 8
+    },
+    {
+      "index": 124,
+      "name": "耳のび",
+      "type": 2,
+      "elements": 6
+    },
+    {
+      "index": 125,
+      "name": "耳驚き",
+      "type": 2,
+      "elements": 8
+    },
+    {
+      "index": 126,
+      "name": "青ざめ",
+      "type": 8,
+      "elements": 1
+    },
+    {
+      "index": 127,
+      "name": "どんより",
+      "type": 8,
+      "elements": 1
+    },
+    {
+      "index": 128,
+      "name": "赤み",
+      "type": 8,
+      "elements": 1
+    },
+    {
+      "index": 129,
+      "name": "困り",
+      "type": 0,
+      "elements": 3,
+      "group": [
+        {
+          "index": 4,
+          "ratio": 1
+        },
+        {
+          "index": 120,
+          "ratio": 1
+        },
+        {
+          "index": 119,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 130,
+      "name": "困り右",
+      "type": 0,
+      "elements": 2,
+      "group": [
+        {
+          "index": 6,
+          "ratio": 1
+        },
+        {
+          "index": 120,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 131,
+      "name": "困り左",
+      "type": 0,
+      "elements": 2,
+      "group": [
+        {
+          "index": 5,
+          "ratio": 1
+        },
+        {
+          "index": 119,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 132,
+      "name": "困る",
+      "type": 0,
+      "elements": 3,
+      "group": [
+        {
+          "index": 1,
+          "ratio": 1
+        },
+        {
+          "index": 120,
+          "ratio": 1
+        },
+        {
+          "index": 119,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 133,
+      "name": "怒り",
+      "type": 0,
+      "elements": 3,
+      "group": [
+        {
+          "index": 121,
+          "ratio": 1
+        },
+        {
+          "index": 122,
+          "ratio": 1
+        },
+        {
+          "index": 3,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 134,
+      "name": "怒り左",
+      "type": 0,
+      "elements": 2,
+      "group": [
+        {
+          "index": 121,
+          "ratio": 1
+        },
+        {
+          "index": 9,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 135,
+      "name": "怒り右",
+      "type": 0,
+      "elements": 2,
+      "group": [
+        {
+          "index": 122,
+          "ratio": 1
+        },
+        {
+          "index": 10,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 136,
+      "name": "じと目",
+      "type": 0,
+      "elements": 3,
+      "group": [
+        {
+          "index": 18,
+          "ratio": 1
+        },
+        {
+          "index": 119,
+          "ratio": 1
+        },
+        {
+          "index": 120,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 137,
+      "name": "キラキラ目",
+      "type": 0,
+      "elements": 4,
+      "group": [
+        {
+          "index": 19,
+          "ratio": 1
+        },
+        {
+          "index": 124,
+          "ratio": 1
+        },
+        {
+          "index": 30,
+          "ratio": 1
+        },
+        {
+          "index": 125,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 138,
+      "name": "星目",
+      "type": 0,
+      "elements": 4,
+      "group": [
+        {
+          "index": 19,
+          "ratio": 1
+        },
+        {
+          "index": 124,
+          "ratio": 1
+        },
+        {
+          "index": 30,
+          "ratio": 1
+        },
+        {
+          "index": 125,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 139,
+      "name": "しいたけ",
+      "type": 0,
+      "elements": 4,
+      "group": [
+        {
+          "index": 19,
+          "ratio": 1
+        },
+        {
+          "index": 124,
+          "ratio": 1
+        },
+        {
+          "index": 30,
+          "ratio": 1
+        },
+        {
+          "index": 125,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 140,
+      "name": "驚き",
+      "type": 0,
+      "elements": 4,
+      "group": [
+        {
+          "index": 125,
+          "ratio": 1
+        },
+        {
+          "index": 25,
+          "ratio": 1
+        },
+        {
+          "index": 124,
+          "ratio": 0.800000011920929
+        },
+        {
+          "index": 30,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 141,
+      "name": "見開き",
+      "type": 0,
+      "elements": 4,
+      "group": [
+        {
+          "index": 125,
+          "ratio": 1
+        },
+        {
+          "index": 24,
+          "ratio": 1
+        },
+        {
+          "index": 124,
+          "ratio": 0.800000011920929
+        },
+        {
+          "index": 30,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 142,
+      "name": "∧",
+      "type": 0,
+      "elements": 2,
+      "group": [
+        {
+          "index": 37,
+          "ratio": 1
+        },
+        {
+          "index": 123,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 143,
+      "name": "結び",
+      "type": 0,
+      "elements": 2,
+      "group": [
+        {
+          "index": 37,
+          "ratio": 1
+        },
+        {
+          "index": 123,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 144,
+      "name": "口締め",
+      "type": 0,
+      "elements": 2,
+      "group": [
+        {
+          "index": 37,
+          "ratio": 1
+        },
+        {
+          "index": 123,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 145,
+      "name": "あーれー",
+      "type": 0,
+      "elements": 2,
+      "group": [
+        {
+          "index": 41,
+          "ratio": 1
+        },
+        {
+          "index": 33,
+          "ratio": 0.30000001192092896
+        }
+      ]
+    },
+    {
+      "index": 146,
+      "name": "む",
+      "type": 0,
+      "elements": 2,
+      "group": [
+        {
+          "index": 37,
+          "ratio": 1
+        },
+        {
+          "index": 123,
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "index": 147,
+      "name": "口わらい",
+      "type": 0,
+      "elements": 1,
+      "group": [
+        {
+          "index": 41,
+          "ratio": 0.6000000238418579
+        }
+      ]
+    },
+    {
+      "index": 148,
+      "name": "いらいら",
+      "type": 8,
+      "elements": 1
+    },
+    {
+      "index": 149,
+      "name": "eyeLookUp",
+      "type": 1,
+      "elements": 425
+    },
+    {
+      "index": 150,
+      "name": "eyeLookUpLeft",
+      "type": 1,
+      "elements": 207
+    },
+    {
+      "index": 151,
+      "name": "eyeLookUpRight",
+      "type": 1,
+      "elements": 218
+    },
+    {
+      "index": 152,
+      "name": "eyeLookDown",
+      "type": 1,
+      "elements": 321
+    },
+    {
+      "index": 153,
+      "name": "eyeLookDownLeft",
+      "type": 1,
+      "elements": 155
+    },
+    {
+      "index": 154,
+      "name": "eyeLookDownRight",
+      "type": 1,
+      "elements": 166
+    },
+    {
+      "index": 155,
+      "name": "eyeLookIn",
+      "type": 1,
+      "elements": 359
+    },
+    {
+      "index": 156,
+      "name": "eyeLookInLeft",
+      "type": 1,
+      "elements": 174
+    },
+    {
+      "index": 157,
+      "name": "eyeLookInRight",
+      "type": 1,
+      "elements": 185
+    },
+    {
+      "index": 158,
+      "name": "eyeLookOut",
+      "type": 1,
+      "elements": 240
+    },
+    {
+      "index": 159,
+      "name": "eyeLookOutLeft",
+      "type": 1,
+      "elements": 120
+    },
+    {
+      "index": 160,
+      "name": "eyeLookOutRight",
+      "type": 1,
+      "elements": 120
+    },
+    {
+      "index": 161,
+      "name": "eyeBlink",
+      "type": 1,
+      "elements": 867
+    },
+    {
+      "index": 162,
+      "name": "eyeBlinkLeft",
+      "type": 1,
+      "elements": 428
+    },
+    {
+      "index": 163,
+      "name": "eyeBlinkRight",
+      "type": 1,
+      "elements": 439
+    },
+    {
+      "index": 164,
+      "name": "eyeSquint",
+      "type": 1,
+      "elements": 308
+    },
+    {
+      "index": 165,
+      "name": "eyeSquintLeft",
+      "type": 1,
+      "elements": 154
+    },
+    {
+      "index": 166,
+      "name": "eyeSquintRight",
+      "type": 1,
+      "elements": 154
+    },
+    {
+      "index": 167,
+      "name": "eyeWide",
+      "type": 1,
+      "elements": 833
+    },
+    {
+      "index": 168,
+      "name": "eyeWideLeft",
+      "type": 1,
+      "elements": 411
+    },
+    {
+      "index": 169,
+      "name": "eyeWideRight",
+      "type": 1,
+      "elements": 422
+    },
+    {
+      "index": 170,
+      "name": "cheekPuff",
+      "type": 1,
+      "elements": 540
+    },
+    {
+      "index": 171,
+      "name": "cheekSquintLeft",
+      "type": 1,
+      "elements": 135
+    },
+    {
+      "index": 172,
+      "name": "cheekSquintRight",
+      "type": 1,
+      "elements": 135
+    },
+    {
+      "index": 173,
+      "name": "noseSneer",
+      "type": 1,
+      "elements": 354
+    },
+    {
+      "index": 174,
+      "name": "noseSneerLeft",
+      "type": 1,
+      "elements": 179
+    },
+    {
+      "index": 175,
+      "name": "noseSneerRight",
+      "type": 1,
+      "elements": 179
+    },
+    {
+      "index": 176,
+      "name": "jawOpen",
+      "type": 1,
+      "elements": 1554
+    },
+    {
+      "index": 177,
+      "name": "jawForward",
+      "type": 1,
+      "elements": 1043
+    },
+    {
+      "index": 178,
+      "name": "jawLeft",
+      "type": 1,
+      "elements": 1338
+    },
+    {
+      "index": 179,
+      "name": "jawRight",
+      "type": 1,
+      "elements": 1338
+    },
+    {
+      "index": 180,
+      "name": "mouthFunnel",
+      "type": 1,
+      "elements": 370
+    },
+    {
+      "index": 181,
+      "name": "mouthPucker",
+      "type": 1,
+      "elements": 252
+    },
+    {
+      "index": 182,
+      "name": "mouthLeft",
+      "type": 1,
+      "elements": 694
+    },
+    {
+      "index": 183,
+      "name": "mouthRight",
+      "type": 1,
+      "elements": 694
+    },
+    {
+      "index": 184,
+      "name": "mouthRollUpper",
+      "type": 1,
+      "elements": 61
+    },
+    {
+      "index": 185,
+      "name": "mouthRollLower",
+      "type": 1,
+      "elements": 81
+    },
+    {
+      "index": 186,
+      "name": "mouthShrugUpper",
+      "type": 1,
+      "elements": 120
+    },
+    {
+      "index": 187,
+      "name": "mouthShrugLower",
+      "type": 1,
+      "elements": 81
+    },
+    {
+      "index": 188,
+      "name": "mouthClose",
+      "type": 1,
+      "elements": 611
+    },
+    {
+      "index": 189,
+      "name": "mouthSmile",
+      "type": 1,
+      "elements": 823
+    },
+    {
+      "index": 190,
+      "name": "mouthSmileLeft",
+      "type": 1,
+      "elements": 429
+    },
+    {
+      "index": 191,
+      "name": "mouthSmileRight",
+      "type": 1,
+      "elements": 429
+    },
+    {
+      "index": 192,
+      "name": "mouthFrown",
+      "type": 1,
+      "elements": 128
+    },
+    {
+      "index": 193,
+      "name": "mouthFrownLeft",
+      "type": 1,
+      "elements": 64
+    },
+    {
+      "index": 194,
+      "name": "mouthFrownRight",
+      "type": 1,
+      "elements": 64
+    },
+    {
+      "index": 195,
+      "name": "mouthDimpleLeft",
+      "type": 1,
+      "elements": 68
+    },
+    {
+      "index": 196,
+      "name": "mouthDimpleRight",
+      "type": 1,
+      "elements": 68
+    },
+    {
+      "index": 197,
+      "name": "mouthUpperUpLeft",
+      "type": 1,
+      "elements": 57
+    },
+    {
+      "index": 198,
+      "name": "mouthUpperUpRight",
+      "type": 1,
+      "elements": 57
+    },
+    {
+      "index": 199,
+      "name": "mouthLowerDownLeft",
+      "type": 1,
+      "elements": 57
+    },
+    {
+      "index": 200,
+      "name": "mouthLowerDownRight",
+      "type": 1,
+      "elements": 57
+    },
+    {
+      "index": 201,
+      "name": "mouthPressLeft",
+      "type": 1,
+      "elements": 91
+    },
+    {
+      "index": 202,
+      "name": "mouthPressRight",
+      "type": 1,
+      "elements": 95
+    },
+    {
+      "index": 203,
+      "name": "mouthStretchLeft",
+      "type": 1,
+      "elements": 118
+    },
+    {
+      "index": 204,
+      "name": "mouthStretchRight",
+      "type": 1,
+      "elements": 118
+    },
+    {
+      "index": 205,
+      "name": "tongueOut",
+      "type": 1,
+      "elements": 253
+    },
+    {
+      "index": 206,
+      "name": "browInnerUp",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 207,
+      "name": "browDown",
+      "type": 1,
+      "elements": 366
+    },
+    {
+      "index": 208,
+      "name": "browDownLeft",
+      "type": 1,
+      "elements": 183
+    },
+    {
+      "index": 209,
+      "name": "browDownRIght",
+      "type": 1,
+      "elements": 183
+    },
+    {
+      "index": 210,
+      "name": "browOuterUp",
+      "type": 1,
+      "elements": 52
+    },
+    {
+      "index": 211,
+      "name": "browOuterUpLeft",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 212,
+      "name": "browOuterUpRight",
+      "type": 1,
+      "elements": 26
+    },
+    {
+      "index": 213,
+      "name": "耳収納V",
+      "type": 1,
+      "elements": 4640
+    },
+    {
+      "index": 214,
+      "name": "耳収納M",
+      "type": 8,
+      "elements": 1
+    },
+    {
+      "index": 215,
+      "name": "耳収納",
+      "type": 0,
+      "elements": 2,
+      "group": [
+        {
+          "index": 213,
+          "ratio": 1
+        },
+        {
+          "index": 214,
+          "ratio": 1
+        }
+      ]
+    }
+  ],
+  "bones": 302,
+  "ik": [
+    {
+      "index": 8,
+      "name": "左足ＩＫ",
+      "effector": 10,
+      "target": null,
+      "iteration": 40,
+      "maxAngle": 2.0000007152557373,
+      "linkCount": 2,
+      "links": [
+        {
+          "index": 6,
+          "angleLimitation": 1,
+          "lowerLimitationAngle": [
+            -3.1415927410125732,
+            0,
+            0
+          ],
+          "upperLimitationAngle": [
+            -0.008726646192371845,
+            0,
+            0
+          ]
+        },
+        {
+          "index": 5,
+          "angleLimitation": 0
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "name": "左つま先ＩＫ",
+      "effector": 11,
+      "target": null,
+      "iteration": 3,
+      "maxAngle": 4,
+      "linkCount": 1,
+      "links": [
+        {
+          "index": 10,
+          "angleLimitation": 0
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "name": "右足ＩＫ",
+      "effector": 17,
+      "target": null,
+      "iteration": 40,
+      "maxAngle": 2.0000007152557373,
+      "linkCount": 2,
+      "links": [
+        {
+          "index": 13,
+          "angleLimitation": 1,
+          "lowerLimitationAngle": [
+            -3.1415927410125732,
+            0,
+            0
+          ],
+          "upperLimitationAngle": [
+            -0.008726646192371845,
+            0,
+            0
+          ]
+        },
+        {
+          "index": 12,
+          "angleLimitation": 0
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "name": "右つま先ＩＫ",
+      "effector": 18,
+      "target": null,
+      "iteration": 3,
+      "maxAngle": 4,
+      "linkCount": 1,
+      "links": [
+        {
+          "index": 17,
+          "angleLimitation": 0
+        }
+      ]
+    },
+    {
+      "index": 61,
+      "name": "左腕袖IK",
+      "effector": 58,
+      "target": null,
+      "iteration": 15,
+      "maxAngle": 1,
+      "linkCount": 1,
+      "links": [
+        {
+          "index": 57,
+          "angleLimitation": 0
+        }
+      ]
+    },
+    {
+      "index": 62,
+      "name": "左手袖IK",
+      "effector": 59,
+      "target": null,
+      "iteration": 15,
+      "maxAngle": 1,
+      "linkCount": 1,
+      "links": [
+        {
+          "index": 58,
+          "angleLimitation": 0
+        }
+      ]
+    },
+    {
+      "index": 63,
+      "name": "左手首袖IK",
+      "effector": 60,
+      "target": null,
+      "iteration": 15,
+      "maxAngle": 1,
+      "linkCount": 1,
+      "links": [
+        {
+          "index": 59,
+          "angleLimitation": 0
+        }
+      ]
+    },
+    {
+      "index": 95,
+      "name": "右腕袖IK",
+      "effector": 92,
+      "target": null,
+      "iteration": 15,
+      "maxAngle": 1,
+      "linkCount": 1,
+      "links": [
+        {
+          "index": 91,
+          "angleLimitation": 0
+        }
+      ]
+    },
+    {
+      "index": 96,
+      "name": "右手袖IK",
+      "effector": 93,
+      "target": null,
+      "iteration": 15,
+      "maxAngle": 1,
+      "linkCount": 1,
+      "links": [
+        {
+          "index": 92,
+          "angleLimitation": 0
+        }
+      ]
+    },
+    {
+      "index": 97,
+      "name": "右手首袖IK",
+      "effector": 94,
+      "target": null,
+      "iteration": 15,
+      "maxAngle": 1,
+      "linkCount": 1,
+      "links": [
+        {
+          "index": 93,
+          "angleLimitation": 0
+        }
+      ]
+    }
+  ],
+  "grants": [
+    {
+      "index": 34,
+      "name": "左目",
+      "isLocal": false,
+      "affectRotation": true,
+      "affectPosition": false,
+      "parentIndex": 32,
+      "ratio": 0.07000000029802322
+    },
+    {
+      "index": 36,
+      "name": "右目",
+      "isLocal": false,
+      "affectRotation": true,
+      "affectPosition": false,
+      "parentIndex": 32,
+      "ratio": 0.07000000029802322
+    }
+  ],
+  "fixedAxes": 4,
+  "localAxes": 0,
+  "afterPhysics": 0,
+  "externalParents": 0,
+  "rigidBodies": 164,
+  "joints": 151,
+  "rigidBodyTypes": {
+    "0": 27,
+    "2": 137
+  },
+  "jointTypes": {
+    "0": 151
+  },
+  "motion": {
+    "path": "motion/03_smile.vmd",
+    "modelName": "ジェネ / Gene",
+    "records": {
+      "bones": 224,
+      "morphs": 344,
+      "cameras": 0,
+      "lights": 0,
+      "shadows": 0,
+      "displays": 1
+    },
+    "lastFrame": 300,
+    "boneTracks": [
+      {
+        "key": "915382c482cc9065",
+        "name": "全ての親",
+        "sourceMatches": [
+          0
+        ]
+      },
+      {
+        "key": "835a8393835e815b",
+        "name": "センター",
+        "sourceMatches": [
+          1
+        ]
+      },
+      {
+        "key": "834f838b815b8375",
+        "name": "グルーブ",
+        "sourceMatches": [
+          2
+        ]
+      },
+      {
+        "key": "89ba94bc9067",
+        "name": "下半身",
+        "sourceMatches": [
+          3
+        ]
+      },
+      {
+        "key": "89ba94bc906790e6",
+        "name": "下半身先",
+        "sourceMatches": [
+          4
+        ]
+      },
+      {
+        "key": "8fe394bc9067",
+        "name": "上半身",
+        "sourceMatches": [
+          26
+        ]
+      },
+      {
+        "key": "8fe394bc906795e2",
+        "name": "上半身補",
+        "sourceMatches": []
+      },
+      {
+        "key": "8fe394bc906732",
+        "name": "上半身2",
+        "sourceMatches": [
+          28
+        ]
+      },
+      {
+        "key": "8ef1",
+        "name": "首",
+        "sourceMatches": [
+          29
+        ]
+      },
+      {
+        "key": "93aa",
+        "name": "頭",
+        "sourceMatches": [
+          30
+        ]
+      },
+      {
+        "key": "93aa90e6",
+        "name": "頭先",
+        "sourceMatches": [
+          31
+        ]
+      },
+      {
+        "key": "97bc96da",
+        "name": "両目",
+        "sourceMatches": [
+          32
+        ]
+      },
+      {
+        "key": "97bc96da90e6",
+        "name": "両目先",
+        "sourceMatches": [
+          33
+        ]
+      },
+      {
+        "key": "8db696da",
+        "name": "左目",
+        "sourceMatches": [
+          34
+        ]
+      },
+      {
+        "key": "8db696da90e6",
+        "name": "左目先",
+        "sourceMatches": [
+          35
+        ]
+      },
+      {
+        "key": "894596da",
+        "name": "右目",
+        "sourceMatches": [
+          36
+        ]
+      },
+      {
+        "key": "894596da90e6",
+        "name": "右目先",
+        "sourceMatches": [
+          37
+        ]
+      },
+      {
+        "key": "8db68ca8",
+        "name": "左肩",
+        "sourceMatches": [
+          50
+        ]
+      },
+      {
+        "key": "8db69872",
+        "name": "左腕",
+        "sourceMatches": [
+          51
+        ]
+      },
+      {
+        "key": "8db698729d80",
+        "name": "左腕捩",
+        "sourceMatches": [
+          52
+        ]
+      },
+      {
+        "key": "8db698729d809841",
+        "name": "左腕捩連",
+        "sourceMatches": []
+      },
+      {
+        "key": "8db682d082b6",
+        "name": "左ひじ",
+        "sourceMatches": [
+          53
+        ]
+      },
+      {
+        "key": "8db68ee89d80",
+        "name": "左手捩",
+        "sourceMatches": [
+          54
+        ]
+      },
+      {
+        "key": "8db68ee89d809841",
+        "name": "左手捩連",
+        "sourceMatches": []
+      },
+      {
+        "key": "8db68ee88ef1",
+        "name": "左手首",
+        "sourceMatches": [
+          55
+        ]
+      },
+      {
+        "key": "8db68ee890e6",
+        "name": "左手先",
+        "sourceMatches": [
+          56
+        ]
+      },
+      {
+        "key": "89458ca8",
+        "name": "右肩",
+        "sourceMatches": [
+          84
+        ]
+      },
+      {
+        "key": "89459872",
+        "name": "右腕",
+        "sourceMatches": [
+          85
+        ]
+      },
+      {
+        "key": "894598729d80",
+        "name": "右腕捩",
+        "sourceMatches": [
+          86
+        ]
+      },
+      {
+        "key": "894598729d809841",
+        "name": "右腕捩連",
+        "sourceMatches": []
+      },
+      {
+        "key": "894582d082b6",
+        "name": "右ひじ",
+        "sourceMatches": [
+          87
+        ]
+      },
+      {
+        "key": "89458ee89d80",
+        "name": "右手捩",
+        "sourceMatches": [
+          88
+        ]
+      },
+      {
+        "key": "89458ee89d809841",
+        "name": "右手捩連",
+        "sourceMatches": []
+      },
+      {
+        "key": "89458ee88ef1",
+        "name": "右手首",
+        "sourceMatches": [
+          89
+        ]
+      },
+      {
+        "key": "89458ee890e6",
+        "name": "右手先",
+        "sourceMatches": [
+          90
+        ]
+      },
+      {
+        "key": "89458ca89841",
+        "name": "右肩連",
+        "sourceMatches": []
+      },
+      {
+        "key": "89459872786361",
+        "name": "右腕xca",
+        "sourceMatches": []
+      },
+      {
+        "key": "89459872786362",
+        "name": "右腕xcb",
+        "sourceMatches": []
+      },
+      {
+        "key": "894598727863494b",
+        "name": "右腕xcIK",
+        "sourceMatches": []
+      },
+      {
+        "key": "8db690658e77824f",
+        "name": "左親指０",
+        "sourceMatches": [
+          64
+        ]
+      },
+      {
+        "key": "8db690658e778250",
+        "name": "左親指１",
+        "sourceMatches": [
+          65
+        ]
+      },
+      {
+        "key": "8db690658e778251",
+        "name": "左親指２",
+        "sourceMatches": [
+          66
+        ]
+      },
+      {
+        "key": "8db690658e7790e6",
+        "name": "左親指先",
+        "sourceMatches": [
+          67
+        ]
+      },
+      {
+        "key": "8db6906c8e778250",
+        "name": "左人指１",
+        "sourceMatches": [
+          68
+        ]
+      },
+      {
+        "key": "8db6906c8e778251",
+        "name": "左人指２",
+        "sourceMatches": [
+          69
+        ]
+      },
+      {
+        "key": "8db6906c8e778252",
+        "name": "左人指３",
+        "sourceMatches": [
+          70
+        ]
+      },
+      {
+        "key": "8db6906c8e7790e6",
+        "name": "左人指先",
+        "sourceMatches": [
+          71
+        ]
+      },
+      {
+        "key": "8db692868e778250",
+        "name": "左中指１",
+        "sourceMatches": [
+          72
+        ]
+      },
+      {
+        "key": "8db692868e778251",
+        "name": "左中指２",
+        "sourceMatches": [
+          73
+        ]
+      },
+      {
+        "key": "8db692868e778252",
+        "name": "左中指３",
+        "sourceMatches": [
+          74
+        ]
+      },
+      {
+        "key": "8db692868e7790e6",
+        "name": "左中指先",
+        "sourceMatches": [
+          75
+        ]
+      },
+      {
+        "key": "8db696f28e778250",
+        "name": "左薬指１",
+        "sourceMatches": [
+          76
+        ]
+      },
+      {
+        "key": "8db696f28e778251",
+        "name": "左薬指２",
+        "sourceMatches": [
+          77
+        ]
+      },
+      {
+        "key": "8db696f28e778252",
+        "name": "左薬指３",
+        "sourceMatches": [
+          78
+        ]
+      },
+      {
+        "key": "8db696f28e7790e6",
+        "name": "左薬指先",
+        "sourceMatches": [
+          79
+        ]
+      },
+      {
+        "key": "8db68fac8e778250",
+        "name": "左小指１",
+        "sourceMatches": [
+          80
+        ]
+      },
+      {
+        "key": "8db68fac8e778251",
+        "name": "左小指２",
+        "sourceMatches": [
+          81
+        ]
+      },
+      {
+        "key": "8db68fac8e778252",
+        "name": "左小指３",
+        "sourceMatches": [
+          82
+        ]
+      },
+      {
+        "key": "8db68fac8e7790e6",
+        "name": "左小指先",
+        "sourceMatches": [
+          83
+        ]
+      },
+      {
+        "key": "894590658e77824f",
+        "name": "右親指０",
+        "sourceMatches": [
+          98
+        ]
+      },
+      {
+        "key": "894590658e778250",
+        "name": "右親指１",
+        "sourceMatches": [
+          99
+        ]
+      },
+      {
+        "key": "894590658e778251",
+        "name": "右親指２",
+        "sourceMatches": [
+          100
+        ]
+      },
+      {
+        "key": "894590658e7790e6",
+        "name": "右親指先",
+        "sourceMatches": [
+          101
+        ]
+      },
+      {
+        "key": "8945906c8e778250",
+        "name": "右人指１",
+        "sourceMatches": [
+          102
+        ]
+      },
+      {
+        "key": "8945906c8e778251",
+        "name": "右人指２",
+        "sourceMatches": [
+          103
+        ]
+      },
+      {
+        "key": "8945906c8e778252",
+        "name": "右人指３",
+        "sourceMatches": [
+          104
+        ]
+      },
+      {
+        "key": "8945906c8e7790e6",
+        "name": "右人指先",
+        "sourceMatches": [
+          105
+        ]
+      },
+      {
+        "key": "894592868e778250",
+        "name": "右中指１",
+        "sourceMatches": [
+          106
+        ]
+      },
+      {
+        "key": "894592868e778251",
+        "name": "右中指２",
+        "sourceMatches": [
+          107
+        ]
+      },
+      {
+        "key": "894592868e778252",
+        "name": "右中指３",
+        "sourceMatches": [
+          108
+        ]
+      },
+      {
+        "key": "894592868e7790e6",
+        "name": "右中指先",
+        "sourceMatches": [
+          109
+        ]
+      },
+      {
+        "key": "894596f28e778250",
+        "name": "右薬指１",
+        "sourceMatches": [
+          110
+        ]
+      },
+      {
+        "key": "894596f28e778251",
+        "name": "右薬指２",
+        "sourceMatches": [
+          111
+        ]
+      },
+      {
+        "key": "894596f28e778252",
+        "name": "右薬指３",
+        "sourceMatches": [
+          112
+        ]
+      },
+      {
+        "key": "894596f28e7790e6",
+        "name": "右薬指先",
+        "sourceMatches": [
+          113
+        ]
+      },
+      {
+        "key": "89458fac8e778250",
+        "name": "右小指１",
+        "sourceMatches": [
+          114
+        ]
+      },
+      {
+        "key": "89458fac8e778251",
+        "name": "右小指２",
+        "sourceMatches": [
+          115
+        ]
+      },
+      {
+        "key": "89458fac8e778252",
+        "name": "右小指３",
+        "sourceMatches": [
+          116
+        ]
+      },
+      {
+        "key": "89458fac8e7790e6",
+        "name": "右小指先",
+        "sourceMatches": [
+          117
+        ]
+      },
+      {
+        "key": "8db691ab",
+        "name": "左足",
+        "sourceMatches": [
+          5
+        ]
+      },
+      {
+        "key": "8db691ab9d80",
+        "name": "左足捩",
+        "sourceMatches": []
+      },
+      {
+        "key": "8db682d082b4",
+        "name": "左ひざ",
+        "sourceMatches": [
+          6
+        ]
+      },
+      {
+        "key": "8db682d082b49d80",
+        "name": "左ひざ捩",
+        "sourceMatches": []
+      },
+      {
+        "key": "8db691ab8ef1",
+        "name": "左足首",
+        "sourceMatches": [
+          10
+        ]
+      },
+      {
+        "key": "8db691ab90e6",
+        "name": "左足先",
+        "sourceMatches": []
+      },
+      {
+        "key": "8db691ab494b9065",
+        "name": "左足IK親",
+        "sourceMatches": [
+          7
+        ]
+      },
+      {
+        "key": "8db691ab8268826a",
+        "name": "左足ＩＫ",
+        "sourceMatches": [
+          8
+        ]
+      },
+      {
+        "key": "8db682c282dc90e68268826a",
+        "name": "左つま先ＩＫ",
+        "sourceMatches": [
+          9
+        ]
+      },
+      {
+        "key": "8db682c282dc90e64558",
+        "name": "左つま先EX",
+        "sourceMatches": []
+      },
+      {
+        "key": "8db682c282dc90e690e6",
+        "name": "左つま先先",
+        "sourceMatches": []
+      },
+      {
+        "key": "894591ab",
+        "name": "右足",
+        "sourceMatches": [
+          12
+        ]
+      },
+      {
+        "key": "894591ab9d80",
+        "name": "右足捩",
+        "sourceMatches": []
+      },
+      {
+        "key": "894582d082b4",
+        "name": "右ひざ",
+        "sourceMatches": [
+          13
+        ]
+      },
+      {
+        "key": "894582d082b49d80",
+        "name": "右ひざ捩",
+        "sourceMatches": []
+      },
+      {
+        "key": "894591ab8ef1",
+        "name": "右足首",
+        "sourceMatches": [
+          17
+        ]
+      },
+      {
+        "key": "894591ab90e6",
+        "name": "右足先",
+        "sourceMatches": []
+      },
+      {
+        "key": "894591ab494b9065",
+        "name": "右足IK親",
+        "sourceMatches": [
+          14
+        ]
+      },
+      {
+        "key": "894591ab8268826a",
+        "name": "右足ＩＫ",
+        "sourceMatches": [
+          15
+        ]
+      },
+      {
+        "key": "894582c282dc90e68268826a",
+        "name": "右つま先ＩＫ",
+        "sourceMatches": [
+          16
+        ]
+      },
+      {
+        "key": "894582c282dc90e64558",
+        "name": "右つま先EX",
+        "sourceMatches": []
+      },
+      {
+        "key": "894582c282dc90e690e6",
+        "name": "右つま先先",
+        "sourceMatches": []
+      },
+      {
+        "key": "83438384838a8393834f315f31",
+        "name": "イヤリング1_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "83438384838a8393834f315f32",
+        "name": "イヤリング1_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "83438384838a8393834f31456e64",
+        "name": "イヤリング1End",
+        "sourceMatches": []
+      },
+      {
+        "key": "914f94af315f31",
+        "name": "前髪1_1",
+        "sourceMatches": [
+          134
+        ]
+      },
+      {
+        "key": "914f94af315f32",
+        "name": "前髪1_2",
+        "sourceMatches": [
+          135
+        ]
+      },
+      {
+        "key": "914f94af31456e64",
+        "name": "前髪1End",
+        "sourceMatches": [
+          136
+        ]
+      },
+      {
+        "key": "894589a194af315f31",
+        "name": "右横髪1_1",
+        "sourceMatches": [
+          172
+        ]
+      },
+      {
+        "key": "894589a194af315f32",
+        "name": "右横髪1_2",
+        "sourceMatches": [
+          173
+        ]
+      },
+      {
+        "key": "894589a194af315f33",
+        "name": "右横髪1_3",
+        "sourceMatches": [
+          174
+        ]
+      },
+      {
+        "key": "894589a194af31456e64",
+        "name": "右横髪1End",
+        "sourceMatches": [
+          175
+        ]
+      },
+      {
+        "key": "894589a194af325f31",
+        "name": "右横髪2_1",
+        "sourceMatches": [
+          176
+        ]
+      },
+      {
+        "key": "894589a194af325f32",
+        "name": "右横髪2_2",
+        "sourceMatches": [
+          177
+        ]
+      },
+      {
+        "key": "894589a194af325f33",
+        "name": "右横髪2_3",
+        "sourceMatches": [
+          178
+        ]
+      },
+      {
+        "key": "894589a194af32456e64",
+        "name": "右横髪2End",
+        "sourceMatches": [
+          179
+        ]
+      },
+      {
+        "key": "8ce394af41315f31",
+        "name": "後髪A1_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af41315f32",
+        "name": "後髪A1_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4131456e64",
+        "name": "後髪A1End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af41325f31",
+        "name": "後髪A2_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4132456e64",
+        "name": "後髪A2End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af41335f31",
+        "name": "後髪A3_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4133456e64",
+        "name": "後髪A3End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af41345f31",
+        "name": "後髪A4_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4134456e64",
+        "name": "後髪A4End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af41355f31",
+        "name": "後髪A5_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4135456e64",
+        "name": "後髪A5End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af41365f31",
+        "name": "後髪A6_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4136456e64",
+        "name": "後髪A6End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af41375f31",
+        "name": "後髪A7_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af41375f32",
+        "name": "後髪A7_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4137456e64",
+        "name": "後髪A7End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42315f31",
+        "name": "後髪B1_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42315f32",
+        "name": "後髪B1_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4231456e64",
+        "name": "後髪B1End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42325f31",
+        "name": "後髪B2_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42325f32",
+        "name": "後髪B2_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4232456e64",
+        "name": "後髪B2End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42335f31",
+        "name": "後髪B3_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42335f32",
+        "name": "後髪B3_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4233456e64",
+        "name": "後髪B3End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42345f31",
+        "name": "後髪B4_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42345f32",
+        "name": "後髪B4_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4234456e64",
+        "name": "後髪B4End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42355f31",
+        "name": "後髪B5_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42355f32",
+        "name": "後髪B5_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4235456e64",
+        "name": "後髪B5End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42365f31",
+        "name": "後髪B6_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42365f32",
+        "name": "後髪B6_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4236456e64",
+        "name": "後髪B6End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42375f31",
+        "name": "後髪B7_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42375f32",
+        "name": "後髪B7_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4237456e64",
+        "name": "後髪B7End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42385f31",
+        "name": "後髪B8_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af42385f32",
+        "name": "後髪B8_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4238456e64",
+        "name": "後髪B8End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af43315f31",
+        "name": "後髪C1_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af43315f32",
+        "name": "後髪C1_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4331456e64",
+        "name": "後髪C1End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af43325f31",
+        "name": "後髪C2_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af43325f32",
+        "name": "後髪C2_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4332456e64",
+        "name": "後髪C2End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af43335f31",
+        "name": "後髪C3_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af43335f32",
+        "name": "後髪C3_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce394af4333456e64",
+        "name": "後髪C3End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8341837a96d1435f4941",
+        "name": "アホ毛C_IA",
+        "sourceMatches": []
+      },
+      {
+        "key": "8341837a96d1435f4942",
+        "name": "アホ毛C_IB",
+        "sourceMatches": []
+      },
+      {
+        "key": "8341837a96d1435f4943",
+        "name": "アホ毛C_IC",
+        "sourceMatches": []
+      },
+      {
+        "key": "8341837a96d1435f4944",
+        "name": "アホ毛C_ID",
+        "sourceMatches": []
+      },
+      {
+        "key": "8341837a96d1435f4945",
+        "name": "アホ毛C_IE",
+        "sourceMatches": []
+      },
+      {
+        "key": "8341837a96d1435f4946",
+        "name": "アホ毛C_IF",
+        "sourceMatches": []
+      },
+      {
+        "key": "8341837a96d1435f4947",
+        "name": "アホ毛C_IG",
+        "sourceMatches": []
+      },
+      {
+        "key": "8341837a96d1435f4948",
+        "name": "アホ毛C_IH",
+        "sourceMatches": []
+      },
+      {
+        "key": "8341837a96d1435f49456e64",
+        "name": "アホ毛C_IEnd",
+        "sourceMatches": []
+      },
+      {
+        "key": "914f834e838d815b834e315f31",
+        "name": "前クローク1_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "914f834e838d815b834e315f32",
+        "name": "前クローク1_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "914f834e838d815b834e31456e64",
+        "name": "前クローク1End",
+        "sourceMatches": []
+      },
+      {
+        "key": "914f834e838d815b834e325f317863",
+        "name": "前クローク2_1xc",
+        "sourceMatches": []
+      },
+      {
+        "key": "914f834e838d815b834e325f32",
+        "name": "前クローク2_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "914f834e838d815b834e32456e64",
+        "name": "前クローク2End",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e315f31",
+        "name": "横クローク1_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e315f32",
+        "name": "横クローク1_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e31456e64",
+        "name": "横クローク1End",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e325f31",
+        "name": "横クローク2_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e325f32",
+        "name": "横クローク2_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e32456e64",
+        "name": "横クローク2End",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e335f31",
+        "name": "横クローク3_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e335f32",
+        "name": "横クローク3_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e33456e64",
+        "name": "横クローク3End",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e345f31",
+        "name": "横クローク4_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e345f32",
+        "name": "横クローク4_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e34456e64",
+        "name": "横クローク4End",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e355f31",
+        "name": "横クローク5_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e355f32",
+        "name": "横クローク5_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e35456e64",
+        "name": "横クローク5End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce3834e838d815b834e315f31",
+        "name": "後クローク1_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce3834e838d815b834e315f32",
+        "name": "後クローク1_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce3834e838d815b834e31456e64",
+        "name": "後クローク1End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce3834e838d815b834e325f31",
+        "name": "後クローク2_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce3834e838d815b834e325f32",
+        "name": "後クローク2_2",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce3834e838d815b834e32456e64",
+        "name": "後クローク2End",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb315f31",
+        "name": "すそ1_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb31456e64",
+        "name": "すそ1End",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb325f31",
+        "name": "すそ2_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb32456e64",
+        "name": "すそ2End",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb335f31",
+        "name": "すそ3_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb33456e64",
+        "name": "すそ3End",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb345f31",
+        "name": "すそ4_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb34456e64",
+        "name": "すそ4End",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb355f31",
+        "name": "すそ5_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb35456e64",
+        "name": "すそ5End",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb365f31",
+        "name": "すそ6_1",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b782bb36456e64",
+        "name": "すそ6End",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce3834e838d815b834e325f32908e",
+        "name": "後クローク2_2錘",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ce3834e838d815b834e315f32908e",
+        "name": "後クローク1_2錘",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e355f32908e",
+        "name": "横クローク5_2錘",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e345f32908e",
+        "name": "横クローク4_2錘",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e335f32908e",
+        "name": "横クローク3_2錘",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e325f32908e",
+        "name": "横クローク2_2錘",
+        "sourceMatches": []
+      },
+      {
+        "key": "89a1834e838d815b834e315f32908e",
+        "name": "横クローク1_2錘",
+        "sourceMatches": []
+      },
+      {
+        "key": "914f834e838d815b834e325f32908e",
+        "name": "前クローク2_2錘",
+        "sourceMatches": []
+      },
+      {
+        "key": "914f834e838d815b834e315f32908e",
+        "name": "前クローク1_2錘",
+        "sourceMatches": []
+      },
+      {
+        "key": "95bd96ca",
+        "name": "平面",
+        "sourceMatches": []
+      }
+    ],
+    "morphTracks": [
+      {
+        "key": "905e96ca96da",
+        "name": "真面目",
+        "sourceMatches": [
+          0
+        ]
+      },
+      {
+        "key": "8da282e9",
+        "name": "困る",
+        "sourceMatches": [
+          132
+        ]
+      },
+      {
+        "key": "82c982b182e8",
+        "name": "にこり",
+        "sourceMatches": [
+          2
+        ]
+      },
+      {
+        "key": "937b82e8",
+        "name": "怒り",
+        "sourceMatches": [
+          133
+        ]
+      },
+      {
+        "key": "62726f775f6c617567685f67656f5f",
+        "name": "brow_laugh_geo_",
+        "sourceMatches": []
+      },
+      {
+        "key": "62726f775f73757270726973655f67",
+        "name": "brow_surprise_g",
+        "sourceMatches": []
+      },
+      {
+        "key": "62726f775f7361645f67656f5f4c",
+        "name": "brow_sad_geo_L",
+        "sourceMatches": [
+          104
+        ]
+      },
+      {
+        "key": "62726f775f7361645f67656f5f52",
+        "name": "brow_sad_geo_R",
+        "sourceMatches": [
+          105
+        ]
+      },
+      {
+        "key": "62726f775f7269646963756c655f67",
+        "name": "brow_ridicule_g",
+        "sourceMatches": []
+      },
+      {
+        "key": "62726f775f616e6772795f67656f5f",
+        "name": "brow_angry_geo_",
+        "sourceMatches": []
+      },
+      {
+        "key": "8da282e8",
+        "name": "困り",
+        "sourceMatches": [
+          129
+        ]
+      },
+      {
+        "key": "8da282e88db6",
+        "name": "困り左",
+        "sourceMatches": [
+          131
+        ]
+      },
+      {
+        "key": "8da282e88945",
+        "name": "困り右",
+        "sourceMatches": [
+          130
+        ]
+      },
+      {
+        "key": "8fe3",
+        "name": "上",
+        "sourceMatches": [
+          7
+        ]
+      },
+      {
+        "key": "89ba",
+        "name": "下",
+        "sourceMatches": [
+          8
+        ]
+      },
+      {
+        "key": "937b82e88db6",
+        "name": "怒り左",
+        "sourceMatches": [
+          134
+        ]
+      },
+      {
+        "key": "937b82e88945",
+        "name": "怒り右",
+        "sourceMatches": [
+          135
+        ]
+      },
+      {
+        "key": "82dc82ce82bd82ab",
+        "name": "まばたき",
+        "sourceMatches": [
+          11
+        ]
+      },
+      {
+        "key": "8fce82a2",
+        "name": "笑い",
+        "sourceMatches": [
+          12
+        ]
+      },
+      {
+        "key": "834583428393834e",
+        "name": "ウィンク",
+        "sourceMatches": [
+          15
+        ]
+      },
+      {
+        "key": "834583428393834e8945",
+        "name": "ウィンク右",
+        "sourceMatches": [
+          13
+        ]
+      },
+      {
+        "key": "834583428393834e8251",
+        "name": "ウィンク２",
+        "sourceMatches": [
+          16
+        ]
+      },
+      {
+        "key": "b3a8ddb882518945",
+        "name": "ｳｨﾝｸ２右",
+        "sourceMatches": [
+          14
+        ]
+      },
+      {
+        "key": "82d182c182ad82e8",
+        "name": "びっくり",
+        "sourceMatches": [
+          17
+        ]
+      },
+      {
+        "key": "82b682c696da",
+        "name": "じと目",
+        "sourceMatches": [
+          136
+        ]
+      },
+      {
+        "key": "82c882ca8149",
+        "name": "なぬ！",
+        "sourceMatches": []
+      },
+      {
+        "key": "93b58fac",
+        "name": "瞳小",
+        "sourceMatches": [
+          23
+        ]
+      },
+      {
+        "key": "834c8389834c838996da",
+        "name": "キラキラ目",
+        "sourceMatches": [
+          137
+        ]
+      },
+      {
+        "key": "484c82c882b5",
+        "name": "HLなし",
+        "sourceMatches": [
+          22
+        ]
+      },
+      {
+        "key": "82ae82e982ae82e9",
+        "name": "ぐるぐる",
+        "sourceMatches": []
+      },
+      {
+        "key": "baafc1d0ddc5",
+        "name": "ｺｯﾁﾐﾝﾅ",
+        "sourceMatches": [
+          21
+        ]
+      },
+      {
+        "key": "6579655f77696e6b5f67656f5f4c",
+        "name": "eye_wink_geo_L",
+        "sourceMatches": [
+          69
+        ]
+      },
+      {
+        "key": "6579655f77696e6b5f67656f5f52",
+        "name": "eye_wink_geo_R",
+        "sourceMatches": [
+          70
+        ]
+      },
+      {
+        "key": "6579655f636c6f73655f67656f5f4c",
+        "name": "eye_close_geo_L",
+        "sourceMatches": [
+          71
+        ]
+      },
+      {
+        "key": "6579655f636c6f73655f67656f5f52",
+        "name": "eye_close_geo_R",
+        "sourceMatches": [
+          72
+        ]
+      },
+      {
+        "key": "6579655f73757270726973655f6765",
+        "name": "eye_surprise_ge",
+        "sourceMatches": []
+      },
+      {
+        "key": "6579655f7361645f67656f5f4c",
+        "name": "eye_sad_geo_L",
+        "sourceMatches": [
+          75
+        ]
+      },
+      {
+        "key": "6579655f7361645f67656f5f52",
+        "name": "eye_sad_geo_R",
+        "sourceMatches": [
+          76
+        ]
+      },
+      {
+        "key": "6579655f616e6772795f67656f5f4c",
+        "name": "eye_angry_geo_L",
+        "sourceMatches": [
+          77
+        ]
+      },
+      {
+        "key": "6579655f616e6772795f67656f5f52",
+        "name": "eye_angry_geo_R",
+        "sourceMatches": [
+          78
+        ]
+      },
+      {
+        "key": "6579655f646f776e636173745f6765",
+        "name": "eye_downcast_ge",
+        "sourceMatches": []
+      },
+      {
+        "key": "6579655f737461725f67656f5f43",
+        "name": "eye_star_geo_C",
+        "sourceMatches": []
+      },
+      {
+        "key": "8ca98a4a82ab",
+        "name": "見開き",
+        "sourceMatches": [
+          141
+        ]
+      },
+      {
+        "key": "8bc182ab",
+        "name": "驚き",
+        "sourceMatches": [
+          140
+        ]
+      },
+      {
+        "key": "90af96da",
+        "name": "星目",
+        "sourceMatches": [
+          138
+        ]
+      },
+      {
+        "key": "82b582a282bd82af",
+        "name": "しいたけ",
+        "sourceMatches": [
+          139
+        ]
+      },
+      {
+        "key": "90e2965d96da",
+        "name": "絶望目",
+        "sourceMatches": [
+          26
+        ]
+      },
+      {
+        "key": "82dc82ce8db6",
+        "name": "まば左",
+        "sourceMatches": [
+          27
+        ]
+      },
+      {
+        "key": "82dc82ce8945",
+        "name": "まば右",
+        "sourceMatches": [
+          28
+        ]
+      },
+      {
+        "key": "834f838b96da",
+        "name": "グル目",
+        "sourceMatches": [
+          29
+        ]
+      },
+      {
+        "key": "82a0",
+        "name": "あ",
+        "sourceMatches": [
+          31
+        ]
+      },
+      {
+        "key": "82a2",
+        "name": "い",
+        "sourceMatches": [
+          32
+        ]
+      },
+      {
+        "key": "82a4",
+        "name": "う",
+        "sourceMatches": [
+          33
+        ]
+      },
+      {
+        "key": "82a6",
+        "name": "え",
+        "sourceMatches": [
+          34
+        ]
+      },
+      {
+        "key": "82a8",
+        "name": "お",
+        "sourceMatches": [
+          35
+        ]
+      },
+      {
+        "key": "82a882a87e",
+        "name": "おお~",
+        "sourceMatches": [
+          36
+        ]
+      },
+      {
+        "key": "838f",
+        "name": "ワ",
+        "sourceMatches": [
+          41
+        ]
+      },
+      {
+        "key": "81c8",
+        "name": "∧",
+        "sourceMatches": [
+          142
+        ]
+      },
+      {
+        "key": "82cd82f182c18149",
+        "name": "はんっ！",
+        "sourceMatches": [
+          38
+        ]
+      },
+      {
+        "key": "82a6815b",
+        "name": "えー",
+        "sourceMatches": [
+          39
+        ]
+      },
+      {
+        "key": "82c982e282e8",
+        "name": "にやり",
+        "sourceMatches": [
+          40
+        ]
+      },
+      {
+        "key": "6d6f7574685f615f67656f5f43",
+        "name": "mouth_a_geo_C",
+        "sourceMatches": [
+          83
+        ]
+      },
+      {
+        "key": "6d6f7574685f695f67656f5f43",
+        "name": "mouth_i_geo_C",
+        "sourceMatches": [
+          84
+        ]
+      },
+      {
+        "key": "6d6f7574685f755f67656f5f43",
+        "name": "mouth_u_geo_C",
+        "sourceMatches": [
+          85
+        ]
+      },
+      {
+        "key": "6d6f7574685f655f67656f5f43",
+        "name": "mouth_e_geo_C",
+        "sourceMatches": [
+          86
+        ]
+      },
+      {
+        "key": "6d6f7574685f6f5f67656f5f43",
+        "name": "mouth_o_geo_C",
+        "sourceMatches": [
+          87
+        ]
+      },
+      {
+        "key": "6d6f7574685f6f685f67656f5f43",
+        "name": "mouth_oh_geo_C",
+        "sourceMatches": [
+          88
+        ]
+      },
+      {
+        "key": "6d6f7574685f736d696c655f67656f",
+        "name": "mouth_smile_geo",
+        "sourceMatches": []
+      },
+      {
+        "key": "6d6f7574685f616e6772795f67656f",
+        "name": "mouth_angry_geo",
+        "sourceMatches": []
+      },
+      {
+        "key": "6d6f7574685f7361645f67656f5f43",
+        "name": "mouth_sad_geo_C",
+        "sourceMatches": []
+      },
+      {
+        "key": "6d6f7574685f666c61745f67656f5f",
+        "name": "mouth_flat_geo_",
+        "sourceMatches": []
+      },
+      {
+        "key": "6d6f7574685f73757270726973655f",
+        "name": "mouth_surprise_",
+        "sourceMatches": []
+      },
+      {
+        "key": "6d6f7574685f7269646963756c655f",
+        "name": "mouth_ridicule_",
+        "sourceMatches": []
+      },
+      {
+        "key": "6d6f7574685f6c617567685f67656f",
+        "name": "mouth_laugh_geo",
+        "sourceMatches": []
+      },
+      {
+        "key": "82c982c182b182e8",
+        "name": "にっこり",
+        "sourceMatches": [
+          42
+        ]
+      },
+      {
+        "key": "8cfb92f782df",
+        "name": "口締め",
+        "sourceMatches": [
+          144
+        ]
+      },
+      {
+        "key": "82a082a0",
+        "name": "ああ",
+        "sourceMatches": [
+          44
+        ]
+      },
+      {
+        "key": "82a282a2",
+        "name": "いい",
+        "sourceMatches": [
+          45
+        ]
+      },
+      {
+        "key": "82c982bd82e8",
+        "name": "にたり",
+        "sourceMatches": [
+          46
+        ]
+      },
+      {
+        "key": "8c8b82d1",
+        "name": "結び",
+        "sourceMatches": [
+          143
+        ]
+      },
+      {
+        "key": "8ba982d1",
+        "name": "叫び",
+        "sourceMatches": [
+          43
+        ]
+      },
+      {
+        "key": "82de",
+        "name": "む",
+        "sourceMatches": [
+          146
+        ]
+      },
+      {
+        "key": "82a0815b82ea815b",
+        "name": "あーれー",
+        "sourceMatches": [
+          145
+        ]
+      },
+      {
+        "key": "8cfb82ed82e782a2",
+        "name": "口わらい",
+        "sourceMatches": [
+          147
+        ]
+      },
+      {
+        "key": "966a8fc682e8",
+        "name": "頬照り",
+        "sourceMatches": []
+      },
+      {
+        "key": "966a8ece90fc8fc182b5",
+        "name": "頬斜線消し",
+        "sourceMatches": []
+      },
+      {
+        "key": "966a91538fc182b5",
+        "name": "頬全消し",
+        "sourceMatches": []
+      },
+      {
+        "key": "966a90d482dd8fc182b5",
+        "name": "頬赤み消し",
+        "sourceMatches": []
+      },
+      {
+        "key": "8fce8ae728918d",
+        "name": "笑顔(総",
+        "sourceMatches": []
+      },
+      {
+        "key": "8bc182ab28918d",
+        "name": "驚き(総",
+        "sourceMatches": []
+      },
+      {
+        "key": "937b82e88169918d",
+        "name": "怒り（総",
+        "sourceMatches": []
+      },
+      {
+        "key": "94df82b582a28169918d",
+        "name": "悲しい（総",
+        "sourceMatches": []
+      },
+      {
+        "key": "82c682b696da28918d",
+        "name": "とじ目(総",
+        "sourceMatches": []
+      },
+      {
+        "key": "82b682c696da28918d",
+        "name": "じと目(総",
+        "sourceMatches": []
+      },
+      {
+        "key": "834c83818ae728918d",
+        "name": "キメ顔(総",
+        "sourceMatches": []
+      },
+      {
+        "key": "8da282e88ae78169918d",
+        "name": "困り顔（総",
+        "sourceMatches": []
+      },
+      {
+        "key": "82c982c182b182e88cfb28918d",
+        "name": "にっこり口(総",
+        "sourceMatches": []
+      },
+      {
+        "key": "894591b38f6b8fac",
+        "name": "右袖縮小",
+        "sourceMatches": []
+      },
+      {
+        "key": "838183628356838582c882b5",
+        "name": "メッシュなし",
+        "sourceMatches": []
+      },
+      {
+        "key": "94af97af82c882b5",
+        "name": "髪留なし",
+        "sourceMatches": []
+      },
+      {
+        "key": "746f6f74685f75705f67656f5f43",
+        "name": "tooth_up_geo_C",
+        "sourceMatches": [
+          108
+        ]
+      },
+      {
+        "key": "746f6f74685f646f776e5f67656f5f",
+        "name": "tooth_down_geo_",
+        "sourceMatches": []
+      },
+      {
+        "key": "746f6f74685f7570446f776e5f6765",
+        "name": "tooth_upDown_ge",
+        "sourceMatches": []
+      },
+      {
+        "key": "707570696c5f64656372656173655f",
+        "name": "pupil_decrease_",
+        "sourceMatches": []
+      },
+      {
+        "key": "636865656b5f626c7573685f67656f",
+        "name": "cheek_blush_geo",
+        "sourceMatches": []
+      },
+      {
+        "key": "6d61626174616b697061727473",
+        "name": "mabatakiparts",
+        "sourceMatches": []
+      },
+      {
+        "key": "8fc682ea",
+        "name": "照れ",
+        "sourceMatches": [
+          49
+        ]
+      },
+      {
+        "key": "90d482dd",
+        "name": "赤み",
+        "sourceMatches": [
+          128
+        ]
+      },
+      {
+        "key": "90c282b482df",
+        "name": "青ざめ",
+        "sourceMatches": [
+          126
+        ]
+      },
+      {
+        "key": "82c782f182e682e8",
+        "name": "どんより",
+        "sourceMatches": [
+          127
+        ]
+      },
+      {
+        "key": "82a282e782a282e7",
+        "name": "いらいら",
+        "sourceMatches": [
+          148
+        ]
+      }
+    ],
+    "displays": [
+      {
+        "frame": 0,
+        "visible": 1,
+        "ik": [
+          {
+            "name": {
+              "raw": [
+                137,
+                69,
+                152,
+                114,
+                120,
+                99,
+                73,
+                75,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "text": "右腕xcIK",
+              "terminated": true,
+              "key": "894598727863494b"
+            },
+            "enabled": 1
+          },
+          {
+            "name": {
+              "raw": [
+                141,
+                182,
+                145,
+                171,
+                130,
+                104,
+                130,
+                106,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "text": "左足ＩＫ",
+              "terminated": true,
+              "key": "8db691ab8268826a"
+            },
+            "enabled": 1
+          },
+          {
+            "name": {
+              "raw": [
+                141,
+                182,
+                130,
+                194,
+                130,
+                220,
+                144,
+                230,
+                130,
+                104,
+                130,
+                106,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "text": "左つま先ＩＫ",
+              "terminated": true,
+              "key": "8db682c282dc90e68268826a"
+            },
+            "enabled": 1
+          },
+          {
+            "name": {
+              "raw": [
+                137,
+                69,
+                145,
+                171,
+                130,
+                104,
+                130,
+                106,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "text": "右足ＩＫ",
+              "terminated": true,
+              "key": "894591ab8268826a"
+            },
+            "enabled": 1
+          },
+          {
+            "name": {
+              "raw": [
+                137,
+                69,
+                130,
+                194,
+                130,
+                220,
+                144,
+                230,
+                130,
+                104,
+                130,
+                106,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "text": "右つま先ＩＫ",
+              "terminated": true,
+              "key": "894582c282dc90e68268826a"
+            },
+            "enabled": 1
+          },
+          {
+            "name": {
+              "raw": [
+                145,
+                79,
+                131,
+                78,
+                131,
+                141,
+                129,
+                91,
+                131,
+                78,
+                50,
+                95,
+                49,
+                120,
+                99,
+                73,
+                75,
+                0,
+                0,
+                0
+              ],
+              "text": "前クローク2_1xcIK",
+              "terminated": true,
+              "key": "914f834e838d815b834e325f317863494b"
+            },
+            "enabled": 1
+          }
+        ],
+        "raw": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          6,
+          0,
+          0,
+          0,
+          137,
+          69,
+          152,
+          114,
+          120,
+          99,
+          73,
+          75,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          141,
+          182,
+          145,
+          171,
+          130,
+          104,
+          130,
+          106,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          141,
+          182,
+          130,
+          194,
+          130,
+          220,
+          144,
+          230,
+          130,
+          104,
+          130,
+          106,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          137,
+          69,
+          145,
+          171,
+          130,
+          104,
+          130,
+          106,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          137,
+          69,
+          130,
+          194,
+          130,
+          220,
+          144,
+          230,
+          130,
+          104,
+          130,
+          106,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          145,
+          79,
+          131,
+          78,
+          131,
+          141,
+          129,
+          91,
+          131,
+          78,
+          50,
+          95,
+          49,
+          120,
+          99,
+          73,
+          75,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "execution": "Not played. Names include truncated/unmatched tracks; modelName is informational. This demo uses manual vertex expressions, not this motion or IK/physics."
+  }
+}

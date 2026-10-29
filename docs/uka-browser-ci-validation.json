@@ -1,0 +1,1395 @@
+{
+  "repository": "takahirox/mmd-gltf",
+  "issue": 52,
+  "pullRequest": 53,
+  "headSha": "cfa692a8527a7621d0b6ac50db3cbc0a686e3185",
+  "checkoutMergeSha": "e106d8ae85409ffc602355c20f414752b70723f1",
+  "runner": "ubuntu-24.04",
+  "browserChannel": "chromium",
+  "baseline": {
+    "url": "https://github.com/takahirox/mmd-gltf/actions/runs/40159817349",
+    "registeredTests": 79,
+    "browserStepStartedAt": "2026-10-25T03:57:32Z",
+    "browserStepCompletedAt": "2026-10-25T05:15:00Z",
+    "browserStepDurationMs": 4648000,
+    "approximateMinutes": 77
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "url": "https://github.com/takahirox/mmd-gltf/actions/runs/40684077195/attempts/1",
+      "jobUrl": "https://github.com/takahirox/mmd-gltf/actions/runs/40684077195/job/122801858883",
+      "conclusion": "failure",
+      "artifactUrl": "https://github.com/takahirox/mmd-gltf/actions/runs/40684077195/artifacts/12816517266",
+      "artifactZipSha256": "23aaff2d31274e037a0f88f2896b12f2c24fd5e08f868941383cce696c609ddb",
+      "checks": [
+        {
+          "name": "Run npm run build",
+          "conclusion": "success",
+          "started_at": "2026-10-28T11:58:49Z",
+          "completed_at": "2026-10-28T12:00:56Z"
+        },
+        {
+          "name": "Run npm run typecheck",
+          "conclusion": "success",
+          "started_at": "2026-10-28T12:00:56Z",
+          "completed_at": "2026-10-28T12:01:03Z"
+        },
+        {
+          "name": "Run npm test",
+          "conclusion": "success",
+          "started_at": "2026-10-28T12:01:03Z",
+          "completed_at": "2026-10-28T12:04:07Z"
+        },
+        {
+          "name": "Run npm run test:browser",
+          "conclusion": "failure",
+          "started_at": "2026-10-28T12:04:43Z",
+          "completed_at": "2026-10-28T12:40:43Z"
+        },
+        {
+          "name": "Run npm run check:links",
+          "conclusion": "skipped",
+          "started_at": "2026-10-28T12:40:43Z",
+          "completed_at": "2026-10-28T12:40:43Z"
+        },
+        {
+          "name": "Run git diff --check",
+          "conclusion": "skipped",
+          "started_at": "2026-10-28T12:40:43Z",
+          "completed_at": "2026-10-28T12:40:43Z"
+        }
+      ],
+      "browserSummary": {
+        "environment": {
+          "ci": true,
+          "platform": "linux",
+          "node": "v22.23.3",
+          "workers": 1
+        },
+        "status": "failed",
+        "durationMs": 2158131.941,
+        "baselineRun66ApproximateMs": 4620000,
+        "baselineTestCount": 79,
+        "testCount": 73,
+        "reductionFromApproximateBaselinePercent": 53.28718742424242,
+        "cases": [
+          {
+            "title": "bdef.spec.ts / converted PMX skins match analytic surface and outline predictions through pinned GLTFLoader",
+            "status": "passed",
+            "durationMs": 1993
+          },
+          {
+            "title": "bone-morph.spec.ts / built bone Demo: bone-box / bone-a / bytes",
+            "status": "passed",
+            "durationMs": 39378
+          },
+          {
+            "title": "bone-morph.spec.ts / built bone Demo: bone-wedge / bone-b / glb + gltf",
+            "status": "passed",
+            "durationMs": 63147
+          },
+          {
+            "title": "bone-morph.spec.ts / built bone morph raster and exports: both rigs/motions, bytes/GLB/glTF, Toon/PBR, Outline and both VPD handoffs",
+            "status": "passed",
+            "durationMs": 69591
+          },
+          {
+            "title": "bone-morph.spec.ts / bone morph actual SDEF/QDEF GPU positions and normals",
+            "status": "passed",
+            "durationMs": 7811
+          },
+          {
+            "title": "demo-loading.spec.ts / binding map failure after rig replacement keeps asset, controls and diagnostics consistent",
+            "status": "passed",
+            "durationMs": 4609
+          },
+          {
+            "title": "example.spec.ts / production TSL graph matches independent numerical fixtures on WebGL2",
+            "status": "passed",
+            "durationMs": 2080
+          },
+          {
+            "title": "example.spec.ts / built comparison keeps the light-gray fallback while assets load",
+            "status": "passed",
+            "durationMs": 11451
+          },
+          {
+            "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgl site",
+            "status": "passed",
+            "durationMs": 63235
+          },
+          {
+            "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgpu site",
+            "status": "skipped",
+            "durationMs": 687
+          },
+          {
+            "title": "example.spec.ts / missing PMX image reports the reference failure clearly",
+            "status": "passed",
+            "durationMs": 4797
+          },
+          {
+            "title": "group.spec.ts / built group Demo: group-box / group-a / bytes",
+            "status": "passed",
+            "durationMs": 36678
+          },
+          {
+            "title": "group.spec.ts / built group Demo: group-wedge / group-b / glb + gltf",
+            "status": "passed",
+            "durationMs": 63724
+          },
+          {
+            "title": "group.spec.ts / built group Demo acknowledges fractional state and appearance only after rendering",
+            "status": "passed",
+            "durationMs": 7319
+          },
+          {
+            "title": "group.spec.ts / built group conformance: independent scalar rasters and applied GLB/glTF export round trips",
+            "status": "passed",
+            "durationMs": 30115
+          },
+          {
+            "title": "group.spec.ts / built group targets precede actual SDEF/QDEF GPU positions and normals",
+            "status": "passed",
+            "durationMs": 7791
+          },
+          {
+            "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgl",
+            "status": "passed",
+            "durationMs": 5723
+          },
+          {
+            "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgpu",
+            "status": "skipped",
+            "durationMs": 449
+          },
+          {
+            "title": "physics.spec.ts / physics GPU bdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+            "status": "passed",
+            "durationMs": 9019
+          },
+          {
+            "title": "physics.spec.ts / physics GPU sdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+            "status": "passed",
+            "durationMs": 13092
+          },
+          {
+            "title": "physics.spec.ts / physics GPU qdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+            "status": "passed",
+            "durationMs": 26818
+          },
+          {
+            "title": "physics.spec.ts / built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery",
+            "status": "passed",
+            "durationMs": 96316
+          },
+          {
+            "title": "qdef.spec.ts / QDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads",
+            "status": "passed",
+            "durationMs": 90934
+          },
+          {
+            "title": "qdef.spec.ts / built QDEF Demo: qdef-box / combined-a / bytes",
+            "status": "passed",
+            "durationMs": 39447
+          },
+          {
+            "title": "qdef.spec.ts / built QDEF Demo: qdef-wedge / combined-b / glb + gltf",
+            "status": "passed",
+            "durationMs": 67265
+          },
+          {
+            "title": "qdef.spec.ts / built QDEF Demo acknowledges fractional state and appearance only after rendering",
+            "status": "passed",
+            "durationMs": 9461
+          },
+          {
+            "title": "sdef.spec.ts / SDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads",
+            "status": "passed",
+            "durationMs": 36816
+          },
+          {
+            "title": "sdef.spec.ts / built SDEF Demo: sdef-box / combined-a / bytes",
+            "status": "passed",
+            "durationMs": 37366
+          },
+          {
+            "title": "sdef.spec.ts / built SDEF Demo: sdef-wedge / combined-b / glb + gltf",
+            "status": "passed",
+            "durationMs": 62102
+          },
+          {
+            "title": "sdef.spec.ts / built SDEF Demo acknowledges fractional state and appearance only after rendering",
+            "status": "passed",
+            "durationMs": 8404
+          },
+          {
+            "title": "solver.spec.ts / built Demo keeps IK and rig replacement locked during a delayed motion load",
+            "status": "passed",
+            "durationMs": 4640
+          },
+          {
+            "title": "solver.spec.ts / built extension-only solver skins validate and reload GLB/glTF exports without PMX extras",
+            "status": "passed",
+            "durationMs": 619
+          },
+          {
+            "title": "solver.spec.ts / built Demo resets IK override on bytes player replacement",
+            "status": "passed",
+            "durationMs": 5039
+          },
+          {
+            "title": "solver.spec.ts / built Demo resets IK override on glb player replacement",
+            "status": "passed",
+            "durationMs": 5632
+          },
+          {
+            "title": "solver.spec.ts / built Demo resets IK override on gltf player replacement",
+            "status": "passed",
+            "durationMs": 5941
+          },
+          {
+            "title": "solver.spec.ts / built Demo marks retained bytes IK controls inactive through VPD and resets",
+            "status": "passed",
+            "durationMs": 15060
+          },
+          {
+            "title": "solver.spec.ts / built Demo marks retained glb IK controls inactive through VPD and resets",
+            "status": "passed",
+            "durationMs": 15814
+          },
+          {
+            "title": "solver.spec.ts / built Demo marks retained gltf IK controls inactive through VPD and resets",
+            "status": "passed",
+            "durationMs": 16110
+          },
+          {
+            "title": "solver.spec.ts / built Demo restores legacy pose and motion presets after solver rig replacement",
+            "status": "passed",
+            "durationMs": 10254
+          },
+          {
+            "title": "solver.spec.ts / built solver bdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 10541
+          },
+          {
+            "title": "solver.spec.ts / built solver bdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 10771
+          },
+          {
+            "title": "solver.spec.ts / built solver bdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 10000
+          },
+          {
+            "title": "solver.spec.ts / built solver bdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 10508
+          },
+          {
+            "title": "solver.spec.ts / built solver sdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 16777
+          },
+          {
+            "title": "solver.spec.ts / built solver sdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 17683
+          },
+          {
+            "title": "solver.spec.ts / built solver sdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 16465
+          },
+          {
+            "title": "solver.spec.ts / built solver sdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 18045
+          },
+          {
+            "title": "solver.spec.ts / built solver qdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 37394
+          },
+          {
+            "title": "solver.spec.ts / built solver qdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 38071
+          },
+          {
+            "title": "solver.spec.ts / built solver qdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 35592
+          },
+          {
+            "title": "solver.spec.ts / built solver qdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 36822
+          },
+          {
+            "title": "solver.spec.ts / built solver Demo box/a: both poses, controls, transport, load recovery and disposal",
+            "status": "passed",
+            "durationMs": 48258
+          },
+          {
+            "title": "solver.spec.ts / built solver Demo box/b: both poses, controls, transport, load recovery and disposal",
+            "status": "passed",
+            "durationMs": 47128
+          },
+          {
+            "title": "solver.spec.ts / built solver Demo wedge/a: both poses, controls, transport, load recovery and disposal",
+            "status": "passed",
+            "durationMs": 47997
+          },
+          {
+            "title": "solver.spec.ts / built solver Demo wedge/b: both poses, controls, transport, load recovery and disposal",
+            "status": "passed",
+            "durationMs": 46992
+          },
+          {
+            "title": "uka.spec.ts / default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outline and shared camera",
+            "status": "passed",
+            "durationMs": 108046
+          },
+          {
+            "title": "uka.spec.ts / missing Uka texture fails visibly and retry recovers",
+            "status": "passed",
+            "durationMs": 37375
+          },
+          {
+            "title": "unified-demo.spec.ts / one built page: both directions, every preset, contextual controls and inactive viewer cleanup",
+            "status": "passed",
+            "durationMs": 67547
+          },
+          {
+            "title": "unified-demo.spec.ts / mobile viewport, keyboard disclosures, local error recovery and export",
+            "status": "passed",
+            "durationMs": 16395
+          },
+          {
+            "title": "unified-demo.spec.ts / comparison failure releases its canvas and can retry in place",
+            "status": "passed",
+            "durationMs": 19847
+          },
+          {
+            "title": "unified-demo.spec.ts / legacy rig URL preserves backend and selects the unified rig view",
+            "status": "passed",
+            "durationMs": 2676
+          },
+          {
+            "title": "unified-demo.spec.ts / failed rig loads can retry and failed replacement preserves the current rig",
+            "status": "passed",
+            "durationMs": 6223
+          },
+          {
+            "title": "unified-demo.spec.ts / motion finishing after a model switch stays paused in its own viewer",
+            "status": "passed",
+            "durationMs": 14717
+          },
+          {
+            "title": "vmd.spec.ts / built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines",
+            "status": "passed",
+            "durationMs": 14766
+          },
+          {
+            "title": "vmd.spec.ts / built Demo VMD lifecycle: box, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup",
+            "status": "passed",
+            "durationMs": 61342
+          },
+          {
+            "title": "vmd.spec.ts / built Demo VMD lifecycle: wedge, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup",
+            "status": "passed",
+            "durationMs": 60749
+          },
+          {
+            "title": "vmd.spec.ts / built morph conformance: combined weights and morph-before-BDEF predictions through Toon/PBR and Outline",
+            "status": "passed",
+            "durationMs": 14801
+          },
+          {
+            "title": "vmd.spec.ts / built Demo morph controls and combined lifecycle on both rigs, local motion recovery and morph-only source",
+            "status": "passed",
+            "durationMs": 119383
+          },
+          {
+            "title": "vmd.spec.ts / built Demo delayed real frames retain crossing/render/canvas evidence and isolate ownership",
+            "status": "passed",
+            "durationMs": 44948
+          },
+          {
+            "title": "vpd.spec.ts / built VPD surfaces/outlines match independent scalar predictions for both rigs/poses through runtime and GLB/glTF reloads",
+            "status": "passed",
+            "durationMs": 23314
+          },
+          {
+            "title": "vpd.spec.ts / built VPD demo: both rigs/poses, repeat/reset, encoding, local errors and recovery, Toon/PBR and outlines",
+            "status": "passed",
+            "durationMs": 34907
+          },
+          {
+            "title": "bfcache.spec.ts / cached gene viewer resumes after repeated Back navigation",
+            "status": "failed",
+            "durationMs": 27894
+          },
+          {
+            "title": "bfcache.spec.ts / cached rig viewer resumes after repeated Back navigation",
+            "status": "passed",
+            "durationMs": 29892
+          }
+        ]
+      }
+    },
+    {
+      "attempt": 2,
+      "url": "https://github.com/takahirox/mmd-gltf/actions/runs/40684077195/attempts/2",
+      "jobUrl": "https://github.com/takahirox/mmd-gltf/actions/runs/40684077195/job/122823962118",
+      "conclusion": "failure",
+      "artifactUrl": "https://github.com/takahirox/mmd-gltf/actions/runs/40684077195/artifacts/12818888719",
+      "artifactZipSha256": "6e67ac089d785cffad702ddb20d639357126542053639fcd77e17e69d2b9fd11",
+      "checks": [
+        {
+          "name": "Run npm run build",
+          "conclusion": "success",
+          "started_at": "2026-10-28T12:46:27Z",
+          "completed_at": "2026-10-28T12:48:28Z"
+        },
+        {
+          "name": "Run npm run typecheck",
+          "conclusion": "success",
+          "started_at": "2026-10-28T12:48:28Z",
+          "completed_at": "2026-10-28T12:48:34Z"
+        },
+        {
+          "name": "Run npm test",
+          "conclusion": "success",
+          "started_at": "2026-10-28T12:48:34Z",
+          "completed_at": "2026-10-28T12:51:34Z"
+        },
+        {
+          "name": "Run npm run test:browser",
+          "conclusion": "failure",
+          "started_at": "2026-10-28T12:51:53Z",
+          "completed_at": "2026-10-28T13:26:33Z"
+        },
+        {
+          "name": "Run npm run check:links",
+          "conclusion": "skipped",
+          "started_at": "2026-10-28T13:26:33Z",
+          "completed_at": "2026-10-28T13:26:33Z"
+        },
+        {
+          "name": "Run git diff --check",
+          "conclusion": "skipped",
+          "started_at": "2026-10-28T13:26:33Z",
+          "completed_at": "2026-10-28T13:26:33Z"
+        }
+      ],
+      "browserSummary": {
+        "environment": {
+          "ci": true,
+          "platform": "linux",
+          "node": "v22.23.4",
+          "workers": 1
+        },
+        "status": "failed",
+        "durationMs": 2079536.5629999998,
+        "baselineRun66ApproximateMs": 4620000,
+        "baselineTestCount": 79,
+        "testCount": 73,
+        "reductionFromApproximateBaselinePercent": 54.98838608225108,
+        "cases": [
+          {
+            "title": "bdef.spec.ts / converted PMX skins match analytic surface and outline predictions through pinned GLTFLoader",
+            "status": "passed",
+            "durationMs": 1823
+          },
+          {
+            "title": "bone-morph.spec.ts / built bone Demo: bone-box / bone-a / bytes",
+            "status": "passed",
+            "durationMs": 39490
+          },
+          {
+            "title": "bone-morph.spec.ts / built bone Demo: bone-wedge / bone-b / glb + gltf",
+            "status": "passed",
+            "durationMs": 61632
+          },
+          {
+            "title": "bone-morph.spec.ts / built bone morph raster and exports: both rigs/motions, bytes/GLB/glTF, Toon/PBR, Outline and both VPD handoffs",
+            "status": "passed",
+            "durationMs": 64258
+          },
+          {
+            "title": "bone-morph.spec.ts / bone morph actual SDEF/QDEF GPU positions and normals",
+            "status": "passed",
+            "durationMs": 7100
+          },
+          {
+            "title": "demo-loading.spec.ts / binding map failure after rig replacement keeps asset, controls and diagnostics consistent",
+            "status": "passed",
+            "durationMs": 4482
+          },
+          {
+            "title": "example.spec.ts / production TSL graph matches independent numerical fixtures on WebGL2",
+            "status": "passed",
+            "durationMs": 1978
+          },
+          {
+            "title": "example.spec.ts / built comparison keeps the light-gray fallback while assets load",
+            "status": "passed",
+            "durationMs": 11885
+          },
+          {
+            "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgl site",
+            "status": "failed",
+            "durationMs": 65061
+          },
+          {
+            "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgpu site",
+            "status": "skipped",
+            "durationMs": 1492
+          },
+          {
+            "title": "example.spec.ts / missing PMX image reports the reference failure clearly",
+            "status": "passed",
+            "durationMs": 6004
+          },
+          {
+            "title": "group.spec.ts / built group Demo: group-box / group-a / bytes",
+            "status": "passed",
+            "durationMs": 36106
+          },
+          {
+            "title": "group.spec.ts / built group Demo: group-wedge / group-b / glb + gltf",
+            "status": "passed",
+            "durationMs": 60888
+          },
+          {
+            "title": "group.spec.ts / built group Demo acknowledges fractional state and appearance only after rendering",
+            "status": "passed",
+            "durationMs": 6718
+          },
+          {
+            "title": "group.spec.ts / built group conformance: independent scalar rasters and applied GLB/glTF export round trips",
+            "status": "passed",
+            "durationMs": 29086
+          },
+          {
+            "title": "group.spec.ts / built group targets precede actual SDEF/QDEF GPU positions and normals",
+            "status": "passed",
+            "durationMs": 7119
+          },
+          {
+            "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgl",
+            "status": "passed",
+            "durationMs": 5510
+          },
+          {
+            "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgpu",
+            "status": "skipped",
+            "durationMs": 421
+          },
+          {
+            "title": "physics.spec.ts / physics GPU bdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+            "status": "passed",
+            "durationMs": 8581
+          },
+          {
+            "title": "physics.spec.ts / physics GPU sdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+            "status": "passed",
+            "durationMs": 12384
+          },
+          {
+            "title": "physics.spec.ts / physics GPU qdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+            "status": "passed",
+            "durationMs": 24484
+          },
+          {
+            "title": "physics.spec.ts / built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery",
+            "status": "passed",
+            "durationMs": 93907
+          },
+          {
+            "title": "qdef.spec.ts / QDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads",
+            "status": "passed",
+            "durationMs": 81079
+          },
+          {
+            "title": "qdef.spec.ts / built QDEF Demo: qdef-box / combined-a / bytes",
+            "status": "passed",
+            "durationMs": 38814
+          },
+          {
+            "title": "qdef.spec.ts / built QDEF Demo: qdef-wedge / combined-b / glb + gltf",
+            "status": "passed",
+            "durationMs": 64088
+          },
+          {
+            "title": "qdef.spec.ts / built QDEF Demo acknowledges fractional state and appearance only after rendering",
+            "status": "passed",
+            "durationMs": 9410
+          },
+          {
+            "title": "sdef.spec.ts / SDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads",
+            "status": "passed",
+            "durationMs": 32470
+          },
+          {
+            "title": "sdef.spec.ts / built SDEF Demo: sdef-box / combined-a / bytes",
+            "status": "passed",
+            "durationMs": 37302
+          },
+          {
+            "title": "sdef.spec.ts / built SDEF Demo: sdef-wedge / combined-b / glb + gltf",
+            "status": "passed",
+            "durationMs": 61313
+          },
+          {
+            "title": "sdef.spec.ts / built SDEF Demo acknowledges fractional state and appearance only after rendering",
+            "status": "passed",
+            "durationMs": 8217
+          },
+          {
+            "title": "solver.spec.ts / built Demo keeps IK and rig replacement locked during a delayed motion load",
+            "status": "passed",
+            "durationMs": 4561
+          },
+          {
+            "title": "solver.spec.ts / built extension-only solver skins validate and reload GLB/glTF exports without PMX extras",
+            "status": "passed",
+            "durationMs": 557
+          },
+          {
+            "title": "solver.spec.ts / built Demo resets IK override on bytes player replacement",
+            "status": "passed",
+            "durationMs": 5351
+          },
+          {
+            "title": "solver.spec.ts / built Demo resets IK override on glb player replacement",
+            "status": "passed",
+            "durationMs": 5530
+          },
+          {
+            "title": "solver.spec.ts / built Demo resets IK override on gltf player replacement",
+            "status": "passed",
+            "durationMs": 5425
+          },
+          {
+            "title": "solver.spec.ts / built Demo marks retained bytes IK controls inactive through VPD and resets",
+            "status": "passed",
+            "durationMs": 14760
+          },
+          {
+            "title": "solver.spec.ts / built Demo marks retained glb IK controls inactive through VPD and resets",
+            "status": "passed",
+            "durationMs": 15861
+          },
+          {
+            "title": "solver.spec.ts / built Demo marks retained gltf IK controls inactive through VPD and resets",
+            "status": "passed",
+            "durationMs": 15520
+          },
+          {
+            "title": "solver.spec.ts / built Demo restores legacy pose and motion presets after solver rig replacement",
+            "status": "passed",
+            "durationMs": 10018
+          },
+          {
+            "title": "solver.spec.ts / built solver bdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 9413
+          },
+          {
+            "title": "solver.spec.ts / built solver bdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 9749
+          },
+          {
+            "title": "solver.spec.ts / built solver bdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 9183
+          },
+          {
+            "title": "solver.spec.ts / built solver bdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 9545
+          },
+          {
+            "title": "solver.spec.ts / built solver sdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 15187
+          },
+          {
+            "title": "solver.spec.ts / built solver sdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 16093
+          },
+          {
+            "title": "solver.spec.ts / built solver sdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 14761
+          },
+          {
+            "title": "solver.spec.ts / built solver sdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 15595
+          },
+          {
+            "title": "solver.spec.ts / built solver qdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 31944
+          },
+          {
+            "title": "solver.spec.ts / built solver qdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 33867
+          },
+          {
+            "title": "solver.spec.ts / built solver qdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 32777
+          },
+          {
+            "title": "solver.spec.ts / built solver qdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+            "status": "passed",
+            "durationMs": 33653
+          },
+          {
+            "title": "solver.spec.ts / built solver Demo box/a: both poses, controls, transport, load recovery and disposal",
+            "status": "passed",
+            "durationMs": 46494
+          },
+          {
+            "title": "solver.spec.ts / built solver Demo box/b: both poses, controls, transport, load recovery and disposal",
+            "status": "passed",
+            "durationMs": 47055
+          },
+          {
+            "title": "solver.spec.ts / built solver Demo wedge/a: both poses, controls, transport, load recovery and disposal",
+            "status": "passed",
+            "durationMs": 46542
+          },
+          {
+            "title": "solver.spec.ts / built solver Demo wedge/b: both poses, controls, transport, load recovery and disposal",
+            "status": "passed",
+            "durationMs": 47387
+          },
+          {
+            "title": "uka.spec.ts / default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outline and shared camera",
+            "status": "passed",
+            "durationMs": 100557
+          },
+          {
+            "title": "uka.spec.ts / missing Uka texture fails visibly and retry recovers",
+            "status": "passed",
+            "durationMs": 43219
+          },
+          {
+            "title": "unified-demo.spec.ts / one built page: both directions, every preset, contextual controls and inactive viewer cleanup",
+            "status": "passed",
+            "durationMs": 64003
+          },
+          {
+            "title": "unified-demo.spec.ts / mobile viewport, keyboard disclosures, local error recovery and export",
+            "status": "passed",
+            "durationMs": 17077
+          },
+          {
+            "title": "unified-demo.spec.ts / comparison failure releases its canvas and can retry in place",
+            "status": "passed",
+            "durationMs": 18242
+          },
+          {
+            "title": "unified-demo.spec.ts / legacy rig URL preserves backend and selects the unified rig view",
+            "status": "passed",
+            "durationMs": 2897
+          },
+          {
+            "title": "unified-demo.spec.ts / failed rig loads can retry and failed replacement preserves the current rig",
+            "status": "passed",
+            "durationMs": 6002
+          },
+          {
+            "title": "unified-demo.spec.ts / motion finishing after a model switch stays paused in its own viewer",
+            "status": "passed",
+            "durationMs": 13972
+          },
+          {
+            "title": "vmd.spec.ts / built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines",
+            "status": "passed",
+            "durationMs": 13634
+          },
+          {
+            "title": "vmd.spec.ts / built Demo VMD lifecycle: box, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup",
+            "status": "passed",
+            "durationMs": 59056
+          },
+          {
+            "title": "vmd.spec.ts / built Demo VMD lifecycle: wedge, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup",
+            "status": "passed",
+            "durationMs": 59266
+          },
+          {
+            "title": "vmd.spec.ts / built morph conformance: combined weights and morph-before-BDEF predictions through Toon/PBR and Outline",
+            "status": "passed",
+            "durationMs": 14024
+          },
+          {
+            "title": "vmd.spec.ts / built Demo morph controls and combined lifecycle on both rigs, local motion recovery and morph-only source",
+            "status": "passed",
+            "durationMs": 116253
+          },
+          {
+            "title": "vmd.spec.ts / built Demo delayed real frames retain crossing/render/canvas evidence and isolate ownership",
+            "status": "passed",
+            "durationMs": 44571
+          },
+          {
+            "title": "vpd.spec.ts / built VPD surfaces/outlines match independent scalar predictions for both rigs/poses through runtime and GLB/glTF reloads",
+            "status": "passed",
+            "durationMs": 21406
+          },
+          {
+            "title": "vpd.spec.ts / built VPD demo: both rigs/poses, repeat/reset, encoding, local errors and recovery, Toon/PBR and outlines",
+            "status": "passed",
+            "durationMs": 34060
+          },
+          {
+            "title": "bfcache.spec.ts / cached gene viewer resumes after repeated Back navigation",
+            "status": "failed",
+            "durationMs": 34754
+          },
+          {
+            "title": "bfcache.spec.ts / cached rig viewer resumes after repeated Back navigation",
+            "status": "passed",
+            "durationMs": 28908
+          }
+        ]
+      }
+    }
+  ],
+  "localAfterCorrections": {
+    "scope": "Targeted verification of the corrected worktree; not a complete CI run of the assessed PR head.",
+    "command": "PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser -- tests/browser/bfcache.spec.ts tests/browser/example.spec.ts tests/browser/uka.spec.ts",
+    "checks": {
+      "build": "passed",
+      "typecheck": "passed",
+      "nodeTests": {
+        "passed": 121,
+        "failed": 0,
+        "skipped": 0
+      },
+      "links": {
+        "status": "passed",
+        "checked": 425
+      },
+      "whitespace": "passed"
+    },
+    "browserSummary": {
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "node": "v26.12.1",
+        "workers": 1
+      },
+      "status": "passed",
+      "durationMs": 189231.301,
+      "baselineRun66ApproximateMs": 4620000,
+      "baselineTestCount": 79,
+      "testCount": 9,
+      "reductionFromApproximateBaselinePercent": 95.9040843939394,
+      "cases": [
+        {
+          "title": "bfcache.spec.ts / cached gene viewer resumes after repeated Back navigation",
+          "status": "passed",
+          "durationMs": 25334
+        },
+        {
+          "title": "bfcache.spec.ts / cached rig viewer resumes after repeated Back navigation",
+          "status": "passed",
+          "durationMs": 19238
+        },
+        {
+          "title": "example.spec.ts / production TSL graph matches independent numerical fixtures on WebGL2",
+          "status": "passed",
+          "durationMs": 3511
+        },
+        {
+          "title": "example.spec.ts / built comparison keeps the light-gray fallback while assets load",
+          "status": "passed",
+          "durationMs": 11554
+        },
+        {
+          "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgl site",
+          "status": "passed",
+          "durationMs": 29033
+        },
+        {
+          "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgpu site",
+          "status": "skipped",
+          "durationMs": 566
+        },
+        {
+          "title": "example.spec.ts / missing PMX image reports the reference failure clearly",
+          "status": "passed",
+          "durationMs": 1991
+        },
+        {
+          "title": "uka.spec.ts / default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outline and shared camera",
+          "status": "passed",
+          "durationMs": 68248
+        },
+        {
+          "title": "uka.spec.ts / missing Uka texture fails visibly and retry recovers",
+          "status": "passed",
+          "durationMs": 25407
+        }
+      ]
+    }
+  },
+  "fullCiAfterCorrections": {
+    "headSha": "c9272333928e904c60049c45a3a747154c96c95b",
+    "checkoutMergeSha": "ed60f9a866e24012e7c05edfe07657cf01527773",
+    "url": "https://github.com/takahirox/mmd-gltf/actions/runs/40697950655",
+    "runNumber": 69,
+    "attempt": 1,
+    "jobUrl": "https://github.com/takahirox/mmd-gltf/actions/runs/40697950655/job/122849653561",
+    "conclusion": "success",
+    "runner": "ubuntu-24.04",
+    "browserChannel": "chromium",
+    "artifactUrl": "https://github.com/takahirox/mmd-gltf/actions/runs/40697950655/artifacts/12823880699",
+    "artifactZipSha256": "3adfdf5bf77d2bd506c3ab72f87ccbd6b2c540defc6f2b1fe4414f21d9bac0f3",
+    "browserSummarySha256": "45aeb8d90b153dc6b2a424fcd52d150104a8d29ffe8a91bee0083262824ad5e3",
+    "checks": [
+      {
+        "name": "Run npm run build",
+        "conclusion": "success",
+        "started_at": "2026-10-28T13:36:25Z",
+        "completed_at": "2026-10-28T13:38:25Z"
+      },
+      {
+        "name": "Run npm run typecheck",
+        "conclusion": "success",
+        "started_at": "2026-10-28T13:38:25Z",
+        "completed_at": "2026-10-28T13:38:32Z"
+      },
+      {
+        "name": "Run npm test",
+        "conclusion": "success",
+        "started_at": "2026-10-28T13:38:32Z",
+        "completed_at": "2026-10-28T13:41:36Z"
+      },
+      {
+        "name": "Run npm run test:browser",
+        "conclusion": "success",
+        "started_at": "2026-10-28T13:41:55Z",
+        "completed_at": "2026-10-28T14:17:41Z"
+      },
+      {
+        "name": "Run npm run check:links",
+        "conclusion": "success",
+        "started_at": "2026-10-28T14:17:41Z",
+        "completed_at": "2026-10-28T14:17:41Z"
+      },
+      {
+        "name": "Run git diff --check",
+        "conclusion": "success",
+        "started_at": "2026-10-28T14:17:41Z",
+        "completed_at": "2026-10-28T14:17:41Z"
+      }
+    ],
+    "nodeTests": {
+      "passed": 121,
+      "failed": 0,
+      "skipped": 0
+    },
+    "linksChecked": 425,
+    "browserCounts": {
+      "passed": 71,
+      "skipped": 2
+    },
+    "browserSummary": {
+      "environment": {
+        "ci": true,
+        "platform": "linux",
+        "node": "v22.23.4",
+        "workers": 1
+      },
+      "status": "passed",
+      "durationMs": 2145078.1610000003,
+      "baselineRun66ApproximateMs": 4620000,
+      "baselineTestCount": 79,
+      "testCount": 73,
+      "reductionFromApproximateBaselinePercent": 53.569736774891766,
+      "cases": [
+        {
+          "title": "bdef.spec.ts / converted PMX skins match analytic surface and outline predictions through pinned GLTFLoader",
+          "status": "passed",
+          "durationMs": 1935
+        },
+        {
+          "title": "bone-morph.spec.ts / built bone Demo: bone-box / bone-a / bytes",
+          "status": "passed",
+          "durationMs": 40118
+        },
+        {
+          "title": "bone-morph.spec.ts / built bone Demo: bone-wedge / bone-b / glb + gltf",
+          "status": "passed",
+          "durationMs": 63201
+        },
+        {
+          "title": "bone-morph.spec.ts / built bone morph raster and exports: both rigs/motions, bytes/GLB/glTF, Toon/PBR, Outline and both VPD handoffs",
+          "status": "passed",
+          "durationMs": 68028
+        },
+        {
+          "title": "bone-morph.spec.ts / bone morph actual SDEF/QDEF GPU positions and normals",
+          "status": "passed",
+          "durationMs": 8131
+        },
+        {
+          "title": "demo-loading.spec.ts / binding map failure after rig replacement keeps asset, controls and diagnostics consistent",
+          "status": "passed",
+          "durationMs": 4622
+        },
+        {
+          "title": "example.spec.ts / production TSL graph matches independent numerical fixtures on WebGL2",
+          "status": "passed",
+          "durationMs": 2081
+        },
+        {
+          "title": "example.spec.ts / built comparison keeps the light-gray fallback while assets load",
+          "status": "passed",
+          "durationMs": 11337
+        },
+        {
+          "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgl site",
+          "status": "passed",
+          "durationMs": 65839
+        },
+        {
+          "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgpu site",
+          "status": "skipped",
+          "durationMs": 930
+        },
+        {
+          "title": "example.spec.ts / missing PMX image reports the reference failure clearly",
+          "status": "passed",
+          "durationMs": 5021
+        },
+        {
+          "title": "group.spec.ts / built group Demo: group-box / group-a / bytes",
+          "status": "passed",
+          "durationMs": 37374
+        },
+        {
+          "title": "group.spec.ts / built group Demo: group-wedge / group-b / glb + gltf",
+          "status": "passed",
+          "durationMs": 63179
+        },
+        {
+          "title": "group.spec.ts / built group Demo acknowledges fractional state and appearance only after rendering",
+          "status": "passed",
+          "durationMs": 7041
+        },
+        {
+          "title": "group.spec.ts / built group conformance: independent scalar rasters and applied GLB/glTF export round trips",
+          "status": "passed",
+          "durationMs": 30237
+        },
+        {
+          "title": "group.spec.ts / built group targets precede actual SDEF/QDEF GPU positions and normals",
+          "status": "passed",
+          "durationMs": 7698
+        },
+        {
+          "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgl",
+          "status": "passed",
+          "durationMs": 5630
+        },
+        {
+          "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgpu",
+          "status": "skipped",
+          "durationMs": 475
+        },
+        {
+          "title": "physics.spec.ts / physics GPU bdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "status": "passed",
+          "durationMs": 8860
+        },
+        {
+          "title": "physics.spec.ts / physics GPU sdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "status": "passed",
+          "durationMs": 13233
+        },
+        {
+          "title": "physics.spec.ts / physics GPU qdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "status": "passed",
+          "durationMs": 26540
+        },
+        {
+          "title": "physics.spec.ts / built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery",
+          "status": "passed",
+          "durationMs": 94356
+        },
+        {
+          "title": "qdef.spec.ts / QDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads",
+          "status": "passed",
+          "durationMs": 89156
+        },
+        {
+          "title": "qdef.spec.ts / built QDEF Demo: qdef-box / combined-a / bytes",
+          "status": "passed",
+          "durationMs": 39193
+        },
+        {
+          "title": "qdef.spec.ts / built QDEF Demo: qdef-wedge / combined-b / glb + gltf",
+          "status": "passed",
+          "durationMs": 66589
+        },
+        {
+          "title": "qdef.spec.ts / built QDEF Demo acknowledges fractional state and appearance only after rendering",
+          "status": "passed",
+          "durationMs": 9379
+        },
+        {
+          "title": "sdef.spec.ts / SDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads",
+          "status": "passed",
+          "durationMs": 37514
+        },
+        {
+          "title": "sdef.spec.ts / built SDEF Demo: sdef-box / combined-a / bytes",
+          "status": "passed",
+          "durationMs": 37486
+        },
+        {
+          "title": "sdef.spec.ts / built SDEF Demo: sdef-wedge / combined-b / glb + gltf",
+          "status": "passed",
+          "durationMs": 63454
+        },
+        {
+          "title": "sdef.spec.ts / built SDEF Demo acknowledges fractional state and appearance only after rendering",
+          "status": "passed",
+          "durationMs": 8626
+        },
+        {
+          "title": "solver.spec.ts / built Demo keeps IK and rig replacement locked during a delayed motion load",
+          "status": "passed",
+          "durationMs": 4885
+        },
+        {
+          "title": "solver.spec.ts / built extension-only solver skins validate and reload GLB/glTF exports without PMX extras",
+          "status": "passed",
+          "durationMs": 619
+        },
+        {
+          "title": "solver.spec.ts / built Demo resets IK override on bytes player replacement",
+          "status": "passed",
+          "durationMs": 5685
+        },
+        {
+          "title": "solver.spec.ts / built Demo resets IK override on glb player replacement",
+          "status": "passed",
+          "durationMs": 5505
+        },
+        {
+          "title": "solver.spec.ts / built Demo resets IK override on gltf player replacement",
+          "status": "passed",
+          "durationMs": 5423
+        },
+        {
+          "title": "solver.spec.ts / built Demo marks retained bytes IK controls inactive through VPD and resets",
+          "status": "passed",
+          "durationMs": 15431
+        },
+        {
+          "title": "solver.spec.ts / built Demo marks retained glb IK controls inactive through VPD and resets",
+          "status": "passed",
+          "durationMs": 16145
+        },
+        {
+          "title": "solver.spec.ts / built Demo marks retained gltf IK controls inactive through VPD and resets",
+          "status": "passed",
+          "durationMs": 15639
+        },
+        {
+          "title": "solver.spec.ts / built Demo restores legacy pose and motion presets after solver rig replacement",
+          "status": "passed",
+          "durationMs": 10017
+        },
+        {
+          "title": "solver.spec.ts / built solver bdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 10467
+        },
+        {
+          "title": "solver.spec.ts / built solver bdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 10567
+        },
+        {
+          "title": "solver.spec.ts / built solver bdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 9641
+        },
+        {
+          "title": "solver.spec.ts / built solver bdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 10224
+        },
+        {
+          "title": "solver.spec.ts / built solver sdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 16714
+        },
+        {
+          "title": "solver.spec.ts / built solver sdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 17227
+        },
+        {
+          "title": "solver.spec.ts / built solver sdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 15467
+        },
+        {
+          "title": "solver.spec.ts / built solver sdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 16841
+        },
+        {
+          "title": "solver.spec.ts / built solver qdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 35530
+        },
+        {
+          "title": "solver.spec.ts / built solver qdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 36562
+        },
+        {
+          "title": "solver.spec.ts / built solver qdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 36216
+        },
+        {
+          "title": "solver.spec.ts / built solver qdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+          "status": "passed",
+          "durationMs": 37156
+        },
+        {
+          "title": "solver.spec.ts / built solver Demo box/a: both poses, controls, transport, load recovery and disposal",
+          "status": "passed",
+          "durationMs": 48018
+        },
+        {
+          "title": "solver.spec.ts / built solver Demo box/b: both poses, controls, transport, load recovery and disposal",
+          "status": "passed",
+          "durationMs": 47935
+        },
+        {
+          "title": "solver.spec.ts / built solver Demo wedge/a: both poses, controls, transport, load recovery and disposal",
+          "status": "passed",
+          "durationMs": 46814
+        },
+        {
+          "title": "solver.spec.ts / built solver Demo wedge/b: both poses, controls, transport, load recovery and disposal",
+          "status": "passed",
+          "durationMs": 47975
+        },
+        {
+          "title": "uka.spec.ts / default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outline and shared camera",
+          "status": "passed",
+          "durationMs": 105495
+        },
+        {
+          "title": "uka.spec.ts / missing Uka texture fails visibly and retry recovers",
+          "status": "passed",
+          "durationMs": 44714
+        },
+        {
+          "title": "unified-demo.spec.ts / one built page: both directions, every preset, contextual controls and inactive viewer cleanup",
+          "status": "passed",
+          "durationMs": 70599
+        },
+        {
+          "title": "unified-demo.spec.ts / mobile viewport, keyboard disclosures, local error recovery and export",
+          "status": "passed",
+          "durationMs": 17036
+        },
+        {
+          "title": "unified-demo.spec.ts / comparison failure releases its canvas and can retry in place",
+          "status": "passed",
+          "durationMs": 18803
+        },
+        {
+          "title": "unified-demo.spec.ts / legacy rig URL preserves backend and selects the unified rig view",
+          "status": "passed",
+          "durationMs": 2990
+        },
+        {
+          "title": "unified-demo.spec.ts / failed rig loads can retry and failed replacement preserves the current rig",
+          "status": "passed",
+          "durationMs": 6324
+        },
+        {
+          "title": "unified-demo.spec.ts / motion finishing after a model switch stays paused in its own viewer",
+          "status": "passed",
+          "durationMs": 16149
+        },
+        {
+          "title": "vmd.spec.ts / built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines",
+          "status": "passed",
+          "durationMs": 15089
+        },
+        {
+          "title": "vmd.spec.ts / built Demo VMD lifecycle: box, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup",
+          "status": "passed",
+          "durationMs": 60725
+        },
+        {
+          "title": "vmd.spec.ts / built Demo VMD lifecycle: wedge, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup",
+          "status": "passed",
+          "durationMs": 60491
+        },
+        {
+          "title": "vmd.spec.ts / built morph conformance: combined weights and morph-before-BDEF predictions through Toon/PBR and Outline",
+          "status": "passed",
+          "durationMs": 14939
+        },
+        {
+          "title": "vmd.spec.ts / built Demo morph controls and combined lifecycle on both rigs, local motion recovery and morph-only source",
+          "status": "passed",
+          "durationMs": 116805
+        },
+        {
+          "title": "vmd.spec.ts / built Demo delayed real frames retain crossing/render/canvas evidence and isolate ownership",
+          "status": "passed",
+          "durationMs": 44472
+        },
+        {
+          "title": "vpd.spec.ts / built VPD surfaces/outlines match independent scalar predictions for both rigs/poses through runtime and GLB/glTF reloads",
+          "status": "passed",
+          "durationMs": 23035
+        },
+        {
+          "title": "vpd.spec.ts / built VPD demo: both rigs/poses, repeat/reset, encoding, local errors and recovery, Toon/PBR and outlines",
+          "status": "passed",
+          "durationMs": 33570
+        },
+        {
+          "title": "bfcache.spec.ts / cached gene viewer resumes after repeated Back navigation",
+          "status": "passed",
+          "durationMs": 21358
+        },
+        {
+          "title": "bfcache.spec.ts / cached rig viewer resumes after repeated Back navigation",
+          "status": "passed",
+          "durationMs": 25785
+        }
+      ]
+    }
+  }
+}

@@ -19,7 +19,7 @@ for (const demo of ['gene', 'rig']) {
     });
     page.on('response', response => { if (response.status() >= 400 && !isFavicon(response.url())) errors.push(`${response.status()} ${response.url()}`); });
     page.on('requestfailed', request => errors.push(`${request.url()}: ${request.failure()?.errorText}`));
-    await page.goto(preview);
+    await page.goto(`${preview}?demo=gene`);
     await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
     await page.locator('#material').selectOption('pbr');
     await page.locator('#demo-model').selectOption('rig');
@@ -50,7 +50,7 @@ for (const demo of ['gene', 'rig']) {
       await expect(page).toHaveURL(`${preview}gene-light/README.md`);
       // A cache restore commits without firing a new document load event.
       await page.goBack({ waitUntil: 'commit' });
-      await expect(page).toHaveURL(preview);
+      await expect(page).toHaveURL(`${preview}?demo=gene`);
       // A fresh document must fail: persisted=true and this token survive only in the cache.
       await expect.poll(() => page.evaluate(() => (window as any).cacheTest?.restores)).toBe(visit);
       expect(await page.evaluate(() => (window as any).cacheTest.persisted)).toBe(true);
@@ -58,6 +58,9 @@ for (const demo of ['gene', 'rig']) {
       await expect(page.locator('#viewport canvas')).toHaveCount(1);
       await expect(page.locator('#rig-viewport canvas')).toHaveCount(1);
       expect(await page.evaluate(() => (window as any).cacheTest.canvases.every((canvas: HTMLCanvasElement) => canvas.isConnected))).toBe(true);
+      // The README link scrolls to the footer. Measure the selected viewer's
+      // rendering with its viewport visible after history restores that scroll.
+      await page.locator(demo === 'gene' ? '#viewport' : '#rig-viewport').scrollIntoViewIfNeeded();
       await expect.poll(() => page.evaluate(demo => {
         const w = window as any;
         return (demo === 'gene' ? w.mmdExample : w.mmdRig).frames - w.cacheTest.frames[demo];

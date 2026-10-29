@@ -33,7 +33,7 @@ function errorsFrom(page: Page) {
 test('one built page: both directions, every preset, contextual controls and inactive viewer cleanup', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   const errors = errorsFrom(page);
-  await page.goto(preview);
+  await page.goto(`${preview}?demo=gene`);
   await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
   await expect(page.locator('#preset-picker')).toBeHidden();
   await page.screenshot({ path: testInfo.outputPath('landing-desktop.png') });
@@ -112,12 +112,22 @@ test('one built page: both directions, every preset, contextual controls and ina
 test('mobile viewport, keyboard disclosures, local error recovery and export', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const errors = errorsFrom(page);
-  await page.goto(preview);
+  await page.goto(`${preview}?demo=gene`);
   await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
   await page.screenshot({ path: testInfo.outputPath('landing-mobile.png'), fullPage: true });
   await page.locator('#demo-model').selectOption('rig');
   await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
   await selectRig(page, 'bone-wedge-qdef');
+  // Exercise a real zero-size ResizeObserver delivery, then require rendering to resume.
+  const beforeCollapse = (await rigState(page)).frames;
+  await page.locator('#rig-viewport').evaluate(element => new Promise<void>(resolve => {
+    const observer = new ResizeObserver(entries => {
+      if (entries[0].contentRect.width === 0 && entries[0].contentRect.height === 0) { observer.disconnect(); resolve(); }
+    });
+    observer.observe(element); element.style.display = 'none';
+  }));
+  await page.locator('#rig-viewport').evaluate(element => { element.style.removeProperty('display'); });
+  await expect.poll(async () => (await rigState(page)).frames).toBeGreaterThan(beforeCollapse);
   await expectMotionControlsToFit(page);
   const viewport = (await page.locator('#rig-viewport').boundingBox())!;
   expect(viewport.height).toBeGreaterThanOrEqual(340);
@@ -151,7 +161,7 @@ test('mobile viewport, keyboard disclosures, local error recovery and export', a
   expect((await downloadPromise).suggestedFilename()).toBe('bone-wedge-qdef-applied.glb');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   await page.locator('#about-demo > summary').click();
-  await expect(page.getByRole('link', { name: 'CC BY 4.0', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'CC BY 4.0', exact: true }).first()).toBeVisible();
   await expect(page.getByText('CG-CA Gene (c) 2023', { exact: false })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -160,7 +170,7 @@ test('comparison failure releases its canvas and can retry in place', async ({ p
   const pageErrors: string[] = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   await page.route('**/gene-light/light/arm.png', route => route.fulfill({ status: 404, body: 'Missing test image' }));
-  await page.goto(preview);
+  await page.goto(`${preview}?demo=gene`);
   await expect(page.locator('#gene-status')).toContainText('Could not load/render the comparison', { timeout: 90000 });
   await expect(page.locator('#viewport canvas')).toHaveCount(0);
   await page.unroute('**/gene-light/light/arm.png');
@@ -205,7 +215,7 @@ test('failed rig loads can retry and failed replacement preserves the current ri
 
 test('motion finishing after a model switch stays paused in its own viewer', async ({ page }) => {
   const errors = errorsFrom(page);
-  await page.goto(preview);
+  await page.goto(`${preview}?demo=gene`);
   await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
   await page.locator('#demo-model').selectOption('rig');
   await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });

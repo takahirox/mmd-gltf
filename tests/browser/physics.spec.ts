@@ -62,7 +62,7 @@ for (const mode of ["bdef", "sdef", "qdef"])
 test("built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery", async ({
   page,
 }) => {
-  // This single test covers 12 rig/motion/source combinations with screenshot evidence.
+  // Retain all 12 independent state-oracle paths; display captures are opt-in.
   test.setTimeout(360_000);
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -84,10 +84,10 @@ test("built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, trans
     const info = await page.evaluate(() => (window as any).mmdRig);
     expect(info.rendered.bones).toEqual(info.bones);
     expect(info.rendered.vertices).toEqual(info.vertices);
-    await mkdir("docs/physics-demo-canvas", { recursive: true });
-    await page
-      .locator("#rig-viewport canvas")
-      .screenshot({ path: `docs/physics-demo-canvas/${name}.png` });
+    if (process.env.UPDATE_SYNTHETIC_EVIDENCE === '1') {
+      await mkdir("docs/physics-demo-canvas", { recursive: true });
+      await page.locator("#rig-viewport canvas").screenshot({path:`docs/physics-demo-canvas/${name}.png`});
+    }
     return info;
   };
   for (const rig of ["box", "wedge"])

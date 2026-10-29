@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises';
 import { openRigDemo } from './demo-controls';
 import { readRigBitmap } from './rig-bitmap';
 import { test, expect, type Page } from '@playwright/test';
@@ -49,7 +50,7 @@ for (const rig of ['box', 'wedge']) test(`built Demo VMD lifecycle: ${rig}, both
   };
   const image = async () => {
     await page.waitForTimeout(100);
-    await page.locator('canvas').screenshot(); return readRigBitmap(page);
+    return readRigBitmap(page);
   };
   {
     if (rig === 'wedge') {
@@ -201,11 +202,11 @@ test('built Demo morph controls and combined lifecycle on both rigs, local motio
       for(const mode of ['toon','pbr']) {
         await page.locator('#rig-material').selectOption(mode);
         await page.locator('#rig-outlines').selectOption('on');await page.waitForTimeout(100);
-        const before=await page.locator('canvas').screenshot();
+        const before=await readRigBitmap(page);
         await page.locator('#morph-controls input').first().fill('1.8');
         await page.locator('#morph-controls input').first().dispatchEvent('change');
         await expect.poll(async()=>(await state()).weights[0]).toBe(1.8);
-        await page.waitForTimeout(100);expect((await page.locator('canvas').screenshot()).equals(before)).toBe(false);
+        await page.waitForTimeout(100);expect((await readRigBitmap(page)).equals(before)).toBe(false);
         expect((await state()).playing).toBe(false);
         await seek(0.719);expect(await snapshot()).toEqual(desired);
       }
@@ -294,6 +295,15 @@ test('built Demo delayed real frames retain crossing/render/canvas evidence and 
     await page.evaluate(ms => (window as any).playbackGate.step(ms), ms);
 
   };
+  const stepPixels = async (ms:number) => {
+    // Queue the real-frame bitmap before the existing controlled step. This
+    // neither advances an extra frame nor borrows the CSS compositor's resampling.
+    await page.evaluate(() => { (window as any).gatedBitmap = (window as any).captureMMDRigCanvas(); });
+    await step(ms);
+    const capture = await page.evaluate(() => (window as any).gatedBitmap);
+    expect(capture.frame).toBe((await state()).rendered.frame);
+    return readRigBitmap(page,capture);
+  };
   const cleared = async (previous: number) => {
     const s = await state();
     expect(s.playback.generation).toBeGreaterThan(previous);
@@ -317,7 +327,7 @@ test('built Demo delayed real frames retain crossing/render/canvas evidence and 
       await seekDemo(page, 0.99);
       await page.waitForFunction(() => { const s = (window as any).mmdRig; return s.rendered?.revision === s.revision; });
       await page.evaluate(() => (window as any).playbackGate.hold());
-      await step(0); // Prime last=controlled performance.now() while paused.
+      const beforePixels = await stepPixels(0); // Prime the same real frame while paused.
       const before = await state();
       const canvas = page.locator('canvas');
       const beforeImage = await canvas.screenshot({ path: info.outputPath(`${rig}-before.png`) });
@@ -329,7 +339,7 @@ test('built Demo delayed real frames retain crossing/render/canvas evidence and 
       expect(held.rendered.frame).toBe(before.rendered.frame);
       // No callback means neither an update nor rendered acknowledgement.
       await expect(expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)')).rejects.toThrow();
-      await step(2360);
+      const drawnPixels = await stepPixels(2360);
       let s = await state(), c = s.playback.crossing;
       await expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)');
       expect(c.before).toBe(0.99); expect(c.delta).toBeCloseTo(2.36, 12);
@@ -340,6 +350,8 @@ test('built Demo delayed real frames retain crossing/render/canvas evidence and 
       expect(c.after).toBe(s.rendered.time); expect(c.weights).toEqual(s.rendered.weights);
       const drawn = await canvas.screenshot({ path: info.outputPath(`${rig}-crossing.png`) });
       expect(drawn.equals(beforeImage)).toBe(false);
+      expect(drawnPixels.equals(beforePixels)).toBe(false);
+      await writeFile(info.outputPath(`${rig}-crossing-bitmap.png`),drawnPixels);
       expect((await state()).rendered).toEqual(s.rendered);
       traces.push({ rig, delayed: c, rendered: s.rendered });
       // Later frames leave the crossing durable even outside the old window.
@@ -363,10 +375,10 @@ test('built Demo delayed real frames retain crossing/render/canvas evidence and 
       expect(s.time).toBe(paused.time); expect(s.playback).toEqual(paused.playback);
       expect(s.rendered.playing).toBe(false);
       await seekDemo(page, 0.35); let generation = await cleared(s.playback.generation);
-      await step(3200);
+      const restoredPixels = await stepPixels(3200);
       expect((await state()).time).toBe(0.35);
       await expect(expectCrossing(page, rig, 'glb', 'Motion ONLY (glb)')).rejects.toThrow();
-      expect((await canvas.screenshot()).equals(drawn)).toBe(true);
+      expect(restoredPixels.equals(drawnPixels)).toBe(true);
       // Motion reload/replacement, reset, both VPD poses, manual ownership and
       // model replacement must not borrow a previous crossing.
       const cross = async () => {

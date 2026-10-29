@@ -1,3 +1,4 @@
+import { prepareUka } from './prepare-uka';
 import { copyFile, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -5,6 +6,8 @@ import { fetchGene } from './fetch-gene';
 import { convertModel, parsePMX } from './pmx-to-gltf';
 import manifest from './gene-light-manifest.json';
 import { groupPMX } from './synthetic-group';
+
+await prepareUka();
 
 const directory = await fetchGene();
 const { document, io, warnings } = await convertModel(parsePMX(await readFile(`${directory}/Gene_light.pmx`)), directory);

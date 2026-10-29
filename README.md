@@ -5,10 +5,12 @@ the [MMD_materials_toon](extensions/MMD_materials_toon/README.md) and
 [MMD_materials_outline](extensions/MMD_materials_outline/README.md) v0.1 drafts.
 The converter uses `mmd-parser`, a bounded PMX 2.1 reader and glTF Transform,
 without Three.js scene
-serialization. The Gene Light example shows the original PMX loaded directly
-with pinned `@takahirox/three-mmd@0.1.2` beside the generated GLB loaded through
+serialization. The default [Uka example](docs/uka.md) shows the original PMX loaded directly
+with pinned `@takahirox/three-mmd@0.1.2` beside converter-produced glTF loaded through
 `GLTFLoader.register()`. Orbit and zoom stay synchronized; Front/Side/Back presets
-use the same camera, scale, static base pose, lighting and renderer. The right
+use the same camera, scale, lighting and renderer. Uka exposes blink/smile vertex
+expressions in both views; IK/append/physics and VMD playback are disabled for its
+audited solver-free BDEF subset. Gene Light remains selectable. The right
 pane also offers the independent PBR fallback. The Outline menu toggles both
 implementations; their different thickness laws are labeled in the example.
 
@@ -30,10 +32,11 @@ npm run dev
 
 Open the printed local URL with `/mmd-gltf/` (normally
 `http://127.0.0.1:5173/mmd-gltf/`). `example:assets` generates the attributed
-example GLB and copies the same verified original PMX, ten PNGs and both notices
-for this reviewed personal noncommercial comparison. Downloaded source
+Uka glTF and Gene GLB, and copies each pinned original PMX, required PNGs,
+selected Uka VMD and full English/Japanese notices. Uka uses CC BY 4.0 with
+upstream guidelines; Gene retains its documented usage scope. Downloaded source
 files, generated assets, and build output are ignored by Git; the lockfile and
-pinned hash manifest make them reproducible.
+pinned hash manifests make them reproducible.
 
 ```sh
 npm run typecheck
@@ -65,7 +68,9 @@ The browser runner owns a Vite conformance server on port 43179 and a static
 preview on port 43180. Both browser tests and
 build use the repository prefix `/mmd-gltf/`.
 
-See the [pipeline and plugin guide](docs/pipeline.md),
+See the [Uka source audit and rights review](docs/uka.md),
+[browser matrix audit and measurements](docs/uka-validation.md),
+[pipeline and plugin guide](docs/pipeline.md),
 [Gene Light rights/provenance review](docs/gene-light.md),
 [visual investigation and before/after evidence](docs/comparison.md), and
 [validation record](docs/validation.md). The Pages example is
@@ -92,8 +97,9 @@ Use `--mode sdef` for mixed BDEF/SDEF and register `MMDSDEFPlugin` for accurate
 deformation; ordinary loaders use an approximate BDEF2 fallback. See the
 [SDEF draft](extensions/MMD_skinning_sdef/README.md) and
 [runtime/export API](docs/pipeline.md#mixed-sdef-conversion-and-runtime).
-The [unified demo](examples/index.html) opens with the synchronized Gene Light
-comparison. Choose **Synthetic rigs**, then a grouped **Preset**, to explore
+The [unified demo](examples/index.html) opens with the synchronized Uka
+comparison. Choose **Gene Light comparison** for the existing static example.
+Choose **Synthetic rigs**, then a grouped **Preset**, to explore
 skinning, morphs, IK/append and physics in place. Motion, Pose, local-file/binding,
 and export controls are available in disclosures beside (or below) the viewport.
 Both views support Toon, PBR and Outline; the old `rig.html` URL redirects to
@@ -107,7 +113,8 @@ an approximate BDEF4 fallback. Ordered pre-physics IK/append is available with
 other morph-family evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs and one-hop vertex-only groups convert in static and all skinned modes. Skinned conversion also retains type-2 bone offsets and supported one-hop mixed groups in optional [MMD_morphs](extensions/MMD_morphs/README.md); independent controls feed raw bones before the existing solver/physics pipeline; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
 see the [VPD contract and APIs](docs/pipeline.md#vpd-bone-offsets). The outline effect
 also accepts core POSITION/NORMAL morph deformation from other assets.
-Source models and derivatives retain their own rights. Gene Light is
+Source models and derivatives retain their own rights. Uka is **CC BY 4.0**,
+with full original guidelines and attribution preserved; see [the Uka review](docs/uka.md). Gene Light is
 **CC BY 4.0 with additional usage guidelines and retained trademark/design
 rights**, for academic/personal noncommercial scope; contact the authors for
 other commercial use. It is not licensed as repository code.
