@@ -193,11 +193,13 @@ async function convertModelInternal(model: PMXModel, textureDirectory: string, o
     warnings.push(`VPD: applied ${binding.assignments.length} bone offsets; parent filename ${JSON.stringify(pose.parentFile)} is informational. Unmatched: ${binding.unmatched.join(', ') || 'none'}. ${diagnostics.length ? 'Execution unavailable within current capabilities/budgets; raw offsets retained in core snapshot.' : physicsProfile ? `Rigid-body-v1 evaluated at ${physicsSettle} seconds; restart on explicit enable.` : solver === 'none' ? 'No IK/append/physics.' : 'Pre-physics-v1 solved; no physics.'}`);
   }
   const morph = createMorphTargets(doc, buffer, mesh, meshNode, model, scale, skin?.poseModel.modelId, skin?.poseModel.bones);
+  diagnostics.push(...morph.diagnostics);
   if(morph.metadata.version===3 && skin) doc.createExtension(MorphWriter).record={model:morph.metadata,nodes:skin.nodes,mesh:meshNode,raw:morphRaw};
   const unsupportedMorphs = morph.metadata.morphs.filter(m => (m.control === undefined ? m.target : m.control) === null);
   warnings.push(`Morphs: retained ${morph.targets.length} vertex/group POSITION targets; omitted unsupported source families ${JSON.stringify(unsupportedMorphs.map(m => ({ index: m.index, name: m.name, type: m.type, group: m.group, unsupported: m.unsupported })))}. Authored normals retained; no recomputation or morph normal targets.`);
   if (vmd && skin) {
     const motion = parseVMD(vmd), binding = bindMotion(skin.poseModel, motion, {preserveUnbound:true,...vmdBinding}, morph.metadata);
+    binding.diagnostics?.push(...morph.diagnostics);
     const timeline=physicsProfile && physicsBackend ? new PhysicsTimeline(physicsBackend.api,physicsProfile,skin.poseModel.solver!) : undefined;
     let samples;try {samples=addVMDAnimation(doc,buffer,binding,skin.nodes,vmdSampling,meshNode,timeline);}finally{timeline?.dispose();}
     diagnostics.push(...((doc.getRoot().listAnimations().at(-1)?.getExtras() as any)?.vmd?.diagnostics??[]));

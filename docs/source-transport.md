@@ -118,6 +118,14 @@ If valid solver inputs produce transforms outside finite FLOAT range,
 the exact PMX/VMD data and emits a reduced core approximation with
 `unexecuted-morph-or-solver`; explicit playback still reports the numeric failure.
 
+If scaling a valid PMX bone-morph offset exceeds FLOAT range,
+`bone-morph-numeric-range` reports unavailable execution. Exact offsets remain in
+`mmdSource`; conversion emits the existing vertex-only morph metadata (version 2)
+and omits `MMD_morphs` bone execution and groups depending on bone morphs. Independent
+vertex morphs and bound bone motion remain available. Retained VMD bytes include
+the unexecuted controls, and animation diagnostics report the reduction.
+The version-3 executable morph payload keeps its existing FLOAT validation.
+
 Version 6 lists exactly the emitted fallback channels in `owned:[{node,path}]`.
 The loader removes these tracks and leaves unrelated glTF channels in the
 ordinary animation clip. Duplicate/conflicting owned channels fail; owned rest

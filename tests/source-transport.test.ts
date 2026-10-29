@@ -29,6 +29,8 @@ import { type RestBone } from '../packages/mmd-vpd';
 import { createVPDRig, getVPDModel } from '../packages/three-mmd-vpd';
 import { parseVMD, evaluateMotion, bindMotion, omittedRecords, type MotionBinding } from '../packages/mmd-vmd';
 import { validatePayload, payloadMotion } from '../packages/mmd-vmd/payload';
+import { validateMorphModel } from '../packages/mmd-morph';
+import { createMorphRig, getMorphModel, applyMorphWeights } from '../packages/three-mmd-morph';
 
 globalThis.ProgressEvent ??= class extends Event {} as any;
 const load=(data:any)=>new GLTFLoader().register(p=>new MMDSolverPlugin(p)).register(p=>new MMDPhysicsPlugin(p)).register(p=>new MMDVMDPlugin(p)).parseAsync(data,'');
@@ -143,6 +145,78 @@ test('inverted joint ranges stay free in transport and execute; long seek/settle
   const {api}=await loadAmmoNode(),timeline=new PhysicsTimeline(api,p,s);timeline.seek(0.05,()=>s.bones);const before=timeline.bodyTransforms();
   assert.throws(()=>timeline.seek(31,()=>s.bones),category('resource-exhaustion'));assert.deepEqual(timeline.bodyTransforms(),before);timeline.dispose();
   const extended=new PhysicsTimeline(api,p,s,{maxSeekSteps:4000,maxBoneUpdates:100_000_000});extended.seek(31,()=>s.bones);assert.equal(extended.time,31);extended.dispose();assert.equal(PhysicsWorld.allocations,0);
+});
+
+test('scaled bone-morph overflow retains binary PMX/VMD and usable vertex-only morphs through GLB/glTF reload', async () => {
+  const raw = boneMorphPMX('box');
+  // The English name is followed by panel/type/count, a signed bone index, then XYZ.
+  const name = Buffer.from('Original Issue #47 bone-x', 'utf16le');
+  const offset = raw.indexOf(name) + name.length + 1 + 1 + 4 + 2;
+  raw.writeFloatLE(3e38, offset);
+  const source = parsePMX(raw);
+  assert.equal(source.morphs[2].elements[0].position![0], Math.fround(3e38));
+  // The legacy executable payload still accepts scale 1 and rejects wider offsets.
+  const normal = await convertModel(source, '.', { mode: 'bdef', scale: 1 });
+  const legacy = (await json(normal)).extensions.MMD_morphs.model;
+  assert.equal(legacy.version, 3);
+  validateMorphModel(legacy);
+  const invalid = structuredClone(legacy);
+  invalid.morphs[2].bone[0].translation[0] *= 2;
+  assert.throws(() => validateMorphModel(invalid), /invalid bone offset/);
+
+  for (const withMotion of [false, true]) {
+    const rawVMD = boneMorphVMD('a');
+    const r = await convertModel(source, '.', { mode: 'bdef', scale: 2,
+      ...(withMotion ? { vmd: rawVMD, vmdBinding: { mapping: motionMappings.a } } : {}),
+    });
+    const j = await json(r);
+    assert.equal(j.extensions?.MMD_morphs, undefined);
+    const diagnostic = r.diagnostics.find(d => d.code === 'bone-morph-numeric-range')!;
+    assert.equal(diagnostic.category, 'unsupported-capability');
+    assert.equal(diagnostic.path, 'PMX morphs[2].elements[0]');
+    for (const asset of [await glb(r), await load(JSON.stringify(j))]) {
+      assert.deepEqual(Buffer.from(asset.userData.mmdSource.data, 'base64'), raw);
+      const retained = parsePMX(Buffer.from(asset.userData.mmdSource.data, 'base64'));
+      assert.deepEqual(retained.morphs, source.morphs);
+      assert.ok(asset.userData.diagnostics.some((d: any) => d.code === 'bone-morph-numeric-range'));
+      const rig = createMorphRig(asset.scene), model = getMorphModel(rig);
+      assert.equal(model.version, 2);
+      assert.equal(model.morphs[2].target, null);
+      assert.ok(model.morphs[0].unsupported!.some(e => e.type === 2));
+      assert.equal(model.morphs.filter(m => m.target !== null).length, 1);
+      applyMorphWeights(rig, [0.5]); // Independent vertex morph remains usable.
+      if (withMotion) {
+        const player = getVMDPlayers(asset)[0];
+        assert.deepEqual(decodeSource(player.source!.source!), new Uint8Array(rawVMD));
+        assert.ok(player.diagnostics.some(d => d.code === 'bone-morph-numeric-range'));
+        player.seek(0.5);
+        player.dispose();
+      }
+      asset.scene.traverse(n => assert.ok([...n.position.toArray(), ...n.quaternion.toArray()].every(v => Number.isFinite(Math.fround(v)))));
+    }
+    if (withMotion) {
+      const ordinary = await new GLTFLoader().parseAsync(JSON.stringify(j), '');
+      const mixer = new AnimationMixer(ordinary.scene);
+      mixer.clipAction(ordinary.animations[0]).play();mixer.setTime(0.5);
+      assert.ok(ordinary.animations[0].tracks.some(t => t.name.includes('morphTargetInfluences')));
+      ordinary.scene.traverse(n => assert.ok([...n.position.toArray(), ...n.quaternion.toArray()].every(Number.isFinite)));
+    }
+  }
+  // Object inputs use the same lossless record retention path.
+  const records = structuredClone(source);delete records.source;
+  const r = await convertModel(records, '.', { mode: 'bdef', scale: 2 });
+  const j = await json(r);
+  assert.equal(j.extras.mmdSource.format, 'pmx-records');
+  assert.deepEqual(j.extras.mmdSource.morphs, JSON.parse(JSON.stringify(source.morphs)));
+  // An out-of-range offset cannot hide another malformed source record.
+  for (const change of [
+    (m: typeof records) => { m.morphs[3].elements[0].index = 999; },
+    (m: typeof records) => { m.morphs[3].elements[0].rotation = [0, 0, 0, 0]; },
+    (m: typeof records) => { m.morphs[3].elements[0].position = [0, 0]; },
+  ]) {
+    const bad = structuredClone(records);change(bad);
+    await assert.rejects(convertModel(bad, '.', { mode: 'bdef', scale: 2 }), category('malformed-data'));
+  }
 });
 
 test('backend numeric limits preserve binary PMX physics through GLB/glTF reload', async () => {
