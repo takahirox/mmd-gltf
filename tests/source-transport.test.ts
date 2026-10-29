@@ -219,6 +219,79 @@ test('scaled bone-morph overflow retains binary PMX/VMD and usable vertex-only m
   }
 });
 
+test('vertex/group FLOAT overflow retains binary source and diagnosed reduced targets through GLB/glTF reload', async () => {
+  for (const kind of ['scaled-vertex', 'group', 'duplicate-vertex'] as const) {
+    const raw = boneMorphPMX('box');
+    // English names precede panel/type/count, then vertex-index/XYZ or morph-index/rate.
+    const records = (name: string) => {
+      const bytes = Buffer.from(`Original Issue #47 ${name}`, 'utf16le');
+      const start = raw.indexOf(bytes);assert.ok(start >= 0);
+      return start + bytes.length + 1 + 1 + 4;
+    };
+    const vertex = records('vertex'), group = records('mixed');
+    raw.writeFloatLE(3e38, vertex + 1);
+    if (kind === 'group') raw.writeFloatLE(100, group + 1);
+    if (kind === 'duplicate-vertex') {
+      raw.writeUInt8(raw.readUInt8(vertex), vertex + 13);
+      raw.writeFloatLE(3e38, vertex + 14);
+    }
+    const source = parsePMX(raw), scale = kind === 'scaled-vertex' ? 2 : kind === 'group' ? 0.08 : 1;
+    const reduced = kind === 'group' ? 0 : 1;
+    for (const withMotion of [false, true]) {
+      const rawVMD = boneMorphVMD('a');
+      const r = await convertModel(source, '.', { mode: 'bdef', scale,
+        ...(withMotion ? { vmd: rawVMD, vmdBinding: { mapping: motionMappings.a } } : {}),
+      });
+      const j = await json(r);
+      const diagnostics = r.diagnostics.filter(d => d.code === 'morph-target-numeric-range');
+      assert.ok(diagnostics.length > 0);
+      assert.ok(diagnostics.every(d => d.category === 'fallback-limit' && d.path === `PMX morphs[${reduced}]`));
+      for (const asset of [await glb(r), await load(JSON.stringify(j))]) {
+        assert.deepEqual(Buffer.from(asset.userData.mmdSource.data, 'base64'), raw);
+        assert.deepEqual(parsePMX(Buffer.from(asset.userData.mmdSource.data, 'base64')).morphs, source.morphs);
+        assert.ok(asset.userData.diagnostics.some((d: any) => d.code === 'morph-target-numeric-range'));
+        const rig = createMorphRig(asset.scene), model = getMorphModel(rig);
+        validateMorphModel(model);
+        const reducedTarget = model.morphs[reduced].target!, otherTarget = model.morphs[reduced === 0 ? 1 : 0].target!;
+        asset.scene.traverse((n: any) => {
+          if (!n.isMesh) return;
+          const attributes = n.geometry.morphAttributes.position;
+          assert.ok(attributes.every((a: any) => a.array.every(Number.isFinite)));
+          assert.ok(attributes[reducedTarget].array.every((v: number) => v === 0));
+          const expected = Math.fround(Math.fround(3e38) * (kind === 'group' ? scale : 1));
+          assert.equal(attributes[otherTarget].getX(0), expected);
+        });
+        const weights = model.morphs.filter(m => m.control !== null).map(() => 0);
+        weights[model.morphs[2].control!] = 0.5;
+        applyMorphWeights(rig, weights); // Independent bone controls remain executable.
+        if (withMotion) {
+          const player = getVMDPlayers(asset)[0];
+          assert.deepEqual(decodeSource(player.source!.source!), new Uint8Array(rawVMD));
+          assert.ok(player.diagnostics.some(d => d.code === 'morph-target-numeric-range' && d.category === 'fallback-limit'));
+          player.seek(0.5);player.dispose();
+        }
+      }
+    }
+    // Object inputs retain exact records as well.
+    const object = structuredClone(source);delete object.source;
+    const retained = await json(await convertModel(object, '.', { mode: 'bdef', scale }));
+    assert.equal(retained.extras.mmdSource.format, 'pmx-records');
+    assert.deepEqual(retained.extras.mmdSource.morphs, JSON.parse(JSON.stringify(source.morphs)));
+    // Fallback overflow must not hide a corrupt later vertex or group record.
+    for (const corrupt of [
+      (b: Buffer) => b.writeUInt8(255, vertex + 13),
+      (b: Buffer) => b.writeFloatLE(NaN, vertex + 14),
+      (b: Buffer) => b.writeFloatLE(Infinity, vertex + 14),
+      (b: Buffer) => b.writeUInt8(255, group),
+    ]) {
+      const bad = Buffer.from(raw);corrupt(bad);
+      await assert.rejects(async () => convertModel(parsePMX(bad), '.', { mode: 'bdef', scale }), category('malformed-data'));
+    }
+    const bad = structuredClone(object);bad.morphs[1].elements[1].position = [0, 0];
+    await assert.rejects(convertModel(bad, '.', { mode: 'bdef', scale }), category('malformed-data'));
+  }
+});
+
 test('backend numeric limits preserve binary PMX physics through GLB/glTF reload', async () => {
   const { api } = await loadAmmoNode();
   for (const { mass, width, scale } of [

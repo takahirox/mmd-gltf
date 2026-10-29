@@ -126,6 +126,15 @@ vertex morphs and bound bone motion remain available. Retained VMD bytes include
 the unexecuted controls, and animation diagnostics report the reduction.
 The version-3 executable morph payload keeps its existing FLOAT validation.
 
+If scaled or accumulated vertex deltas or compiled group deltas exceed FLOAT
+range, `morph-target-numeric-range` reports a `fallback-limit` at the source morph.
+That core target uses zero displacement, preserving target/control slots; other
+representable targets and bone controls remain available. Groups compile from
+the original deltas, so a smaller group rate can still yield a usable target.
+Exact PMX bytes (or object-input records) remain in `mmdSource`, and retained VMD
+controls and animation diagnostics survive reload. Source references, counts,
+finite FLOAT offsets and group rates are still validated before emitting targets.
+
 Version 6 lists exactly the emitted fallback channels in `owned:[{node,path}]`.
 The loader removes these tracks and leaves unrelated glTF channels in the
 ordinary animation clip. Duplicate/conflicting owned channels fail; owned rest

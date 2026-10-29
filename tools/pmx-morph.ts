@@ -87,7 +87,8 @@ export function createMorphTargets(doc: Document, buffer: Buffer, mesh: Mesh, no
     const values = new Array(model.vertices.length * 3).fill(0);
     if (m.type === 1) for (const e of model.morphs[m.index].elements) {
       if (!e || !Number.isInteger(e.index) || e.index < 0 || e.index >= model.vertices.length ||
-          !Array.isArray(e.position) || e.position.length !== 3 || !Array.from(e.position).every(Number.isFinite))
+          !Array.isArray(e.position) || e.position.length !== 3 ||
+          !Array.from(e.position).every(v => Number.isFinite(v) && Number.isFinite(Math.fround(v))))
         throw new Error(`Morph ${m.index}: invalid vertex reference or position delta`);
       // Pinned parsers already reflect Z. Scale each source delta once.
       e.position.forEach((v, axis) => { values[e.index * 3 + axis] += v * scale; });
@@ -97,13 +98,23 @@ export function createMorphTargets(doc: Document, buffer: Buffer, mesh: Mesh, no
       const child = deltas.get(e.index)!;
       for (let i = 0; i < values.length; i++) values[i] += e.rate * child[i];
     }
-    if (!values.every(Number.isFinite) || !new Float32Array(values).every(Number.isFinite))
-      throw new Error(`Morph ${m.index}: unsupported FLOAT delta numeric range`);
+    // Keep the unrounded deltas for group compilation: a small group rate can
+    // bring an overflowing vertex target back into representable FLOAT range.
     deltas.set(m.index, values);
   }
-  const targets = order.map(m => doc.createPrimitiveTarget(`PMX morph ${m.index}`).setAttribute('POSITION',
-    doc.createAccessor(`PMX morph ${m.index} delta`).setBuffer(buffer).setType('VEC3')
-      .setArray(new Float32Array(deltas.get(m.index)!))));
+  const targets = order.map(m => {
+    const values = new Float32Array(deltas.get(m.index)!);
+    if (!values.every(Number.isFinite)) {
+      diagnostics.push({
+        category: 'fallback-limit', code: 'morph-target-numeric-range', path: `PMX morphs[${m.index}]`,
+        message: 'compiled vertex/group delta exceeds FLOAT range; this core target uses zero displacement; exact source records remain in mmdSource and other targets and bone controls remain available',
+      });
+      // Keep the existing target/control layout without serializing invalid FLOATs.
+      values.fill(0);
+    }
+    return doc.createPrimitiveTarget(`PMX morph ${m.index}`).setAttribute('POSITION',
+      doc.createAccessor(`PMX morph ${m.index} delta`).setBuffer(buffer).setType('VEC3').setArray(values));
+  });
   node.setExtras({ ...node.getExtras(), pmxMorph: { ...metadata, morphs: metadata.morphs.map(m => ({ ...m })) } });
   if (targets.length) {
     mesh.setWeights(targets.map(() => 0));
