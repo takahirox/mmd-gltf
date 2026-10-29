@@ -19,13 +19,11 @@
     </div>
     <div id="uka-features">
       <label>Expression <select id="expression" disabled><option value="rest">Rest · A pose</option><option value="blink">Blink · まばたき</option><option value="smile">Smile · 笑い</option></select></label>
-      <p>Uka: compare the original PMX with converter-produced glTF. Blink and smile deform the face in both views. Toon/PBR changes the converted material; Outline changes both contours.</p>
-      <p class="method-note">Solver-free BDEF subset: no IK, append, physics or VMD playback. Material morphs and the dependent ear-storage group are unsupported. Only two vertex expressions are exposed in this preview to bound GPU memory; all supported morph data is retained in the download. Preview textures are resized to at most 1024 px; downloadable source textures are unchanged.</p>
     </div>
     <p id="gene-status" class="status" role="status">Loading PMX and converted glTF…</p>
     <section id="viewport" aria-label="Synchronized PMX and glTF comparison">
-      <div id="pmx-pane" class="pane"><h2>Direct PMX reference</h2><p id="pmx-status" role="status">Loading original PMX and images…</p></div>
-      <div id="gltf-pane" class="pane"><h2>MMD glTF</h2><p id="gltf-status" role="status">Loading converted glTF…</p></div>
+      <div id="pmx-pane" class="pane"><h2>MMD</h2><p id="pmx-status" role="status">Loading original PMX and images…</p></div>
+      <div id="gltf-pane" class="pane"><h2>glTF</h2><p id="gltf-status" role="status">Loading converted glTF…</p></div>
       <div class="hint">Drag to orbit · Scroll to zoom · Synchronized views</div>
     </section>
   </section>
@@ -81,13 +79,13 @@
     </div>
   </section>
   <footer>
-    <p class="method-note">PMX is a secondary reference, not original MMD. Exact MMD visual/physics fidelity is unverified; solvers and physics use bounded profiles.</p>
     <details id="about-demo"><summary>About &amp; credits</summary>
+      <p>The MMD label denotes a direct PMX-rendering reference using <code>@takahirox/three-mmd</code>, not native MikuMikuDance. The glTF side uses converter-produced assets. Exact MMD visual/physics fidelity is unverified; supported solvers and physics use bounded profiles. The public Uka and Gene Light comparisons do not run VMD playback, IK or physics.</p>
       <h2>Uka · source &amp; rights</h2>
       <p class="credit">CG-CA Uka (c) 2023-2024 by Nagoya Institute of Technology, Moonshot R&amp;D Goal 1 Avatar Symbiotic Society</p>
       <p>Original PMX, selected motion, images and converted glTF: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Preserve the <a href="https://github.com/mmdagent-ex/uka/tree/659f0d1a740fec68bb2817dc9c694a35e7a15f12">source and full usage guidelines</a>. No endorsement is implied. Model assets have separate terms from repository code.</p>
       <p>Original notices and full guidelines: <a href="./uka/README.md">Uka English</a> · <a href="./uka/README.ja.md" lang="ja">Uka 日本語</a> · <a href="./uka/source-manifest.json">Uka source hashes</a> · <a href="./uka/inventory.json">Actual feature inventory</a> · <a href="./uka/conversion.json">Uka conversion record</a> · <a href="./uka/model.gltf">Converted Uka glTF</a></p>
-      <p>Changes: PMX→glTF at 0.08 m/unit with BDEF joints, Toon/Outline and independent core PBR; supported vertex/group/bone morph data retained. Five material morphs and their dependent group are omitted with explicit diagnostics. No IK/append/physics or motion execution. The selected upstream smile VMD is inventoried but not played because it contains unresolved track bindings. Two manual vertex expressions and 1024 px preview textures bound GPU memory. Original source files and texture bytes are unchanged. Three.js PMX rendering is a secondary reference, not the original MikuMikuDance renderer.</p>
+      <p>Changes: PMX→glTF at 0.08 m/unit with BDEF joints, Toon/Outline and independent core PBR; supported vertex/group/bone morph data retained. Five material morphs and their dependent group are omitted with explicit diagnostics. No IK/append/physics or motion execution. The selected upstream smile VMD is inventoried but not played because it contains unresolved track bindings. Two manual vertex expressions and 1024 px preview textures bound GPU memory. Original source files and texture bytes are unchanged.</p>
       <h2>Gene Light · source &amp; rights</h2><p>Direct PMX via <a href="https://github.com/takahirox/three-mmd-loader">@takahirox/three-mmd@0.1.2</a> alongside a static adaptation using the <a href="https://github.com/takahirox/mmd-gltf/tree/main/extensions/MMD_materials_toon">MMD_materials_toon v0.1 draft</a>. Compare the independent PBR fallback using the menu above. Same pinned source, base pose, scale, camera, directional light and renderer; no animation, IK, physics, morph updates. Zero-weight morph buffers are omitted from the static preview’s GPU upload; the downloadable conversion retains all targets. Outlines use different algorithms: the PMX reference uses three-mmd’s legacy thickness law; glTF uses the normative MMD_materials_outline v0.1 pixel expansion and encoded RGB blending. Their thickness and appearance can differ. Independent shading models can differ in brightness, ambient, toon and specular response. WebGL2 is the default; use <code>?backend=webgpu</code> to try WebGPU.</p>
       <p class="credit">CG-CA Gene (c) 2023 by Nagoya Institute of Technology, Moonshot R&amp;D Goal 1 Avatar Symbiotic Society</p>
       <p>Original PMX, images and converted GLB: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, with <a href="https://github.com/mmdagent-ex/gene/tree/c7eace43dffaccff6ad0597433ef85fa57c91e03">original usage guidelines and retained trademark/design rights</a>. Academic and personal noncommercial scope; contact the authors for other commercial use. No endorsement is implied.</p>
