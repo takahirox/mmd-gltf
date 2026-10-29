@@ -99,11 +99,12 @@ deformation; ordinary loaders use an approximate BDEF2 fallback. See the
 [runtime/export API](docs/pipeline.md#mixed-sdef-conversion-and-runtime).
 The [unified demo](examples/index.html) opens with the synchronized Uka
 comparison. Choose **Gene Light comparison** for the existing static example.
-Choose **Synthetic rigs**, then a grouped **Preset**, to explore
-skinning, morphs, IK/append and physics in place. Motion, Pose, local-file/binding,
-and export controls are available in disclosures beside (or below) the viewport.
-Both views support Toon, PBR and Outline; the old `rig.html` URL redirects to
-the root with `?demo=rig`. See the [UI validation record](docs/unified-demo.md).
+The public model picker offers Uka and Gene Light only. Synthetic box/wedge rigs
+remain internal conformance fixtures and are not offered in normal demo navigation.
+Automated browser tests can still use `?demo=rig` (or the legacy `rig.html`
+redirect) to exercise skinning, morphs, IK/append, physics and VPD/VMD controls.
+The character comparisons support Toon, PBR and Outline. See the
+[UI validation record](docs/unified-demo.md).
 
 Use `--mode qdef` with `MMDQDEFPlugin` for the bounded
 PMX 2.1 rigid dual-quaternion profile; see the [QDEF guide](docs/qdef.md) and
