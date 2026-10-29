@@ -218,6 +218,7 @@ export function addVMDAnimation(
   const maxEvaluationWork=20_000_000;
   const workFor=(value: MotionBinding)=>Math.max(1,value.rest.length)*(1+(value.solver?.bones.reduce((n,b)=>n+(b.ik ? (b.ik.iterations+1)*b.ik.links.length : 0),0)??0));
   const poseWork=workFor(samplingMotion);
+  const physicsPoseWork=physics ? workFor({...motion,solver:physics.solver}) : 0;
   const charge=(work:number)=>{
     if(work>maxEvaluationWork-evaluationWork) diagnosticError('fallback-limit','fallback-evaluation-budget','VMD','fallback solver evaluation budget exceeded; retained curves unaffected');
     evaluationWork+=work;
@@ -225,7 +226,9 @@ export function addVMDAnimation(
   const cache=new Map<number,ReturnType<typeof evaluateMotion>>();
   const resolved=(time:number)=>{
     if(!cache.has(time)) {
-      charge(poseWork);
+      // seek rebuilds the world and resolves the initial pose plus every tick.
+      // Reserve all replay work, including initialization, before entering it.
+      charge(physics ? (Math.floor(time/physics.profile.fixedStep+1e-9)+2)*physicsPoseWork : poseWork);
       if(cache.size*Math.max(1,samplingMotion.rest.length)>1_000_000)cache.clear();
       cache.set(time,physics ? physics.seek(time,t=>evaluateMotion(motion,t,undefined,true),t=>evaluateIK(motion,t)) : evaluateMotion(samplingMotion,time));
     }
@@ -233,6 +236,9 @@ export function addVMDAnimation(
   };
   const rawTracks=new Map(motion.tracks.map(t=>[t.index,t]));
   const rest=new Map(motion.rest.map(b=>[b.index,b]));
+  // Sparse solver-free sampling omits untouched bones. Their emitted solver
+  // channels still need a complete local transform, including during recovery.
+  const sampledBone=(index:number,time:number)=>resolved(time).find(b=>b.index===index) ?? rest.get(index)!;
   const tracks=motion.solver || motion.morphModel ? motion.rest.filter(b=>motion.solver || affected.has(b.index)).map(b=>({index:b.index,keys:rawTracks.get(b.index)?.keys??[]})) : [...motion.tracks];
   if(!tracks.length && !(motion.morphs??[]).some(g=>g.tracks.length) && motion.rest.length) tracks.push({index:motion.rest[0].index,keys:[]});
   const recoverable=(error:unknown): error is MMDDiagnosticError=>error instanceof MMDDiagnosticError && ['fallback-limit','resource-exhaustion','unsupported-capability'].includes(error.diagnostic.category);
@@ -268,14 +274,14 @@ export function addVMDAnimation(
     if(!coarsePoses!.length) diagnostics.push({category:'fallback-limit',code:'fallback-rest-pose',path:'VMD',message:'evaluation budget exhausted; remaining core TRS channels retain rest values'});
   };
   const coarseSamples=(index:number)=>{
-    const samples=coarsePoses!.length ? coarsePoses!.map(({time,pose})=>({time,...pose.get(index)!})) : [{time:0,...rest.get(index)!}];
+    const samples=coarsePoses!.length ? coarsePoses!.map(({time,pose})=>({time,...(pose.get(index) ?? rest.get(index)!)})) : [{time:0,...rest.get(index)!}];
     budget.remaining=Math.max(0,budget.remaining-samples.length);
     return samples;
   };
   for (const track of tracks) {
     let samples;
     try {
-      samples=coarsePoses ? coarseSamples(track.index) : physics ? seeds.map(time=>{if(--budget.remaining<0)diagnosticError('fallback-limit','sample-budget','MMD_physics','fallback sample budget exceeded');const at=resolved(time).find(b=>b.index===track.index)!;return {time:Math.fround(time),translation:at.translation,rotation:at.rotation};}) : motion.solver || motion.morphModel ? sampleTrack(track,options,budget,time=>resolved(time).find(b=>b.index===track.index)!,seeds,seams) : sampleTrack(track, options, budget, track.keys.length ? undefined : time=>resolved(time).find(b=>b.index===track.index)!, track.keys.length ? undefined : [0]);
+      samples=coarsePoses ? coarseSamples(track.index) : physics ? seeds.map(time=>{if(--budget.remaining<0)diagnosticError('fallback-limit','sample-budget','MMD_physics','fallback sample budget exceeded');const at=sampledBone(track.index,time);return {time:Math.fround(time),translation:at.translation,rotation:at.rotation};}) : motion.solver || motion.morphModel ? sampleTrack(track,options,budget,time=>sampledBone(track.index,time),seeds,seams) : sampleTrack(track, options, budget, track.keys.length ? undefined : time=>sampledBone(track.index,time), track.keys.length ? undefined : [0]);
     } catch(error) {
       if(!recoverable(error)) throw error;
       recover(error);

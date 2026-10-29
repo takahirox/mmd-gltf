@@ -85,6 +85,37 @@ test('fixed/local/external bones and unsupported orders transport; missing refer
   const cycle=structuredClone(late);cycle.bones[0].parentIndex=1;assert.throws(()=>validateSolver(cycle),/cycle/);
 });
 
+test('fixed-axis solver with bone morphs retains motion and untouched rest channels through reload',async()=>{
+  for(const maxSamples of [200_000,1]) {
+    const source=parsePMX(boneMorphPMX('box')),raw=boneMorphVMD('a');
+    source.bones[0].flag!|=0x400;source.bones[0].fixAxis=[1,0,0];
+    const r=await convertModel(source,'.',{mode:'bdef',solver:'pre-physics-v1',vmd:raw,vmdBinding:{mapping:motionMappings.a},vmdSampling:{maxSamples}});
+    const j=await json(r),p=j.animations[0].extensions.MMD_animation_vmd;
+    assert.ok(p.diagnostics.some((d:any)=>d.code==='fixed-axis'));
+    assert.ok(p.diagnostics.some((d:any)=>d.code==='unexecuted-solver-or-physics'));
+    assert.deepEqual(decodeSource(p.source),new Uint8Array(raw));
+    for(const asset of [await glb(r),await load(JSON.stringify(j))]) {
+      assert.deepEqual(getSolverModel(asset.scene)!.profile.bones[0].fixedAxis,[1,0,0]);
+      const player=getVMDPlayers(asset)[0];
+      assert.deepEqual(decodeSource(player.source!.source!),new Uint8Array(raw));
+      assert.throws(()=>player.seek(0.5),category('unsupported-capability'));
+    }
+    const time=maxSamples===1 ? 0 : 0.5;
+    const ordinary=await new GLTFLoader().parseAsync(JSON.stringify(j),'');
+    const mixer=new AnimationMixer(ordinary.scene);mixer.clipAction(ordinary.animations[0]).play();mixer.setTime(time);
+    const retained=payloadMotion(p,p.morphs),expected=evaluateMotion({...retained,solver:undefined},time);
+    const boneNodes=new Map<number,any>();ordinary.scene.traverse(n=>{if(n.userData.pmxBone)boneNodes.set(n.userData.pmxBone.index,n);});
+    for(const bone of expected) {
+      const actual=boneNodes.get(bone.index)!;
+      bone.translation.forEach((v,i)=>assert.ok(Math.abs(v-actual.position.toArray()[i])<2e-6));
+      const dot=Math.abs(bone.rotation.reduce((sum,v,i)=>sum+v*actual.quaternion.toArray()[i],0));
+      assert.ok(Math.abs(1-dot)<1e-6);
+    }
+    // The solver owns the full skeleton, including bones absent from sparse sampling.
+    assert.equal(j.animations[0].channels.filter((c:any)=>c.target.path==='translation').length,p.rest.length);
+  }
+});
+
 test('source IK counts and physics counts are distinct from configurable execution budgets',async()=>{
   const model=parsePMX(solverPMX('box'));model.bones[3].ik!.iteration=0x7fffffff;
   const r=await convertModel(model,'.',{mode:'bdef',solver:'pre-physics-v1'}),p=(await json(r)).extensions.MMD_skeleton_solver as SolverProfile;
@@ -251,6 +282,44 @@ test('coarse recovery respects work already spent by adaptive solver sampling',a
   assert.ok(diagnostics.some((d:any)=>d.code==='fallback-evaluation-budget'));
   assert.ok(diagnostics.some((d:any)=>d.code==='fallback-rest-pose'));
   for(const channel of doc.getRoot().listAnimations()[0].listChannels()) assert.equal(channel.getSampler()!.getInput()!.getCount(),1);
+});
+
+test('cumulative physics replay work is bounded before each seek and retains long motion',async(t)=>{
+  const raw=solverVMD('a');
+  // Stretch bone keys to 20 seconds, within the per-seek limit.
+  for(let i=0;i<raw.readUInt32LE(50);i++) {
+    const offset=54+i*111+15;
+    raw.writeUInt32LE(raw.readUInt32LE(offset)===0 ? 0 : 600,offset);
+  }
+  let resolutions=0,seeks=0;
+  // Seven bones and one 16-iteration single-link IK cost 126 updates per pose.
+  const maxResolutions=Math.floor(20_000_000/126);
+  t.mock.method(PhysicsWorld.prototype,'resolve',(pose:RestBone[])=>{
+    resolutions++;
+    assert.ok(resolutions<=maxResolutions,'cumulative physics replay exceeded the conversion work budget');
+    return pose;
+  });
+  const seek=PhysicsTimeline.prototype.seek;
+  t.mock.method(PhysicsTimeline.prototype,'seek',function(this:PhysicsTimeline,...args:Parameters<PhysicsTimeline['seek']>) {
+    seeks++;
+    const replayPoses=Math.floor(args[0]/this.profile.fixedStep+1e-9)+1;
+    assert.ok(resolutions+replayPoses<=maxResolutions,'over-budget physics replay must be rejected before execution');
+    return seek.apply(this,args);
+  });
+  const r=await convertModel(parsePMX(physicsPMX('box')),'.',{mode:'bdef',physics:'rigid-body-v1',vmd:raw});
+  assert.ok(seeks>1);assert.ok(resolutions>seeks);assert.ok(resolutions<=maxResolutions);
+  assert.ok(r.diagnostics.some(d=>d.code==='fallback-evaluation-budget'));
+  assert.ok(r.diagnostics.some(d=>d.code==='physics-fallback-reduced'));
+  const j=await json(r),p=j.animations[0].extensions.MMD_animation_vmd;
+  assert.deepEqual(decodeSource(p.source),new Uint8Array(raw));
+  assert.equal(Math.max(...p.tracks.flatMap((track:any)=>track.keys.map((key:any)=>key.frame))),600);
+  assert.ok(j.animations[0].samplers.every((s:any)=>j.accessors[s.input].count>0));
+  for(const asset of [await glb(r),await load(JSON.stringify(j))]) {
+    const player=getVMDPlayers(asset)[0];assert.equal(player.duration,20);
+    assert.deepEqual(decodeSource(player.source!.source!),new Uint8Array(raw));
+    assert.ok(player.diagnostics.some(d=>d.code==='fallback-evaluation-budget'));
+  }
+  assert.equal(PhysicsWorld.allocations,0);
 });
 
 test('physics carries the configured solver budget through capability checks and pre/post execution',async()=>{
