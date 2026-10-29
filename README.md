@@ -61,7 +61,9 @@ The example defaults to WebGL2; append `?backend=webgpu` to try native WebGPU,
 which tests explicitly skip without an adapter. Views stack on narrow screens.
 The direct PMX is a practical reference, not a bit-identical MikuMikuDance oracle;
 independent ambient/toon/specular models produce documented shading differences.
-Neither Gene view animates or steps IK/physics/morphs. The internal synthetic BDEF
+The public Uka and Gene comparisons offer synchronized official VMD playback,
+raw bone offsets and vertex expressions with IK/append/physics off. See the
+[pinned motion audit and playback scope](docs/public-motion.md). The internal synthetic BDEF
 test harness loads two VPD poses and two VMD bone motions, two combined bone/morph motions and morph-only motion on two distinct BDEF rigs, supports local files with explicit
 encoding/binding maps, and provides pose apply/reset plus motion transport and fractional seeking. It applies raw
 bone offsets without solvers by default. Additional IK/append presets execute the

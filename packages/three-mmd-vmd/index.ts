@@ -211,7 +211,8 @@ export function getVMDPlayers(gltf: GLTF): readonly VMDPlayer[] {
 /** Optional retained curves replace their complete matching fallback animation. No private Three.js patches. */
 export class MMDVMDPlugin implements GLTFLoaderPlugin {
   readonly name = EXTENSION_NAME;
-  constructor(private parser: GLTFParser) {}
+  /** updateBounds=false requires caller-managed culling/bounds; matrices and skin still update. */
+  constructor(private parser: GLTFParser, private options: { updateBounds?: boolean } = {}) {}
   beforeRoot() {
     const json = this.parser.json;
     new MMDMorphPlugin(this.parser).beforeRoot();
@@ -363,7 +364,7 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
               node.scale.fromArray(b.scale);
               node.updateMatrix();
             }
-            refreshDeformation(result.scene);
+            refreshDeformation(result.scene, this.options.updateBounds !== false);
           };
         }),
       );

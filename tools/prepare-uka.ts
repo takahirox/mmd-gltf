@@ -6,6 +6,7 @@ import { convertModel, parsePMX } from './pmx-to-gltf';
 import { parseVMD } from '../packages/mmd-vmd';
 import { inventoryUka } from './uka-inventory';
 import manifest from './uka-manifest.json';
+import { publicMotion, publicMotionMetadata } from './public-motion';
 
 export const ukaAttribution = 'CG-CA Uka (c) 2023-2024 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society';
 export async function prepareUka() {
@@ -13,8 +14,9 @@ export async function prepareUka() {
   const model = parsePMX(await readFile(`${directory}/MS_Uka.pmx`));
   const inventory = inventoryUka(model, parseVMD(await readFile(`${directory}/motion/03_smile.vmd`)));
   // No source filtering, altered solver limits, or model-specific converter path.
-  const { document, io, warnings } = await convertModel(model, directory, {mode:'bdef'});
-  const changes = 'Unmodified PMX parsed and converted with normal BDEF mode at 0.08 m/unit; reflected Z/winding, core PBR approximation, Toon/Outline, 302 joints, supported vertex/group/bone morph data. No IK/append/physics or VMD execution. Unsupported material morphs and dependent group omitted with converter diagnostics; authored normals retained. Demo exposes only blink/smile vertex targets to bound GPU memory; all supported targets remain in the downloadable glTF. POSITION morph deltas serialized losslessly as standard sparse accessors. Preview textures resized to at most 1024 px on both views; source texture bytes unchanged and shared with PMX reference.';
+  const motion = await publicMotion(model, directory, 'motion/04_littlesmile.vmd');
+  const { document, io, warnings } = await convertModel(model, directory, {mode:'bdef', solver:'none', physics:'none', vmd:motion.bytes});
+  const changes = 'Unmodified PMX and official 04_littlesmile VMD converted with BDEF skin at 0.08 m/unit, exact retained VMD v6 and approximate core fallback. No IK/grant/physics. Public preview executes raw bones and vertex expressions only; active morph buffers and manual blink/smile keep original identities. Full conversion retains all supported vertex/group/bone morph data. Material/UV morphs, unresolved names and VMD scene controls are not executed. Source textures unchanged; preview limited to 1024 px.';
   document.getRoot().setExtras({...document.getRoot().getExtras(),
     source:`https://github.com/${manifest.repository}/tree/${manifest.commit}`, sourceManifest:manifest,
     attribution:ukaAttribution, license:'CC BY 4.0',
@@ -30,6 +32,7 @@ export async function prepareUka() {
   await rm('public/uka',{recursive:true,force:true});
   await mkdir('public/uka',{recursive:true});
   await io.write('public/uka/model.gltf',document);
+  await writeFile('public/uka/motion.json',JSON.stringify(publicMotionMetadata(motion, document),null,2)+'\n');
   for (const {path} of manifest.files) {
     await mkdir(dirname(`public/uka/${path}`),{recursive:true});
     await copyFile(`${directory}/${path}`,`public/uka/${path}`);

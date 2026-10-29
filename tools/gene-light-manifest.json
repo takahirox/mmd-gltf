@@ -79,6 +79,11 @@
       "size": 382693,
       "sha": "5717c3b1cb90451a69ef9d3f69a618e3b0359f3d",
       "sha256": "60fc47dbd91667b7e9b82bfab8ff2bdc583a2fe5ba7fa4a33351afa77324ef7f"
+    },
+    {
+      "path": "motion/01_happy.vmd",
+      "size": 33008,
+      "sha256": "8da8b93dfc2dba19535246126558f82238c915ff8a90b2d05dfba17a333f903e"
     }
   ]
 }

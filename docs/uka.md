@@ -1,7 +1,7 @@
 # Uka integration example (Issue #52)
 
 Uka is the default unified demo; Gene Light remains selectable for its distinct
-static material comparison. The synthetic fixtures remain available for bounded
+material comparison and synchronized VMD playback. The synthetic fixtures remain available for bounded
 feature experiments and independent mathematical/GPU conformance checks.
 
 ## Rights and acquisition
@@ -26,10 +26,10 @@ credits and generated glTF includes attribution, source, hashes, notices and a
 change record; `conversion.json` records the same derivative-use information.
 
 [The allowlist](../tools/uka-manifest.json) pins exact sizes and SHA-256 for the
-PMX, nine referenced PNGs, one selected VMD and both notices. `fetchUka()` follows
+PMX, nine referenced PNGs, the historical inventory VMD, the selected playback VMD and both notices. `fetchUka()` follows
 the Gene workflow: download missing allowlisted files only, verify every cached
 or fetched byte, fail on a mismatch or missing HTTP resource. No whole-repository
-archive, implicit texture fallback, additional motions, PMD, or unused `hair.png`
+archive, implicit texture fallback, unreviewed motions, PMD, or unused `hair.png`
 is downloaded. Changing upstream content requires a deliberate manifest review.
 The Japanese notice says guidelines may change: review upstream notices again
 before changing the pin or reusing these assets in another context.
@@ -66,9 +66,10 @@ Both `solver:'pre-physics-v1'` and `physics:'rigid-body-v1'` fail at
 is approximately 4 radians, outside the bounded profile; the demo does not clamp
 it or alter the general contract. The source includes additional solver records
 and fixed/local axes detailed in the inventory. No Uka SDEF, QDEF, IK, append,
-physics, or full MMD animation support is claimed.
+physics, or full MMD animation support is claimed. See the current
+[synchronized raw VMD comparison](public-motion.md) for Issue #63 playback scope.
 
-Selected `motion/03_smile.vmd` has 224 bone keys, 344 morph keys, no camera,
+Historically inventoried `motion/03_smile.vmd` has 224 bone keys, 344 morph keys, no camera,
 light or shadow keys, and one display/IK record. Its informational model name is
 `ジェネ / Gene`. The inventory records every distinct track byte key and exact
 name matches, including truncated and unmatched names. No duplicate exact source-name matches
@@ -92,9 +93,8 @@ accessors reduce the binary geometry from about 125 MB dense to 5.12 MB by omitt
 zero deltas; no target data is discarded. This is ordinary glTF serialization
 after normal conversion, with no change to the general conversion contract.
 
-The source allowlist is about 77 MB; generated Uka output is about 83.3 MB decimal
-(79.4 MiB), adding no binary files to Git checkout. The approximately 85 MB entire
-upstream texture directory is not fetched. The demo retains only blink/smile
+The source allowlist is about 77 MB; retained VMD transport adds JSON metadata to the generated output, adding no binary files to Git checkout. The approximately 85 MB entire
+upstream texture directory is not fetched. The demo selects five active/manual
 attributes for GPU upload and resizes preview textures to at most 1024 px on
 **both** views. This explicit preview adaptation changes sampling detail, not
 source bytes, download integrity or source model conversion. It avoids allocating
@@ -103,9 +103,7 @@ source images from the first-load network cost: the complete sparse converter
 geometry and selected source images still download. Static hosting can cache the exact assets; repeat visits
 and the Actions source cache avoid unnecessary transfers. Switching between Uka
 and Gene disposes the previous comparison renderer before loading the next;
-inactive rig rendering remains suspended. Gene’s static preview does not upload
-its 180 unused zero-weight morph buffers; its downloadable conversion and
-geometry/material appearance remain unchanged.
+inactive rig rendering remains suspended. Gene now uses a BDEF skin and its own official happy VMD. Its preview also selects five attributes; its downloadable conversion retains all supported targets.
 
 The workflow uses the existing public Ubuntu 24.04 runner and one Playwright
 worker. Both source caches are keyed by pinned manifests and reverified before

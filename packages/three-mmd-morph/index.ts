@@ -50,13 +50,14 @@ export function getMorphModel(rig: MorphRig): MorphModel { return structuredClon
 export function getMorphWeights(rig: MorphRig): number[] {
   const s = state(rig); return s.model.version===3 ? [...morphState(rig.root)!.controls] : s.count ? [...s.meshes[0].morphTargetInfluences!] : [];
 }
-export function refreshDeformation(root: Object3D) {
+/** Set updateBounds=false only when the caller manages bounds/culling itself. */
+export function refreshDeformation(root: Object3D, updateBounds = true) {
   root.updateMatrixWorld(true);
   root.traverse(n => {
     const mesh = n as SkinnedMesh;
     if (!mesh.isMesh) return;
-    if (mesh.isSkinnedMesh) { mesh.skeleton.update(); mesh.computeBoundingBox(); mesh.computeBoundingSphere(); }
-    else if (mesh.morphTargetInfluences?.length) {
+    if (mesh.isSkinnedMesh) { mesh.skeleton.update(); if (updateBounds) { mesh.computeBoundingBox(); mesh.computeBoundingSphere(); } }
+    else if (updateBounds && mesh.morphTargetInfluences?.length) {
       // Static instances may share geometry; bounds for arbitrary signed weights must not leak.
       if (!privateGeometry.has(mesh)) {
         // Bounds are mutable per instance; the potentially large target buffers stay shared and immutable.
