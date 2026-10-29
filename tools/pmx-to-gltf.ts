@@ -1,3 +1,4 @@
+import { validateRetainedPMX } from './pmx-source';
 import { MorphWriter } from './morph-contract';
 import { createPhysics, PhysicsWriter } from './pmx-physics';
 import { loadAmmoNode } from '../packages/three-mmd-physics/node';
@@ -5,7 +6,9 @@ import { PhysicsTimeline } from '../packages/three-mmd-physics/world';
 import { evaluateMotion, evaluateIK } from '../packages/mmd-vmd';
 import { resolveRawPose } from '../packages/mmd-vpd';
 import { createSolver, SolverWriter, type SourceGrant, type SourceIK } from './pmx-solver';
-import { solvePose } from '../packages/mmd-solver';
+import { diagnosticError, MMDDiagnosticError, type Diagnostic } from '../packages/mmd-diagnostics';
+import { physicsDiagnostics } from '../packages/mmd-physics';
+import { solvePose, solverDiagnostics } from '../packages/mmd-solver';
 import { Document, Extension, NodeIO, TextureInfo, type Material, type Texture, type WriterContext } from '@gltf-transform/core';
 import { Parser } from 'mmd-parser';
 import { PNG } from 'pngjs';
@@ -33,6 +36,9 @@ interface PMXMaterial {
   toonFlag: number; toonIndex: number; faceCount: number; edgeColor?: number[]; edgeSize?: number;
 }
 export interface PMXModel {
+  /** Exact original bytes when parsed; preserved even for unexecuted records. */
+  source?: string;
+  softBodies?: unknown[];
   metadata: { modelName: string; comment: string; englishComment: string; version?: number; coordinateSystem?: string; rigidBodyCount?: number; constraintCount?: number; encoding?: number; boneCount?: number; morphCount?: number; softBodyCount?: number };
   vertices: Vertex[]; faces: { indices: number[] }[]; materials: PMXMaterial[]; textures: string[];
   bones: PMXBone[]; morphs: PMXMorph[]; rigidBodies: unknown[]; constraints: unknown[];
@@ -79,6 +85,7 @@ class OutlineWriter extends Extension {
   }
 }
 export function parsePMX(bytes: Uint8Array): PMXModel {
+  if(bytes.byteLength>64*1024*1024) diagnosticError('resource-exhaustion','pmx-input-budget','PMX','input exceeds 64 MiB parser budget');
   if (bytes.length >= 8 && new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getFloat32(4, true) === PMX21) return parsePMX21(bytes);
   // mmd-parser reflects position/normal Z and reverses triangle order together.
   // PMX and glTF both use top-left UVs, so no V flip is applied.
@@ -86,22 +93,35 @@ export function parsePMX(bytes: Uint8Array): PMXModel {
     const input = pmxParserBytes(bytes);
     const model = new Parser().parsePmx(input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength) as ArrayBuffer, true);
     if (input !== bytes) model.metadata.encoding = bytes[9];
+    Object.defineProperty(model,"source",{value:Buffer.from(bytes).toString("base64"),enumerable:false,writable:true,configurable:true});
     return model;
   } catch (error) {
     if (/unsupport bone type/.test(String(error))) {
-      throw new Error(`PMX parsing failed: ${String(error)} Pinned mmd-parser 1.1.4 cannot parse QDEF (type 4); no vertex index is available. No skinning approximation is performed.`, { cause: error });
+      diagnosticError('malformed-data','invalid-pmx','PMX parsing',`PMX parsing failed: ${String(error)} Pinned mmd-parser 1.1.4 cannot parse QDEF (type 4); no vertex index is available. No skinning approximation is performed.`);
     }
-    throw error;
+    if(error instanceof MMDDiagnosticError)throw error;
+    diagnosticError('malformed-data','invalid-pmx','PMX parsing',error instanceof Error ? error.message : String(error));
+  }
+}
+/** Public errors distinguish malformed input, missing capabilities and exhausted resources. */
+export async function convertModel(model: PMXModel, textureDirectory: string, options: ConversionOptions | number = {}) {
+  try { return await convertModelInternal(model, textureDirectory, options); }
+  catch(error) {
+    if(error instanceof MMDDiagnosticError)throw error;
+    const message=error instanceof Error ? error.message : String(error);
+    const category=/budget|work limit|limit.*exceeded|maximum.*scalars/.test(message) ? 'resource-exhaustion' : /unsupported skinning|requires.*mode|outside.*profile|BDEF requires 1..65536/.test(message) ? 'unsupported-capability' : 'malformed-data';
+    diagnosticError(category,'conversion-failed','PMX conversion',message);
   }
 }
 const clamp = (x: number) => Math.min(1, Math.max(0, x));
 const decode = (c: number) => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-export async function convertModel(model: PMXModel, textureDirectory: string, options: ConversionOptions | number = {}) {
+async function convertModelInternal(model: PMXModel, textureDirectory: string, options: ConversionOptions | number = {}) {
   const { scale = 0.08, mode = 'static', physics = 'none', physicsSettle = 0, solver = 'none', vpd, vpdEncoding, vpdBinding, vmd, vmdBinding, vmdSampling } = typeof options === 'number' ? { scale: options } : options;
   assertPMX21Profile(model);
+  validateRetainedPMX(model);
   if (!['none','rigid-body-v1'].includes(physics)) throw new Error(`Unknown physics profile ${physics}`);
   if (physics !== 'none' && mode === 'static') throw new Error('Physics requires bdef, sdef or qdef');
-  if (!Number.isFinite(physicsSettle) || physicsSettle < 0 || physicsSettle > 30 || physics === 'none' && physicsSettle !== 0) throw new Error('Invalid physicsSettle (0..30 seconds; requires physics)');
+  if (!Number.isFinite(physicsSettle) || physicsSettle < 0 || physics === 'none' && physicsSettle !== 0) throw new Error('Invalid physicsSettle (finite nonnegative seconds; requires physics)');
   if((solver !== 'none' || physics !== 'none') && model.metadata.boneCount!==undefined && model.metadata.boneCount!==model.bones.length)throw new Error('PMX bones: declared count differs from records');
   if (!['none','pre-physics-v1'].includes(solver)) throw new Error(`Unknown solver profile ${solver}`);
   if (solver !== 'none' && mode === 'static') throw new Error('Solver requires mode bdef, sdef or qdef');
@@ -120,6 +140,7 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
   const warnings = [mode === 'static' ? `Static base pose only: omitting ${model.bones.length} bones, ${model.rigidBodies.length} bodies, ${model.constraints.length} joints; no skinning, IK, grants or animation.`
     : `BDEF core skin only: retaining ${model.bones.length} bones and parent hierarchy; omitting ${model.rigidBodies.length} bodies, ${model.constraints.length} joints. SDEF/QDEF, deformation layers, IK, append/grants, fixed/local axes, external parents, physics are unsupported. VMD executes solver-free bone tracks and vertex morph weights. VPD applies raw bone offsets only; IK/append/physics are not evaluated.`,
     'Shadow flags are retained in material extras, but are not rendered. Additional UV ZW and unused additional UV channels are omitted.'];
+  const diagnostics: Diagnostic[] = [];
   const doc = new Document();
   if (mode === 'sdef') warnings[0] = warnings[0].replace('BDEF core skin only', 'Mixed BDEF/SDEF skin (MMD_skinning_sdef)').replace('SDEF/QDEF', 'QDEF/PMX 2.1');
   const buffer = doc.createBuffer();
@@ -133,13 +154,15 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
     skin.poseModel.solver = createSolver(model, skin.poseModel, physics === 'none' ? 1 : 2);
     const writer = doc.createExtension(SolverWriter); writer.profile = skin.poseModel.solver; writer.nodes = skin.nodes;
     skin.root.setExtras({ ...skin.root.getExtras(), mmdSolver: skin.poseModel.solver });
-    warnings[0] = `Pre-physics-v1 ordered IK and rotation/translation append enabled. Physics bodies (${model.rigidBodies.length}) and joints (${model.constraints.length}) retained only as counts; simulation and scene controls do not execute.`;
-    solvePose(skin.poseModel.solver, skin.poseModel.bones).forEach(b => skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));
+    warnings[0] = `Pre-physics-v1 ordered IK and rotation/translation append enabled. Physics bodies (${model.rigidBodies.length}) and joints (${model.constraints.length}) retained in mmdSource; simulation and scene controls do not execute.`;
+    diagnostics.push(...solverDiagnostics(skin.poseModel.solver));
+    (diagnostics.length ? skin.poseModel.bones : solvePose(skin.poseModel.solver, skin.poseModel.bones)).forEach(b => skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));
   }
   const physicsProfile = skin && physics !== 'none' ? createPhysics(model, skin.poseModel.solver!, scale) : undefined;
   let physicsBackend: Awaited<ReturnType<typeof loadAmmoNode>> | undefined;
   if (physicsProfile) {
-    physicsBackend = await loadAmmoNode();
+    diagnostics.push(...physicsDiagnostics(physicsProfile,skin!.poseModel.solver!));
+    if (!diagnostics.length) physicsBackend = await loadAmmoNode();
     const writer=doc.createExtension(PhysicsWriter); writer.profile=physicsProfile;writer.solver=skin!.poseModel.solver;
     warnings[0]='Rigid-body-v1: sphere/box/capsule, modes 0/1/2, complemented raw PMX exclusion bits, spring-6DOF; ordered pre/post solver v2. Synthetic project policy; original-MMD fidelity unmeasured.';
   }
@@ -155,25 +178,31 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
     const pose = parseVPD(vpd, vpdEncoding);
     const binding = bindPose(skin.poseModel, pose, vpdBinding);
     morphRaw=resolveRawPose(skin.poseModel,binding);
-    const timeline=physicsProfile ? new PhysicsTimeline(physicsBackend!.api,physicsProfile,skin.poseModel.solver!) : undefined;
-    let resolved;try {resolved=timeline ? timeline.seek(physicsSettle,()=>resolveRawPose(skin.poseModel,binding)) : resolvePose(skin.poseModel, binding);}finally{timeline?.dispose();}
+    const timeline=physicsProfile && physicsBackend ? new PhysicsTimeline(physicsBackend.api,physicsProfile,skin.poseModel.solver!) : undefined;
+    let resolved;try {resolved=timeline ? timeline.seek(physicsSettle,()=>resolveRawPose(skin.poseModel,binding)) : diagnostics.length ? resolveRawPose(skin.poseModel,binding) : resolvePose(skin.poseModel, binding);}catch(error){if(!(error instanceof MMDDiagnosticError))throw error;diagnostics.push(error.diagnostic);resolved=resolveRawPose(skin.poseModel,binding);}finally{timeline?.dispose();}
     resolved.forEach(b => skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));
     scene.setName(mode === 'qdef' ? 'PMX mixed BDEF/SDEF/QDEF VPD bone offsets' : mode === 'sdef' ? 'PMX mixed BDEF/SDEF VPD bone offsets' : 'PMX BDEF VPD bone offsets');
-    warnings.push(`VPD: applied ${binding.assignments.length} bone offsets; parent filename ${JSON.stringify(pose.parentFile)} is informational. Unmatched: ${binding.unmatched.join(', ') || 'none'}. ${physicsProfile ? `Rigid-body-v1 evaluated at ${physicsSettle} seconds; restart on explicit enable.` : solver === 'none' ? 'No IK/append/physics.' : 'Pre-physics-v1 solved; no physics.'}`);
+    warnings.push(`VPD: applied ${binding.assignments.length} bone offsets; parent filename ${JSON.stringify(pose.parentFile)} is informational. Unmatched: ${binding.unmatched.join(', ') || 'none'}. ${diagnostics.length ? 'Execution unavailable within current capabilities/budgets; raw offsets retained in core snapshot.' : physicsProfile ? `Rigid-body-v1 evaluated at ${physicsSettle} seconds; restart on explicit enable.` : solver === 'none' ? 'No IK/append/physics.' : 'Pre-physics-v1 solved; no physics.'}`);
   }
   const morph = createMorphTargets(doc, buffer, mesh, meshNode, model, scale, skin?.poseModel.modelId, skin?.poseModel.bones);
   if(morph.metadata.version===3 && skin) doc.createExtension(MorphWriter).record={model:morph.metadata,nodes:skin.nodes,mesh:meshNode,raw:morphRaw};
   const unsupportedMorphs = morph.metadata.morphs.filter(m => (m.control === undefined ? m.target : m.control) === null);
   warnings.push(`Morphs: retained ${morph.targets.length} vertex/group POSITION targets; omitted unsupported source families ${JSON.stringify(unsupportedMorphs.map(m => ({ index: m.index, name: m.name, type: m.type, group: m.group, unsupported: m.unsupported })))}. Authored normals retained; no recomputation or morph normal targets.`);
   if (vmd && skin) {
-    const motion = parseVMD(vmd), binding = bindMotion(skin.poseModel, motion, vmdBinding, morph.metadata);
-    const timeline=physicsProfile ? new PhysicsTimeline(physicsBackend!.api,physicsProfile,skin.poseModel.solver!) : undefined;
+    const motion = parseVMD(vmd), binding = bindMotion(skin.poseModel, motion, {preserveUnbound:true,...vmdBinding}, morph.metadata);
+    const timeline=physicsProfile && physicsBackend ? new PhysicsTimeline(physicsBackend.api,physicsProfile,skin.poseModel.solver!) : undefined;
     let samples;try {samples=addVMDAnimation(doc,buffer,binding,skin.nodes,vmdSampling,meshNode,timeline);}finally{timeline?.dispose();}
-    warnings.push(`VMD: bound ${binding.tracks.length} bone tracks and ${binding.morphs?.[0]?.tracks.length ?? 0} morph tracks; unmatched morph byte keys: ${binding.unmatchedMorphs.join(', ') || 'none'}; unmatched byte keys: ${binding.unmatched.join(', ') || 'none'}. Omitted execution counts: ${JSON.stringify(binding.omitted)}. Informational model name: ${JSON.stringify(motion.modelName.text)}. Continuous-curve-v1 project policy, no original-MMD parity claim. Approximate fallback: ${samples} samples; ${physicsProfile ? 'fixed physics ticks with approximate LINEAR interpolation between ticks' : 'finite adaptive probes, no continuous error proof'}.`);
+    diagnostics.push(...((doc.getRoot().listAnimations().at(-1)?.getExtras() as any)?.vmd?.diagnostics??[]));
+    warnings.push(`VMD: bound ${binding.tracks.length} bone tracks and ${binding.morphs?.[0]?.tracks.length ?? 0} morph tracks; unmatched morph byte keys: ${binding.unmatchedMorphs.join(', ') || 'none'}; unmatched byte keys: ${binding.unmatched.join(', ') || 'none'}. Omitted execution counts: ${JSON.stringify(binding.omitted)}. Informational model name: ${JSON.stringify(motion.modelName.text)}. Continuous-curve-v1 project policy, no original-MMD parity claim. Approximate fallback: ${samples} samples; ${physicsProfile ? 'physics execution/fallback availability is specified by animation diagnostics' : 'finite probes or diagnosed reduced sampling; no continuous error proof'}.`);
   }
-  if(physicsProfile && skin && !vpd && !vmd){const timeline=new PhysicsTimeline(physicsBackend!.api,physicsProfile,skin.poseModel.solver!);try{timeline.seek(physicsSettle,()=>skin.poseModel.bones).forEach(b=>skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));}finally{timeline.dispose();}}
-  doc.getRoot().setDefaultScene(scene).setExtras({ sourceComment: model.metadata.comment, sourceEnglishComment: model.metadata.englishComment, conversionMode: mode, sourcePMXVersion: model.metadata.version, sourcePMXEncoding: model.metadata.encoding, metersPerPMXUnit: scale, sourceSolvers: structuredClone(model.bones.map((b,index) => ({index,name:b.name,flags:b.flag,phase:(b.flag??0)&0x1000?'postPhysics':'prePhysics',layer:b.transformationClass,grant:b.grant,ik:b.ik,fixAxis:b.fixAxis,localXVector:b.localXVector,localZVector:b.localZVector,key:b.key}))),
-    conversion: mode === 'static' ? 'Static PMX to glTF; reflected Z and winding; vertex POSITION morphs; no animation, skin or physics.' : `PMX ${mode === 'qdef' ? 'mixed BDEF/SDEF/QDEF to optional skinning extensions plus approximate core' : mode === 'sdef' ? 'mixed BDEF/SDEF to MMD_skinning_sdef plus approximate core' : 'BDEF to core glTF'} skin; reflected Z and winding; ${physicsProfile ? 'rigid-body-v1, pre/post-physics-v2' : solver === 'none' ? 'solver-free' : 'pre-physics-v1'} VPD/VMD bones and vertex morph weights; ${physicsProfile ? 'physics retained with resolved core fallback' : 'no physics'}.`, warnings });
+  if(physicsProfile && physicsBackend && skin && !vpd && !vmd){const timeline=new PhysicsTimeline(physicsBackend.api,physicsProfile,skin.poseModel.solver!);try{timeline.seek(physicsSettle,()=>skin.poseModel.bones).forEach(b=>skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));}catch(error){if(!(error instanceof MMDDiagnosticError))throw error;diagnostics.push(error.diagnostic);}finally{timeline.dispose();}}
+  if(solver==='none' && physics==='none' && model.bones.some(b=>(b.flag??0)&0x3fa0)) diagnostics.push({category:'unsupported-capability',code:'solver-not-requested',path:'PMX bones',message:'solver metadata retained in mmdSource; solver execution was not requested'});
+  if(physics==='none' && (model.rigidBodies.length || model.constraints.length || model.softBodies?.length)) diagnostics.push({category:'unsupported-capability',code:'physics-not-requested',path:'PMX physics',message:'physics source retained in mmdSource; simulation was not requested'});
+  if(model.materials.some(m=>m.flag&0xe0)) diagnostics.push({category:'unsupported-capability',code:'material-drawing-flags',path:'PMX materials',message:'additional PMX 2.1 drawing flags retained in source without rendering support'});
+  if(unsupportedMorphs.length) diagnostics.push({category:'unsupported-capability',code:'retained-morph-families',path:'PMX morphs',message:'unsupported morph families retained in mmdSource without execution'});
+  if(diagnostics.length) warnings.push('Execution limitations: '+JSON.stringify(diagnostics));
+  doc.getRoot().setDefaultScene(scene).setExtras({ diagnostics, mmdSource: model.source ? {version:1,format:'pmx',encoding:'base64',data:model.source} : {version:1,format:'pmx-records',coordinateSystem:model.metadata.coordinateSystem??'right',bones:structuredClone(model.bones),morphs:structuredClone(model.morphs),rigidBodies:structuredClone(model.rigidBodies),joints:structuredClone(model.constraints),softBodies:structuredClone(model.softBodies??[])}, sourceComment: model.metadata.comment, sourceEnglishComment: model.metadata.englishComment, conversionMode: mode, sourcePMXVersion: model.metadata.version, sourcePMXEncoding: model.metadata.encoding, metersPerPMXUnit: scale, sourceSolvers: structuredClone(model.bones.map((b,index) => ({index,name:b.name,flags:b.flag,phase:(b.flag??0)&0x1000?'postPhysics':'prePhysics',layer:b.transformationClass,grant:b.grant,ik:b.ik,fixAxis:b.fixAxis,localXVector:b.localXVector,localZVector:b.localZVector,key:b.key}))),
+    conversion: mode === 'static' ? 'Static PMX to glTF; reflected Z and winding; vertex POSITION morphs; no animation, skin or physics.' : `PMX ${mode === 'qdef' ? 'mixed BDEF/SDEF/QDEF to optional skinning extensions plus approximate core' : mode === 'sdef' ? 'mixed BDEF/SDEF to MMD_skinning_sdef plus approximate core' : 'BDEF to core glTF'} skin; reflected Z and winding; ${physicsProfile ? `physics transport v${physicsProfile.version}, solver transport v${skin!.poseModel.solver!.version}` : solver === 'none' ? 'solver-free' : `solver transport v${skin!.poseModel.solver!.version}`} VPD/VMD bones and vertex morph weights; ${physicsProfile ? 'physics retained; diagnostics specify execution and fallback limitations' : 'no physics'}.`, warnings });
   const accessor = (name: string, type: 'SCALAR' | 'VEC2' | 'VEC3', values: number[]) => {
     if (!values.every(Number.isFinite)) throw new Error(`Non-finite ${name}`);
     const array = new Float32Array(values);
@@ -269,7 +298,7 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
     mesh.addPrimitive(primitive);
   }
   if (faceOffset !== model.faces.length) throw new Error('Material face counts do not cover all PMX faces');
-  return { document: doc, io: new NodeIO().registerExtensions([ToonWriter, OutlineWriter, MorphWriter, VMDWriter, SDEFWriter, QDEFWriter, SolverWriter, PhysicsWriter]), warnings };
+  return { document: doc, io: new NodeIO().registerExtensions([ToonWriter, OutlineWriter, MorphWriter, VMDWriter, SDEFWriter, QDEFWriter, SolverWriter, PhysicsWriter]), warnings, diagnostics };
 }
 export async function convertPMX(input: string, output: string, options: ConversionOptions & { textureDirectory?: string } = {}) {
   if (!['.glb', '.gltf'].includes(extname(output))) throw new Error('Output must end in .glb or .gltf');

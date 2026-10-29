@@ -1,6 +1,7 @@
+import { diagnosticError } from '../mmd-diagnostics';
 import { solvePose, validateSolver, type SolverProfile } from '../mmd-solver';
 import { validatePoseModel, type PoseModel, type RestBone, type Vec3, type Quat } from '../mmd-vpd';
-import { byteName, validateBone, omittedRecords, type VMD } from './reader';
+import { byteName, validateBone, omittedRecords, vmdDuration, type VMD } from './reader';
 import { applyBoneMorphs, controlIndex, controlCount, validateMorphModel, validWeight, evaluateWeight, type MorphModel, type WeightTrack } from '../mmd-morph';
 export * from './reader';
 export type Curve = [number, number, number, number]; // x1,y1,x2,y2 in 0..127
@@ -16,6 +17,8 @@ export interface MotionTrack {
 }
 export interface IKTrack { index: number; keys: { frame: number; enabled: boolean }[] }
 export interface Motion {
+  source?: string;
+  diagnostics?: import('../mmd-diagnostics').Diagnostic[];
   morphModel?: MorphModel;
   solver?: SolverProfile;
   ik?: IKTrack[];
@@ -32,6 +35,8 @@ export interface MotionBinding extends Motion {
   omitted: ReturnType<typeof omittedRecords>;
 }
 export interface VMDBindingOptions {
+  /** Converter transport policy: retain unresolved tracks instead of failing binding. */
+  preserveUnbound?: boolean;
   ikMapping?: Record<string, number>;
   ikUnmatched?: 'error' | 'ignore';
   /** Hex byte-name key (not decoded name or record ordinal) to source PMX index. */
@@ -86,26 +91,34 @@ export function bindMotion(model: PoseModel, vmd: VMD, options: VMDBindingOption
   const mapping = options.mapping ?? {};
   for (const key of Object.keys(mapping))
     if (!grouped.has(key)) throw new Error(`VMD: invalid mapping byte-key ${key}`);
+  const diagnostics: import("../mmd-diagnostics").Diagnostic[] = [];
   const tracks: MotionTrack[] = [],
     unmatched: string[] = [],
     targets = new Set<number>();
   for (const [key, records] of grouped) {
     const name = records[0].name,
       explicit = Object.hasOwn(mapping, key);
-    if (!explicit && (!name.terminated || name.text === null))
+    if (!explicit && (!name.terminated || name.text === null)) {
+      if(options.preserveUnbound){unmatched.push(key);diagnostics.push({category:'unsupported-capability',code:'unresolved-bone-binding',path:`VMD track ${key}`,message:'full-width or undecodable name requires explicit mapping; source retained'});continue;}
       throw new Error(`VMD track ${key}: full-width/truncated or undecodable name requires explicit mapping`);
+    }
     const matches = explicit
       ? model.bones.filter((b) => b.index === mapping[key])
       : model.bones.filter((b) => b.name === name.text);
     if (explicit && (!Number.isInteger(mapping[key]) || matches.length !== 1))
       throw new Error(`VMD: invalid mapped source index for ${key}`);
-    if (matches.length > 1)
+    if (matches.length > 1) {
+      if(options.preserveUnbound && !explicit){unmatched.push(key);diagnostics.push({category:'unsupported-capability',code:'ambiguous-bone-binding',path:`VMD track ${key}`,message:'ambiguous PMX name requires explicit mapping; source retained'});continue;}
       throw new Error(`VMD track ${key}: ambiguous PMX name; explicit mapping required`);
+    }
     if (!matches.length) {
       unmatched.push(key);
       continue;
     }
     const rest = matches[0];
+    if(options.preserveUnbound && records.some(r=>!supported(rest.translation.map((v,j)=>v+r.translation[j]*model.metersPerPMXUnit*(j===2?-1:1))))) {
+      unmatched.push(key);diagnostics.push({category:'unsupported-capability',code:'bone-translation-range',path:`VMD track ${key}`,message:'source motion retained; transformed translations exceed FLOAT execution range'});continue;
+    }
     if (targets.has(rest.index)) throw new Error(`VMD: repeated target source index ${rest.index}`);
     targets.add(rest.index);
     const sorted = [...records].sort((a, b) => a.frame - b.frame);
@@ -128,14 +141,18 @@ export function bindMotion(model: PoseModel, vmd: VMD, options: VMDBindingOption
     });
     tracks.push({ index: rest.index, keys });
   }
-  if (unmatched.length && options.unmatched !== 'ignore')
+  if (unmatched.length && options.unmatched !== 'ignore' && !options.preserveUnbound)
     throw new Error(
       `VMD: unmatched byte-name tracks ${unmatched.join(', ')}; unmatched: ignore is explicit partial playback`,
     );
   tracks.sort((a, b) => a.index - b.index);
   const weights = bindMorphMotion(morphModel ?? { version: 1, modelId: model.modelId, morphs: [] }, vmd, options);
   const controls = model.solver ? bindIK(model.solver, vmd, options) : undefined;
+  if(unmatched.length || weights.unmatched.length || controls?.unmatched) diagnostics.push({category:'unsupported-capability',code:'unresolved-vmd-binding',path:'VMD',message:'unbound bone/morph/IK tracks retained in original source'});
+  if(vmd.cameras.length || vmd.lights.length || vmd.shadows.length || vmd.displays.length) diagnostics.push({category:'unsupported-capability',code:'vmd-scene-sections',path:'VMD',message:'scene sections retained and exposed; camera/light/shadow playback and automatic visibility are unavailable'});
   return {
+    diagnostics,
+    source: vmd.source,
     morphModel: morphModel?.version===3 ? structuredClone(morphModel) : undefined,
     solver: model.solver ? structuredClone(model.solver) : undefined,
     ik: controls?.tracks,
@@ -143,7 +160,7 @@ export function bindMotion(model: PoseModel, vmd: VMD, options: VMDBindingOption
     modelId: model.modelId,
     rest: structuredClone(model.bones),
     tracks,
-    duration: Math.max(weights.duration, controls?.duration ?? 0, ...tracks.map((t) => t.keys.at(-1)!.frame / 30)),
+    duration: Math.max(weights.duration, controls?.duration ?? 0, tracks.reduce((n,t)=>Math.max(n,t.keys.at(-1)!.frame/30),0), vmdDuration(vmd)),
     unmatched,
     unmatchedMorphs: weights.unmatched,
     morphs: weights.count ? [{ node: 0, count: weights.count, tracks: weights.tracks }] : [],
@@ -160,13 +177,18 @@ export function bindMorphMotion(model: MorphModel, vmd: VMD, options: VMDBinding
     throw new Error('VMD: invalid morph mapping');
   const mapping = options.morphMapping ?? {};
   const groups = new Map<string, VMD['morphs']>();
+  const limitedKeys=new Set<string>();
   for (const r of vmd.morphs) {
     if (!r || !r.name) throw new Error('VMD: invalid morph record');
     const name = byteName(r.name.raw);
     if (name.raw.length !== 15 || name.key !== r.name.key || name.text !== r.name.text || name.terminated !== r.name.terminated)
       throw new Error('VMD: inconsistent morph byte name');
-    if (!Number.isInteger(r.frame) || r.frame < 0 || r.frame > 0xffffffff || !validWeight(r.weight))
+    if (!Number.isInteger(r.frame) || r.frame < 0 || r.frame > 0xffffffff || !Number.isFinite(r.weight))
       throw new Error('VMD: unsupported morph frame/weight numeric range');
+    if(!validWeight(r.weight)) {
+      if(!options.preserveUnbound) diagnosticError('unsupported-capability','morph-weight-range','VMD','unsupported morph frame/weight numeric range for bounded execution');
+      limitedKeys.add(name.key);
+    }
     if (!groups.has(name.key)) groups.set(name.key, []);
     groups.get(name.key)!.push(r);
   }
@@ -174,15 +196,19 @@ export function bindMorphMotion(model: MorphModel, vmd: VMD, options: VMDBinding
   const tracks: WeightTrack[] = [], unmatched: string[] = [], targets = new Set<number>();
   let omitted = 0;
   for (const [key, records] of groups) {
+    if(limitedKeys.has(key)){unmatched.push(key);omitted+=records.length;continue;}
     const name = records[0].name, explicit = Object.hasOwn(mapping, key);
-    if (!explicit && (!name.terminated || name.text === null))
+    if (!explicit && (!name.terminated || name.text === null)) {
+      if(options.preserveUnbound){unmatched.push(key);omitted+=records.length;continue;}
       throw new Error(`VMD morph ${key}: full-width/truncated or undecodable name requires explicit mapping`);
+    }
     const matches = explicit ? model.morphs.filter(m => m.index === mapping[key]) : model.morphs.filter(m => m.name === name.text);
     if (explicit && (!Number.isInteger(mapping[key]) || matches.length !== 1)) throw new Error(`VMD: invalid mapped morph source index ${key}`);
+    if(matches.length>1 && options.preserveUnbound && !explicit){unmatched.push(key);omitted+=records.length;continue;}
     if (matches.length > 1) throw new Error(`VMD morph ${key}: ambiguous PMX name; explicit mapping required`);
     if (!matches.length || controlIndex(matches[0]) === null) {
       unmatched.push(key); omitted += records.length;
-      if (options.morphUnmatched !== 'ignore') throw new Error(`VMD: unmatched or unsupported morph ${key}; morphUnmatched: ignore is explicit partial playback`);
+      if (options.morphUnmatched !== 'ignore' && !options.preserveUnbound) throw new Error(`VMD: unmatched or unsupported morph ${key}; morphUnmatched: ignore is explicit partial playback`);
       continue;
     }
     const index = controlIndex(matches[0])!;
@@ -306,10 +332,11 @@ export function bindIK(profile: SolverProfile,vmd: VMD,options: VMDBindingOption
     for(const r of d.ik){
       const name=byteName(r.name.raw),explicit=Object.hasOwn(mapping,name.key);used.add(name.key);
       if(name.raw.length!==20 || name.key!==r.name.key || name.text!==r.name.text || name.terminated!==r.name.terminated || ![0,1].includes(r.enabled))throw new Error(`VMD displays[${ordinal}]: invalid IK record`);
-      if(!explicit && (!name.terminated || name.text===null))throw new Error('VMD IK: truncated/undecodable name requires mapping');
+      if(!explicit && (!name.terminated || name.text===null) && !options.preserveUnbound)throw new Error('VMD IK: truncated/undecodable name requires mapping');
       const matches=profile.bones.filter(b=>b.ik && (explicit?b.index===mapping[name.key]:b.name===name.text));
+      if(matches.length>1 && options.preserveUnbound && !explicit){unmatched++;continue;}
       if(matches.length>1 || explicit && (!Number.isInteger(mapping[name.key])||matches.length!==1))throw new Error('VMD IK: ambiguous/invalid controller binding');
-      if(!matches.length){unmatched++;if(options.ikUnmatched!=='ignore')throw new Error(`VMD IK: unmatched controller ${name.key}`);continue;}
+      if(!matches.length){unmatched++;if(options.ikUnmatched!=='ignore' && !options.preserveUnbound)throw new Error(`VMD IK: unmatched controller ${name.key}`);continue;}
       const index=matches[0].index;if(targets.has(index))throw new Error(`VMD displays[${ordinal}]: duplicate IK target ${index}`);targets.add(index);
       if(!tracks.has(index))tracks.set(index,{index,keys:[]});tracks.get(index)!.keys.push({frame:d.frame,enabled:!!r.enabled});
     }

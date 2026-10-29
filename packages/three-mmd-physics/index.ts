@@ -19,6 +19,7 @@ import {
   PhysicsTimeline,
   type PoseSampler,
   type ControlSampler,
+  type PhysicsExecutionBudget,
 } from "./world";
 import {
   registerPhysics,
@@ -102,7 +103,7 @@ export class PhysicsRig implements PhysicsSession {
   get time() {
     return this.timeline.time;
   }
-  constructor(root: Object3D, api: AmmoAPI) {
+  constructor(root: Object3D, api: AmmoAPI, budget: PhysicsExecutionBudget = {}) {
     checkAmmo(api);
     const m = getPhysicsModel(root);
     if (!m) throw new Error("MMD_physics: load with MMDPhysicsPlugin first");
@@ -113,7 +114,7 @@ export class PhysicsRig implements PhysicsSession {
     this.nodes = m.nodes;
     this.solver = m.solver;
     this.raw = composeMorphPose(root,structuredClone(morphState(root)?.raw??m.solver.bones));
-    this.timeline = new PhysicsTimeline(api, m.profile, m.solver);
+    this.timeline = new PhysicsTimeline(api, m.profile, m.solver,budget);
     try {
       registerPhysics(root, this);
     } catch (error) {
@@ -216,7 +217,8 @@ export async function createPhysicsRig(
   backend: () => Promise<{
     api: AmmoAPI;
   }>,
+  budget: PhysicsExecutionBudget = {},
 ) {
   const { api } = await backend();
-  return new PhysicsRig(root, api);
+  return new PhysicsRig(root, api,budget);
 }

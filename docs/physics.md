@@ -1,5 +1,13 @@
 # Bounded rigid-body physics
 
+## Source transport update (#58)
+
+[Source transport and capabilities](source-transport.md) specifies physics version
+2, free joint axes, preserved unexecuted records and configurable execution
+budgets. Valid source conversion no longer depends on bounded simulation being
+available. Version-1 and analytical runtime policies below remain unchanged;
+original-MMD/MikuDanceStudio timing differences are documented separately.
+
 Issue #45 introduces the opt-in [physics contract](../extensions/MMD_physics/README.md).
 All mappings and lifecycle semantics are project policies; original-MMD fidelity
 remains unmeasured. Existing conversion defaults preserve their previous behavior.

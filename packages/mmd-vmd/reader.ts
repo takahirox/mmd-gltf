@@ -1,4 +1,6 @@
 /** Strict VMD 0002 reader. Names are fixed-width Shift_JIS byte fields, not VPD text. */
+import { diagnosticError, MMDDiagnosticError } from '../mmd-diagnostics';
+import { encodeSource } from '../mmd-diagnostics/bytes';
 import type { Vec3, Quat } from '../mmd-vpd';
 export interface ByteName {
   raw: number[];
@@ -15,6 +17,7 @@ export interface BoneKey {
   raw: number[];
 }
 export interface VMD {
+  source?: string;
   header: number[];
   modelName: ByteName;
   bones: BoneKey[];
@@ -33,9 +36,10 @@ export interface VMD {
   shadows: { frame: number; mode: number; distance: number; raw: number[] }[];
   displays: { frame: number; visible: number; ik: { name: ByteName; enabled: number }[]; raw: number[] }[];
 }
+const malformed=(message:string)=>new MMDDiagnosticError({category:'malformed-data',code:'invalid-vmd',path:'VMD',message});
 export function byteName(raw: number[]): ByteName {
   if (!Array.isArray(raw) || raw.some((v) => !Number.isInteger(v) || v < 0 || v > 255))
-    throw new Error('VMD: invalid fixed-width name bytes');
+    throw malformed('VMD: invalid fixed-width name bytes');
   const end = raw.indexOf(0),
     bytes = raw.slice(0, end < 0 ? raw.length : end);
   let text: string | null = null;
@@ -52,12 +56,12 @@ export function byteName(raw: number[]): ByteName {
   };
 }
 export function parseVMD(input: Uint8Array): VMD {
-  if (input.byteLength > 64 * 1024 * 1024) throw new Error('VMD: maximum input is 64 MiB');
+  if (input.byteLength > 64 * 1024 * 1024) diagnosticError('resource-exhaustion','vmd-input-budget','VMD','maximum input is 64 MiB');
   const view = new DataView(input.buffer, input.byteOffset, input.byteLength);
   let offset = 0;
   const need = (n: number) => {
     if (n > input.length - offset)
-      throw new Error(`VMD: truncated record/count at byte ${offset}; need ${n} bytes`);
+      throw malformed(`VMD: truncated record/count at byte ${offset}; need ${n} bytes`);
   };
   const bytes = (n: number) => {
     need(n);
@@ -79,21 +83,20 @@ export function parseVMD(input: Uint8Array): VMD {
     need(4);
     const v = view.getFloat32(offset, true);
     offset += 4;
-    if (!Number.isFinite(v)) throw new Error(`VMD: nonfinite float at byte ${offset - 4}`);
+    if (!Number.isFinite(v)) throw malformed(`VMD: nonfinite float at byte ${offset - 4}`);
     return v;
   };
   const vec = () => [f32(), f32(), f32()] as Vec3;
   const raw = (start: number) => Array.from(input.subarray(start, offset));
   const name = (n: number) => byteName(bytes(n));
-  const header = bytes(30),
-    magic = Array.from(new TextEncoder().encode('Vocaloid Motion Data 0002'));
-  if (magic.some((v, i) => header[i] !== v) || header.slice(magic.length).some((v) => v !== 0))
-    throw new Error(
-      'VMD: malformed header or unsupported version; expected Vocaloid Motion Data 0002 with zero padding',
-    );
+  const header = bytes(30);
+  const matches=(magic:string)=>{const values=Array.from(new TextEncoder().encode(magic));return values.every((v,i)=>header[i]===v) && header.slice(values.length).every(v=>v===0);};
+  const old=matches('Vocaloid Motion Data file');
+  if(!old && !matches('Vocaloid Motion Data 0002')) throw malformed('VMD: malformed header or unsupported version');
   const result: VMD = {
+    source: encodeSource(input),
     header,
-    modelName: name(20),
+    modelName: name(old ? 10 : 20),
     bones: [],
     morphs: [],
     cameras: [],
@@ -104,8 +107,9 @@ export function parseVMD(input: Uint8Array): VMD {
   const count = (section: string, size: number, optional = true) => {
     if (optional && offset === input.length) return 0;
     const n = u32();
-    if (n > 1_000_000 || n > Math.floor((input.length - offset) / size))
-      throw new Error(`VMD: ${section} count ${n} exceeds remaining bytes or record limit at byte ${offset}`);
+    if (n > Math.floor((input.length - offset) / size))
+      throw malformed(`VMD: ${section} count ${n} exceeds remaining bytes or record limit at byte ${offset}`);
+    if(n>1_000_000) diagnosticError('resource-exhaustion','vmd-record-budget',`VMD ${section}`,'record count limit exceeds parser budget');
     return n;
   };
   for (let i = 0, n = count('bone', 111, false); i < n; i++) {
@@ -155,18 +159,18 @@ export function parseVMD(input: Uint8Array): VMD {
       ik.push({ name: name(20), enabled: u8() });
     result.displays.push({ frame, visible, ik, raw: raw(start) });
   }
-  if (offset !== input.length) throw new Error(`VMD: unexpected trailing bytes at ${offset}`);
+  if (offset !== input.length) throw malformed(`VMD: unexpected trailing bytes at ${offset}`);
   return result;
 }
 export function validateBone(bone: Pick<BoneKey, 'frame' | 'translation' | 'rotation' | 'interpolation'>) {
   if (!Number.isInteger(bone.frame) || bone.frame < 0 || bone.frame > 0xffffffff)
-    throw new Error('VMD: unsupported frame range');
+    throw malformed('VMD: unsupported frame range');
   if (
     !Array.isArray(bone.translation) ||
     bone.translation.length !== 3 ||
     !bone.translation.every(Number.isFinite)
   )
-    throw new Error('VMD: expected finite bone translation');
+    throw malformed('VMD: expected finite bone translation');
   const q = bone.rotation;
   if (
     !Array.isArray(q) ||
@@ -174,14 +178,14 @@ export function validateBone(bone: Pick<BoneKey, 'frame' | 'translation' | 'rota
     !q.every(Number.isFinite) ||
     Math.abs(Math.hypot(...q) - 1) > 1e-5
   )
-    throw new Error('VMD: invalid bone quaternion; unit length tolerance 1e-5');
+    throw malformed('VMD: invalid bone quaternion; unit length tolerance 1e-5');
   if (
     !Array.isArray(bone.interpolation) ||
     bone.interpolation.length !== 64 ||
     !bone.interpolation.every((v) => Number.isInteger(v) && v >= 0 && v <= 255) ||
     bone.interpolation.slice(0, 16).some((v) => v > 127)
   )
-    throw new Error('VMD: invalid executed Bezier control points; first 16 bytes must be 0..127');
+    throw malformed('VMD: invalid executed Bezier control points; first 16 bytes must be 0..127');
 }
 export function omittedRecords(vmd: VMD) {
   return {
@@ -192,4 +196,9 @@ export function omittedRecords(vmd: VMD) {
     displays: vmd.displays.length,
     ik: vmd.displays.reduce((n, r) => n + r.ik.length, 0),
   };
+}
+
+/** Source duration includes retained/unbound scene and model tracks. */
+export function vmdDuration(vmd: VMD): number {
+  return [vmd.bones,vmd.morphs,vmd.cameras,vmd.lights,vmd.shadows,vmd.displays].reduce((last,records)=>records.reduce((n,r)=>Math.max(n,r.frame/30),last),0);
 }

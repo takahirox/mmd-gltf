@@ -1,4 +1,6 @@
 /** Runtime-independent pre-physics-v1 policy. All scratch state belongs to one call. */
+import { Euler, Quaternion } from "three";
+import { diagnosticError, MMDDiagnosticError, validateBudget, type Diagnostic } from "../mmd-diagnostics";
 import type { RestBone, Vec3, Quat } from "../mmd-vpd";
 export const EXTENSION_NAME = "MMD_skeleton_solver";
 export interface Append {
@@ -10,6 +12,7 @@ export interface Append {
 }
 export interface IKLink {
   index: number;
+  limits?: { lower: Vec3; upper: Vec3 };
   hinge?: { axis: 0 | 1 | 2; min: number; max: number };
 }
 export interface IK {
@@ -22,11 +25,14 @@ export interface SolverBone extends RestBone {
   node?: number;
   layer: number;
   flags: number;
+  fixedAxis?: Vec3;
+  localAxes?: { x: Vec3; z: Vec3 };
+  externalParent?: number;
   append?: Append;
   ik?: IK;
 }
 export interface SolverProfile {
-  version: 1 | 2;
+  version: 1 | 2 | 3;
   bones: SolverBone[];
 }
 export const phaseOrder = (b: SolverBone) => b.flags & 0x1000 ? 1 : 0;
@@ -78,23 +84,30 @@ const finite = (v: unknown, n: number): v is number[] =>
   );
 const int = (v: number, min: number, max: number) =>
   Number.isInteger(v) && v >= min && v <= max;
-export function validateSolver(
+/** Validate transport only. Execution capabilities are returned by solverDiagnostics. */
+export function validateSolver(value: unknown, nodeCount?: number): asserts value is SolverProfile {
+  validateSolverInternal(value,nodeCount);
+}
+function validateSolverInternal(
   value: unknown,
   nodeCount?: number,
+  executionGraph = false,
 ): asserts value is SolverProfile {
   const p = value as SolverProfile;
   const fail = (i: number, why: string): never => {
-    throw new Error(`${EXTENSION_NAME} bones[${i}]: ${why}`);
+    diagnosticError("malformed-data", "invalid-solver", `${EXTENSION_NAME} bones[${i}]`, why);
   };
   if (
     !p ||
-    ![1, 2].includes(p.version) ||
+    ![1, 2, 3].includes(p.version) ||
     !Array.isArray(p.bones) ||
     !p.bones.length ||
-    p.bones.length > 65536 ||
+    p.bones.length > (p.version === 3 ? 2147483647 : 65536) ||
     Object.keys(p).some((k) => !["version", "bones"].includes(k))
   )
     fail(-1, "invalid version/count/properties");
+  const strict = p.version !== 3 || executionGraph;
+  const maxIndex = p.version === 3 ? 2147483646 : 65535;
   const byIndex = new Map<number, SolverBone>(),
     nodes = new Set<number>();
   Array.from(p.bones).forEach((b, i) => {
@@ -114,12 +127,13 @@ export function validateSolver(
             "flags",
             "append",
             "ik",
+            ...(p.version === 3 ? ["fixedAxis", "localAxes", "externalParent"] : []),
           ].includes(k),
       ) ||
-      !int(b.index, 0, 65535) ||
+      !int(b.index, 0, maxIndex) ||
       byIndex.has(b.index) ||
       typeof b.name !== "string" ||
-      !int(b.parentIndex, -1, 65535) ||
+      !int(b.parentIndex, -1, maxIndex) ||
       !int(b.layer, -2147483648, 2147483647) ||
       !int(b.flags, 0, 65535) ||
       !finite(b.translation, 3) ||
@@ -136,11 +150,20 @@ export function validateSolver(
       fail(i, "invalid/duplicate node");
     nodes.add(b.node!);
     byIndex.set(b.index, b);
-    if (b.flags & (p.version === 1 ? 0x3400 : 0x2400))
+    if (strict && b.flags & (p.version === 1 ? 0x3400 : 0x2400))
       fail(
         i,
         p.version === 1 ? "post-physics, external parent or fixed-axis dependency outside pre-physics-v1" : "external parent or fixed-axis dependency outside pre/post-physics-v2",
       );
+    if (p.version === 3) {
+      if ((!!(b.flags & 0x300) !== (b.append !== undefined)) || (!!(b.flags & 0x20) !== (b.ik !== undefined)) ||
+          (!!(b.flags & 0x400) !== (b.fixedAxis !== undefined)) ||
+          (!!(b.flags & 0x800) !== (b.localAxes !== undefined)) ||
+          (!!(b.flags & 0x2000) !== (b.externalParent !== undefined)) ||
+          b.fixedAxis !== undefined && !finite(b.fixedAxis, 3) ||
+          b.localAxes !== undefined && (!b.localAxes || Object.keys(b.localAxes).some(k => !['x','z'].includes(k)) || !finite(b.localAxes.x,3) || !finite(b.localAxes.z,3)) ||
+          b.externalParent !== undefined && !int(b.externalParent,-2147483648,2147483647)) fail(i, 'invalid axis/external-parent metadata');
+    }
     const a = b.append;
     if (
       b.append !== undefined &&
@@ -166,19 +189,23 @@ export function validateSolver(
         Object.keys(ik).some(
           (k) => !["effector", "iterations", "angle", "links"].includes(k),
         ) ||
-        !int(ik.iterations, 0, 255) ||
-        !Number.isFinite(ik.angle) ||
+        !int(ik.iterations, 0, p.version === 3 ? 2147483647 : 255) ||
+        !Number.isFinite(ik.angle) || !Number.isFinite(Math.fround(ik.angle)) ||
         ik.angle < 0 ||
-        ik.angle > Math.PI ||
+        (p.version !== 3 && ik.angle > Math.PI) ||
         !Array.isArray(ik.links) ||
-        !ik.links.length ||
-        ik.links.length > 256)
+        (p.version !== 3 && !ik.links.length) ||
+        ik.links.length > (p.version === 3 ? 2147483647 : 256))
     )
       fail(i, "invalid IK caps/count");
     if (ik)
       Array.from(ik.links).forEach((l, j) => {
-        if (!l || Object.keys(l).some((k) => !["index", "hinge"].includes(k)))
+        if (!l || Object.keys(l).some((k) => !["index", "hinge", ...(p.version === 3 ? ["limits"] : [])].includes(k)))
           fail(i, `links[${j}]: invalid properties`);
+        if (l.limits !== undefined && (!l.limits || l.hinge !== undefined ||
+            Object.keys(l.limits).some(k=>!['lower','upper'].includes(k)) ||
+            !finite(l.limits.lower,3) || !finite(l.limits.upper,3) ||
+            l.limits.lower.some((v,k)=>v>l.limits!.upper[k]))) fail(i, `links[${j}]: invalid angular limits`);
         const h = l.hinge;
         if (
           l.hinge !== undefined &&
@@ -203,12 +230,32 @@ export function validateSolver(
         p.bones.length,
     0,
   );
-  if (work > 20_000_000)
+  if (p.version !== 3 && work > 20_000_000)
     fail(-1, "solver work budget exceeds 20000000 bone updates");
   const order = [...p.bones].sort(
       (a, b) => phaseOrder(a) - phaseOrder(b) || a.layer - b.layer || a.index - b.index,
     ),
     rank = new Map(order.map((b, i) => [b.index, i]));
+  // Structural graph checks apply independently of evaluation ordering.
+  for (const [i,b] of p.bones.entries()) {
+    if (b.parentIndex !== -1 && !byIndex.has(b.parentIndex)) fail(i,'missing parent reference');
+    if (b.append && !byIndex.has(b.append.source)) fail(i,'missing append reference');
+    if (b.ik && (!byIndex.has(b.ik.effector) || b.ik.links.some(l=>!byIndex.has(l.index)))) fail(i,'missing IK reference');
+  }
+  const done = new Set<number>(), active = new Set<number>();
+  for (const b of p.bones) {
+    const stack: [number, boolean][] = [[b.index,false]];
+    while (stack.length) {
+      const [id,exit] = stack.pop()!;
+      if (exit) { active.delete(id);done.add(id);continue; }
+      if (done.has(id)) continue;
+      if (active.has(id)) fail(id,'parent/append cycle');
+      active.add(id);stack.push([id,true]);
+      const bone=byIndex.get(id)!;
+      for (const ref of [bone.parentIndex,bone.append?.source ?? -1]) if(ref!==-1) stack.push([ref,false]);
+    }
+  }
+  if (!strict) return;
   // Parent and append cycles/late dependencies are rejected instead of guessing an order.
   p.bones.forEach((b, i) => {
     if (b.parentIndex !== -1 && !byIndex.has(b.parentIndex))
@@ -269,9 +316,12 @@ export function solvePose(
   input: RestBone[],
   enabled: ReadonlyMap<number, boolean> = new Map(),
   phase?: "pre" | "post",
+  budget: SolverBudget = {},
 ): RestBone[] {
   if (!profile) return structuredClone(input);
   validateSolver(profile);
+  const diagnostics = solverDiagnostics(profile, budget);
+  if (diagnostics.length) throw new MMDDiagnosticError(diagnostics[0]);
   for (const [index, value] of enabled)
     if (
       typeof value !== "boolean" ||
@@ -325,6 +375,14 @@ export function solvePose(
       );
     }
   };
+  const projectLimits=(link:RestBone,l:IKLink)=>{
+    if(!l.limits)return;
+    const base=rest.get(l.index)!;
+    const relative=mul(inv(base.rotation),link.rotation);
+    const euler=new Euler().setFromQuaternion(new Quaternion(...relative),'XYZ');
+    const angles=[euler.x,euler.y,euler.z].map((v,k)=>Math.max(l.limits!.lower[k],Math.min(l.limits!.upper[k],v)));
+    link.rotation=mul(base.rotation,new Quaternion().setFromEuler(new Euler(angles[0],angles[1],angles[2],'XYZ')).toArray());
+  };
   update(rest, original);
   update(pose, world);
   for (const b of order) {
@@ -351,6 +409,7 @@ export function solvePose(
       !ik ||
       ik.angle === 0 ||
       ik.iterations === 0 ||
+      ik.links.length === 0 ||
       enabled.get(b.index) === false
     )
       continue;
@@ -359,8 +418,10 @@ export function solvePose(
       for (const l of ik.links) {
         const link = pose.get(l.index)!,
           w = world.get(l.index)!;
-        let e = rotate(inv(w.q), sub(world.get(ik.effector)!.t, w.t)),
-          t = rotate(inv(w.q), sub(target, w.t));
+        if(l.limits) {projectLimits(link,l);update(pose,world);}
+        const linkWorld=world.get(l.index)!;
+        let e = rotate(inv(linkWorld.q), sub(world.get(ik.effector)!.t, w.t)),
+          t = rotate(inv(linkWorld.q), sub(target, linkWorld.t));
         if (norm(e) < 1e-12 || norm(t) < 1e-12) continue;
         e = unit(e);
         t = unit(t);
@@ -428,6 +489,7 @@ export function solvePose(
           }
           link.rotation = mul(link.rotation, axisAngle(unit(axis), angle));
         }
+        projectLimits(link,l);
         const length = Math.hypot(...link.rotation);
         link.rotation = link.rotation.map((v) => v / length) as Quat;
         update(pose, world);
@@ -445,5 +507,29 @@ export function solvePose(
     throw new Error(
       `${EXTENSION_NAME} bones[${invalid.index}]: evaluated numeric range`,
     );
+  return result;
+}
+
+/** Resource limits are execution policy, never version-3 source validity. */
+export interface SolverBudget { maxBoneUpdates?: number }
+export function solverDiagnostics(profile: SolverProfile, budget: SolverBudget = {}): Diagnostic[] {
+  validateSolver(profile);
+  const result: Diagnostic[] = [];
+  const max = budget.maxBoneUpdates ?? 20_000_000;
+  validateBudget(max, EXTENSION_NAME);
+  const work = profile.bones.length * (1 + profile.bones.reduce((n,b)=>n + (b.ik ? (b.ik.iterations + 1)*b.ik.links.length : 0),0));
+  if (work > max) result.push({category:'resource-exhaustion',code:'solver-work-budget',path:EXTENSION_NAME,message:`solver work ${work} exceeds execution budget ${max} bone updates`});
+  if (profile.version === 3) {
+    for (const b of profile.bones) {
+      if (b.externalParent !== undefined) result.push({category:'unsupported-capability',code:'unresolved-external-parent',path:`${EXTENSION_NAME}.bones[${b.index}]`,message:`external parent key ${b.externalParent} requires a host binding`});
+      if (b.localAxes) result.push({category:'unsupported-capability',code:'local-axis',path:`${EXTENSION_NAME}.bones[${b.index}]`,message:'local-axis execution is unavailable; metadata retained'});
+      if (b.fixedAxis) result.push({category:'unsupported-capability',code:'fixed-axis',path:`${EXTENSION_NAME}.bones[${b.index}]`,message:'fixed-axis execution is unavailable; metadata retained'});
+    }
+    // Existing executor requires this ordering; preserving other orders is valid.
+    if (!result.some(d=>d.category==='unsupported-capability')) try { validateSolverInternal(profile, undefined, true); }
+    catch (error) {
+      result.push({category:'unsupported-capability',code:'solver-order',path:EXTENSION_NAME,message: error instanceof Error ? error.message : String(error)});
+    }
+  }
   return result;
 }

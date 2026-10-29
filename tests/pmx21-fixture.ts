@@ -1,7 +1,7 @@
 /** Original minimal PMX 2.1 binary writer for reader boundary tests. Deliberately
  * independent of the reader and large animated-rig writer. Offsets name records
  * so corruption cases never locate numeric bytes by incidental byte searches. */
-export function pmx21Fixture(encoding: 'utf8'|'utf16le', vertexWidth:1|2|4, otherWidth:1|2|4) {
+export function pmx21Fixture(encoding: 'utf8'|'utf16le', vertexWidth:1|2|4, otherWidth:1|2|4, retainedFeatures=false) {
   const chunks:Buffer[]=[],offsets:Record<string,number>={};let length=0;
   const put=(b:Buffer)=>{chunks.push(b);length+=b.length;};
   const mark=(name:string)=>{offsets[name]=length;};
@@ -24,8 +24,13 @@ export function pmx21Fixture(encoding: 'utf8'|'utf16le', vertexWidth:1|2|4, othe
   int(-1,otherWidth);int(-1,otherWidth);u8(0);mark('toonFlag');u8(0);mark('toonIndex');int(-1,otherWidth);text('material');int(3);
   mark('boneCount');int(4);
   for(let b=0;b<4;b++){names();fs([0,b,0]);int(-1,otherWidth);int(0);int(0,2);fs([0,1,0]);}
-  int(1);names();u8(1);mark('morphType');u8(1);int(1);int(0,vertexWidth,true);fs([0.1,0.2,0.3]);
-  int(0);int(0);int(1);names();mark('jointType');u8(0);int(-1,otherWidth);int(-1,otherWidth);fs(Array(24).fill(0));
-  mark('softBodies');int(0);
+  int(1);names();u8(1);mark('morphType');u8(retainedFeatures?10:1);int(1);
+  if(retainedFeatures){int(0,otherWidth);u8(1);fs([1,2,3,0.1,0.2,0.3]);}
+  else {int(0,vertexWidth,true);fs([0.1,0.2,0.3]);}
+  int(0);int(retainedFeatures?1:0);
+  if(retainedFeatures){names();int(0,otherWidth);u8(0);int(0,2);u8(0);fs([0.2,0,0]);fs(Array(6).fill(0));fs([1,0,0,0,0]);u8(1);}
+  int(1);names();mark('jointType');u8(0);int(-1,otherWidth);int(-1,otherWidth);fs(Array(24).fill(0));
+  mark('softBodies');int(retainedFeatures?1:0);
+  if(retainedFeatures){names();u8(0);int(0,otherWidth);u8(0);int(0,2);u8(0);int(0);int(0);f(1);f(0.01);int(0);fs(Array(18).fill(0));[1,1,1,1].forEach(v=>int(v));fs([0.5,0.5,0.5]);int(1);int(0,otherWidth);int(0,vertexWidth,true);u8(1);int(1);int(1,vertexWidth,true);}
   return {bytes:Buffer.concat(chunks),offsets};
 }

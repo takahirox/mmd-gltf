@@ -1,5 +1,12 @@
 # Pre-physics IK and append
 
+## Source transport update (#58)
+
+[Source transport and capabilities](source-transport.md) specifies solver version
+3, full XYZ limits and retained fixed/local/external metadata. Valid data outside
+the bounded evaluator's order/work profile now transports with diagnostics.
+Versions 1/2 and the executor's analytical policies below remain unchanged.
+
 Issue #43 adds the optional [solver contract](../extensions/MMD_skeleton_solver/README.md).
 Existing conversion remains solver-free by default, including its loss reports.
 Enable the bounded profile explicitly:

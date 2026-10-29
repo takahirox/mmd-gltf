@@ -1,5 +1,16 @@
 # MMD_physics
 
+## Version 2: source transport
+
+Version 2 separates retained physics data from executor capabilities. Inverted
+joint bounds denote free axes and retain their original values. Larger counts,
+multiple writers, cross-phase dependencies, other joint types, impulse morphs
+and soft bodies can transport without claiming simulation support. It accepts
+solver versions 2/3. See [source transport and execution](../../docs/source-transport.md)
+for the new fields, diagnostics, configurable runtime budgets and comparison evidence.
+Version 1 retains its bounded serialized meaning; the following version-1 caps
+and dependency exclusions do not define MMD source validity.
+
 Draft optional root glTF extension, version 1, `rigid-body-v1` project profile.
 It requires [MMD_skeleton_solver version 2](../MMD_skeleton_solver/README.md).
 It has no dependency on PMX extras, skinning, meshes, or material extensions.

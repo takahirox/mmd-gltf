@@ -1,3 +1,6 @@
+import { decodeSource } from '../mmd-diagnostics/bytes';
+import { parseVMD, vmdDuration } from './reader';
+import { diagnosticError, type Diagnostic } from '../mmd-diagnostics';
 import { validateMorphModel, controlCount, validWeight, type MorphModel, type WeightTrack } from '../mmd-morph';
 import { validateSolver, type SolverProfile } from '../mmd-solver';
 import type { IKTrack } from './index';
@@ -5,7 +8,11 @@ import type { Vec3, Quat, RestBone } from '../mmd-vpd';
 import type { Motion, MotionKey } from './index';
 export const EXTENSION_NAME = 'MMD_animation_vmd';
 export interface VMDPayload {
-  version: 1 | 2 | 3 | 4 | 5;
+  version: 1 | 2 | 3 | 4 | 5 | 6;
+  source?: string;
+  diagnostics?: Diagnostic[];
+  owned?: {node:number;path:'translation'|'rotation'|'weights'}[];
+  morphs?: NonNullable<Motion['morphs']>;
   controls?: { model:MorphModel; nodes:{index:number;node:number}[]; tracks:WeightTrack[] };
   solver?: SolverProfile;
   ik?: IKTrack[];
@@ -21,13 +28,13 @@ const rotation = (v: unknown) => vector(v, 4) && Math.abs(Math.hypot(...v) - 1) 
 const properties = (o: object, keys: string[]) => Object.keys(o).every((k) => keys.includes(k));
 export function validatePayload(value: unknown, nodeCount = Infinity): asserts value is VMDPayload {
   const fail = () => {
-    throw new Error(`${EXTENSION_NAME}: invalid payload, node reference, key order, numeric range or curve`);
+    diagnosticError('malformed-data','invalid-vmd-payload',EXTENSION_NAME,'invalid payload, node reference, key order, numeric range or curve');
   };
   if (!value || typeof value !== 'object') fail();
   const p = value as VMDPayload;
   if (
-    !properties(p, ['version', 'rest', 'tracks', 'weights', 'solver', 'ik', 'visibility', 'controls']) ||
-    ![1, 2, 3, 4, 5].includes(p.version) ||
+    !properties(p, ['version', 'rest', 'tracks', 'weights', 'solver', 'ik', 'visibility', 'controls', ...(p.version===6 ? ['source','diagnostics','morphs','owned'] : [])]) ||
+    ![1, 2, 3, 4, 5, 6].includes(p.version) ||
     !Array.isArray(p.rest) ||
     (p.version === 1 && !p.rest.length) ||
     p.rest.length > 65536 ||
@@ -36,11 +43,12 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
     p.tracks.length > 65536
   )
     fail();
-  if(p.version===5 && !p.solver && (p.ik!==undefined || p.visibility!==undefined))fail();
+  if((p.version===5 || p.version===6) && !p.solver && (p.ik!==undefined || p.visibility!==undefined))fail();
   if (p.version < 3 && (p.solver !== undefined || p.ik !== undefined || p.visibility !== undefined)) fail();
-  if (p.version === 3 || p.version === 4 || p.version === 5 && p.solver) {
+  if (p.version === 3 || p.version === 4 || (p.version === 5 || p.version === 6) && p.solver) {
     validateSolver(p.solver,nodeCount);
-    if(p.version!==5 && p.solver!.version !== (p.version === 4 ? 2 : 1)) fail();
+    if(p.version<6 && p.solver!.version===3) fail();
+    if(p.version<5 && p.solver!.version !== (p.version === 4 ? 2 : 1)) fail();
     const seen=new Set<number>();
     if(!Array.isArray(p.ik) || p.ik.length>65536 || !Array.isArray(p.visibility) || p.visibility.length>1_000_000) fail();
     let controls=0;
@@ -61,7 +69,7 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
       seen.add(w.node);
     }
   }
-  if(p.version===5) {
+  if(p.version===5 || p.version===6 && p.controls) {
     const c=p.controls;
     if(!c || !properties(c,['model','nodes','tracks']))fail();
     validateMorphModel(c!.model);
@@ -84,6 +92,22 @@ export function validatePayload(value: unknown, nodeCount = Infinity): asserts v
       t.keys.forEach((k,i)=>{if(!k || !properties(k,['frame','weight']) || !Number.isInteger(k.frame)||k.frame<0||k.frame>0xffffffff||!validWeight(k.weight)||i>0&&k.frame<=t.keys[i-1].frame)fail();});
     }
   } else if(p.controls!==undefined)fail();
+  if(p.version===6) {
+    if(p.source!==undefined) parseVMD(decodeSource(p.source));
+    if(!Array.isArray(p.diagnostics) || p.diagnostics.some(d=>!d || !properties(d,['category','code','path','message']) || !['malformed-data','unsupported-capability','fallback-limit','resource-exhaustion'].includes(d.category) || [d.code,d.path,d.message].some(v=>typeof v!=='string')))fail();
+    if(!Array.isArray(p.owned) || p.owned.some(c=>!c || !properties(c,['node','path']) || !['translation','rotation','weights'].includes(c.path) || (c.path==='weights' ? !p.weights?.some(w=>w.node===c.node) : !p.rest.some(r=>r.node===c.node))) || new Set(p.owned.map(c=>`${c.node}:${c.path}`)).size!==p.owned.length)fail();
+    if(p.weights?.some(w=>!p.owned!.some(c=>c.node===w.node && c.path==='weights')))fail();
+    if(!Array.isArray(p.morphs) || new Set(p.morphs.map(g=>g.node)).size!==p.morphs.length)fail();
+    for(const g of p.morphs!) {
+      if(!g || !properties(g,['node','count','tracks']) || !Number.isInteger(g.node)||g.node<0||g.node>=nodeCount || !Number.isInteger(g.count)||g.count<0||g.count>65536 || !Array.isArray(g.tracks))fail();
+      const seen=new Set<number>();let total=0;
+      for(const t of g.tracks) {
+        if(!t || !properties(t,['index','keys']) || !Number.isInteger(t.index)||t.index<0||t.index>=g.count || seen.has(t.index) || !Array.isArray(t.keys)||!t.keys.length || (total+=t.keys.length)>1_000_000)fail();
+        seen.add(t.index);
+        t.keys.forEach((k,i)=>{if(!k || !properties(k,['frame','weight']) || !Number.isInteger(k.frame)||k.frame<0||k.frame>0xffffffff||!validWeight(k.weight)||i>0&&k.frame<=t.keys[i-1].frame)fail();});
+      }
+    }
+  }
   const nodes = new Set<number>(),
     targets = new Set<number>();
   for (const b of p.rest) {
@@ -148,12 +172,13 @@ export function payloadMotion(payload: VMDPayload, morphs: Motion['morphs'] = []
     scale: [1, 1, 1],
   }));
   return {
+    source:payload.source, diagnostics:payload.diagnostics,
     solver: payload.solver, ik: payload.ik, visibility: payload.visibility,
     rest,
     tracks: payload.tracks.map((t) => ({ index: id(t.node), keys: structuredClone(t.keys) })),
     morphModel:payload.controls?.model,
-    morphs:payload.controls ? [{node:0,count:controlCount(payload.controls.model),tracks:structuredClone(payload.controls.tracks)}] : morphs,
-    duration: Math.max(0,...(payload.controls?.tracks??[]).map(t=>t.keys.at(-1)!.frame/30), (payload.visibility?.at(-1)?.frame ?? 0)/30, ...(payload.ik??[]).map(t=>t.keys.at(-1)!.frame/30), ...payload.tracks.map((t) => t.keys.at(-1)!.frame / 30),
+    morphs:payload.controls ? [{node:0,count:controlCount(payload.controls.model),tracks:structuredClone(payload.controls.tracks)}] : payload.morphs ?? morphs,
+    duration: Math.max(payload.source ? vmdDuration(parseVMD(decodeSource(payload.source))) : 0,...(payload.morphs??[]).flatMap(g=>g.tracks.map(t=>t.keys.at(-1)!.frame/30)),...(payload.controls?.tracks??[]).map(t=>t.keys.at(-1)!.frame/30), (payload.visibility?.at(-1)?.frame ?? 0)/30, ...(payload.ik??[]).map(t=>t.keys.at(-1)!.frame/30), ...payload.tracks.map((t) => t.keys.at(-1)!.frame / 30),
       ...morphs.flatMap(g => g.tracks.map(t => t.keys.at(-1)!.frame / 30))),
   };
 }

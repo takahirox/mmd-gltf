@@ -478,18 +478,6 @@ test("indexed validation rejects invalid sources and dependencies without output
       (m.rigidBodies[1] as any).groupTarget = 65536;
     },
     (m) => {
-      (m.rigidBodies[2] as any).boneIndex = 4;
-    },
-    (m) => {
-      (m.constraints[0] as any).type = 1;
-    },
-    (m) => {
-      (m.constraints[0] as any).rigidBodyIndex1 = -1;
-    },
-    (m) => {
-      m.bones[5].flag! &= ~0x1000;
-    },
-    (m) => {
       m.bones[4].flag = 0x2000;
     },
     (m) => {
@@ -516,7 +504,7 @@ test("indexed validation rejects invalid sources and dependencies without output
         convertPMX(
           join(directory, "input.pmx"),
           join(directory, "absent", "out.gltf"),
-          { mode: "bdef", physics: "rigid-body-v1", physicsSettle: 31 },
+          { mode: "bdef", physics: "rigid-body-v1", physicsSettle: -1 },
         ),
       /Invalid physicsSettle/,
     );

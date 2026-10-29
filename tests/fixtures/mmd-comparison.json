@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "issue": 58,
+  "reference": {
+    "repository": "jstzwj/MikuDanceStudio",
+    "commit": "4648314a8379efa7ce2f01ec96beda2eac0c4678",
+    "kind": "reverse-engineered-source",
+    "originalMMDMeasured": false
+  },
+  "cases": [
+    {
+      "id": "ik-xyz-locked",
+      "source": "solverPMX(box), bounded and locked XYZ overrides",
+      "reference": "src/model/pmx_load.cpp; src/model/bone_transform.cpp",
+      "observation": "XYZ limit transport and Euler clamping exist",
+      "projectTest": "three-axis and locked IK retain every axis",
+      "evidence": "analytical-project-executor",
+      "originalMMDMeasured": false
+    },
+    {
+      "id": "joint-free",
+      "source": "physicsPMX(box), inverted XYZ limits",
+      "reference": "src/physics/physics_create.cpp",
+      "observation": "lower/upper vectors passed to Bullet 6DoF",
+      "projectTest": "inverted joint ranges stay free",
+      "evidence": "actual-ammo-and-roundtrip",
+      "originalMMDMeasured": false
+    },
+    {
+      "id": "physics-clock",
+      "source": "physicsPMX(box)",
+      "reference": "src/physics/physics_frame.cpp",
+      "observation": {
+        "stepSeconds": 0.016666666666666666,
+        "maxSubSteps": 10,
+        "sharedWorld": true
+      },
+      "projectPolicy": {
+        "stepSeconds": 0.008333333333333333,
+        "maxSubSteps": 0,
+        "sharedWorld": false
+      },
+      "evidence": "source-inference-versus-measured-project-policy",
+      "originalMMDMeasured": false
+    },
+    {
+      "id": "vmd-old-signature",
+      "source": "syntheticVMD(a), historical header and 10-byte model name",
+      "reference": "src/model/vmd_load.cpp",
+      "observation": "both historical and 0002 signatures accepted",
+      "projectTest": "fallback budget, FLOAT collapse and scene sections",
+      "evidence": "byte-parser-and-roundtrip",
+      "originalMMDMeasured": false
+    }
+  ]
+}
