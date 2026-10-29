@@ -22,8 +22,14 @@ test('default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outli
   page.on('requestfailed',r=>errors.push(`${r.url()}: ${r.failure()?.errorText}`));
   await page.goto(preview);
   await expect(page.locator('#demo-model')).toHaveValue('uka');
+  await expect(page.locator('#viewport h2')).toHaveText(['MMD','glTF']);
+  await expect(page.locator('#uka-features p, footer > p.method-note')).toHaveCount(0);
+  await expect(page.locator('#about-demo')).not.toHaveAttribute('open');
+  await expect(page.locator('#about-demo > p').first()).toBeHidden();
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   await page.waitForFunction(()=>(window as any).mmdExample?.frames>3);
+  await expect(page.locator('#expression')).toBeEnabled();
+  await expect(page.locator('#expression option')).toHaveText(['Rest · A pose','Blink · まばたき','Smile · 笑い']);
   const state=()=>page.evaluate(()=>(window as any).mmdExample);
   expect(await state()).toMatchObject({model:'uka',meshes:13,reference:{loader:'MMDLoader',materials:13,scale:.08}});
   const s=await state(); expect(s.cameras[0]).toEqual(s.cameras[1]);
@@ -63,14 +69,20 @@ test('default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outli
   await page.locator('#viewpoint').selectOption('side');expect((await capture()).equals(rest)).toBe(false);
   await page.setViewportSize({width:390,height:844});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390);
+  const left=(await page.locator('#pmx-pane').boundingBox())!,right=(await page.locator('#gltf-pane').boundingBox())!;
+  expect(left.width).toBe(right.width);expect(left.height).toBe(right.height);
+  expect(left.x).toBe(right.x);expect(right.y).toBeGreaterThanOrEqual(left.y+left.height);
+  for(const id of ['expression','material','outlines','viewpoint'])await expect(page.locator(`#${id}`)).toBeEnabled();
   await page.locator('#demo-model').selectOption('gene');
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   await expect(page.locator('#demo-model')).toBeEnabled({timeout:90000});
   expect((await state()).model).toBe('gene');
+  await expect(page.locator('#viewport h2')).toHaveText(['MMD','glTF']);
   await expect(page.locator('#uka-features')).toBeHidden();await expect(page.locator('#viewport canvas')).toHaveCount(1);
   await page.locator('#demo-model').selectOption('uka');
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   await expect(page.locator('#expression')).toBeEnabled();await expect(page.locator('#viewport canvas')).toHaveCount(1);
+  await expect(page.locator('#viewport h2')).toHaveText(['MMD','glTF']);
   expect(errors).toEqual([]);
 });
 

@@ -42,12 +42,15 @@ test('public character picker and credits exclude fixtures; explicit rig entry r
   ]);
   await expect(page.locator('#about-demo')).not.toContainText(/synthetic|box|wedge|rig diagnostics/i);
   await expect(page.locator('#about-demo a').filter({ hasText: /box|wedge|pose|motion|solver|physics|sdef|qdef/i })).toHaveCount(0);
+  await page.locator('#about-demo > summary').click();
   await expect(page.locator('a[href*="demo=rig"], a[href$="rig.html"], a[href*="conformance.html"]')).toHaveCount(0);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     await expect(page.locator('#demo-model option')).toHaveText(['Uka comparison', 'Gene Light comparison']);
     await expect(page.locator('#preset-picker')).toBeHidden();
     await expect(page.locator('#rig-demo')).toBeHidden();
+    await expect(page.locator('#viewport h2')).toHaveText(['MMD', 'glTF']);
+    await expect(page.locator('#about-demo')).not.toHaveAttribute('open');
     expect(await rigState(page)).toBeUndefined();
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: testInfo.outputPath(`public-${width}.png`), fullPage: true });

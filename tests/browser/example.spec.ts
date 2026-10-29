@@ -81,10 +81,27 @@ for (const backend of ['webgl', 'webgpu']) {
     await page.goto(`http://127.0.0.1:43180/mmd-gltf/?demo=gene&backend=${backend}`);
     await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
     await page.waitForFunction(() => (window as any).mmdExample?.frames > 4);
-    for (const label of ['Direct PMX reference', 'MMD glTF']) await expect(page.locator('#viewport').getByRole('heading', { name: label, exact: true })).toBeVisible();
+    await expect(page.locator('#viewport h2')).toHaveText(['MMD', 'glTF']);
+    for (const label of ['MMD', 'glTF']) await expect(page.locator('#viewport').getByRole('heading', { name: label, exact: true })).toBeVisible();
+    await expect(page.locator('#uka-features p, footer > p.method-note')).toHaveCount(0);
+    for (const copy of [/Uka: compare the original PMX/, /Solver-free BDEF subset:/, /PMX is a secondary reference/]) {
+      await expect(page.getByText(copy)).not.toBeVisible();
+    }
+    await expect(page.locator('#viewport .hint')).toBeVisible();
+    await expect(page.locator('#about-demo')).not.toHaveAttribute('open');
+    const accuracy = page.locator('#about-demo > p').first();
+    await expect(accuracy).toContainText('direct PMX-rendering reference');
+    await expect(accuracy).toContainText('@takahirox/three-mmd');
+    await expect(accuracy).toContainText('not native MikuMikuDance');
+    await expect(accuracy).toContainText('Exact MMD visual/physics fidelity is unverified');
+    await expect(accuracy).toContainText('solvers and physics use bounded profiles');
+    await expect(accuracy).toContainText('do not run VMD playback, IK or physics');
+    await expect(accuracy).toBeHidden();
     await page.locator('#about-demo > summary').click();
+    await expect(accuracy).toBeVisible();
     await expect(page.getByRole('link', { name: '@takahirox/three-mmd@0.1.2', exact: true })).toBeVisible();
     await page.locator('#about-demo > summary').click();
+    await expect(accuracy).toBeHidden();
     for (const id of ['pmx', 'gltf']) await expect(page.locator(`#${id}-status`)).toContainText('Ready');
     const info = await page.evaluate(() => (window as any).mmdExample);
     expect(info.meshes).toBe(13);
@@ -168,11 +185,17 @@ for (const backend of ['webgl', 'webgpu']) {
       expect((await page.request.get(`http://127.0.0.1:43180/mmd-gltf/gene-light/${path}`)).status()).toBe(200);
     }
     // Both views remain visible, equally sized and synchronized in the stacked mobile layout.
-    await page.setViewportSize({ width: 600, height: 1000 });
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(600);
     const left = (await page.locator('#pmx-pane').boundingBox())!, right = (await page.locator('#gltf-pane').boundingBox())!;
     expect(left.width).toBe(right.width); expect(left.height).toBe(right.height);
     expect(left.x).toBe(right.x); expect(right.y).toBeGreaterThanOrEqual(left.y + left.height);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+    for (const pane of ['pmx', 'gltf']) {
+      const heading = (await page.locator(`#${pane}-pane h2`).boundingBox())!;
+      expect(heading.x).toBeGreaterThanOrEqual(left.x);
+      expect(heading.x + heading.width).toBeLessThanOrEqual(left.x + left.width);
+    }
     cameras = await page.evaluate(() => (window as any).mmdExample.cameras);
     expect(cameras[0]).toEqual(cameras[1]);
     expectLightGrayBackground(await readComparisonBitmap(page), true);
