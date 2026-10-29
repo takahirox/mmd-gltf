@@ -1,3 +1,5 @@
+import { solverCases } from './conformance-cases';
+import { PhaseTiming } from './phase-timing';
 import { createMorphRig, resetMorphWeights } from "../packages/three-mmd-morph";
 import {
   WebGPURenderer,
@@ -66,12 +68,14 @@ import { solverVertex, solverExpected } from "./solver-oracle";
 import { runSolverExports } from "./solver-export";
 const base = import.meta.env.BASE_URL;
 async function run() {
+  const timing = new PhaseTiming();
+  Object.assign(window, { conformanceTiming: timing.phases });
   const mode = (new URLSearchParams(location.search).get("mode") ?? "bdef") as
     | "bdef"
     | "sdef"
     | "qdef";
   const renderer = new WebGPURenderer({ forceWebGL: true, antialias: false });
-  await renderer.init();
+  await timing.async('renderer-init', () => renderer.init());
   renderer.setSize(160, 160);
   document.body.append(renderer.domElement);
   const effect = new MMDOutlineEffect(renderer),
@@ -88,13 +92,18 @@ async function run() {
   canvas.width = canvas.height = 160;
   const context = canvas.getContext("2d")!;
   const pixels = () => {
+    const end = timing.start('raster-readback');
     context.drawImage(renderer.domElement, 0, 0);
-    return context.getImageData(0, 0, 160, 160).data;
+    const data = context.getImageData(0, 0, 160, 160).data;
+    end();
+    return data;
   };
   const difference = (a: Uint8ClampedArray, b: Uint8ClampedArray) => {
+    const end = timing.start('raster-comparison');
     let n = 0;
     for (let i = 0; i < a.length; i += 4)
       if ([0, 1, 2].some((j) => Math.abs(a[i + j] - b[i + j]) > 2)) n++;
+    end();
     return n;
   };
   const target = new RenderTarget(24, 1, { type: FloatType });
@@ -172,7 +181,8 @@ async function run() {
     probeScene.children = [mesh];
     mesh.frustumCulled = false;
     renderer.setRenderTarget(target);
-    renderer.render(probeScene, camera);
+    timing.sync('vertex-render-submit', () => renderer.render(probeScene, camera));
+    const read = timing.start('vertex-readback');
     const values = (await renderer.readRenderTargetPixelsAsync(
       target,
       0,
@@ -180,6 +190,7 @@ async function run() {
       24,
       1,
     )) as Float32Array;
+    read();
     renderer.setRenderTarget(null);
     mesh.geometry = savedGeometry;
     mesh.material = savedMaterial;
@@ -198,14 +209,10 @@ async function run() {
     : ["toon", "pbr"];
   for (const rig of rigs)
     for (const material of materials)
-      for (const source of [
-        "bytes",
-        "glb",
-        "gltf",
-        "export-glb",
-        "export-gltf",
-      ])
-        for (const state of ["a", "b", "pose-a", "pose-b"]) {
+      for (const [source, state] of query.get('matrix') === 'full'
+        ? ['bytes', 'glb', 'gltf', 'export-glb', 'export-gltf'].flatMap(source =>
+          ['a', 'b', 'pose-a', 'pose-b'].map(state => [source, state] as const))
+        : solverCases) {
           Object.assign(window, {
             solverProgress: {
               rig,
@@ -216,6 +223,7 @@ async function run() {
               comparisons: evidence.length,
             },
           });
+          const loaded = timing.start('load-parse-bind-export');
           let skinning!: MMDQDEFPlugin, toon: MMDToonPlugin | undefined;
           const loader = new GLTFLoader()
             .register((p) => new MMDSolverPlugin(p))
@@ -260,7 +268,7 @@ async function run() {
             const list = Array.isArray((window as any).solverExports)
               ? (window as any).solverExports
               : [];
-            if (state === "pose-a") {
+            if (posed) {
               const record =
                 encoded instanceof ArrayBuffer
                   ? {
@@ -295,6 +303,8 @@ async function run() {
             : source.startsWith("export-")
               ? [0.371]
               : [0.371, 0.719];
+          loaded();
+          let first = true;
           for (const time of times) {
             if (posed && source === "bytes") {
               const binding = bindVPD(handle, pose);
@@ -306,6 +316,7 @@ async function run() {
             for (const mesh of meshes) {
               const positions = await probe(mesh, false),
                 normals = await probe(mesh, true);
+              const evaluated = timing.start('evaluate-oracle');
               for (let i = 0; i < 24; i++) {
                 const expected = solverVertex(
                     rig,
@@ -371,6 +382,7 @@ async function run() {
                     );
                 }
               }
+              evaluated();
             }
             if (
               maximumCPU > 2e-6 ||
@@ -381,6 +393,7 @@ async function run() {
                 `Solver deformation errors CPU/GPU/normal ${maximumCPU}/${maximumPosition}/${maximumNormal}`,
               );
             for (const pass of ["surface", "outline"]) {
+              const bakedOracle = timing.start('bake-oracle');
               const baked = new Group();
               for (const mesh of meshes) {
                 mesh.frustumCulled = false;
@@ -420,14 +433,15 @@ async function run() {
                   m.colorWrite = m.depthWrite = pass === "surface";
                 });
               }
+              bakedOracle();
               effect.enabled = pass === "outline";
               scene.add(asset.scene);
-              effect.render(scene, camera);
+              timing.sync(first ? 'first-render-submit' : 'subsequent-render-submit', () => effect.render(scene, camera));
               const actual = pixels();
               captures.set(pass, new Uint8ClampedArray(actual));
               scene.remove(asset.scene);
               scene.add(baked);
-              effect.render(scene, camera);
+              timing.sync(first ? 'first-render-submit' : 'subsequent-render-submit', () => effect.render(scene, camera));
               const expected = pixels();
               scene.remove(baked);
               const mismatch = difference(actual, expected);
@@ -452,6 +466,7 @@ async function run() {
               });
               baked.children.forEach((n) => (n as Mesh).geometry.dispose());
             }
+            first = false;
           }
           // Reset retains original-rest identity, then applying the same pose is stable.
           resetVPD(handle);

@@ -55,6 +55,8 @@ git diff --check
 `npm run build` first. Browser tests default to the
 installed Google Chrome; omit the environment variable to use it. Tests force
 WebGL2 through `WebGPURenderer` and SwiftShader for reproducible headless checks.
+See [CPU browser CI coverage and timing](docs/browser-ci.md) for the representative
+shader matrices, their Node oracle replacements, and full-matrix measurement mode.
 The example defaults to WebGL2; append `?backend=webgpu` to try native WebGPU,
 which tests explicitly skip without an adapter. Views stack on narrow screens.
 The direct PMX is a practical reference, not a bit-identical MikuMikuDance oracle;

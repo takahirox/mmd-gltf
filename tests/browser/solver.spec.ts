@@ -1,5 +1,5 @@
 import { openRigDemo } from './demo-controls';
-import { test, expect } from "@playwright/test";
+import { test, expect, fullConformance, conformanceURL } from "./timed-test";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { validateBytes, validateString } from "gltf-validator";
 import { solverExpected, solverVertex } from "../solver-oracle";
@@ -232,12 +232,12 @@ for (const mode of ["bdef", "sdef", "qdef"])
   for (const rig of ["box", "wedge"])
     for (const material of ["toon", "pbr"])
       test(`built solver ${mode}/${rig}/${material}: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports`, async ({
-        page,
+        page, phaseTiming,
       }, info) => {
         const errors: string[] = [];
         page.on("pageerror", (e) => errors.push(e.message));
         await page.goto(
-          `${preview}solver-conformance.html?mode=${mode}&rig=${rig}&material=${material}`,
+          conformanceURL(`${preview}solver-conformance.html?mode=${mode}&rig=${rig}&material=${material}`),
         );
         await page.waitForFunction(
           () =>
@@ -253,7 +253,7 @@ for (const mode of ["bdef", "sdef", "qdef"])
         const result = await page.evaluate(
           () => (window as any).solverConformance,
         );
-        expect(result.passed).toBe(52);
+        expect(result.passed).toBe(fullConformance ? 52 : 32);
         expect(result.maximumCPU).toBeLessThanOrEqual(2e-6);
         expect(result.maximumPosition).toBeLessThanOrEqual(1e-4);
         expect(result.maximumNormal).toBeLessThanOrEqual(5e-4);
@@ -273,18 +273,18 @@ for (const mode of ["bdef", "sdef", "qdef"])
           `Solver ${mode}/${rig}/${material} evidence:`,
           JSON.stringify({ ...result, evidence: undefined }),
         );
-        await mkdir("docs/solver-captures", { recursive: true });
-        await writeFile(
-          `docs/solver-captures/${mode}-${rig}-${material}.json`,
-          JSON.stringify(result, null, 2) + "\n",
-        );
         if (process.env.UPDATE_SYNTHETIC_EVIDENCE === '1') {
-          await page.locator("canvas[data-pass=outline]").screenshot({
+          await mkdir("docs/solver-captures", { recursive: true });
+          await writeFile(
+            `docs/solver-captures/${mode}-${rig}-${material}.json`,
+            JSON.stringify(result, null, 2) + "\n",
+          );
+          await phaseTiming.async('screenshot', () => page.locator("canvas[data-pass=outline]").screenshot({
             path: `docs/solver-captures/${mode}-${rig}-${material}-outline.png`,
-          });
-          await page.locator("canvas[data-pass=surface]").screenshot({
+          }));
+          await phaseTiming.async('screenshot', () => page.locator("canvas[data-pass=surface]").screenshot({
             path: `docs/solver-captures/${mode}-${rig}-${material}.png`,
-          });
+          }));
         }
         await info.attach(`solver-${mode}-${rig}-${material}.json`, {
           body: JSON.stringify(result),
@@ -295,7 +295,7 @@ for (const mode of ["bdef", "sdef", "qdef"])
 for (const rig of ["box", "wedge"] as const)
   for (const id of ["a", "b"] as const)
     test(`built solver Demo ${rig}/${id}: both poses, controls, transport, load recovery and disposal`, async ({
-      page,
+      page, phaseTiming,
     }, info) => {
       await openRigDemo(page, preview);
       await expect(page.locator("#rig-preset")).toBeEnabled();
@@ -467,15 +467,15 @@ for (const rig of ["box", "wedge"] as const)
           ).p.toArray(),
         ),
       });
-      await mkdir("docs/solver-captures", { recursive: true });
-      await writeFile(
-        `docs/solver-captures/demo-${rig}-${id}.json`,
-        JSON.stringify(evidence, null, 2) + "\n",
-      );
       if (process.env.UPDATE_SYNTHETIC_EVIDENCE === '1') {
-        await page
+        await mkdir("docs/solver-captures", { recursive: true });
+        await writeFile(
+          `docs/solver-captures/demo-${rig}-${id}.json`,
+          JSON.stringify(evidence, null, 2) + "\n",
+        );
+        await phaseTiming.async('screenshot', () => page
           .locator("canvas")
-          .screenshot({ path: `docs/solver-captures/demo-${rig}-${id}.png` });
+          .screenshot({ path: `docs/solver-captures/demo-${rig}-${id}.png` }));
       }
       await page.locator("#rig-model").selectOption("box");
       await expect(page.locator("#rig-status")).toContainText("Rig loaded");

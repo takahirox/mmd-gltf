@@ -3,13 +3,22 @@ on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
+    inputs:
+      compare_browser_matrices:
+        description: Repeat full/representative browser phase measurements on this runner
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
-  group: pages-${{ github.ref }}
+  # An unrelated label event skips validation and must not cancel a real run.
+  group: pages-${{ github.event.action == 'labeled' && github.event.label.name != 'browser-performance' && github.run_id || github.ref }}
   cancel-in-progress: true
 jobs:
   build:
+    if: github.event.action != 'labeled' || github.event.label.name == 'browser-performance'
     # Playwright 1.56.1 supports Ubuntu 24.04, but not Ubuntu 26.04.
     runs-on: ubuntu-24.04
     steps:
@@ -34,6 +43,18 @@ jobs:
           PLAYWRIGHT_CHROMIUM_CHANNEL: chromium
       - run: npm run check:links
       - run: git diff --check
+      - name: Repeat browser matrix measurements
+        if: inputs.compare_browser_matrices == true || contains(github.event.pull_request.labels.*.name, 'browser-performance')
+        run: bash tools/measure-browser-ci.sh
+        env:
+          PLAYWRIGHT_CHROMIUM_CHANNEL: chromium
+      - uses: actions/upload-artifact@v4
+        if: always() && (inputs.compare_browser_matrices == true || contains(github.event.pull_request.labels.*.name, 'browser-performance'))
+        with:
+          name: browser-performance
+          path: .cache/browser-performance/
+          if-no-files-found: ignore
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
         with:

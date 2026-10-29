@@ -1,3 +1,5 @@
+import { vmdCases } from './conformance-cases';
+import { PhaseTiming } from './phase-timing';
 import {
   WebGPURenderer,
   Scene,
@@ -26,8 +28,10 @@ import { runGroupExports } from './group-export';
 import { morphPoint, morphWeights } from './morph-oracle';
 import { rigScale } from './vpd-oracle';
 async function run() {
+  const timing = new PhaseTiming();
+  Object.assign(window, { conformanceTiming: timing.phases });
   const renderer = new WebGPURenderer({ forceWebGL: true, antialias: false });
-  await renderer.init();
+  await timing.async('renderer-init', () => renderer.init());
   renderer.setSize(160, 160);
   document.body.append(renderer.domElement);
   const effect = new MMDOutlineEffect(renderer),
@@ -41,13 +45,18 @@ async function run() {
   canvas.width = canvas.height = 160;
   const context = canvas.getContext('2d')!;
   const pixels = () => {
+    const end = timing.start('raster-readback');
     context.drawImage(renderer.domElement, 0, 0);
-    return context.getImageData(0, 0, 160, 160).data;
+    const data = context.getImageData(0, 0, 160, 160).data;
+    end();
+    return data;
   };
   const difference = (a: Uint8ClampedArray, b: Uint8ClampedArray) => {
+    const end = timing.start('raster-comparison');
     let count = 0;
     for (let i = 0; i < a.length; i += 4)
       if ([0, 1, 2].some((j) => Math.abs(a[i + j] - b[i + j]) > 2)) count++;
+    end();
     return count;
   };
   const evidence: object[] = [];
@@ -55,9 +64,11 @@ async function run() {
   const morph = grouped || new URLSearchParams(location.search).has('morph');
   const weightPrediction = grouped ? groupWeights : morphWeights, pointPrediction = grouped ? groupPoint : morphPoint;
   for (const rig of ['box', 'wedge'] as const)
-    for (const motion of ['a', 'b'] as const)
-      for (const mode of ['toon', 'pbr'])
-        for (const source of ['bytes', 'glb', 'gltf']) {
+    for (const [mode, source, motion] of new URLSearchParams(location.search).get('matrix') === 'full'
+      ? (['a', 'b'] as const).flatMap(motion => ['toon', 'pbr'].flatMap(mode =>
+        ['bytes', 'glb', 'gltf'].map(source => [mode, source, motion] as const)))
+      : vmdCases) {
+          const loaded = timing.start('load-parse-bind');
           let toon: MMDToonPlugin | undefined, outlines: MMDOutlinePlugin | undefined;
           const loader = new GLTFLoader()
             .register((p) => new MMDVMDPlugin(p))
@@ -82,6 +93,7 @@ async function run() {
                 }),
               )
             : getVMDPlayers(asset)[0];
+          loaded();
           const scale = rigScale[rig];
           camera.left = camera.bottom = -2.2 * scale;
           camera.right = camera.top = 2.2 * scale;
@@ -100,6 +112,7 @@ async function run() {
             ['other', 0.719],
             ['reseek', 0.371],
           ] as const) {
+            const evaluated = timing.start('evaluate-oracle');
             player.seek(time);
             let rotationError = 0;
             asset.scene.traverse((n) => {
@@ -117,7 +130,9 @@ async function run() {
             let maximumWeightError = 0;
             if (morph) for (const mesh of meshes) mesh.morphTargetInfluences!.forEach((w,i) => { maximumWeightError = Math.max(maximumWeightError, Math.abs(w-weightPrediction(motion,time)[i])); });
             if (maximumWeightError > 1e-6) throw new Error(`weight ${maximumWeightError}`);
+            evaluated();
             for (const pass of ['surface', 'outline']) {
+              const bakedOracle = timing.start('bake-oracle');
               const hull = pass === 'outline',
                 oracle = new Group();
               let error = 0;
@@ -162,13 +177,14 @@ async function run() {
                 oracle.add(baked);
               }
               if (error > 2e-6) throw new Error(`${rig}/${motion}/${source}/${mode}: skin ${error}`);
+              bakedOracle();
               effect.enabled = hull;
               scene.add(asset.scene);
-              effect.render(scene, camera);
+              timing.sync(state === 'initial' ? 'first-render-submit' : 'subsequent-render-submit', () => effect.render(scene, camera));
               const actual = pixels();
               scene.remove(asset.scene);
               scene.add(oracle);
-              effect.render(scene, camera);
+              timing.sync(state === 'initial' ? 'first-render-submit' : 'subsequent-render-submit', () => effect.render(scene, camera));
               const predicted = pixels();
               scene.remove(oracle);
               const mismatch = difference(actual, predicted);
@@ -215,7 +231,7 @@ async function run() {
         }
   effect.dispose();
   renderer.dispose();
-  return { passed: evidence.length, evidence, exports: grouped ? await runGroupExports(import.meta.env.BASE_URL) : undefined };
+  return { passed: evidence.length, evidence, exports: grouped ? await timing.async('group-export', () => runGroupExports(import.meta.env.BASE_URL)) : undefined };
 }
 run()
   .then((result) => Object.assign(window, { vmdConformance: result }))
