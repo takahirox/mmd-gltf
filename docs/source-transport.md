@@ -87,8 +87,10 @@ frames and are not silently scaled or reflected; PMX 2.1 parsing
 consumes/validates these complete sections, including anchors and pin references.
 
 Finite nonnegative body mass (including zero for dynamic modes) and positive
-dimensions transport in version 2 even when reciprocal mass, FLOAT underflow or
-computed inertia exceeds the backend's range. `physics-numeric-range` reports
+dimensions transport in version 2 even when reciprocal mass, FLOAT
+overflow/underflow or computed inertia exceeds the backend's range. Scaled body
+dimensions/translations, joint frames/limits/springs and other numeric fields
+retain finite JSON values beyond FLOAT range. `physics-numeric-range` reports
 unavailable execution; version 1 retains its stricter numeric contract.
 
 `PhysicsTimeline`'s fourth argument configures `maxBodies`, `maxJoints`,

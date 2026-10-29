@@ -10,6 +10,9 @@ solver versions 2/3. See [source transport and execution](../../docs/source-tran
 for the new fields, diagnostics, configurable runtime budgets and comparison evidence.
 Version 1 retains its bounded serialized meaning; the following version-1 caps
 and dependency exclusions do not define MMD source validity.
+Version 2 accepts finite JSON numbers even when unit scaling exceeds FLOAT range.
+Execution reports `physics-numeric-range` before allocating the backend; source
+records remain available through loading and export.
 
 Draft optional root glTF extension, version 1, `rigid-body-v1` project profile.
 It requires [MMD_skeleton_solver version 2](../MMD_skeleton_solver/README.md).

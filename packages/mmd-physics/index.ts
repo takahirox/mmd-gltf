@@ -48,21 +48,14 @@ export interface PhysicsProfile {
 }
 export const MAX_UPDATE_STEPS = 240;
 export const MAX_SEEK_STEPS = 3600;
-const finite = (v: unknown): v is number =>
+const float = (v: unknown): v is number =>
   typeof v === "number" &&
   Number.isFinite(v) &&
   Number.isFinite(Math.fround(v));
-const vector = (v: unknown, n: number): v is number[] =>
-  Array.isArray(v) && v.length === n && Array.from(v).every(finite);
 const integer = (v: number, lo: number, hi: number) =>
   Number.isInteger(v) && v >= lo && v <= hi;
 const properties = (v: object, keys: string[]) =>
   !!v && typeof v === "object" && Object.keys(v).every((k) => keys.includes(k));
-const frame = (v: Frame) =>
-  properties(v, ["translation", "rotation"]) &&
-  vector(v.translation, 3) &&
-  vector(v.rotation, 4) &&
-  Math.abs(Math.hypot(...v.rotation) - 1) <= 1e-10;
 /** Validate transport only; runtime capability checks never redefine source validity. */
 export function validatePhysics(value: unknown, solver: SolverProfile): asserts value is PhysicsProfile {
   validatePhysicsInternal(value,solver);
@@ -74,8 +67,23 @@ function validatePhysicsInternal(
 ): asserts value is PhysicsProfile {
   validateSolver(solver);
   const p = value as PhysicsProfile;
+  // Scaled PMX FLOAT values may exceed FLOAT range while remaining finite JSON numbers.
+  const finite = (v: unknown): v is number =>
+    typeof v === "number" && Number.isFinite(v) && (p?.version === 2 || float(v));
+  const vector = (v: unknown, n: number): v is number[] =>
+    Array.isArray(v) && v.length === n && Array.from(v).every(finite);
+  const frame = (v: Frame) =>
+    properties(v, ["translation", "rotation"]) &&
+    vector(v.translation, 3) &&
+    vector(v.rotation, 4) &&
+    Math.abs(Math.hypot(...v.rotation) - 1) <= 1e-10;
   const fail = (where: string, why: string): never => {
     diagnosticError("malformed-data", "invalid-physics", `${EXTENSION_NAME} ${where}`, why);
+  };
+  const numericRange = (where: string, why: string): never => {
+    if (p.version === 2)
+      diagnosticError('unsupported-capability', 'physics-numeric-range', `${EXTENSION_NAME} ${where}`, `${why}; source records retained`);
+    return fail(where, why);
   };
   const strict = p?.version !== 2 || execution;
   if (
@@ -96,6 +104,8 @@ function validatePhysicsInternal(
       "profile",
       "invalid version, clock, gravity or counts (requires solver version 2)",
     );
+  if (strict && !p.gravity.every(float))
+    numericRange('profile', 'gravity exceeds backend numeric range');
   if (p.retained !== undefined) {
     if (!properties(p.retained,['impulseMorphs','softBodies','vertexCount','materialCount','metersPerPMXUnit','coordinateSystem']) || !Array.isArray(p.retained.impulseMorphs) || !Array.isArray(p.retained.softBodies) || !integer(p.retained.vertexCount,0,2147483647) || !integer(p.retained.materialCount,0,2147483647) || !finite(p.retained.metersPerPMXUnit) || p.retained.metersPerPMXUnit<=0 || p.retained.coordinateSystem!=='pmx-source') fail('retained','invalid retained records');
     const pending: {value:unknown;depth:number;exit?:boolean}[] = [{value:p.retained,depth:0}];
@@ -171,17 +181,17 @@ function validatePhysicsInternal(
         `bodies[${i}]`,
         "invalid identity, reference, shape, dimensions, filter, transform or material",
       );
-    // Reciprocal mass, FLOAT underflow and inertia bounds constrain Bullet
+    // FLOAT overflow/underflow, reciprocal mass and inertia bounds constrain Bullet
     // execution, not version-2 transport of finite source records.
     if (strict && (
+      ![...b.size, ...b.translation, b.mass, b.linearDamping, b.angularDamping,
+        b.friction, b.restitution, b.margin].every(float) ||
       Math.fround(b.size[0]) <= 0 ||
       (b.shape === "box" && b.size.some(v => Math.fround(v) <= 0)) ||
-      (b.mode !== 0 && (Math.fround(b.mass) <= 0 || !finite(1 / b.mass))) ||
-      !finite((b.mass + 1) * Math.max(...b.size) ** 2)
+      (b.mode !== 0 && (Math.fround(b.mass) <= 0 || !float(1 / b.mass))) ||
+      !float((b.mass + 1) * Math.max(...b.size) ** 2)
     )) {
-      if (p.version === 2)
-        diagnosticError('unsupported-capability', 'physics-numeric-range', `${EXTENSION_NAME} bodies[${i}]`, 'mass, dimensions or inertia exceed backend numeric range; source records retained');
-      fail(`bodies[${i}]`, 'mass, dimensions or inertia exceed backend numeric range');
+      numericRange(`bodies[${i}]`, 'body values, reciprocal mass or inertia exceed backend numeric range');
     }
     bodies.set(b.index, b);
     if (strict && b.mode !== 0 && b.bone !== -1) {
@@ -239,6 +249,12 @@ function validatePhysicsInternal(
         `joints[${i}]`,
         "invalid identity, endpoints, type, frames, limits or springs",
       );
+    if (strict && ![
+      ...j.frameA.translation, ...j.frameB.translation,
+      ...j.linearLower, ...j.linearUpper, ...j.angularLower, ...j.angularUpper,
+      ...j.linearSpring, ...j.angularSpring,
+    ].every(float))
+      numericRange(`joints[${i}]`, 'joint frames, limits or springs exceed backend numeric range');
     ids.add(j.index);
   });
   if(p.retained) {

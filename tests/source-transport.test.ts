@@ -151,6 +151,8 @@ test('backend numeric limits preserve binary PMX physics through GLB/glTF reload
     { mass: 0, width: 0.25, scale: 1 },
     { mass: 1e-40, width: 0.25, scale: 1 },
     { mass: 3e38, width: 4, scale: 1 }, // Finite mass/size, overflowing backend inertia bound.
+    { mass: 1, width: 3e38, scale: 1 },
+    { mass: 1, width: 3e38, scale: 2 }, // Valid source FLOAT scales beyond FLOAT range.
     { mass: 1, width: 1e-44, scale: 0.001 }, // Positive scaled size underflows in Bullet FLOAT.
   ]) {
     const raw = physicsPMX('box');
@@ -181,6 +183,34 @@ test('backend numeric limits preserve binary PMX physics through GLB/glTF reload
       assert.ok(asset.userData.diagnostics.some((d: any) => d.code === 'physics-numeric-range'));
       assert.throws(() => new PhysicsTimeline(api, retained.profile, retained.solver), category('unsupported-capability'));
       assert.equal(PhysicsWorld.allocations, 0);
+    }
+  }
+});
+
+test('version-2 FLOAT overflow in gravity, body values and joint records is an execution limit', async () => {
+  const r = await convertModel(parsePMX(physicsPMX('box')), '.', { mode: 'bdef', physics: 'rigid-body-v1' });
+  const j = await json(r), original = j.extensions.MMD_physics as PhysicsProfile, solver = j.extensions.MMD_skeleton_solver as SolverProfile;
+  assert.equal(solver.version, 2); // Version-1 rejection must exercise physics numeric checks.
+  const cases: { path: string; set: (p: PhysicsProfile, value: number) => void }[] = [
+    { path: 'profile', set: (p, v) => { p.gravity[0] = v; } },
+    { path: 'bodies[1]', set: (p, v) => { p.bodies[1].translation[0] = v; } },
+    { path: 'bodies[1]', set: (p, v) => { p.bodies[1].friction = v; } },
+    { path: 'joints[0]', set: (p, v) => { p.joints[0].frameA.translation[0] = v; } },
+    { path: 'joints[0]', set: (p, v) => { p.joints[0].linearLower[0] = -v; } },
+    { path: 'joints[0]', set: (p, v) => { p.joints[0].angularSpring[0] = v; } },
+  ];
+  for (const { path, set } of cases) {
+    const profile = structuredClone(original); profile.version = 2;
+    set(profile, Math.fround(3e38) * 2);
+    validatePhysics(profile, solver);
+    await schema('MMD_physics', profile);
+    const diagnostic = physicsDiagnostics(profile, solver).find(d => d.code === 'physics-numeric-range')!;
+    assert.equal(diagnostic.category, 'unsupported-capability');
+    assert.equal(diagnostic.path, `MMD_physics ${path}`);
+    assert.throws(() => validatePhysics({ ...profile, version: 1 }, solver), category('malformed-data'));
+    for (const invalid of [NaN, Infinity, -Infinity]) {
+      set(profile, invalid);
+      assert.throws(() => validatePhysics(profile, solver), category('malformed-data'));
     }
   }
 });
