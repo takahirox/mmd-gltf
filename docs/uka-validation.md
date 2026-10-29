@@ -165,9 +165,27 @@ for this converter validation; no endorsement implied.
 
 ## Required post-merge verification
 
-Pending; this node does not push, publish or merge. After the merge-triggered
-Pages deployment, record the workflow URL/conclusion and deployed URL/commit;
-open the public default Uka view; check PMX, glTF, binary and allowed textures
-return successfully; exercise blink/smile, material/Outline/view changes and
-Gene/rig switching; inspect console/network errors. Record the actual result in
-this section. Local validation does not establish deployment success.
+Completed on **2026-10-29 at 02:15:50 UTC** after PR #53 merged as
+`c5a14317f5aa49b389d076da09ab4d9239cb2f1a`. Issue #52 was freshly confirmed open
+immediately before the merge; GitHub enforced the reviewed PR head SHA and used a
+merge commit. The [merge-triggered workflow](https://github.com/takahirox/mmd-gltf/actions/runs/40800890842)
+passed all mandatory validation and successfully deployed that commit to the
+[public demo](https://takahirox.github.io/mmd-gltf/).
+
+The complete single-worker browser suite passed **71 tests with 2 optional WebGPU
+skips in 34.43 minutes**, 55.3% below the approximate 77-minute baseline. Both Uka
+integration cases passed. The [deployment verification record](uka-deployment-validation.json)
+includes workflow steps, deployment identity, browser evidence and CI artifact
+provenance.
+
+Public-site verification used pinned Chromium 141 with WebGL2 on macOS. Thirteen
+checks passed: the default PMX and converted glTF visibly rendered; blink/smile
+changed pixels in each pane; Toon/PBR and Outline changed the expected renders;
+side/back views retained synchronized cameras; the 390 px layout had no horizontal
+overflow; and Gene, synthetic rigs and Uka loaded when switching. All nine Uka
+textures and the PMX matched pinned SHA-256/size values; the glTF/buffer matched the
+deployed conversion record, and the source manifest and both rights notices
+matched checked-in provenance. There were **no console errors, page exceptions or
+failed network requests**. Four readback-related GPU performance warnings were
+recorded during pixel capture. This deployment check does not add a native WebGPU
+or original-MMD fidelity claim.

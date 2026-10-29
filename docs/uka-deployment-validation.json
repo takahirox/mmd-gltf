@@ -1,0 +1,515 @@
+{
+  "repository": "takahirox/mmd-gltf",
+  "issue": 52,
+  "pullRequest": 53,
+  "mergeCommit": "c5a14317f5aa49b389d076da09ab4d9239cb2f1a",
+  "prHead": "741ff3d531f93c3be7a5e7fb5fc4625214e88ae2",
+  "url": "https://takahirox.github.io/mmd-gltf/",
+  "workflowUrl": "https://github.com/takahirox/mmd-gltf/actions/runs/40800890842",
+  "status": "passed",
+  "checks": [
+    {
+      "check": "source PMX and converted glTF render visible geometry in both panes",
+      "occupiedPixels": [
+        62245,
+        64636
+      ]
+    },
+    {
+      "check": "blink visibly deforms each pane",
+      "changedPixels": [
+        326,
+        323
+      ]
+    },
+    {
+      "check": "smile visibly deforms each pane",
+      "changedPixels": [
+        314,
+        309
+      ]
+    },
+    {
+      "check": "Toon/PBR visibly changes converted pane",
+      "changedPixels": 65642
+    },
+    {
+      "check": "Outline visibly changes each pane and restores",
+      "changedPixels": [
+        6231,
+        7376
+      ]
+    },
+    {
+      "check": "side view renders with synchronized cameras"
+    },
+    {
+      "check": "back view renders with synchronized cameras"
+    },
+    {
+      "check": "390px mobile layout has no horizontal overflow"
+    },
+    {
+      "check": "Gene Light loads and renders after switching"
+    },
+    {
+      "check": "Synthetic rig loads after switching"
+    },
+    {
+      "check": "Uka resumes after Gene and rig switching"
+    },
+    {
+      "check": "PMX, all nine textures, converter glTF/buffer, manifest and both rights notices match pinned/generated SHA-256 and size"
+    },
+    {
+      "check": "No browser console/page/network errors",
+      "errors": 0
+    }
+  ],
+  "workflow": {
+    "conclusion": "success",
+    "createdAt": "2026-10-29T01:31:03Z",
+    "headSha": "c5a14317f5aa49b389d076da09ab4d9239cb2f1a",
+    "jobs": [
+      {
+        "name": "build",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/40800890842/job/123208468961",
+        "startedAt": "2026-10-29T01:31:05Z",
+        "completedAt": "2026-10-29T02:11:18Z",
+        "steps": [
+          {
+            "completedAt": "2026-10-29T01:31:07Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-29T01:31:06Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T01:31:08Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 2,
+            "startedAt": "2026-10-29T01:31:07Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T01:31:10Z",
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4",
+            "number": 3,
+            "startedAt": "2026-10-29T01:31:08Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T01:31:12Z",
+            "conclusion": "success",
+            "name": "Run npm ci",
+            "number": 4,
+            "startedAt": "2026-10-29T01:31:10Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T01:31:13Z",
+            "conclusion": "success",
+            "name": "Run actions/cache@v4",
+            "number": 5,
+            "startedAt": "2026-10-29T01:31:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T01:33:13Z",
+            "conclusion": "success",
+            "name": "Run npm run build",
+            "number": 6,
+            "startedAt": "2026-10-29T01:31:13Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T01:33:20Z",
+            "conclusion": "success",
+            "name": "Run npm run typecheck",
+            "number": 7,
+            "startedAt": "2026-10-29T01:33:13Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T01:36:21Z",
+            "conclusion": "success",
+            "name": "Run npm test",
+            "number": 8,
+            "startedAt": "2026-10-29T01:33:20Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T01:36:40Z",
+            "conclusion": "success",
+            "name": "Run npx playwright install --with-deps chromium",
+            "number": 9,
+            "startedAt": "2026-10-29T01:36:21Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:06Z",
+            "conclusion": "success",
+            "name": "Run npm run test:browser",
+            "number": 10,
+            "startedAt": "2026-10-29T01:36:40Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:07Z",
+            "conclusion": "success",
+            "name": "Run npm run check:links",
+            "number": 11,
+            "startedAt": "2026-10-29T02:11:06Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:07Z",
+            "conclusion": "success",
+            "name": "Run git diff --check",
+            "number": 12,
+            "startedAt": "2026-10-29T02:11:07Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:08Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v4",
+            "number": 13,
+            "startedAt": "2026-10-29T02:11:07Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:14Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-pages-artifact@v3",
+            "number": 14,
+            "startedAt": "2026-10-29T02:11:08Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:16Z",
+            "conclusion": "success",
+            "name": "Post Run actions/cache@v4",
+            "number": 26,
+            "startedAt": "2026-10-29T02:11:14Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:16Z",
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@v4",
+            "number": 27,
+            "startedAt": "2026-10-29T02:11:16Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:16Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 28,
+            "startedAt": "2026-10-29T02:11:16Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:16Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 29,
+            "startedAt": "2026-10-29T02:11:16Z",
+            "status": "completed"
+          }
+        ]
+      },
+      {
+        "name": "deploy",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/40800890842/job/123221252558",
+        "startedAt": "2026-10-29T02:11:22Z",
+        "completedAt": "2026-10-29T02:11:34Z",
+        "steps": [
+          {
+            "completedAt": "2026-10-29T02:11:24Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-29T02:11:23Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:32Z",
+            "conclusion": "success",
+            "name": "Run actions/deploy-pages@v4",
+            "number": 2,
+            "startedAt": "2026-10-29T02:11:24Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-29T02:11:32Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 3,
+            "startedAt": "2026-10-29T02:11:32Z",
+            "status": "completed"
+          }
+        ]
+      }
+    ],
+    "status": "completed",
+    "updatedAt": "2026-10-29T02:11:35Z",
+    "url": "https://github.com/takahirox/mmd-gltf/actions/runs/40800890842"
+  },
+  "mergeParents": [
+    "dbc22aeaad2c5bebfc0fe291b968868c1468a1fd",
+    "741ff3d531f93c3be7a5e7fb5fc4625214e88ae2"
+  ],
+  "deployment": {
+    "id": 7402205910,
+    "sha": "c5a14317f5aa49b389d076da09ab4d9239cb2f1a",
+    "statuses": [
+      {
+        "created_at": "2026-10-29T02:11:35Z",
+        "environment_url": "https://takahirox.github.io/mmd-gltf/",
+        "log_url": "https://github.com/takahirox/mmd-gltf/actions/runs/40800890842/job/123221252558",
+        "state": "success"
+      },
+      {
+        "created_at": "2026-10-29T02:11:23Z",
+        "environment_url": "",
+        "log_url": "https://github.com/takahirox/mmd-gltf/actions/runs/40800890842/job/123221252558",
+        "state": "in_progress"
+      },
+      {
+        "created_at": "2026-10-29T02:11:20Z",
+        "environment_url": "",
+        "log_url": "https://github.com/takahirox/mmd-gltf/actions/runs/40800890842/job/123221252558",
+        "state": "queued"
+      },
+      {
+        "created_at": "2026-10-29T02:11:19Z",
+        "environment_url": "",
+        "log_url": "https://github.com/takahirox/mmd-gltf/actions/runs/40800890842/job/123221252558",
+        "state": "waiting"
+      }
+    ]
+  },
+  "errors": [],
+  "consoleWarnings": [
+    "[.WebGL-0x12c00504800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x12c00504800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x12c00504800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x12c00504800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  ],
+  "initialState": {
+    "model": "uka",
+    "expression": "rest",
+    "backend": "WebGL2",
+    "frames": 4,
+    "mode": "toon",
+    "meshes": 13,
+    "ready": true,
+    "reference": {
+      "loader": "MMDLoader",
+      "materials": 13,
+      "scale": 0.08,
+      "bounds": {
+        "min": [
+          -0.6317570877075196,
+          -0.000287877060472993,
+          -0.31628078460693365
+        ],
+        "max": [
+          0.6317565155029298,
+          1.814633026123047,
+          0.17769495010375977
+        ]
+      },
+      "outlines": true,
+      "morphsActive": false
+    },
+    "gltf": {
+      "bounds": {
+        "min": [
+          -0.6317571043968201,
+          -0.0002878782385959955,
+          -0.3162807867884635
+        ],
+        "max": [
+          0.6317565536499024,
+          1.8146329981327087,
+          0.17769494535624983
+        ]
+      }
+    },
+    "cameras": [
+      [
+        -2.753734588689662e-07,
+        1.0487363883040177,
+        3.469802788207937,
+        -2.753734588689662e-07,
+        0.9071725599470564,
+        -0.06929292071610683,
+        0.7952646239554317,
+        36
+      ],
+      [
+        -2.753734588689662e-07,
+        1.0487363883040177,
+        3.469802788207937,
+        -2.753734588689662e-07,
+        0.9071725599470564,
+        -0.06929292071610683,
+        0.7952646239554317,
+        36
+      ]
+    ]
+  },
+  "assets": [
+    {
+      "path": "model.gltf",
+      "status": 200,
+      "size": 1210136,
+      "sha256": "2f60b1c1db5e4ee73d962ed8b365bea6637d6a1d231cf89756296b359ff2b7de"
+    },
+    {
+      "path": "MS_Uka.pmx",
+      "status": 200,
+      "size": 4217254,
+      "sha256": "6fbfff5cfb921e89df93d68a55dfa1549875d743a9d5e155272cb9737520d297"
+    },
+    {
+      "path": "model.bin",
+      "status": 200,
+      "size": 5119560,
+      "sha256": "f71f7004d0f0a97dbab9f2486da628add834772030c470e8021e9fc5c4e9d702"
+    },
+    {
+      "path": "tex/iraira.png",
+      "status": 200,
+      "size": 11819,
+      "sha256": "6a5c3153169d903eaae6a566ee0104ceb0ffcc414f69ce9135ce0312e6f69e8e"
+    },
+    {
+      "path": "tex/FP.png",
+      "status": 200,
+      "size": 1667566,
+      "sha256": "0e0d7de13145040b11fbd2e44afa9277253c2d3b401b0b4857b7116ccc677e85"
+    },
+    {
+      "path": "tex/face.png",
+      "status": 200,
+      "size": 8195361,
+      "sha256": "82730e20b9fb6da87306e80651dc4c3530b92309d89341daf2375d43d44740c1"
+    },
+    {
+      "path": "tex/btm.png",
+      "status": 200,
+      "size": 9855065,
+      "sha256": "db1f2e7ae4ff6142c8fdc8918b74e1524c9dcd98ff59b2d8318c7aca84be46ec"
+    },
+    {
+      "path": "tex/eye.png",
+      "status": 200,
+      "size": 10813548,
+      "sha256": "aa60d1d463bf685602b99a71d1bbf139e8afd3730ceccf3a38cfb44ab69854fd"
+    },
+    {
+      "path": "tex/acce.png",
+      "status": 200,
+      "size": 9310157,
+      "sha256": "82b1e497bb33a99007ff3f75481a67bd6dbed2fe1eea89e67b7fd156229d0020"
+    },
+    {
+      "path": "tex/body.png",
+      "status": 200,
+      "size": 10103148,
+      "sha256": "2dff91308d417a05d7bc73fa2000e5554ca007acdc05de0c5fe36358cb5f84d5"
+    },
+    {
+      "path": "tex/top.png",
+      "status": 200,
+      "size": 10407131,
+      "sha256": "9a612204e3b7fed376e662b94945980c939a95819d932376bd53c486b4ffce98"
+    },
+    {
+      "path": "tex/hair_s01.png",
+      "status": 200,
+      "size": 12276095,
+      "sha256": "bb9b7f41c96d1ea39da9f200961071d3169e08a833ad1d1344132aac1935fd72"
+    }
+  ],
+  "sourceCommit": "659f0d1a740fec68bb2817dc9c694a35e7a15f12",
+  "conversion": {
+    "sourceCommit": "659f0d1a740fec68bb2817dc9c694a35e7a15f12",
+    "attribution": "CG-CA Uka (c) 2023-2024 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society",
+    "changes": "Unmodified PMX parsed and converted with normal BDEF mode at 0.08 m/unit; reflected Z/winding, core PBR approximation, Toon/Outline, 302 joints, supported vertex/group/bone morph data. No IK/append/physics or VMD execution. Unsupported material morphs and dependent group omitted with converter diagnostics; authored normals retained. Demo exposes only blink/smile vertex targets to bound GPU memory; all supported targets remain in the downloadable glTF. POSITION morph deltas serialized losslessly as standard sparse accessors. Preview textures resized to at most 1024 px on both views; source texture bytes unchanged and shared with PMX reference.",
+    "mode": "bdef",
+    "metersPerPMXUnit": 0.08,
+    "artifacts": [
+      {
+        "path": "model.gltf",
+        "bytes": 1210136,
+        "sha256": "2f60b1c1db5e4ee73d962ed8b365bea6637d6a1d231cf89756296b359ff2b7de"
+      },
+      {
+        "path": "model.bin",
+        "bytes": 5119560,
+        "sha256": "f71f7004d0f0a97dbab9f2486da628add834772030c470e8021e9fc5c4e9d702"
+      }
+    ],
+    "warnings": [
+      "BDEF core skin only: retaining 302 bones and parent hierarchy; omitting 164 bodies, 151 joints. SDEF/QDEF, deformation layers, IK, append/grants, fixed/local axes, external parents, physics are unsupported. VMD executes solver-free bone tracks and vertex morph weights. VPD applies raw bone offsets only; IK/append/physics are not evaluated.",
+      "Shadow flags are retained in material extras, but are not rendered. Additional UV ZW and unused additional UV channels are omitted.",
+      "Morphs: retained 203 vertex/group POSITION targets; omitted unsupported source families [{\"index\":126,\"name\":\"青ざめ\",\"type\":8},{\"index\":127,\"name\":\"どんより\",\"type\":8},{\"index\":128,\"name\":\"赤み\",\"type\":8},{\"index\":148,\"name\":\"いらいら\",\"type\":8},{\"index\":214,\"name\":\"耳収納M\",\"type\":8},{\"index\":215,\"name\":\"耳収納\",\"type\":0,\"group\":[{\"index\":213,\"rate\":1},{\"index\":214,\"rate\":1}],\"unsupported\":[{\"index\":214,\"type\":8,\"reason\":\"unsupported child family\"}]}]. Authored normals retained; no recomputation or morph normal targets."
+    ]
+  },
+  "browser": {
+    "name": "Chromium",
+    "version": "141.0.7390.37",
+    "backend": "WebGL2",
+    "platform": "darwin"
+  },
+  "verifiedAt": "2026-10-29T02:15:50.602Z",
+  "browserCI": {
+    "environment": {
+      "ci": true,
+      "platform": "linux",
+      "node": "v22.23.4",
+      "workers": 1
+    },
+    "status": "passed",
+    "durationMs": 2065614.851,
+    "baselineRun66ApproximateMs": 4620000,
+    "baselineTestCount": 79,
+    "testCount": 73,
+    "reductionFromApproximateBaselinePercent": 55.28972183982683,
+    "counts": {
+      "passed": 71,
+      "skipped": 2
+    },
+    "ukaCases": [
+      {
+        "title": "uka.spec.ts / default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outline and shared camera",
+        "status": "passed",
+        "durationMs": 103550
+      },
+      {
+        "title": "uka.spec.ts / missing Uka texture fails visibly and retry recovers",
+        "status": "passed",
+        "durationMs": 43263
+      }
+    ],
+    "artifactUrl": "https://github.com/takahirox/mmd-gltf/actions/runs/40800890842/artifacts/12868140590",
+    "artifactZipSha256": "95835987d0fa5716d9f8b6032909ee872d61ef1c121997dd89d0cbc84f37c263"
+  },
+  "sourceIssueBeforeMerge": {
+    "number": 52,
+    "state": "open",
+    "readImmediatelyBeforeMerge": true
+  }
+}
