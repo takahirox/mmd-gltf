@@ -54,7 +54,7 @@ test('built comparison keeps the light-gray fallback while assets load', async (
     await route.continue();
   });
   try {
-    await page.goto('http://127.0.0.1:43180/mmd-gltf/?demo=gene&backend=webgl');
+    await page.goto(`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/?demo=gene&backend=webgl`);
     await expect(page.locator('canvas')).toBeVisible();
     await expect(page.locator('#viewport')).toHaveCSS('background-color', 'rgb(208, 208, 208)');
     for (const id of ['pmx', 'gltf']) await expect(page.locator(`#${id}-status`)).toContainText('Loading');
@@ -74,11 +74,11 @@ for (const backend of ['webgl', 'webgpu']) {
     const errors = errorsFrom(page);
     page.on('requestfailed', (request) => errors.push(`${request.url()}: ${request.failure()?.errorText}`));
     if (backend === 'webgpu') {
-      await page.goto('http://127.0.0.1:43180/mmd-gltf/?demo=gene');
+      await page.goto(`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/?demo=gene`);
       const available = await page.evaluate(async () => !!await (navigator as any).gpu?.requestAdapter());
       test.skip(!available, 'Native WebGPU adapter unavailable; WebGL2 is tested separately.');
     }
-    await page.goto(`http://127.0.0.1:43180/mmd-gltf/?demo=gene&backend=${backend}`);
+    await page.goto(`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/?demo=gene&backend=${backend}`);
     await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
     await page.waitForFunction(() => (window as any).mmdExample?.frames > 4);
     await expect(page.locator('#viewport h2')).toHaveText(['MMD', 'glTF']);
@@ -95,7 +95,8 @@ for (const backend of ['webgl', 'webgpu']) {
     await expect(accuracy).toContainText('not native MikuMikuDance');
     await expect(accuracy).toContainText('Exact MMD visual/physics fidelity is unverified');
     await expect(accuracy).toContainText('solvers and physics use bounded profiles');
-    await expect(accuracy).toContainText('IK, grant/append and physics are off');
+    await expect(accuracy).toContainText('Uka optionally evaluates only its six source sleeve IK chains in both panes');
+    await expect(accuracy).toContainText('Foot IK, grant/append and physics remain off');
     await expect(accuracy).toBeHidden();
     await page.locator('#about-demo > summary').click();
     await expect(accuracy).toBeVisible();
@@ -177,12 +178,12 @@ for (const backend of ['webgl', 'webgpu']) {
     await page.waitForTimeout(600);
     expect((comparisonHalf(await readComparisonBitmap(page),1)).equals(toon)).toBe(true);
     for (const file of manifest.files) {
-      const response = await page.request.get(`http://127.0.0.1:43180/mmd-gltf/gene-light/${file.path}`);
+      const response = await page.request.get(`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/gene-light/${file.path}`);
       expect(response.status()).toBe(200);
       expect(createHash('sha256').update(await response.body()).digest('hex')).toBe(file.sha256);
     }
     for (const path of ['source-manifest.json', 'conversion.json']) {
-      expect((await page.request.get(`http://127.0.0.1:43180/mmd-gltf/gene-light/${path}`)).status()).toBe(200);
+      expect((await page.request.get(`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/gene-light/${path}`)).status()).toBe(200);
     }
     // Both views remain visible, equally sized and synchronized in the stacked mobile layout.
     await page.setViewportSize({ width: 390, height: 844 });
@@ -205,7 +206,7 @@ for (const backend of ['webgl', 'webgpu']) {
 
 test('missing PMX image reports the reference failure clearly', async ({ page }) => {
   await page.route('**/gene-light/light/arm.png', (route) => route.fulfill({ status: 404, body: 'Missing test image' }));
-  await page.goto('http://127.0.0.1:43180/mmd-gltf/?demo=gene&backend=webgl');
+  await page.goto(`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/?demo=gene&backend=webgl`);
   await expect(page.locator('#pmx-status')).toContainText('Load failed', { timeout: 90000 });
   await expect(page.locator('#gene-status')).toContainText('Could not load/render the comparison');
 });

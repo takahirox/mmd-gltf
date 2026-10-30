@@ -5,12 +5,12 @@ import { createHash } from 'node:crypto';
 import { parsePMX } from '../tools/pmx-to-gltf';
 import { auditMotion } from '../tools/audit-public-motions';
 import { parseVMD } from '../packages/mmd-vmd';
-import { validateString } from 'gltf-validator';
+import { validateString, validateBytes } from 'gltf-validator';
 import { BufferGeometry, Float32BufferAttribute, Mesh, MeshBasicMaterial } from 'three';
 import { motionPreview } from '../examples/motion-preview';
 import { decodeSource } from '../packages/mmd-diagnostics/bytes';
 
-for(const [id,pmx,bones,morphs] of [['uka','MS_Uka.pmx',301,108],['gene-light','Gene_light.pmx',212,86]] as const)
+for(const [id,pmx,bones,morphs] of [['uka','MS_Uka.pmx',301,82],['gene-light','Gene_light.pmx',212,83]] as const)
   test(`${id}: real source matches retained playback and bounded preview`,async()=>{
     const metadata=JSON.parse(await readFile(`public/${id}/motion.json`,'utf8'));
     const bytes=await readFile(`public/${id}/${metadata.path}`);
@@ -29,7 +29,8 @@ for(const [id,pmx,bones,morphs] of [['uka','MS_Uka.pmx',301,108],['gene-light','
     const artifact=await readFile(`public/${id}/model.${id==='uka'?'gltf':'glb'}`);
     const json=id==='uka'?JSON.parse(artifact.toString()):JSON.parse(artifact.subarray(20,20+artifact.readUInt32LE(12)).toString());
     assert.ok(!json.extensions?.MMD_skeleton_solver);assert.ok(!json.extensions?.MMD_physics);
-    const retained=json.animations[0].extensions.MMD_animation_vmd;
+    const retained=json.animations.find((a:any)=>a.name===metadata.animation).extensions.MMD_animation_vmd;
+    assert.equal(json.scenes.length,1);assert.equal(json.skins.length,1);assert.equal(json.meshes.length,1);assert.equal(json.animations.length,3);
     assert.equal(retained.version,6);assert.equal(retained.tracks.length,bones);
     assert.equal((retained.controls?.tracks ?? retained.morphs[0].tracks).length,morphs);
     assert.ok(!retained.solver);
@@ -39,9 +40,8 @@ for(const [id,pmx,bones,morphs] of [['uka','MS_Uka.pmx',301,108],['gene-light','
   });
 
 for(const [id,pmx] of [['uka','MS_Uka.pmx'],['gene-light','Gene_light.pmx']] as const)
-  test(`${id}: both body transports retain exact source, strict bindings and all active vertex targets`,async()=>{
+  test(`${id}: shared asset retains all source motions, strict bindings and active vertex targets`,async()=>{
     const model=parsePMX(await readFile(`public/${id}/${pmx}`));
-    const staticBuffers:string[]=[];
     for(const clip of ['02_laugh','22_apology']) {
       const metadata=JSON.parse(await readFile(`public/${id}/motion-${clip}.json`,'utf8'));
       const bytes=await readFile(`public/${id}/${metadata.path}`);
@@ -51,10 +51,14 @@ for(const [id,pmx] of [['uka','MS_Uka.pmx'],['gene-light','Gene_light.pmx']] as 
       assert.deepEqual(metadata.bones,audited.bones);assert.deepEqual(metadata.morphs,audited.morphs);
       for(const name of ['上半身','左腕','右腕'])assert.ok(audited.bones.some(t=>t.name===name && t.status==='matched' && t.changing));
       assert.ok(audited.bones.filter(t=>t.status==='matched' && t.changing).length>=48);
-      const json=JSON.parse(await readFile(`public/${id}/${metadata.artifact}`,'utf8'));
-      const report=await validateString(JSON.stringify(json),{maxIssues:1000,externalResourceFunction:async(uri:string)=>new Uint8Array(await readFile(`public/${id}/${decodeURIComponent(uri)}`))});
+      const artifact=await readFile(`public/${id}/model.${id==='uka'?'gltf':'glb'}`);
+      const json=id==='uka'?JSON.parse(artifact.toString()):JSON.parse(artifact.subarray(20,20+artifact.readUInt32LE(12)).toString());
+      const report=id==='uka'?await validateString(JSON.stringify(json),{maxIssues:1000,externalResourceFunction:async(uri:string)=>new Uint8Array(await readFile(`public/${id}/${decodeURIComponent(uri)}`))}):await validateBytes(new Uint8Array(artifact),{maxIssues:1000});
       assert.equal(report.issues.numErrors,0,JSON.stringify(report.issues.messages));
-      const retained=json.animations[0].extensions.MMD_animation_vmd;
+      const retained=json.animations.find((a:any)=>a.name===metadata.animation).extensions.MMD_animation_vmd;
+      assert.equal(json.scenes.length,1);assert.equal(json.skins.length,1);assert.equal(json.meshes.length,1);assert.equal(json.animations.length,3);
+      assert.deepEqual(retained.rest,json.animations[0].extensions.MMD_animation_vmd.rest);
+      for(const animation of json.animations)assert.deepEqual(animation.extensions.MMD_animation_vmd.owned,animation.channels.map((c:any)=>c.target));
       assert.deepEqual(Buffer.from(decodeSource(retained.source)),bytes);
       assert.equal(retained.tracks.length,audited.bones.filter(t=>t.status==='matched').length);
       assert.ok(!retained.solver);assert.ok(!json.extensions?.MMD_skeleton_solver);assert.ok(!json.extensions?.MMD_physics);
@@ -70,17 +74,7 @@ for(const [id,pmx] of [['uka','MS_Uka.pmx'],['gene-light','Gene_light.pmx']] as 
         assert.equal(model.morphs[entry.sourceIndex].name,entry.name);
         assert.equal(morphModel.morphs.find((m:any)=>m.index===entry.sourceIndex).target,entry.target);
       }
-      // Animation accessors live separately; both clips reference the same static buffer.
-      const primitive=json.meshes[0].primitives[0];
-      const accessor=json.accessors[primitive.attributes.POSITION];
-      staticBuffers.push(json.buffers[json.bufferViews[accessor.bufferView].buffer].uri);
-      for(const artifact of metadata.artifacts) {
-        const data=await readFile(`public/${id}/${artifact.path}`);
-        assert.equal(createHash('sha256').update(data).digest('hex'),artifact.sha256);
-      }
-      assert.ok(json.images.every((image:any)=>!image.uri.startsWith('data:')));
     }
-    assert.equal(staticBuffers[0],staticBuffers[1]);
   });
 
 

@@ -35,7 +35,8 @@ test('Uka allowlist, real source inventory, supported subset and reproducible no
   assert.ok(json.extensionsUsed.includes('MMD_materials_toon'));
   assert.ok(json.extensionsUsed.includes('MMD_materials_outline'));
   assert.ok(!json.extensionsUsed.includes('MMD_skeleton_solver'));
-  assert.equal(json.animations.length,1);
+  assert.equal(json.animations.length,3);
+  assert.deepEqual(json.animations.map((a:any)=>a.name),['04_littlesmile','02_laugh','22_apology']);
   assert.equal(json.animations[0].extensions.MMD_animation_vmd.version,6);
   assert.equal(json.animations[0].extensions.MMD_animation_vmd.tracks.length,301);
   assert.ok(!json.animations[0].extensions.MMD_animation_vmd.solver);
@@ -55,7 +56,8 @@ test('Uka allowlist, real source inventory, supported subset and reproducible no
   const bodyFiles:string[]=[];
   for(const clip of ['02_laugh','22_apology']) {
     const metadata=JSON.parse(await readFile(`public/uka/motion-${clip}.json`,'utf8'));
-    bodyFiles.push(`motion-${clip}.json`,metadata.artifact,...metadata.artifacts.map((a:{path:string})=>a.path));
+    bodyFiles.push(`motion-${clip}.json`);
+    assert.equal(metadata.animation,clip);
   }
   const expected=[...new Set(bodyFiles),...manifest.files.map(f=>f.path),'model.gltf','model.bin','source-manifest.json','inventory.json','conversion.json','motion.json'].sort();
   const files=(await readdir('public/uka',{recursive:true,withFileTypes:true})).filter(f=>f.isFile()).map(f=>`${f.parentPath}/${f.name}`.replace(/^public\/uka\//,'')).sort();

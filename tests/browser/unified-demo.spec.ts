@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-const preview = 'http://127.0.0.1:43180/mmd-gltf/';
+const preview = `http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 const rigState = (page: Page) => page.evaluate(() => (window as any).mmdRig);
 async function expectMotionControlsToFit(page: Page) {
   const motion = (await page.locator('#motion-sample').boundingBox())!;
@@ -46,7 +46,7 @@ test('public character picker and credits exclude fixtures; explicit rig entry r
   await expect(page.locator('a[href*="demo=rig"], a[href$="rig.html"], a[href*="conformance.html"]')).toHaveCount(0);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
-    await expect(page.locator('#demo-model option')).toHaveText(['Uka comparison', 'Gene Light comparison']);
+    await expect(page.locator('#demo-model option')).toHaveText(['Uka', 'Gene Light']);
     await expect(page.locator('#preset-picker')).toBeHidden();
     await expect(page.locator('#rig-demo')).toBeHidden();
     await expect(page.locator('#viewport h2')).toHaveText(['MMD', 'glTF']);
@@ -57,7 +57,7 @@ test('public character picker and credits exclude fixtures; explicit rig entry r
   }
   await page.locator('#demo-model').selectOption('gene');
   await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
-  await expect(page.locator('#demo-model option')).toHaveText(['Uka comparison', 'Gene Light comparison']);
+  await expect(page.locator('#demo-model option')).toHaveText(['Uka', 'Gene Light']);
   await expect(page.locator('#preset-picker')).toBeHidden();
 
   await page.goto(`${preview}?demo=rig`);

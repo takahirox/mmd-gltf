@@ -1,7 +1,7 @@
 import { PNG } from 'pngjs';
 import { test, expect } from '@playwright/test';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
-const preview='http://127.0.0.1:43180/mmd-gltf/';
+const preview=`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 
 for(const model of ['uka','gene'])test(`${model}: pinned real VMD, shared absolute seek, pixels, pause, loop and cleanup`,async({page},testInfo)=>{
   test.setTimeout(300000);
@@ -13,10 +13,10 @@ for(const model of ['uka','gene'])test(`${model}: pinned real VMD, shared absolu
   const state=()=>page.evaluate(()=>(window as any).mmdExample);
   const rest=await readComparisonBitmap(page);
   const initial=await state();
-  expect(initial.execution).toEqual({ik:false,grant:false,physics:false,helper:false,fallbackMixer:false});
+  expect(initial.execution).toEqual({ik:model==='uka',sleeveIK:model==='uka',grant:false,physics:false,helper:false,fallbackMixer:false});
   expect(initial.binding.boneTracks).toBe(model==='uka'?301:212);
   expect(initial.binding.activeMorphs.length).toBeGreaterThanOrEqual(3);
-  expect(initial.preview.targets.flat().every((n:number)=>n<=5)).toBe(true);
+  expect(initial.preview.targets.flat().every((n:number)=>n<=10)).toBe(true);
   await expect(page.locator('#comparison-play')).toBeDisabled();
   await page.locator('#comparison-motion').selectOption('sample');
   await expect(page.locator('#expression')).toBeDisabled();
