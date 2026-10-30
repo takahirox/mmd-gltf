@@ -1,6 +1,6 @@
 import { AnimationMixer, LoopOnce, type SkinnedMesh, type AnimationClip, type AnimationAction } from 'three';
 import { MMDVMDPlugin, getVMDPlayers, parseVMD, type VMDPlayer } from '../packages/three-mmd-vmd';
-import { comparisonIK } from './comparison-ik';
+import { comparisonIK, comparisonIKCompatible } from './comparison-ik';
 import { motionPreview } from './motion-preview';
 import { disposeScene } from './scene-resources';
 import { WebGPURenderer, Scene, Color, PerspectiveCamera, DirectionalLight, Box3, Vector3, Mesh, LoadingManager, NoToneMapping, SRGBColorSpace, type Object3D } from 'three/webgpu';
@@ -181,7 +181,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       // Gene installs UV callbacks at load time. Explicitly disable this extra family.
       updateMMDUVs(reference, false);
       // Raw mixer first; optional source IK runs after the absolute seek.
-      // No full helper, grant controller or physics world.
+      // Only dependency-closure grants/IK; no full helper or physics world.
       reference.material.forEach((material) => {
         material.toneMapped = false;
       });
@@ -238,8 +238,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       })), true),
       ...[toon,fallback].map(gltf=>comparisonIK(gltf.scene,gltf.parser.json.extras.sourceSolvers)),
     ];
-    const identities=ikSolvers.map(s=>JSON.stringify(s.state.controllers));
-    if(identities.some(value=>value!==identities[0]))ikSolvers.forEach(s=>{
+    if(!comparisonIKCompatible(ikSolvers))ikSolvers.forEach(s=>{
       s.state.available=false;s.state.reason='PMX/glTF IK metadata or dependency mismatch';
     });
     const ikAvailable=ikSolvers.every(s=>s.state.available);
@@ -312,11 +311,11 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     // Start from base POSITION, deliberately excluding all facial morph weights.
     function readPose(root: Object3D, direct: boolean) {
       root.updateMatrixWorld(true);
-      const bones: Record<string,{local:number[];rotation:number[];world:number[]}>={};
+      const bones: Record<string,{index:number;local:number[];rotation:number[];world:number[]}>={};
       const vertices:number[][]=[];
       root.traverse(object=>{
         const name=direct?object.name:object.userData.pmxBone?.name;
-        if(object.type==='Bone' && name)bones[name]={local:object.position.toArray().map(v=>v*(direct ? .08 : 1)),
+        if(object.type==='Bone' && name)bones[name]={index:direct?reference.skeleton.bones.findIndex(b=>b===object):object.userData.pmxBone.index,local:object.position.toArray().map(v=>v*(direct ? .08 : 1)),
           rotation:object.quaternion.toArray(),world:object.getWorldPosition(new Vector3()).toArray()};
         const mesh=object as SkinnedMesh;
         if(!mesh.isSkinnedMesh)return;
@@ -355,6 +354,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       if(ikAvailable && ikControl.checked && ikSolvers.map(s=>s.validatePose()).every(Boolean)) {
         const source=motions.find(m=>m.metadata===metadata)!.source;
         ikSolvers.forEach(solver=>solver.apply(source,time));
+        recoverIKFailure();
       }
       info.time=time;info.referenceTime=action.time;info.gltfTimes=activePlayers.map(p=>p.time);
       info.reference.morphsActive=reference.morphTargetInfluences?.some(w=>w!==0)??false;
@@ -413,10 +413,17 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     report();
     function applyRestIK() {
       ikSolvers.forEach(s=>s.restore());
-      if(ikAvailable && ikControl.checked && ikSolvers.map(s=>s.validatePose()).every(Boolean))ikSolvers.forEach(s=>s.apply(undefined,0));
+      if(ikAvailable && ikControl.checked && ikSolvers.map(s=>s.validatePose()).every(Boolean)) {
+        ikSolvers.forEach(s=>s.apply(undefined,0));recoverIKFailure();
+      }
       reportExecution();
     }
+    function recoverIKFailure() {
+      const error=ikSolvers.find(s=>s.state.error)?.state.error;
+      if(error)ikSolvers.forEach(s=>{s.restore();s.state.error=error;});
+    }
     function reportExecution() {
+      info.execution.grant=ikSolvers.some(s=>s.state.appliedGrants.length>0);
       info.execution.ik=ikSolvers.some(s=>s.state.executed.length>0);
       info.execution.ikState=!ikAvailable || ikSolvers.some(s=>s.state.error)?'unavailable':ikControl.checked?'on':'off';
       const text=info.execution.ikState==='unavailable'?'IK unavailable':ikControl.checked?'IK on':'IK off';

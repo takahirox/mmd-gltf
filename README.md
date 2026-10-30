@@ -11,9 +11,9 @@ with pinned `@takahirox/three-mmd@0.1.2` beside converter-produced glTF loaded t
 with a useful initial front framing. Uka exposes blink/smile vertex
 expressions in Rest mode and synchronized official VMD playback in both views.
 Uka and Gene Light each offer their original facial sample plus Laugh and Apology
-with authored body motion. Uka evaluates all ten source IK chains by default;
-Gene IK is unavailable because one of its six chains requires append execution.
-Append and physics remain disabled. The right
+with authored body motion. IK defaults On for all ten Uka and all six Gene Light
+source chains. Gene evaluates its required shoulder rotation grant in source order.
+IK Off restores raw motion; unrelated grants and physics remain disabled. The right
 pane also offers the independent PBR fallback. The Outline menu toggles both
 implementations; their different thickness laws are labeled in the example.
 
@@ -67,10 +67,10 @@ independent ambient/toon/specular models produce documented shading differences.
 The public Uka and Gene comparisons offer synchronized official VMD playback,
 three named animations per character without reloading on clip selection. Both panes
 use raw bone offsets and vertex expressions. The **IK** checkbox runs all ten Uka
-foot/toe/sleeve chains symmetrically, subject to VMD controller switches; Off restores
-the raw pose. Gene lists six chains but disables IK for the whole model because
-its right-arm chain depends on append bone 35. Counts, identities, XYZ bounds and
-reasons are available in About & credits → IK diagnostics. Append/grants and physics remain off. See the
+foot/toe/sleeve chains or all six Gene chains symmetrically, subject to VMD controller
+switches. Gene shoulder grant 35 from 26 runs before arm controller 38. Off restores
+the raw pose, including grant writes. Counts, identities, grant order, XYZ bounds and
+unavailable reasons are in About & credits → IK diagnostics. Unrelated grants and physics remain off. See the
 [pinned motion audit and playback scope](docs/public-motion.md). The internal synthetic BDEF
 test harness loads two VPD poses and two VMD bone motions, two combined bone/morph motions and morph-only motion on two distinct BDEF rigs, supports local files with explicit
 encoding/binding maps, and provides pose apply/reset plus motion transport and fractional seeking. It applies raw
