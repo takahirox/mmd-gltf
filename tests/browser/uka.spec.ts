@@ -1,7 +1,9 @@
+import { orbitComparison } from './comparison-camera';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
 import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 import { PNG } from 'pngjs';
+test.use({ contextOptions: { reducedMotion: 'reduce' } });
 const preview=`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 
 function occupied(bytes: Buffer, half: number) {
@@ -66,13 +68,13 @@ test('default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outli
   await page.locator('#outlines').selectOption('on');expect((await capture()).equals(on)).toBe(true);
   await page.locator('#expression').selectOption('rest');await page.locator('#material').selectOption('toon');
   expect((await capture()).equals(rest)).toBe(true);
-  await page.locator('#viewpoint').selectOption('side');expect((await capture()).equals(rest)).toBe(false);
+  await orbitComparison(page);expect((await capture()).equals(rest)).toBe(false);
   await page.setViewportSize({width:390,height:844});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390);
   const left=(await page.locator('#pmx-pane').boundingBox())!,right=(await page.locator('#gltf-pane').boundingBox())!;
   expect(left.width).toBe(right.width);expect(left.height).toBe(right.height);
   expect(left.x).toBe(right.x);expect(right.y).toBeGreaterThanOrEqual(left.y+left.height);
-  for(const id of ['expression','material','outlines','viewpoint'])await expect(page.locator(`#${id}`)).toBeEnabled();
+  for(const id of ['expression','material','outlines','comparison-ik'])await expect(page.locator(`#${id}`)).toBeEnabled();
   await page.locator('#demo-model').selectOption('gene');
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   await expect(page.locator('#demo-model')).toBeEnabled({timeout:90000});

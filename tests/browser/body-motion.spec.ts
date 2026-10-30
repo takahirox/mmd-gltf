@@ -62,7 +62,8 @@ for(const model of ['uka','gene'])test(`${model}: both official body clips defor
     expect(initial.cameras).toEqual(preserved.cameras);
     expect(await page.locator('#material').inputValue()).toBe(preserved.material);
     expect(await page.locator('#outlines').inputValue()).toBe(preserved.outline);
-    expect(initial.execution).toEqual({ik:model==='uka',sleeveIK:model==='uka',grant:false,physics:false,helper:false,fallbackMixer:false});
+    expect(initial.execution).toMatchObject({ik:model==='uka',ikState:model==='uka'?'on':'unavailable',grant:false,physics:false,helper:false,fallbackMixer:false});
+    expect(initial.execution.chains.map((s:any)=>s.executed.length)).toEqual(model==='uka'?[10,10,10]:[0,0,0]);
     expect(initial.binding.changingBones).toContain('上半身');expect(initial.binding.changingBones).toContain('左腕');
     const targets=model==='uka'?7:10;
     expect(initial.preview.targets.flat().every((n:number)=>n===targets)).toBe(true);

@@ -1,3 +1,4 @@
+import { orbitComparison } from './comparison-camera';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
 import { test, expect } from '@playwright/test';
 import { PNG } from 'pngjs';
@@ -5,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, copyFile, writeFile } from 'node:fs/promises';
 import manifest from '../../tools/gene-light-manifest.json' with { type: 'json' };
 
+test.use({ contextOptions: { reducedMotion: 'reduce' } });
 function errorsFrom(page: import('@playwright/test').Page) {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -95,8 +97,8 @@ for (const backend of ['webgl', 'webgpu']) {
     await expect(accuracy).toContainText('not native MikuMikuDance');
     await expect(accuracy).toContainText('Exact MMD visual/physics fidelity is unverified');
     await expect(accuracy).toContainText('solvers and physics use bounded profiles');
-    await expect(accuracy).toContainText('Uka optionally evaluates only its six source sleeve IK chains in both panes');
-    await expect(accuracy).toContainText('Foot IK, grant/append and physics remain off');
+    await expect(accuracy).toContainText('IK evaluates all applicable source chains in both panes');
+    await expect(accuracy).toContainText('Grant/append and physics remain off');
     await expect(accuracy).toBeHidden();
     await page.locator('#about-demo > summary').click();
     await expect(accuracy).toBeVisible();
@@ -132,8 +134,8 @@ for (const backend of ['webgl', 'webgpu']) {
     expect(cameras[0]).toEqual(cameras[1]);
     expect(cameras[0]).not.toEqual(orbitCamera);
     const captures: Buffer[] = [];
-    for (const view of ['front', 'side', 'back']) {
-      await page.selectOption('#viewpoint', view);
+    for (const view of ['orbited', 'quarter-turn', 'half-turn']) {
+      if(view!=='orbited')await orbitComparison(page);
       await page.waitForTimeout(600);
       const path = `test-results/gene-${backend}-${view}.png`;
       const capture = await readComparisonBitmap(page);
@@ -151,7 +153,7 @@ for (const backend of ['webgl', 'webgpu']) {
     }
     expect(captures[0].equals(captures[1])).toBe(false);
     expect(captures[0].equals(captures[2])).toBe(false);
-    await page.selectOption('#viewpoint', 'front');
+    await orbitComparison(page,-2);
     await page.waitForTimeout(600);
     const outlineOn = await readComparisonBitmap(page);
     await page.selectOption('#outlines', 'off');

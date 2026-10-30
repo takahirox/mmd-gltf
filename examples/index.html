@@ -15,13 +15,12 @@
     <div class="toolbar">
       <label>glTF material <select id="material" disabled><option value="toon">MMD toon</option><option value="pbr">PBR fallback</option></select></label>
       <label>Outline <select id="outlines" disabled><option value="on">On</option><option value="off">Off</option></select></label>
-      <label>View <select id="viewpoint" disabled><option value="front">Front</option><option value="side">Side</option><option value="back">Back</option></select></label>
     </div>
     <div id="uka-features">
       <label>Expression <select id="expression" disabled><option value="rest">Rest · A pose</option><option value="blink">Blink · まばたき</option><option value="smile">Smile · 笑い</option></select></label>
-      <label><input id="comparison-sleeves" type="checkbox" checked disabled> Sleeve IK</label>
     </div>
     <div class="toolbar comparison-playback">
+      <label><input id="comparison-ik" type="checkbox" checked disabled> IK</label>
       <label>Motion <select id="comparison-motion" disabled><option value="rest">Rest / manual</option><option value="sample">Official sample</option><option value="02_laugh">Laugh · 02</option><option value="22_apology">Apology · 22</option></select></label>
       <button id="comparison-play" disabled>Play</button><button id="comparison-restart" disabled>Restart</button>
       <label>Time <input id="comparison-time" type="range" min="0" max="10" step="0.03333333333333333" value="0" disabled></label>
@@ -89,7 +88,8 @@
   </section>
   <footer>
     <details id="about-demo"><summary>About &amp; credits</summary>
-      <p>The MMD label denotes a direct PMX-rendering reference using <code>@takahirox/three-mmd</code>, not native MikuMikuDance. The glTF side uses converter-produced assets. Exact MMD visual/physics fidelity is unverified; supported solvers and physics use bounded profiles. The public comparisons play the same pinned VMD on one frame/30 clock using raw bone offsets and vertex expressions. Uka optionally evaluates only its six source sleeve IK chains in both panes. Foot IK, grant/append and physics remain off; no Ammo world is initialized. This comparison excludes material, group, bone and UV morph deformation, VMD visibility/camera/light/shadow execution and unresolved names. Laugh · 02 and Apology · 22 provide authored upper-body and arm animation. Uka Apology also activates two group morphs (困る and 口締め): their facial contribution is deliberately omitted on both sides and preserved in the source. Other selected active morphs are vertex expressions. Manual expressions are available in Rest mode. Exact retained glTF playback replaces its corresponding approximate core animation channels.</p>
+      <p>The MMD label denotes a direct PMX-rendering reference using <code>@takahirox/three-mmd</code>, not native MikuMikuDance. The glTF side uses converter-produced assets. Exact MMD visual/physics fidelity is unverified; supported solvers and physics use bounded profiles. The public comparisons play the same pinned VMD on one frame/30 clock using raw bone offsets and vertex expressions. IK evaluates all applicable source chains in both panes, following VMD controller switches. Models with unavailable chains disable IK with reasons in diagnostics. Grant/append and physics remain off; no Ammo world is initialized. This comparison excludes material, group, bone and UV morph deformation, VMD visibility/camera/light/shadow execution and unresolved names. Laugh · 02 and Apology · 22 provide authored upper-body and arm animation. Uka Apology also activates two group morphs (困る and 口締め): their facial contribution is deliberately omitted on both sides and preserved in the source. Other selected active morphs are vertex expressions. Manual expressions are available in Rest mode. Exact retained glTF playback replaces its corresponding approximate core animation channels.</p>
+      <details><summary>IK diagnostics</summary><pre id="comparison-ik-diagnostics"></pre></details>
       <h2>Uka · source &amp; rights</h2>
       <p class="credit">CG-CA Uka (c) 2023-2024 by Nagoya Institute of Technology, Moonshot R&amp;D Goal 1 Avatar Symbiotic Society</p>
       <p>Original PMX, selected motion, images and converted glTF: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Preserve the <a href="https://github.com/mmdagent-ex/uka/tree/659f0d1a740fec68bb2817dc9c694a35e7a15f12">source and full usage guidelines</a>. No endorsement is implied. Model assets have separate terms from repository code.</p>

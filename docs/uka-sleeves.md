@@ -53,11 +53,12 @@ reads their authored transforms unchanged. Of 164 rigid bodies and 151 joints,
 every body on these relevant parent chains is mode 0 (bone-following); no dynamic
 body drives a sleeve link. Physics is unnecessary for this measured correction.
 
-## Controlled correction and limits
+## Historical six-chain correction and limits (Issue #67)
 
 The downloadable glTF retains the original source and solver-free raw animations.
-The **Sleeve IK** preview checkbox defaults on for Uka and controls the same six
-chains in both panes. Raw mode remains available for A/B comparison. The PMX
+At Issue #67, the **Sleeve IK** preview checkbox defaulted on for Uka and controlled
+the same six chains in both panes. Issue #69 replaces it with the model-wide IK
+control described below. Raw mode remains available for A/B comparison. The PMX
 pane uses its independently loaded MMDLoader chain metadata; Toon/PBR use retained
 glTF source solver records and source bone identities. Each operates on its own
 skin with the pinned library's CCDIKSolver, after the common absolute raw-motion
@@ -90,10 +91,12 @@ catch accumulated rotations or mixer-cache errors.
 
 ## Rendered A/B evidence
 
-Reproduce checked-in front/side captures with:
+The checked-in figures below preserve Issue #67 six-chain evidence. The current
+regression exercises all ten chains and attaches fresh front/orbited captures
+without overwriting those historical figures. Run it with:
 
 ```sh
-UPDATE_SLEEVE_EVIDENCE=1 npm run test:browser -- tests/browser/sleeve-motion.spec.ts
+npm run test:browser -- tests/browser/sleeve-motion.spec.ts
 ```
 
 Each image contains the direct PMX pane on the left and independently loaded
@@ -113,11 +116,37 @@ Changes: rendered PMX/glTF comparison, BDEF conversion, bounded preview textures
 vertex-only expressions and optional isolated sleeve IK. No endorsement implied.
 See [source rights and inventory](uka.md) and original English/Japanese notices.
 
+## Model-wide IK (Issue #69)
+
+The current public control is **IK**, with no public View menu. Uka On executes
+all ten actual source controllers, including foot/toe 8/9/15/16 and the six sleeve
+controllers above, using source XYZ bounds, iteration/angle caps and phase/layer/index
+order. Both independent glTF materials and direct PMX use the same global state
+and selected VMD controller keys. Off restores every raw link before subsequent
+seeks; Rest, repeated/backward seeks and motion changes do not accumulate IK.
+Fixed-axis twist ancestors remain authored raw inputs; no IK writes them. Append
+and physics remain off. The preserved six-chain source tool and figures above
+are historical isolation evidence, not proof of model-wide execution.
+
+`tests/comparison-ik.test.ts` verifies exact all-ten source identities, membership,
+XYZ reflection and parameters; leg rotation effects; every raw rotation restored
+by Off; and VMD-disabled switches cleared on backwards seeks. The real browser
+regression compares all-chain counts, leg and sleeve poses on PMX/Toon/PBR,
+retains the sleeve residual threshold of 0.00002 m, and checks rendered pixels
+at Laugh frame 120 and Apology frame 50. Fresh captures are test attachments;
+camera views use real orbit gestures, with no public preset or test camera setter.
+
+Gene's six source chains are enumerated too, but its right-arm chain requires
+append bone 35. The entire Gene toggle is explicitly unavailable, with zero
+executed chains and detailed reasons. Ordered append/IK support on both sides
+is separate follow-up work. See [current playback scope](public-motion.md).
+
 ## Resources and validation
 
-The published Uka glTF is 10,642,829 bytes of JSON plus its 7,983,848-byte
+The Issue #67 Uka build measured 10,642,829 bytes of JSON plus its 7,983,848-byte
 binary buffer; original images remain external and shared with the direct PMX
-loader. Gene's single GLB is 15,040,772 bytes. Lossless sparse morph serialization
+loader. Gene's Issue #67 single GLB measured 15,040,772 bytes. Issue #69 updates
+change notices, so current package sizes differ slightly. Lossless sparse morph serialization
 reduces that GLB from 75,792,812 bytes with dense zero padding (about 80% smaller),
 while retaining every downloadable target and exact source payload. Original
 source image bytes total 72,639,890 for Uka and 3,556,337 for Gene; Uka's first

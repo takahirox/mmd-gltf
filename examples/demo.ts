@@ -31,7 +31,7 @@ async function show(demo: Demo, motion: PublicMotion = 'rest') {
         const previous = demo === 'uka' ? 'gene' : 'uka';
         await viewers[previous]?.dispose?.();
         delete viewers[previous];
-        for (const id of ['material','outlines','viewpoint','expression']) {
+        for (const id of ['material','outlines','expression']) {
           const control = document.querySelector<HTMLSelectElement>(`#${id}`)!;
           control.selectedIndex = 0; control.disabled = true;
         }
