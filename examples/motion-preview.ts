@@ -21,7 +21,12 @@ export function motionPreview(root: Object3D, indices: (mesh: Mesh) => number[])
   return {
     targets: entries.map(e=>e.indices.length),
     bytes: entries.reduce((sum,e)=>sum+Object.values(e.compact.morphAttributes).flat().reduce((n,a)=>n+a.array.byteLength,0),0),
-    begin() { for(const e of entries) {e.geometry=e.mesh.geometry;e.weights=e.mesh.morphTargetInfluences??[];e.compact.boundingBox=e.geometry.boundingBox;e.compact.boundingSphere=e.geometry.boundingSphere;e.mesh.geometry=e.compact;e.mesh.morphTargetInfluences=e.indices.map(i=>e.weights[i]);} },
+    begin() {
+      // Validate every mesh before swapping any layout. A stale projection must
+      // fail explicitly instead of silently dropping a newly animated target.
+      for(const e of entries)if(e.mesh.morphTargetInfluences?.some((w,i)=>w!==0 && !e.indices.includes(i)))
+        throw new Error('Motion preview: animated target omitted from projection');
+      for(const e of entries) {e.geometry=e.mesh.geometry;e.weights=e.mesh.morphTargetInfluences??[];e.compact.boundingBox=e.geometry.boundingBox;e.compact.boundingSphere=e.geometry.boundingSphere;e.mesh.geometry=e.compact;e.mesh.morphTargetInfluences=e.indices.map(i=>e.weights[i]);} },
     end() {for(const e of entries){e.mesh.geometry=e.geometry;e.mesh.morphTargetInfluences=e.weights;}},
     dispose(){for(const e of entries)e.compact.dispose();},
   };

@@ -13,11 +13,20 @@ export function auditMotion(model: PMXModel, motion: VMD) {
     return [...new Map(motion[kind].map(r => [r.name.key, r.name])).values()].map(name => {
       const matches = model[kind].flatMap((entry, index) => entry.name === name.text ? [index] : []);
       const records = motion[kind].filter(r => r.name.key === name.key);
+      const transforms = records.filter(r => 'translation' in r).map(r => 'translation' in r ? [...r.translation,...r.rotation] : []);
+      const changing = transforms.some(t => {
+        const first=transforms[0], q=t.slice(3), base=first.slice(3);
+        const length=Math.hypot(...q), baseLength=Math.hypot(...base);
+        const sign=q.reduce((n,v,i)=>n+v*base[i],0)<0?-1:1;
+        return t.slice(0,3).some((v,i)=>Math.abs(v-first[i])>1e-6) ||
+          q.some((v,i)=>Math.abs(v/length-sign*base[i]/baseLength)>1e-6);
+      });
       const active = kind === 'morphs' ? records.some(r => 'weight' in r && r.weight !== 0)
         : records.some(r => 'translation' in r && (r.translation.some(v => v !== 0) || r.rotation.some((v,i) => v !== (i===3?1:0))));
       return { key: name.key, name: name.text, terminated: name.terminated, matches,
         status: matches.length > 1 ? 'ambiguous' : matches.length === 0 || !name.terminated ? 'unmatched' : 'matched',
-        ...(kind === 'morphs' && matches.length === 1 ? { type: model.morphs[matches[0]].type } : {}), active };
+        ...(kind === 'morphs' && matches.length === 1 ? { type: model.morphs[matches[0]].type } : {}), active,
+        ...(kind === 'bones' ? {changing, records:records.length, keysAfterZero:records.filter(r=>r.frame>0).length, maxFrame:Math.max(...records.map(r=>r.frame))} : {}) };
     });
   }
   const bones=tracks('bones'),morphs=tracks('morphs');
@@ -66,7 +75,7 @@ async function main() {
   for(const [id,value] of Object.entries(result)) {
     const group=value as {motions:{path:string;bones:ReturnType<typeof auditMotion>['bones'];morphs:ReturnType<typeof auditMotion>['morphs']}[]};
     for(const m of group.motions) {
-      if(m.path===(id==='uka'?'motion/04_littlesmile.vmd':'motion/01_happy.vmd'))continue;
+      if(m.path===(id==='uka'?'motion/04_littlesmile.vmd':'motion/01_happy.vmd') || /\/(02_laugh|22_apology)\.vmd$/.test(m.path))continue;
       for(const kind of ['bones','morphs'] as const) {
         const tracks=m[kind];
         (m as any)[kind]=Object.fromEntries(['matched','unmatched','ambiguous'].map(status=>[status,tracks.filter(t=>t.status===status).map(t=>t.name)]));

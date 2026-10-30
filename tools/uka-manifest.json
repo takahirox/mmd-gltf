@@ -71,6 +71,16 @@
       "path": "motion/04_littlesmile.vmd",
       "size": 40719,
       "sha256": "42cf0e2e2a6ca5b050ddeb0782ffb490d82e304d2299e4278ff456a0f67e0607"
+    },
+    {
+      "path": "motion/02_laugh.vmd",
+      "size": 70076,
+      "sha256": "714c04a833285aacc7b75039d872fc852c6df75025296bae0a707e5bbb3e159e"
+    },
+    {
+      "path": "motion/22_apology.vmd",
+      "size": 68546,
+      "sha256": "c9d1673a727c8d78954a3e69abe5ef109bc560e4ba9452918b753d647f0164e1"
     }
   ]
 }

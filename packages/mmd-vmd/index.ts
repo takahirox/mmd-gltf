@@ -44,6 +44,8 @@ export interface VMDBindingOptions {
   unmatched?: 'error' | 'ignore';
   morphMapping?: Record<string, number>;
   morphUnmatched?: 'error' | 'ignore';
+  /** Explicit partial playback by source PMX family; omitted records stay retained. */
+  morphTypes?: readonly number[];
 }
 const supported = (values: number[]) =>
   values.every((v) => Number.isFinite(v) && Number.isFinite(Math.fround(v)));
@@ -147,6 +149,7 @@ export function bindMotion(model: PoseModel, vmd: VMD, options: VMDBindingOption
     );
   tracks.sort((a, b) => a.index - b.index);
   const weights = bindMorphMotion(morphModel ?? { version: 1, modelId: model.modelId, morphs: [] }, vmd, options);
+  if(options.morphTypes !== undefined)diagnostics.push({category:'unsupported-capability',code:'morph-type-policy',path:'VMD morphs',message:`Only source PMX morph types ${options.morphTypes.join(', ')} execute; other families remain retained without execution`});
   const controls = model.solver ? bindIK(model.solver, vmd, options) : undefined;
   if(unmatched.length || weights.unmatched.length || controls?.unmatched) diagnostics.push({category:'unsupported-capability',code:'unresolved-vmd-binding',path:'VMD',message:'unbound bone/morph/IK tracks retained in original source'});
   if(vmd.cameras.length || vmd.lights.length || vmd.shadows.length || vmd.displays.length) diagnostics.push({category:'unsupported-capability',code:'vmd-scene-sections',path:'VMD',message:'scene sections retained and exposed; camera/light/shadow playback and automatic visibility are unavailable'});
@@ -175,6 +178,8 @@ export function bindMorphMotion(model: MorphModel, vmd: VMD, options: VMDBinding
     throw new Error('VMD: morph unmatched policy must be error or ignore');
   if (options.morphMapping !== undefined && (!options.morphMapping || Array.isArray(options.morphMapping) || typeof options.morphMapping !== 'object'))
     throw new Error('VMD: invalid morph mapping');
+  if (options.morphTypes !== undefined && (!Array.isArray(options.morphTypes) || options.morphTypes.some(t=>!Number.isInteger(t) || t<0 || t>10)))
+    throw new Error('VMD: invalid morph type execution policy');
   const mapping = options.morphMapping ?? {};
   const groups = new Map<string, VMD['morphs']>();
   const limitedKeys=new Set<string>();
@@ -206,7 +211,7 @@ export function bindMorphMotion(model: MorphModel, vmd: VMD, options: VMDBinding
     if (explicit && (!Number.isInteger(mapping[key]) || matches.length !== 1)) throw new Error(`VMD: invalid mapped morph source index ${key}`);
     if(matches.length>1 && options.preserveUnbound && !explicit){unmatched.push(key);omitted+=records.length;continue;}
     if (matches.length > 1) throw new Error(`VMD morph ${key}: ambiguous PMX name; explicit mapping required`);
-    if (!matches.length || controlIndex(matches[0]) === null) {
+    if (!matches.length || controlIndex(matches[0]) === null || options.morphTypes !== undefined && !options.morphTypes.includes(matches[0].type)) {
       unmatched.push(key); omitted += records.length;
       if (options.morphUnmatched !== 'ignore' && !options.preserveUnbound) throw new Error(`VMD: unmatched or unsupported morph ${key}; morphUnmatched: ignore is explicit partial playback`);
       continue;

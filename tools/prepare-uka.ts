@@ -6,7 +6,7 @@ import { convertModel, parsePMX } from './pmx-to-gltf';
 import { parseVMD } from '../packages/mmd-vmd';
 import { inventoryUka } from './uka-inventory';
 import manifest from './uka-manifest.json';
-import { publicMotion, publicMotionMetadata } from './public-motion';
+import { publicMotion, publicMotionMetadata, prepareBodyMotions } from './public-motion';
 
 export const ukaAttribution = 'CG-CA Uka (c) 2023-2024 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society';
 export async function prepareUka() {
@@ -45,5 +45,6 @@ export async function prepareUka() {
     artifacts.push({path,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
   }
   await writeFile('public/uka/conversion.json',JSON.stringify({sourceCommit:manifest.commit,attribution:ukaAttribution,changes,mode:'bdef',metersPerPMXUnit:.08,artifacts,warnings},null,2)+'\n');
+  await prepareBodyMotions(model, directory, 'public/uka', document.getRoot().getExtras());
   console.log('Generated Uka glTF with shared source textures:',artifacts);
 }
