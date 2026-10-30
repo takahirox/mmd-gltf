@@ -1,0 +1,734 @@
+{
+  "issue": 69,
+  "runtime": "@takahirox/three-mmd@0.1.2 CCDIKSolver; independent PMX/Toon/PBR skeletons",
+  "policy": "All source chains or unavailable; raw authored ancestors; append and physics off. Native Windows MMD parity unmeasured.",
+  "models": {
+    "gene": {
+      "sourceCommit": "c7eace43dffaccff6ad0597433ef85fa57c91e03",
+      "pmxSHA256": "7ce1902e0c834a79db7070c50dcb6444d73d734f6725cad35ea25aa2dbeca4b3",
+      "executedBySkin": [
+        [],
+        [],
+        []
+      ],
+      "capabilities": {
+        "controllers": [
+          {
+            "index": 38,
+            "name": "右腕xcIK",
+            "effector": 37,
+            "iteration": 15,
+            "maxAngle": 2.0071287155151367,
+            "phase": "prePhysics",
+            "layer": 0,
+            "links": [
+              {
+                "index": 36
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              5,
+              6,
+              7,
+              26,
+              27,
+              28,
+              30,
+              35,
+              36,
+              37,
+              38
+            ],
+            "reasons": [
+              "append dependency 35 requires a separate runtime"
+            ]
+          },
+          {
+            "index": 178,
+            "name": "前クローク2_1xcIK",
+            "effector": 177,
+            "iteration": 15,
+            "maxAngle": 2.0071287155151367,
+            "phase": "prePhysics",
+            "layer": 0,
+            "links": [
+              {
+                "index": 176,
+                "lower": [
+                  -1.5707963705062866,
+                  -1.5707963705062866,
+                  -1.5707963705062866
+                ],
+                "upper": [
+                  0,
+                  1.5707963705062866,
+                  1.5707963705062866
+                ]
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              5,
+              6,
+              7,
+              26,
+              27,
+              176,
+              177,
+              178
+            ],
+            "reasons": []
+          },
+          {
+            "index": 86,
+            "name": "左足ＩＫ",
+            "effector": 83,
+            "iteration": 40,
+            "maxAngle": 2.0071287155151367,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 81,
+                "lower": [
+                  -0.1745329350233078,
+                  0,
+                  0
+                ],
+                "upper": [
+                  2.879793405532837,
+                  0,
+                  0
+                ]
+              },
+              {
+                "index": 79
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              3,
+              79,
+              81,
+              83,
+              85,
+              86
+            ],
+            "reasons": []
+          },
+          {
+            "index": 87,
+            "name": "左つま先ＩＫ",
+            "effector": 84,
+            "iteration": 3,
+            "maxAngle": 4.014257431030273,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 83
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              3,
+              79,
+              81,
+              83,
+              84,
+              85,
+              86,
+              87
+            ],
+            "reasons": []
+          },
+          {
+            "index": 97,
+            "name": "右足ＩＫ",
+            "effector": 94,
+            "iteration": 40,
+            "maxAngle": 2.0071287155151367,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 92,
+                "lower": [
+                  -0.1745329350233078,
+                  0,
+                  0
+                ],
+                "upper": [
+                  2.879793405532837,
+                  0,
+                  0
+                ]
+              },
+              {
+                "index": 90
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              3,
+              90,
+              92,
+              94,
+              96,
+              97
+            ],
+            "reasons": []
+          },
+          {
+            "index": 98,
+            "name": "右つま先ＩＫ",
+            "effector": 95,
+            "iteration": 3,
+            "maxAngle": 4.014257431030273,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 94
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              3,
+              90,
+              92,
+              94,
+              95,
+              96,
+              97,
+              98
+            ],
+            "reasons": []
+          }
+        ],
+        "supported": 5,
+        "unsupported": 1,
+        "available": false,
+        "executed": [],
+        "disabledByMotion": [],
+        "error": "",
+        "reason": "右腕xcIK: append dependency 35 requires a separate runtime"
+      }
+    },
+    "uka": {
+      "sourceCommit": "659f0d1a740fec68bb2817dc9c694a35e7a15f12",
+      "pmxSHA256": "6fbfff5cfb921e89df93d68a55dfa1549875d743a9d5e155272cb9737520d297",
+      "executedBySkin": [
+        [
+          8,
+          9,
+          15,
+          16,
+          61,
+          62,
+          63,
+          95,
+          96,
+          97
+        ],
+        [
+          8,
+          9,
+          15,
+          16,
+          61,
+          62,
+          63,
+          95,
+          96,
+          97
+        ],
+        [
+          8,
+          9,
+          15,
+          16,
+          61,
+          62,
+          63,
+          95,
+          96,
+          97
+        ]
+      ],
+      "capabilities": {
+        "controllers": [
+          {
+            "index": 8,
+            "name": "左足ＩＫ",
+            "effector": 10,
+            "iteration": 40,
+            "maxAngle": 2.0000007152557373,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 6,
+                "lower": [
+                  0.008726646192371845,
+                  0,
+                  0
+                ],
+                "upper": [
+                  3.1415927410125732,
+                  0,
+                  0
+                ]
+              },
+              {
+                "index": 5
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              3,
+              5,
+              6,
+              7,
+              8,
+              10
+            ],
+            "reasons": []
+          },
+          {
+            "index": 9,
+            "name": "左つま先ＩＫ",
+            "effector": 11,
+            "iteration": 3,
+            "maxAngle": 4,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 10
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              3,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "reasons": []
+          },
+          {
+            "index": 15,
+            "name": "右足ＩＫ",
+            "effector": 17,
+            "iteration": 40,
+            "maxAngle": 2.0000007152557373,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 13,
+                "lower": [
+                  0.008726646192371845,
+                  0,
+                  0
+                ],
+                "upper": [
+                  3.1415927410125732,
+                  0,
+                  0
+                ]
+              },
+              {
+                "index": 12
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              3,
+              12,
+              13,
+              14,
+              15,
+              17
+            ],
+            "reasons": []
+          },
+          {
+            "index": 16,
+            "name": "右つま先ＩＫ",
+            "effector": 18,
+            "iteration": 3,
+            "maxAngle": 4,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 17
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              3,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18
+            ],
+            "reasons": []
+          },
+          {
+            "index": 61,
+            "name": "左腕袖IK",
+            "effector": 58,
+            "iteration": 15,
+            "maxAngle": 1,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 57
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              26,
+              27,
+              28,
+              50,
+              51,
+              52,
+              57,
+              58,
+              61
+            ],
+            "reasons": []
+          },
+          {
+            "index": 62,
+            "name": "左手袖IK",
+            "effector": 59,
+            "iteration": 15,
+            "maxAngle": 1,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 58
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              26,
+              27,
+              28,
+              50,
+              51,
+              52,
+              53,
+              54,
+              57,
+              58,
+              59,
+              62
+            ],
+            "reasons": []
+          },
+          {
+            "index": 63,
+            "name": "左手首袖IK",
+            "effector": 60,
+            "iteration": 15,
+            "maxAngle": 1,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 59
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              26,
+              27,
+              28,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              57,
+              58,
+              59,
+              60,
+              63
+            ],
+            "reasons": []
+          },
+          {
+            "index": 95,
+            "name": "右腕袖IK",
+            "effector": 92,
+            "iteration": 15,
+            "maxAngle": 1,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 91
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              26,
+              27,
+              28,
+              84,
+              85,
+              86,
+              91,
+              92,
+              95
+            ],
+            "reasons": []
+          },
+          {
+            "index": 96,
+            "name": "右手袖IK",
+            "effector": 93,
+            "iteration": 15,
+            "maxAngle": 1,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 92
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              26,
+              27,
+              28,
+              84,
+              85,
+              86,
+              87,
+              88,
+              91,
+              92,
+              93,
+              96
+            ],
+            "reasons": []
+          },
+          {
+            "index": 97,
+            "name": "右手首袖IK",
+            "effector": 94,
+            "iteration": 15,
+            "maxAngle": 1,
+            "phase": "prePhysics",
+            "layer": 1,
+            "links": [
+              {
+                "index": 93
+              }
+            ],
+            "dependencies": [
+              0,
+              1,
+              2,
+              26,
+              27,
+              28,
+              84,
+              85,
+              86,
+              87,
+              88,
+              89,
+              91,
+              92,
+              93,
+              94,
+              97
+            ],
+            "reasons": []
+          }
+        ],
+        "supported": 10,
+        "unsupported": 0,
+        "available": true,
+        "executed": [
+          8,
+          9,
+          15,
+          16,
+          61,
+          62,
+          63,
+          95,
+          96,
+          97
+        ],
+        "disabledByMotion": [],
+        "error": "",
+        "reason": ""
+      }
+    }
+  },
+  "samples": [
+    {
+      "clip": "02_laugh",
+      "frame": 120,
+      "panes": [
+        {
+          "pane": "PMX",
+          "rawMaxSleeveGapMetres": 0.525221329443763,
+          "ikMaxSleeveGapMetres": 0.000004560860617118749,
+          "maxLegQuaternionComponentChange": 0.026177000254392624,
+          "maxIKTargetAndLinkWorldErrorFromPMXMetres": 0
+        },
+        {
+          "pane": "Toon",
+          "rawMaxSleeveGapMetres": 0.5252216717410046,
+          "ikMaxSleeveGapMetres": 0.0000032214740101697636,
+          "maxLegQuaternionComponentChange": 0.026177009369923617,
+          "maxIKTargetAndLinkWorldErrorFromPMXMetres": 0.00010699095612069776
+        },
+        {
+          "pane": "PBR",
+          "rawMaxSleeveGapMetres": 0.5252216717410046,
+          "ikMaxSleeveGapMetres": 0.0000032214740101697636,
+          "maxLegQuaternionComponentChange": 0.026177009369923617,
+          "maxIKTargetAndLinkWorldErrorFromPMXMetres": 0.00010699095612069776
+        }
+      ]
+    },
+    {
+      "clip": "22_apology",
+      "frame": 50,
+      "panes": [
+        {
+          "pane": "PMX",
+          "rawMaxSleeveGapMetres": 0.44548632593793885,
+          "ikMaxSleeveGapMetres": 0.0000027196997137974003,
+          "maxLegQuaternionComponentChange": 0.026176942512392998,
+          "maxIKTargetAndLinkWorldErrorFromPMXMetres": 0
+        },
+        {
+          "pane": "Toon",
+          "rawMaxSleeveGapMetres": 0.44548645397066733,
+          "ikMaxSleeveGapMetres": 0.0000027993983834445843,
+          "maxLegQuaternionComponentChange": 0.026176940749338705,
+          "maxIKTargetAndLinkWorldErrorFromPMXMetres": 9.615687035224862e-7
+        },
+        {
+          "pane": "PBR",
+          "rawMaxSleeveGapMetres": 0.44548645397066733,
+          "ikMaxSleeveGapMetres": 0.0000027993983834445843,
+          "maxLegQuaternionComponentChange": 0.026176940749338705,
+          "maxIKTargetAndLinkWorldErrorFromPMXMetres": 9.615687035224862e-7
+        }
+      ]
+    }
+  ],
+  "bodyMotionErrors": [
+    {
+      "sample": "gene-02_laugh-bone-errors",
+      "local": 2.3841857793582832e-9,
+      "world": 0.00010407463138695228,
+      "rotation": 0.00031439364484618605
+    },
+    {
+      "sample": "gene-22_apology-bone-errors",
+      "local": 2.3841857793582832e-9,
+      "world": 0.000230417469580739,
+      "rotation": 0.0007020052044310524
+    },
+    {
+      "sample": "uka-02_laugh-bone-errors",
+      "local": 4.76837160034993e-9,
+      "world": 0.00010699095612069776,
+      "rotation": 0.00031439364484618605
+    },
+    {
+      "sample": "uka-22_apology-bone-errors",
+      "local": 4.76837160034993e-9,
+      "world": 0.00025096913037434,
+      "rotation": 0.0007076913979888944
+    }
+  ],
+  "validation": {
+    "node": {
+      "command": "npm test",
+      "passed": 161,
+      "failed": 0,
+      "skipped": 0
+    },
+    "browser": {
+      "renderer": "Chrome / WebGL2 / ANGLE SwiftShader",
+      "initialSixSuites": {
+        "passed": 24,
+        "failed": 1,
+        "skipped": 1
+      },
+      "finalFourCameraSuites": {
+        "passed": 14,
+        "failed": 0,
+        "skipped": 1,
+        "durationMs": 367120.47400000005
+      },
+      "unchangedBodyAndPublicPlaybackSuites": {
+        "passed": 11,
+        "failed": 0
+      },
+      "outcome": "All 25 applicable cases pass; native WebGPU skipped because no adapter is available.",
+      "resolvedFailures": "Initial exact outline image comparison after a damped orbit failed. Tighter settling polls timed out. Final tests use real pointer gestures under the reduced-motion preference; the runtime honors that preference and exact pixel assertions pass. Default viewing retains damping."
+    },
+    "build": "npm run build and final Vite bundle passed",
+    "typecheck": "passed",
+    "localLinksChecked": 445,
+    "whitespace": "git diff --check passed"
+  }
+}

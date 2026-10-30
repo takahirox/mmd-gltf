@@ -411,3 +411,5 @@ a {
 .comparison-playback label { display: flex; gap: .4rem; align-items: center; min-width: 0; }
 .comparison-playback input[type="range"] { width: min(24vw, 12rem); }
 .comparison-playback output { font-size: .8rem; font-variant-numeric: tabular-nums; }
+
+#comparison-ik-diagnostics { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; }

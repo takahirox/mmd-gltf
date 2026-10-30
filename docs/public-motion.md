@@ -1,11 +1,11 @@
-# Public synchronized VMD comparison (Issues #63, #65 and #67)
+# Public synchronized VMD comparison (Issues #63, #65, #67 and #69)
 
 Uka and Gene Light compare direct PMX rendering from
 `@takahirox/three-mmd@0.1.2` against a BDEF skinned glTF conversion.
 Both characters offer Rest / manual, their original facial sample, Laugh · 02
 and Apology · 22. The facial samples have skeletal keys only at frame zero;
 the two added clips animate authored arms, shoulders and upper body over time.
-The downloadable animations remain solver-free. The Uka preview additionally offers isolated sleeve IK in both panes; native MikuMikuDance parity is unmeasured.
+The downloadable animations remain solver-free. The Uka preview additionally offers all ten source IK chains in both panes; native MikuMikuDance parity is unmeasured.
 
 Selection starts paused at frame zero. Play/Pause, Restart, arbitrary forward or
 backward seek and Loop use one absolute time in seconds (VMD frame / 30), derived
@@ -14,7 +14,7 @@ the base pose and enables Uka's manual blink/smile. All three pinned motions,
 PMX mixer clips and both glTF instances are prepared once per character. Selection
 stops the old action/players, restores the full original pose and zero weights,
 then selects the new action and retained players by animation name. It preserves
-camera, material, outline, loop and sleeve-mode controls without creating a renderer,
+camera, material, outline, loop and IK controls without creating a renderer,
 canvas, model or GPU layout. A model change rebuilds the character and restores Rest.
 Missing/corrupt/binding-incompatible inputs fail preload with disabled controls
 and an in-place Retry. Preload settles all requests before releasing failed resources.
@@ -114,22 +114,70 @@ full shared rest and weights before another player claims the root.
 The MMD side uses cached `MMDLoader.loadAnimation()` clips and a raw
 `AnimationMixer`, filtered to exact bone names and vertex-only morphs.
 `updateMMDUVs(mesh,false)` disables extra UV execution. Absolute seek restores
-previous raw sleeve rotations before the mixer evaluates again, preventing both
+previous raw IK-link rotations before the mixer evaluates again, preventing both
 untracked-link accumulation and Three.js property-cache skips. Retained players
 write their full original rest on every seek. Rest also explicitly restores all
 PMX bone transforms and clears all weights. Hidden documents, inactive viewers
 and cached page suspension pause the same shared clock.
 
-All conversions use `mode:'bdef', solver:'none', physics:'none'`. Uka's separately
-controllable **Sleeve IK** preview operation runs only its six source chains,
-after raw motion on each independently loaded skeleton, using the pinned reference
-library's CCD executor. Direct PMX chains come from MMDLoader metadata; glTF chains
-come from retained `extras.sourceSolvers` and source bone identities. This does not
-enable the full `MMD_skeleton_solver` v3 executor or alter its fixed-axis diagnostic.
-See the [real-source sleeve investigation](uka-sleeves.md) for measurements,
-rendered evidence and limits. Foot IK, eye grants, physics, non-vertex morphs and
-VMD scene controls remain off. Bullet/Ammo never starts. There is no live upstream
-runtime fetch.
+All conversions use `mode:'bdef', solver:'none', physics:'none'`. The public **IK**
+checkbox defaults On for Uka and applies every one of its ten source chains to
+three independently loaded skins (PMX, Toon, PBR). Off bypasses every IK chain and
+restores raw VMD rotations, including links without animation tracks. Rest uses
+no VMD controller switches. Changing motion clears the previous clip's switches;
+each absolute seek derives the current switches from the selected source's display
+records at frame ≤ time × 30. Global Off overrides all records.
+
+`examples/comparison-ik.ts` builds chains from each model's metadata. The direct
+PMX supplies MMDLoader's actual runtime IK records; the glTF supplies retained
+`extras.sourceSolvers` and exact source bone indices. Both use the pinned library's
+CCDIKSolver, which supports unrestricted links and full XYZ bounds, after raw
+bone/morph motion. No rotations or vertices are copied between skeletons. Source
+iteration caps and maximum per-step angles are retained; iteration caps outside
+1–1024 are explicitly unavailable. Execution sorts by pre/post-physics phase,
+deformation layer, then source index; physics is off, so the phase boundary has
+no simulation step. Source link order is unchanged. PMX axial X/Y bounds are
+negated and exchanged for reflected right-handed execution; Z bounds are unchanged.
+The loader already performs this reflection, so its limits are normalized back
+before the shared adapter reflects them once. Source bytes are untouched.
+
+Uka controllers are 8/9/15/16 (foot/toe) and 61/62/63/95/96/97 (sleeve).
+The four fixed-axis twist bones 52/54/86/88 are read-only authored ancestors of
+sleeve targets, never writable IK links. Their raw VMD transforms remain unchanged;
+IK does not project authored twists or enable a general fixed-axis solver.
+Eye grants are outside all IK dependency closures and remain off. The general
+`MMD_skeleton_solver` v3 executor's fixed-axis limitation is unchanged; this
+separate IK-only adapter neither strips source flags nor claims full PMX deformation.
+
+Gene has six controllers in execution order: 38 (`右腕xcIK`), 178
+(`前クローク2_1xcIK`), 86/87/97/98 (foot/toe). Controller 178 has full XYZ bounds;
+controller 38's effector/link ancestry includes append bone 35 (`右肩連`, a
+rotation grant from 26 with ratio 1). Five chains are independently supported;
+one needs append execution. To keep append off and avoid a partial generic On
+claim, **Gene's entire IK control is unchecked and disabled**, with “IK unavailable”
+status and the dependency reason in its title and collapsed diagnostics. Zero
+chains execute. Follow-up work must implement and validate ordered append plus
+IK symmetrically before enabling Gene; simply dropping chain 38 is insufficient.
+Writable fixed/local-axis links, unresolved external-parent dependencies, malformed
+chains/bounds and unsupported caps likewise disable a whole model. Invalid raw
+poses are detected before any instance executes. There is no silent downselection.
+
+`info.execution` reports `ikState` (`off`, `on`, `unavailable`), actual executed
+controller indices and VMD-disabled controller indices separately for all three
+skins, supported/unsupported counts and reasons. `ik` means at least one chain
+actually ran. Executed does not mean a chain necessarily changed a pose or reached
+its target; stationary keys and limits can produce no effect or residual error.
+The visible control and counts remain compact; full records live in About & credits.
+
+See the [real-source sleeve investigation](uka-sleeves.md) for preserved historical
+six-chain measurements. Those measurements alone are not evidence of ten-chain
+execution. Append, physics, non-vertex morphs and VMD scene controls remain off.
+Bullet/Ammo never starts. There is no live upstream runtime fetch or original
+Windows MMD numerical parity claim. Public View presets were removed; the shared
+OrbitControls camera is initialized once per model and persists across motion,
+IK, material and outline changes. Browser evidence uses real pointer orbit gestures under the reduced-motion
+preference, which disables inertia for stable captures. Normal viewing keeps
+orbit damping. No test camera setters are installed.
 
 ## Preview resources and acceptance evidence
 
@@ -170,3 +218,43 @@ Issue #67 validation and measured lifecycle/resource results are recorded in
 are reproduced in ignored `test-results/`; the representative sleeve figures and
 source measurements are checked in. Full original-Windows-MMD parity remains
 unmeasured. No post-merge verification is required.
+
+
+### Issue #69 observed evidence
+
+[The full-IK acceptance measurements](comparison-ik-evidence.json) summarize the
+real browser `motion-evidence.json`, `sleeve-ab.json` and `bone-errors.json`
+attachments. They include both PMX source hashes, complete runtime capability
+inventories (ten Uka and six Gene identities), per-skin executed controllers,
+source parameters/bounds/dependencies and raw/IK pose measurements. Maximum
+world errors below are component-wise in metres across all IK targets, effectors
+and links; sleeve gaps are Euclidean and the largest of all three skins.
+
+| Clip / frame | Largest raw sleeve gap | Largest IK sleeve gap | Largest PMX/Toon/PBR IK world error |
+| --- | ---: | ---: | ---: |
+| Laugh / 120 | 0.525222 m | 0.000004561 m | 0.000106991 m |
+| Apology / 50 | 0.445486 m | 0.000002800 m | 0.000000962 m |
+
+Non-sleeve leg quaternion components change by up to 0.026177 under IK at these
+frames. The public clips mainly animate the upper body; constrained knees/foot
+chains still solve their authored target and angle bounds. A chain counted as
+executed can also have a stationary target or no net change. Off restores the
+full raw local/world pose within 1e-12 in the browser regression. Repeated Off
+seeks explicitly exercise the mixer's unchanged-property cache as well as
+untracked links. Synthetic Node conformance additionally exercises a genuine XYZ
+box, pre/post phase ordering, VMD disabling and invalid-pose rejection.
+
+Validation on 2026-10-30: `npm run build`, final Vite bundling,
+`npm run typecheck`, `npm test` (161 passed, zero failed/skipped),
+`npm run check:links` (445 local links/anchors/assets) and `git diff --check`
+passed. Browser coverage selected `body-motion`, `public-motion`, `sleeve-motion`,
+`uka`, `example` and `unified-demo` suites with `MMD_PREVIEW_PORT=43280` because the
+default preview port was occupied. The initial six-suite run had 24 passes,
+one camera image-comparison failure and one native-WebGPU skip. Settling-poll
+experiments then timed out under CPU rendering. The final four camera-related
+suites passed 14 cases with the same one WebGPU skip, using real pointer gestures
+under reduced motion and retaining exact material/outline pixel assertions;
+the unchanged body/public-playback suites contributed 11 passes. All 25 applicable
+cases therefore pass. Native WebGPU had no adapter; original Windows MMD parity
+remains unmeasured. Gene's append-dependent IK remains explicitly unavailable,
+with the ordered append/IK follow-up described above. No post-merge check is required.

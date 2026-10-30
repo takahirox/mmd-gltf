@@ -1,6 +1,6 @@
 import { AnimationMixer, LoopOnce, type SkinnedMesh, type AnimationClip, type AnimationAction } from 'three';
 import { MMDVMDPlugin, getVMDPlayers, parseVMD, type VMDPlayer } from '../packages/three-mmd-vmd';
-import { sleeveIK } from './sleeve-ik';
+import { comparisonIK } from './comparison-ik';
 import { motionPreview } from './motion-preview';
 import { disposeScene } from './scene-resources';
 import { WebGPURenderer, Scene, Color, PerspectiveCamera, DirectionalLight, Box3, Vector3, Mesh, LoadingManager, NoToneMapping, SRGBColorSpace, type Object3D } from 'three/webgpu';
@@ -15,7 +15,6 @@ import { MMDToonPlugin, createToonLighting } from '../packages/three-mmd-toon';
 const status = document.querySelector<HTMLParagraphElement>('#gene-status')!;
 const select = document.querySelector<HTMLSelectElement>('#material')!;
 const outlines = document.querySelector<HTMLSelectElement>('#outlines')!;
-const viewpoint = document.querySelector<HTMLSelectElement>('#viewpoint')!;
 const viewport = document.querySelector<HTMLElement>('#viewport')!;
 const panes = ['pmx', 'gltf'].map((id) => document.querySelector<HTMLElement>(`#${id}-pane`)!);
 const statuses = ['pmx', 'gltf'].map((id) => document.querySelector<HTMLElement>(`#${id}-status`)!);
@@ -28,8 +27,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
   const restart = document.querySelector<HTMLButtonElement>('#comparison-restart')!;
   const timeline = document.querySelector<HTMLInputElement>('#comparison-time')!;
   const loop = document.querySelector<HTMLInputElement>('#comparison-loop')!;
-  const sleeves = document.querySelector<HTMLInputElement>('#comparison-sleeves')!;
-  sleeves.checked=true;sleeves.disabled=true;
+  const ikControl = document.querySelector<HTMLInputElement>('#comparison-ik')!;
+  ikControl.checked=true;ikControl.disabled=true;
   const timeLabel = document.querySelector<HTMLOutputElement>('#comparison-time-label')!;
   const motionControls=[motionSelect,play,restart,timeline,loop];
   motionControls.forEach(c=>c.disabled=true);
@@ -55,7 +54,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
   }
   const expression = document.querySelector<HTMLSelectElement>('#expression')!;
   expression.value='rest';
-  [expression,select,outlines,viewpoint].forEach(control=>control.disabled=true);
+  [expression,select,outlines].forEach(control=>control.disabled=true);
   document.querySelector('#comparison-binding')!.textContent='';
   const renderer = new WebGPURenderer({ antialias: true, forceWebGL: new URLSearchParams(location.search).get('backend') !== 'webgpu' });
   const events = new AbortController();
@@ -72,7 +71,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     for(const [key,value] of Object.entries(diagnostics??{}))
       if(Reflect.get(window,key)===value)Reflect.deleteProperty(window,key);
     diagnostics=undefined;
-    motionControls.forEach(c=>c.disabled=true);sleeves.disabled=true;
+    motionControls.forEach(c=>c.disabled=true);ikControl.disabled=true;
     mixer?.stopAllAction(); if(mixer)mixer.uncacheRoot(mixer.getRoot()); players.forEach(p=>p.dispose());
     previews.forEach(p=>p.dispose());
     blobURLs.forEach(url=>URL.revokeObjectURL(url));
@@ -110,7 +109,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     const camera = new PerspectiveCamera(36, 1, 0.01, 100);
     // One camera and control instance drives both scissored views, including orbit, pan and zoom.
     const orbit = controls = new OrbitControls(camera, renderer.domElement);
-    orbit.enableDamping = true;
+    orbit.enableDamping = !matchMedia('(prefers-reduced-motion: reduce)').matches;
     const base = `${import.meta.env.BASE_URL}${isUka ? 'uka' : 'gene-light'}/`;
     async function tracked<T>(index: number, load: () => Promise<T>) {
       try {
@@ -181,7 +180,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       reference.scale.setScalar(0.08);
       // Gene installs UV callbacks at load time. Explicitly disable this extra family.
       updateMMDUVs(reference, false);
-      // Raw mixer first; optional isolated sleeve IK runs after the absolute seek.
+      // Raw mixer first; optional source IK runs after the absolute seek.
       // No full helper, grant controller or physics world.
       reference.material.forEach((material) => {
         material.toneMapped = false;
@@ -227,14 +226,25 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     if (failure?.status === 'rejected') throw failure.reason;
     const reference = (results[0] as PromiseFulfilledResult<Awaited<typeof referencePromise>>).value;
     const { toon, fallback } = (results[1] as PromiseFulfilledResult<Awaited<typeof gltfPromise>>).value;
-    const sleeveSolvers=isUka ? [
-      sleeveIK(reference, reference.geometry.userData.MMD.bones.map((b)=>({
-        index:b.index,name:b.name,flags:b.flag,layer:b.transformationClass,
-        ik:b.ik ? {...b.ik,iteration:b.ik.iteration!,maxAngle:b.ik.maxAngle!,links:b.ik.links.map(l=>({index:l.index,angleLimitation:l.rotationMin || l.rotationMax ? 1 : 0}))} : undefined,
+    const ikSolvers=[
+      comparisonIK(reference, reference.geometry.userData.MMD.bones.map((b)=>({
+        index:b.index,name:b.name,flags:b.flag,layer:b.transformationClass,grant:b.grant,
+        ik:b.ik ? {...b.ik,iteration:b.ik.iteration!,maxAngle:b.ik.maxAngle!,links:b.ik.links.map(l=>({
+          index:l.index,angleLimitation:l.rotationMin || l.rotationMax ? 1 : 0,
+          // Reverse the loader's limit reflection into the retained PMX convention.
+          lowerLimitationAngle:l.rotationMin && l.rotationMax ? [-l.rotationMax.x,-l.rotationMax.y,l.rotationMin.z] : undefined,
+          upperLimitationAngle:l.rotationMin && l.rotationMax ? [-l.rotationMin.x,-l.rotationMin.y,l.rotationMax.z] : undefined,
+        }))} : undefined,
       })), true),
-      ...[toon,fallback].map(gltf=>sleeveIK(gltf.scene,gltf.parser.json.extras.sourceSolvers)),
-    ] : [];
-    sleeves.disabled=!isUka;
+      ...[toon,fallback].map(gltf=>comparisonIK(gltf.scene,gltf.parser.json.extras.sourceSolvers)),
+    ];
+    const identities=ikSolvers.map(s=>JSON.stringify(s.state.controllers));
+    if(identities.some(value=>value!==identities[0]))ikSolvers.forEach(s=>{
+      s.state.available=false;s.state.reason='PMX/glTF IK metadata or dependency mismatch';
+    });
+    const ikAvailable=ikSolvers.every(s=>s.state.available);
+    ikControl.disabled=!ikAvailable;ikControl.checked=ikAvailable;
+    ikControl.title=ikAvailable?'All source IK chains; follows motion switches':[...new Set(ikSolvers.map(s=>s.state.reason).filter(Boolean))].join('; ');
     const actions = new Map<string,AnimationAction>();
     const referenceRest=reference.skeleton.bones.map(b=>({bone:b,position:b.position.clone(),rotation:b.quaternion.clone(),scale:b.scale.clone()}));
     mixer=new AnimationMixer(reference);
@@ -272,19 +282,9 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     const height = bounds.getSize(new Vector3()).y;
     orbit.minDistance = height * 0.4;
     orbit.maxDistance = height * 5;
-    function preset() {
-      // Consume any residual orbit damping before applying a reproducible fixed view.
-      orbit.enableDamping = false;
-      orbit.update();
-      const offset = viewpoint.value === 'side' ? new Vector3(1, 0.04, 0) : new Vector3(0, 0.04, viewpoint.value === 'back' ? -1 : 1);
-      orbit.target.copy(center);
-      camera.position.copy(center).add(offset.multiplyScalar(height * 1.95));
-      camera.up.set(0, 1, 0);
-      orbit.update();
-      orbit.enableDamping = true;
-    }
-    preset();
-    viewpoint.addEventListener('change', preset, { signal: events.signal });
+    orbit.target.copy(center);
+    camera.position.copy(center).add(new Vector3(0, 0.04, 1).multiplyScalar(height * 1.95));
+    orbit.update();
     function resize() {
       if (viewport.clientWidth > 0 && viewport.clientHeight > 0) renderer.setSize(viewport.clientWidth, viewport.clientHeight);
     }
@@ -294,14 +294,14 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     previews.forEach(p=>p.begin());
     try { for (const scene of scenes) await renderer.compileAsync(scene, camera); }
     finally { previews.forEach(p=>p.end()); }
-    select.disabled = viewpoint.disabled = outlines.disabled = false;
+    select.disabled = outlines.disabled = false;
     const backend = ('isWebGPUBackend' in renderer.backend && renderer.backend.isWebGPUBackend) ? 'WebGPU' : 'WebGL2';
     const describeBounds = (object: Object3D) => {
       const box = new Box3().setFromObject(object, true);
       return { min: box.min.toArray(), max: box.max.toArray() };
     };
     const info = { motion: initialMotion, time: 0, referenceTime: 0, gltfTimes: activePlayers.map(()=>0), duration, playing:false, loop:false,
-      execution:{ik:isUka,sleeveIK:isUka,grant:false,physics:false,helper:false,fallbackMixer:false},
+      execution:{ik:false,ikState:'off',chains:ikSolvers.map(s=>s.state),grant:false,physics:false,helper:false,fallbackMixer:false},
       binding:bindingInfo(),
       preview:{targets:previews.map(p=>p.targets),bytes:previews.reduce((n,p)=>n+p.bytes,0)}, model, expression: 'rest', backend, frames: 0, mode: select.value, meshes: 0, ready: true,
       reference: { loader: 'MMDLoader', materials: reference.material.length, scale: reference.scale.x, bounds: describeBounds(reference),
@@ -347,17 +347,18 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       timeline.value=String(info.time);timeLabel.value=`${info.time.toFixed(2)} / ${duration.toFixed(2)} s`;
     }
     function applyTime(time:number) {
-      sleeveSolvers[0]?.restore();
+      ikSolvers.forEach(s=>s.restore());
       action.reset().play();mixer!.setTime(time);
       reference.updateMatrixWorld(true);
       activePlayers.forEach(p=>p.seek(time));
-      if(sleeves.checked) {
+      ikSolvers.forEach(s=>s.remember());
+      if(ikAvailable && ikControl.checked && ikSolvers.map(s=>s.validatePose()).every(Boolean)) {
         const source=motions.find(m=>m.metadata===metadata)!.source;
-        sleeveSolvers.forEach(solver=>solver.apply(source,time));
+        ikSolvers.forEach(solver=>solver.apply(source,time));
       }
       info.time=time;info.referenceTime=action.time;info.gltfTimes=activePlayers.map(p=>p.time);
       info.reference.morphsActive=reference.morphTargetInfluences?.some(w=>w!==0)??false;
-      updateControls();
+      reportExecution();updateControls();
     }
     function pause() {info.playing=false;anchorTime=info.time;updateControls();}
     function seek(time:number) {anchor=performance.now();anchorTime=Math.max(0,Math.min(duration,time));applyTime(anchorTime);}
@@ -373,18 +374,16 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       });
       info.expression=expression.value;info.reference.morphsActive=expression.value!=='rest';
     }
-    sleeves.addEventListener('change',()=>{
-      info.execution.ik=info.execution.sleeveIK=isUka && sleeves.checked;
-      if(info.motion!=='rest')applyTime(info.time);
-      reportExecution();
+    ikControl.addEventListener('change',()=>{
+      if(info.motion!=='rest')applyTime(info.time);else applyRestIK();
     },{signal:events.signal});
     expression.addEventListener('change',manualExpression,{signal:events.signal});
     motionSelect.addEventListener('change',()=>{
       pause();
-      sleeveSolvers[0]?.restore();
+      ikSolvers.forEach(s=>s.restore());
       mixer!.stopAllAction();activePlayers.forEach(p=>p.stop());
       referenceRest.forEach(({bone,position,rotation,scale})=>{bone.position.copy(position);bone.quaternion.copy(rotation);bone.scale.copy(scale);});
-      sleeveSolvers[0]?.remember();
+      ikSolvers.forEach(s=>s.remember());
       expression.value='rest';manualExpression();info.motion=motionSelect.value as PublicMotion;
       const motion=motions.find(m=>m.id===info.motion) ?? motions[0];
       metadata=motion.metadata;action=actions.get(motion.id)!;
@@ -393,7 +392,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       info.binding=bindingInfo();describeBinding();
       info.time=info.referenceTime=0;info.gltfTimes=activePlayers.map(()=>0);
       reference.updateMatrixWorld(true);
-      if(info.motion!=='rest')seek(0);
+      if(info.motion!=='rest')seek(0);else applyRestIK();
       updateControls();
     },{signal:events.signal});
     play.addEventListener('click',()=>{
@@ -412,7 +411,25 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
 
     function report() { status.textContent = `Ready · ${backend} · ${select.value === 'toon' ? 'MMD toon' : 'PBR fallback'}`; }
     report();
-    function reportExecution() {statuses.forEach((element) => { element.textContent = `Ready · Raw VMD / BDEF · ${isUka && sleeves.checked?'Sleeve IK only · physics off':'IK & physics off'}`; element.dataset.ready = 'true'; });}
+    function applyRestIK() {
+      ikSolvers.forEach(s=>s.restore());
+      if(ikAvailable && ikControl.checked && ikSolvers.map(s=>s.validatePose()).every(Boolean))ikSolvers.forEach(s=>s.apply(undefined,0));
+      reportExecution();
+    }
+    function reportExecution() {
+      info.execution.ik=ikSolvers.some(s=>s.state.executed.length>0);
+      info.execution.ikState=!ikAvailable || ikSolvers.some(s=>s.state.error)?'unavailable':ikControl.checked?'on':'off';
+      const text=info.execution.ikState==='unavailable'?'IK unavailable':ikControl.checked?'IK on':'IK off';
+      statuses.forEach((element,i)=>{
+        const state=ikSolvers[i].state;
+        const content=`Ready · Raw VMD / BDEF · ${text}${ikControl.checked?` · ${state.executed.length}/${state.controllers.length} chains`:''} · physics off`;
+        if(element.textContent!==content)element.textContent=content;
+        element.dataset.ready='true';
+      });
+      const details=document.querySelector('#comparison-ik-diagnostics')!;
+      const content=JSON.stringify({state:info.execution.ikState,panes:ikSolvers.map(s=>s.state)},null,2);
+      if(details.textContent!==content)details.textContent=content;
+    }
     reportExecution();
     outlines.addEventListener('change', () => {
       renderEffects.forEach(effect => { effect.enabled = outlines.value === 'on'; });

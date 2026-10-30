@@ -6,7 +6,9 @@ export const sleeveNames = ['左腕袖IK','左手袖IK','左手首袖IK','右腕
 type SourceBone = {index:number;name:string;flags?:number;layer?:number;ik?:{
   effector:number;iteration:number;maxAngle:number;links:{index:number;angleLimitation:number}[];
 }};
-/** A deliberately isolated preview operation, not MMD_skeleton_solver execution.
+/** Historical Issue #67 isolation oracle; public UI uses comparison-ik.ts.
+ * Retained only to reproduce the checked-in six-chain measurements.
+ * Not MMD_skeleton_solver execution.
  * Only the six source sleeve links are writable. Authored ancestors (including
  * fixed-axis twist bones) are read unchanged; no grants, foot IK or physics. */
 export function sleeveIK(root:Object3D, source:SourceBone[], direct=false) {

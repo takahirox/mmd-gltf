@@ -1,5 +1,7 @@
+import { orbitComparison } from './comparison-camera';
 import { test, expect, type Page } from '@playwright/test';
 
+test.use({ contextOptions: { reducedMotion: 'reduce' } });
 const preview = `http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 const rigState = (page: Page) => page.evaluate(() => (window as any).mmdRig);
 async function expectMotionControlsToFit(page: Page) {
@@ -130,7 +132,7 @@ test('one built page: both directions, every preset, contextual controls and ina
   expect((await rigState(page)).physics).toEqual(paused.physics);
   await page.locator('#material').selectOption('pbr');
   await page.locator('#outlines').selectOption('off');
-  await page.locator('#viewpoint').selectOption('back');
+  await orbitComparison(page,2);
   await expect(page.locator('#gene-status')).toContainText('PBR fallback');
   await page.locator('#demo-model').selectOption('rig');
   await expect.poll(async () => (await rigState(page)).frames).toBeGreaterThan(paused.frames);
