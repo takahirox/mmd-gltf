@@ -52,7 +52,12 @@ test('Uka allowlist, real source inventory, supported subset and reproducible no
     const bytes=await readFile(`public/uka/${file.path}`);
     assert.equal(bytes.length,file.size);assert.equal(sha(bytes),file.sha256);
   }
-  const expected=[...manifest.files.map(f=>f.path),'model.gltf','model.bin','source-manifest.json','inventory.json','conversion.json','motion.json'].sort();
+  const bodyFiles:string[]=[];
+  for(const clip of ['02_laugh','22_apology']) {
+    const metadata=JSON.parse(await readFile(`public/uka/motion-${clip}.json`,'utf8'));
+    bodyFiles.push(`motion-${clip}.json`,metadata.artifact,...metadata.artifacts.map((a:{path:string})=>a.path));
+  }
+  const expected=[...new Set(bodyFiles),...manifest.files.map(f=>f.path),'model.gltf','model.bin','source-manifest.json','inventory.json','conversion.json','motion.json'].sort();
   const files=(await readdir('public/uka',{recursive:true,withFileTypes:true})).filter(f=>f.isFile()).map(f=>`${f.parentPath}/${f.name}`.replace(/^public\/uka\//,'')).sort();
   assert.deepEqual(files,expected,'only allowlisted source and generated output may ship');
   // Independently compare the two displayed vertex expressions after sparse

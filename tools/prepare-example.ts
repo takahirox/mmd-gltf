@@ -1,4 +1,4 @@
-import { publicMotion, publicMotionMetadata } from './public-motion';
+import { publicMotion, publicMotionMetadata, prepareBodyMotions } from './public-motion';
 import { prepareUka } from './prepare-uka';
 import { copyFile, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
@@ -18,6 +18,7 @@ document.getRoot().setExtras({ ...document.getRoot().getExtras(),
   source: `https://github.com/${manifest.repository}/tree/${manifest.commit}`,
   sourceManifest: manifest,
   attribution: 'CG-CA Gene (c) 2023 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society',
+  license: 'CC BY 4.0', notices: ['README.md','README.ja.md'],
   rights: 'CC BY 4.0 plus original usage guidelines and retained trademark/design rights. Academic/personal noncommercial use; contact authors for other commercial use. See accompanying English/Japanese notices.',
   changes: 'BDEF skinned PMX with original official 01_happy VMD, exact retained VMD v6 and approximate core fallback converted to glTF geometry and MMD_materials_toon and MMD_materials_outline; independent core PBR approximation; source textures unchanged. All supported targets retained; public preview uploads only active vertex expressions. No IK/grant/physics, material/UV morph or visibility execution. Original textures unchanged.',
 });
@@ -33,6 +34,7 @@ for (const { path } of manifest.files) {
 await copyFile('tools/gene-light-manifest.json', 'public/gene-light/source-manifest.json');
 const bytes = await readFile('public/gene-light/model.glb');
 await writeFile('public/gene-light/conversion.json', JSON.stringify({ sourceCommit: manifest.commit, metersPerPMXUnit: 0.08, reference: 'Unchanged Gene_light.pmx and ten original PNGs; see source-manifest.json for byte hashes.', bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), warnings }, null, 2) + '\n');
+await prepareBodyMotions(model, directory, 'public/gene-light', document.getRoot().getExtras());
 console.log(`Generated ${bytes.length} byte Gene Light GLB. ${warnings.join('\n')}`);
 
 // The rig goes through the same binary parser and converter API as user models.

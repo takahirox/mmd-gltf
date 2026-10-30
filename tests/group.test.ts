@@ -37,6 +37,19 @@ async function base(shape: 'box'|'wedge' = 'box', mode: 'bdef'|'static' = 'bdef'
 }
 const options = (motion: 'a'|'b') => ({mapping:motionMappings[motion],morphMapping:groupMapping});
 
+test('explicit vertex-only VMD policy retains source and omits group execution',async()=>{
+  const b=await base(), model=getMorphModel(b.morph), source=parseVMD(groupVMD('a'));
+  const all=bindMorphMotion(model,source,options('a'));
+  const vertex=bindMorphMotion(model,source,{...options('a'),morphTypes:[1],morphUnmatched:'ignore'});
+  assert.ok(vertex.tracks.length>0 && vertex.tracks.length<all.tracks.length);
+  for(const track of vertex.tracks)assert.equal(model.morphs.find(m=>m.target===track.index)!.type,1);
+  assert.ok(vertex.omitted>0);
+  assert.equal(source.source,parseVMD(groupVMD('a')).source);
+  assert.throws(()=>bindMorphMotion(model,source,{...options('a'),morphTypes:[1]}),/unsupported morph/);
+  for(const types of [[-1],[11],[1.5],null,'vertex'])
+    assert.throws(()=>bindMorphMotion(model,source,{...options('a'),morphTypes:types as any}),/type execution policy/);
+});
+
 test('group API/CLI GLB/unpacked, direct bytes and ordinary fallback against independent weights + morph-before-BDEF at keys and 1201 grid', async () => {
   const directory=await mkdtemp(join(tmpdir(),'mmd-morph-'));
   try {

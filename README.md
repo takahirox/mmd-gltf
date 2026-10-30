@@ -9,8 +9,9 @@ serialization. The default [Uka example](docs/uka.md) shows the original PMX loa
 with pinned `@takahirox/three-mmd@0.1.2` beside converter-produced glTF loaded through
 `GLTFLoader.register()`. Orbit and zoom stay synchronized; Front/Side/Back presets
 use the same camera, scale, lighting and renderer. Uka exposes blink/smile vertex
-expressions in both views; IK/append/physics and VMD playback are disabled for its
-audited solver-free BDEF subset. Gene Light remains selectable. The right
+expressions in Rest mode and synchronized official VMD playback in both views.
+Uka and Gene Light each offer their original facial sample plus Laugh and Apology
+with authored body motion; IK/append/physics remain disabled. The right
 pane also offers the independent PBR fallback. The Outline menu toggles both
 implementations; their different thickness laws are labeled in the example.
 
@@ -33,8 +34,8 @@ npm run dev
 Open the printed local URL with `/mmd-gltf/` (normally
 `http://127.0.0.1:5173/mmd-gltf/`). `example:assets` generates the attributed
 Uka glTF and Gene GLB, and copies each pinned original PMX, required PNGs,
-selected Uka VMD and full English/Japanese notices. Uka uses CC BY 4.0 with
-upstream guidelines; Gene retains its documented usage scope. Downloaded source
+selected official VMDs for both characters and full English/Japanese notices.
+Uka uses CC BY 4.0 with upstream guidelines; Gene retains its documented usage scope. Downloaded source
 files, generated assets, and build output are ignored by Git; the lockfile and
 pinned hash manifests make them reproducible.
 

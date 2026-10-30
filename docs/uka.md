@@ -26,7 +26,7 @@ credits and generated glTF includes attribution, source, hashes, notices and a
 change record; `conversion.json` records the same derivative-use information.
 
 [The allowlist](../tools/uka-manifest.json) pins exact sizes and SHA-256 for the
-PMX, nine referenced PNGs, the historical inventory VMD, the selected playback VMD and both notices. `fetchUka()` follows
+PMX, nine referenced PNGs, the historical inventory VMD, three selected playback VMDs and both notices. `fetchUka()` follows
 the Gene workflow: download missing allowlisted files only, verify every cached
 or fetched byte, fail on a mismatch or missing HTTP resource. No whole-repository
 archive, implicit texture fallback, unreviewed motions, PMD, or unused `hair.png`
@@ -67,7 +67,7 @@ is approximately 4 radians, outside the bounded profile; the demo does not clamp
 it or alter the general contract. The source includes additional solver records
 and fixed/local axes detailed in the inventory. No Uka SDEF, QDEF, IK, append,
 physics, or full MMD animation support is claimed. See the current
-[synchronized raw VMD comparison](public-motion.md) for Issue #63 playback scope.
+[synchronized raw VMD comparison](public-motion.md) for Issues #63/#65 playback scope and the disclosed Uka apology group-morph omissions.
 
 Historically inventoried `motion/03_smile.vmd` has 224 bone keys, 344 morph keys, no camera,
 light or shadow keys, and one display/IK record. Its informational model name is
@@ -94,16 +94,16 @@ zero deltas; no target data is discarded. This is ordinary glTF serialization
 after normal conversion, with no change to the general conversion contract.
 
 The source allowlist is about 77 MB; retained VMD transport adds JSON metadata to the generated output, adding no binary files to Git checkout. The approximately 85 MB entire
-upstream texture directory is not fetched. The demo selects five active/manual
-attributes for GPU upload and resizes preview textures to at most 1024 px on
+upstream texture directory is not fetched. The demo selects active/manual attributes per motion (five for little smile,
+four for laugh, three for apology) for GPU upload and resizes preview textures to at most 1024 px on
 **both** views. This explicit preview adaptation changes sampling detail, not
 source bytes, download integrity or source model conversion. It avoids allocating
 203 full-model morph layers for every rendered primitive. It does not remove
 source images from the first-load network cost: the complete sparse converter
 geometry and selected source images still download. Static hosting can cache the exact assets; repeat visits
-and the Actions source cache avoid unnecessary transfers. Switching between Uka
+and the Actions source cache avoid unnecessary transfers. Switching motions or between Uka
 and Gene disposes the previous comparison renderer before loading the next;
-inactive rig rendering remains suspended. Gene now uses a BDEF skin and its own official happy VMD. Its preview also selects five attributes; its downloadable conversion retains all supported targets.
+inactive rig rendering remains suspended. Gene uses a BDEF skin with happy, shared laugh and its own apology VMD. Its preview selects five, four and seven attributes respectively; its downloadable conversions retain all supported targets. The additional body-motion glTFs share static binary buffers and original images per character; the original expression download remains available.
 
 The workflow uses the existing public Ubuntu 24.04 runner and one Playwright
 worker. Both source caches are keyed by pinned manifests and reverified before

@@ -84,6 +84,16 @@
       "path": "motion/01_happy.vmd",
       "size": 33008,
       "sha256": "8da8b93dfc2dba19535246126558f82238c915ff8a90b2d05dfba17a333f903e"
+    },
+    {
+      "path": "motion/02_laugh.vmd",
+      "size": 70076,
+      "sha256": "714c04a833285aacc7b75039d872fc852c6df75025296bae0a707e5bbb3e159e"
+    },
+    {
+      "path": "motion/22_apology.vmd",
+      "size": 89061,
+      "sha256": "65f02aabe34e5b7ef502e47ffbaf06068f523b3522a58ad2382de29b61daf282"
     }
   ]
 }

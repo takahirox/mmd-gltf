@@ -1,4 +1,4 @@
-import { AnimationMixer, LoopOnce, type AnimationClip } from 'three';
+import { AnimationMixer, LoopOnce, type SkinnedMesh, type AnimationClip } from 'three';
 import { MMDVMDPlugin, getVMDPlayers, parseVMD, type VMDPlayer } from '../packages/three-mmd-vmd';
 import { motionPreview } from './motion-preview';
 import { disposeScene } from './scene-resources';
@@ -19,7 +19,11 @@ const viewport = document.querySelector<HTMLElement>('#viewport')!;
 const panes = ['pmx', 'gltf'].map((id) => document.querySelector<HTMLElement>(`#${id}-pane`)!);
 const statuses = ['pmx', 'gltf'].map((id) => document.querySelector<HTMLElement>(`#${id}-status`)!);
 
-export async function startComparison(model: 'uka' | 'gene' = 'gene') {
+export type PublicMotion = 'rest' | 'sample' | '02_laugh' | '22_apology';
+export type ComparisonCamera = {position:number[];target:number[]};
+export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMotion: PublicMotion = 'rest',
+  replaceMotion?: (motion: PublicMotion, camera: ComparisonCamera) => void, savedCamera?: ComparisonCamera) {
+  const clipId=initialMotion==='rest'?'sample':initialMotion;
   const isUka = model === 'uka';
   const motionSelect = document.querySelector<HTMLSelectElement>('#comparison-motion')!;
   const play = document.querySelector<HTMLButtonElement>('#comparison-play')!;
@@ -29,11 +33,12 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
   const timeLabel = document.querySelector<HTMLOutputElement>('#comparison-time-label')!;
   const motionControls=[motionSelect,play,restart,timeline,loop];
   motionControls.forEach(c=>c.disabled=true);
-  motionSelect.value='rest';play.textContent='Play';timeline.value='0';loop.checked=false;
+  motionSelect.value=initialMotion;play.textContent='Play';timeline.value='0';loop.checked=false;
   const previews: ReturnType<typeof motionPreview>[]=[];
   const players: VMDPlayer[]=[];
   let mixer: AnimationMixer | undefined;
   let blobURL: string | undefined;
+  let diagnostics: Record<string, unknown> | undefined;
 
   const previewImages = new Map<object, HTMLCanvasElement>();
   function shrinkTexture(value: import('three').Texture) {
@@ -49,6 +54,9 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
     return value;
   }
   const expression = document.querySelector<HTMLSelectElement>('#expression')!;
+  expression.value='rest';
+  [expression,select,outlines,viewpoint].forEach(control=>control.disabled=true);
+  document.querySelector('#comparison-binding')!.textContent='';
   const renderer = new WebGPURenderer({ antialias: true, forceWebGL: new URLSearchParams(location.search).get('backend') !== 'webgpu' });
   const events = new AbortController();
   const scenes = [new Scene(), new Scene()];
@@ -61,6 +69,9 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
   let effects: [ReferenceOutlineEffect, MMDOutlineEffect] | undefined;
   const dispose = async () => {
     disposed = true;
+    for(const [key,value] of Object.entries(diagnostics??{}))
+      if(Reflect.get(window,key)===value)Reflect.deleteProperty(window,key);
+    diagnostics=undefined;
     motionControls.forEach(c=>c.disabled=true);
     mixer?.stopAllAction(); if(mixer)mixer.uncacheRoot(mixer.getRoot()); players.forEach(p=>p.dispose());
     previews.forEach(p=>p.dispose());
@@ -86,6 +97,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
     viewport.prepend(renderer.domElement);
     effects = [new ReferenceOutlineEffect(renderer), new MMDOutlineEffect(renderer)];
     const renderEffects = effects;
+    renderEffects.forEach(effect=>effect.enabled=outlines.value==='on');
     const direction = new Vector3(-0.3, 0.8, 1).normalize();
     for (const scene of scenes) {
       scene.background = new Color(0xd0d0d0);
@@ -111,12 +123,12 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
         throw error;
       }
     }
-    const metadataResponse=await fetch(`${base}motion.json`);
+    const metadataResponse=await fetch(`${base}${clipId==='sample'?'motion':`motion-${clipId}`}.json`);
     if(!metadataResponse.ok)throw new Error(`Motion metadata: HTTP ${metadataResponse.status}`);
     const metadata=await metadataResponse.json() as {
-      path:string;sha256:string;bytes:number;duration:number;
+      path:string;sha256:string;bytes:number;duration:number;artifact?:string;
       preview:{name:string;sourceIndex:number;target:number}[];
-      bones:{name:string;status:string;active:boolean}[];
+      bones:{name:string;status:string;active:boolean;changing?:boolean}[];
       morphs:{name:string;status:string;active:boolean;type?:number}[];
     };
     motionSelect.options[1].textContent=isUka?'Little smile · 04':'Happy · 01';
@@ -127,6 +139,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
     if(bytes.byteLength!==metadata.bytes || digest!==metadata.sha256)throw new Error('VMD: pinned hash/size mismatch');
     const sourceMotion=parseVMD(new Uint8Array(bytes));
     if(!metadata.morphs.some(t=>t.active && t.status==='matched' && t.type===1))throw new Error('VMD: no useful bound vertex tracks');
+    if(metadata.morphs.some(t=>t.active && t.status==='matched' && t.type===1 && !metadata.preview.some(p=>p.name===t.name)))
+      throw new Error('Motion preview: missing active vertex track');
     blobURL=URL.createObjectURL(new Blob([bytes]));
     function preparePreview(root: Object3D, converted: boolean) {
       root.traverse(object=>{
@@ -178,13 +192,13 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
       const fallbackLoader = new GLTFLoader().register(outlinePlugin).register(parser=>new MMDVMDPlugin(parser,{updateBounds:false}));
       if (isUka) fallbackLoader.register(previewTextures);
       const results = await Promise.allSettled([loader, fallbackLoader].map(async source => {
-        const loaded = await source.loadAsync(`${base}model.${isUka ? 'gltf' : 'glb'}`);
+        const loaded = await source.loadAsync(`${base}${metadata.artifact??`model.${isUka ? 'gltf' : 'glb'}`}`);
         scenes[1].add(loaded.scene);
         const retained=getVMDPlayers(loaded);
+        players.push(...retained);
         if(retained.length!==1 || retained[0].source?.source!==sourceMotion.source)throw new Error('VMD: retained source differs from selected pinned motion');
         const payload=loaded.parser.json.animations[0].extensions.MMD_animation_vmd;
         if(payload.solver || loaded.parser.json.extensions?.MMD_skeleton_solver || loaded.parser.json.extensions?.MMD_physics)throw new Error('Public comparison must be solver/physics free');
-        players.push(retained[0]);
         await preparePreview(loaded.scene, true);
         scenes[1].add(loaded.scene);
         return loaded;
@@ -192,7 +206,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
       const failure = results.find(result => result.status === 'rejected');
       if (failure?.status === 'rejected') throw failure.reason;
       const [toon, fallback] = results.map(result => (result as PromiseFulfilledResult<Awaited<ReturnType<GLTFLoader['loadAsync']>>>).value);
-      fallback.scene.visible = false;
+      fallback.scene.visible = select.value==='pbr';
+      toon.scene.visible = !fallback.scene.visible;
       scenes[1].add(toon.scene, fallback.scene);
       return { toon, fallback };
     });
@@ -234,6 +249,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
       orbit.enableDamping = true;
     }
     preset();
+    if(savedCamera) {camera.position.fromArray(savedCamera.position);orbit.target.fromArray(savedCamera.target);orbit.update();}
     viewpoint.addEventListener('change', preset, { signal: events.signal });
     function resize() {
       if (viewport.clientWidth > 0 && viewport.clientHeight > 0) renderer.setSize(viewport.clientWidth, viewport.clientHeight);
@@ -250,17 +266,41 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
       const box = new Box3().setFromObject(object, true);
       return { min: box.min.toArray(), max: box.max.toArray() };
     };
-    const info = { motion: 'rest', time: 0, referenceTime: 0, gltfTimes: players.map(()=>0), duration, playing:false, loop:false,
+    const info = { motion: initialMotion, time: 0, referenceTime: 0, gltfTimes: players.map(()=>0), duration, playing:false, loop:false,
       execution:{ik:false,grant:false,physics:false,helper:false,fallbackMixer:false},
-      binding:{boneTracks:boneNames.size,morphTracks:morphIndices.size,referenceTracks:clip.tracks.length,
+      binding:{boneTracks:boneNames.size,changingBones:metadata.bones.filter(t=>t.status==='matched' && t.changing).map(t=>t.name),morphTracks:morphIndices.size,referenceTracks:clip.tracks.length,
         unmatchedBones:metadata.bones.filter(t=>t.status!=='matched'),unmatchedMorphs:metadata.morphs.filter(t=>t.status!=='matched' || t.type!==1),
         activeMorphs:metadata.morphs.filter(t=>t.active && t.status==='matched' && t.type===1).map(t=>t.name)},
-      preview:{targets:previews.map(p=>p.targets),bytes:previews.reduce((n,p)=>n+p.bytes,0)}, model, expression: 'rest', backend, frames: 0, mode: 'toon', meshes: 0, ready: true,
+      preview:{targets:previews.map(p=>p.targets),bytes:previews.reduce((n,p)=>n+p.bytes,0)}, model, expression: 'rest', backend, frames: 0, mode: select.value, meshes: 0, ready: true,
       reference: { loader: 'MMDLoader', materials: reference.material.length, scale: reference.scale.x, bounds: describeBounds(reference),
-        outlines: true, morphsActive: reference.morphTargetInfluences?.some((value) => value !== 0) ?? false },
+        outlines: outlines.value==='on', morphsActive: reference.morphTargetInfluences?.some((value) => value !== 0) ?? false },
       gltf: { bounds: describeBounds(toon.scene) }, cameras: [] as number[][] };
     toon.scene.traverse((object: Object3D) => { if ((object as Mesh).isMesh) info.meshes++; });
-    Object.assign(window, { mmdExample: info,
+    // Read-only acceptance evidence: local/world bones plus skin-only positions.
+    // Start from base POSITION, deliberately excluding all facial morph weights.
+    const bodyNames=new Set(['上半身','上半身2','頭','左肩','左腕','左ひじ','左手首','右肩','右腕','右ひじ','右手首']);
+    function readPose(root: Object3D, direct: boolean) {
+      root.updateMatrixWorld(true);
+      const bones: Record<string,{local:number[];rotation:number[];world:number[]}>={};
+      const vertices:number[][]=[];
+      root.traverse(object=>{
+        const name=direct?object.name:object.userData.pmxBone?.name;
+        if(bodyNames.has(name))bones[name]={local:object.position.toArray().map(v=>v*(direct ? .08 : 1)),
+          rotation:object.quaternion.toArray(),world:object.getWorldPosition(new Vector3()).toArray()};
+        const mesh=object as SkinnedMesh;
+        if(!mesh.isSkinnedMesh)return;
+        mesh.skeleton.update();
+        const positions=mesh.geometry.getAttribute('position');
+        for(let i=0;i<positions.count;i+=Math.max(1,Math.floor(positions.count/128))) {
+          const vertex=new Vector3().fromBufferAttribute(positions,i);
+          mesh.applyBoneTransform(i,vertex).applyMatrix4(mesh.matrixWorld);
+          vertices.push(vertex.toArray());
+        }
+      });
+      return {bones,vertices};
+    }
+    Object.assign(window, diagnostics = { mmdExample: info,
+      readMMDComparisonPose:()=>[readPose(reference,true),readPose(toon.scene,false),readPose(fallback.scene,false)],
       captureMMDComparisonCanvas: () => disposed ? Promise.reject(new Error('Comparison disposed'))
         : new Promise<Capture>((resolve,reject) => captures.push({resolve,reject})),
     });
@@ -296,8 +336,13 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
     }
     expression.addEventListener('change',manualExpression,{signal:events.signal});
     motionSelect.addEventListener('change',()=>{
-      pause();mixer!.stopAllAction();players.forEach(p=>p.stop());
-      expression.value='rest';manualExpression();info.motion=motionSelect.value;
+      pause();
+      if(motionSelect.value!=='rest' && motionSelect.value!==clipId) {
+        replaceMotion?.(motionSelect.value as PublicMotion,{position:camera.position.toArray(),target:orbit.target.toArray()});
+        return;
+      }
+      mixer!.stopAllAction();players.forEach(p=>p.stop());
+      expression.value='rest';manualExpression();info.motion=motionSelect.value as PublicMotion;
       info.time=info.referenceTime=0;info.gltfTimes=players.map(()=>0);
       if(info.motion!=='rest')seek(0);
       updateControls();
@@ -309,7 +354,10 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene') {
     timeline.max=String(duration);
     timeline.addEventListener('input',()=>seek(Number(timeline.value)),{signal:events.signal});
     loop.addEventListener('change',()=>{info.loop=loop.checked;},{signal:events.signal});
-    motionSelect.disabled=false;updateControls();
+    motionSelect.disabled=false;
+    if(initialMotion!=='rest')seek(0);
+    updateControls();
+    document.querySelector('#comparison-binding')!.textContent=`${boneNames.size} bone tracks · ${info.binding.changingBones.length} changing · ${info.binding.activeMorphs.length} vertex expressions · ${metadata.morphs.filter(t=>t.active && (t.status!=='matched' || t.type!==1)).length} active morphs omitted`;
     function report() { status.textContent = `Ready · ${backend} · ${select.value === 'toon' ? 'MMD toon' : 'PBR fallback'}`; }
     report();
     statuses.forEach((element) => { element.textContent = 'Ready · Raw VMD / BDEF · IK & physics off'; element.dataset.ready = 'true'; });

@@ -1,3 +1,4 @@
+import type { PublicMotion, ComparisonCamera } from './main';
 const model = document.querySelector<HTMLSelectElement>('#demo-model')!;
 const requested = new URLSearchParams(location.search).get('demo');
 // Only explicit conformance entry points expose the internal fixture navigation.
@@ -13,7 +14,7 @@ type Viewer = { setActive(active: boolean): void; dispose?(): Promise<void> };
 const viewers: Partial<Record<Demo, Viewer>> = {};
 let current: Demo | undefined;
 
-async function show(demo: Demo) {
+async function show(demo: Demo, motion: PublicMotion = 'rest', camera?: ComparisonCamera) {
   model.disabled = true;
   if (current) viewers[current]?.setActive(false);
   current = demo;
@@ -30,7 +31,7 @@ async function show(demo: Demo) {
         const previous = demo === 'uka' ? 'gene' : 'uka';
         await viewers[previous]?.dispose?.();
         delete viewers[previous];
-        for (const id of ['material','outlines','viewpoint','expression']) {
+        if(!camera) for (const id of ['material','outlines','viewpoint','expression']) {
           const control = document.querySelector<HTMLSelectElement>(`#${id}`)!;
           control.selectedIndex = 0; control.disabled = true;
         }
@@ -41,7 +42,15 @@ async function show(demo: Demo) {
           delete pane.dataset.ready;
           pane.textContent = 'Loading…';
         }
-        viewers[demo] = await (await import('./main')).startComparison(demo);
+        viewers[demo] = await (await import('./main')).startComparison(demo, motion, (next, view)=>{
+          void (async()=>{
+            status.textContent='Loading motion…';
+            model.disabled=true;
+            const old=viewers[demo]; delete viewers[demo];
+            await old?.dispose?.();
+            await show(demo,next,view);
+          })();
+        }, camera);
       } else {
         // On narrow screens the viewport comes first, with compact disclosures below it.
         if (matchMedia('(max-width:900px)').matches) {
@@ -59,7 +68,7 @@ async function show(demo: Demo) {
     const retry = document.createElement('button');
     retry.id = 'demo-retry';
     retry.textContent = 'Retry loading';
-    retry.onclick = () => { retry.remove(); void show(demo); };
+    retry.onclick = () => { retry.remove(); void show(demo,motion,camera); };
     status.append(' ', retry);
   } finally {
     model.disabled = false;
