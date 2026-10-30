@@ -29,7 +29,9 @@ import { createSDEFAttributes, SDEFWriter } from './pmx-sdef';
 
 export interface Vertex { type?: number; skinIndices?: number[]; skinWeights?: number[]; skinC?: number[]; skinR0?: number[]; skinR1?: number[]; edgeRatio?: number; position: number[]; normal: number[]; uv: number[]; auvs: number[][] }
 export interface PMXBone { name: string; englishName: string; position: number[]; parentIndex: number; transformationClass?: number; flag?: number; grant?: SourceGrant; ik?: SourceIK; fixAxis?:number[]; localXVector?:number[]; localZVector?:number[]; key?:number }
-export interface ConversionOptions { physics?: 'none' | 'rigid-body-v1'; physicsSettle?: number; solver?: 'pre-physics-v1' | 'none'; scale?: number; mode?: 'static' | 'bdef' | 'sdef' | 'qdef'; vpd?: Uint8Array; vpdEncoding?: VPDEncoding; vpdBinding?: BindingOptions; vmd?: Uint8Array; vmdBinding?: VMDBindingOptions; vmdSampling?: SamplingOptions }
+/** Named motions share one skeleton and morph layout. Binding/sampling default to the single-VMD options. */
+export interface VMDConversion { name: string; bytes: Uint8Array; binding?: VMDBindingOptions; sampling?: SamplingOptions }
+export interface ConversionOptions { vmds?: readonly VMDConversion[]; physics?: 'none' | 'rigid-body-v1'; physicsSettle?: number; solver?: 'pre-physics-v1' | 'none'; scale?: number; mode?: 'static' | 'bdef' | 'sdef' | 'qdef'; vpd?: Uint8Array; vpdEncoding?: VPDEncoding; vpdBinding?: BindingOptions; vmd?: Uint8Array; vmdBinding?: VMDBindingOptions; vmdSampling?: SamplingOptions }
 interface PMXMaterial {
   name: string; diffuse: number[]; ambient: number[]; specular: number[]; shininess: number;
   flag: number; textureIndex: number; envTextureIndex: number; envFlag: number;
@@ -116,7 +118,7 @@ export async function convertModel(model: PMXModel, textureDirectory: string, op
 const clamp = (x: number) => Math.min(1, Math.max(0, x));
 const decode = (c: number) => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 async function convertModelInternal(model: PMXModel, textureDirectory: string, options: ConversionOptions | number = {}) {
-  const { scale = 0.08, mode = 'static', physics = 'none', physicsSettle = 0, solver = 'none', vpd, vpdEncoding, vpdBinding, vmd, vmdBinding, vmdSampling } = typeof options === 'number' ? { scale: options } : options;
+  const { scale = 0.08, mode = 'static', physics = 'none', physicsSettle = 0, solver = 'none', vpd, vpdEncoding, vpdBinding, vmd, vmds, vmdBinding, vmdSampling } = typeof options === 'number' ? { scale: options } : options;
   assertPMX21Profile(model);
   validateRetainedPMX(model);
   if (!['none','rigid-body-v1'].includes(physics)) throw new Error(`Unknown physics profile ${physics}`);
@@ -127,8 +129,11 @@ async function convertModelInternal(model: PMXModel, textureDirectory: string, o
   if (solver !== 'none' && mode === 'static') throw new Error('Solver requires mode bdef, sdef or qdef');
   if (!['static', 'bdef', 'sdef', 'qdef'].includes(mode)) throw new Error(`Unknown conversion mode ${mode}`);
   if (mode === 'qdef' && model.vertices.some(v => v.type === 4) && model.metadata.version !== PMX21) throw new Error('QDEF records require actual PMX 2.1 source metadata; do not relabel PMX 2.0 records.');
-  if (vpd && vmd) throw new Error('Simultaneous VPD/VMD conversion is unsupported; composition is not implemented');
-  if (vmd && mode === 'static') throw new Error('VMD requires mode bdef, sdef or qdef');
+  if (vmd && vmds) throw new Error('Use vmd or vmds, not both');
+  if (vmds && (!vmds.length || vmds.some(m=>!m.name?.trim()) || new Set(vmds.map(m=>m.name)).size!==vmds.length)) throw new Error('vmds requires nonempty unique animation names');
+  const motions = vmds ?? (vmd ? [{bytes:vmd, name:undefined, binding:vmdBinding, sampling:vmdSampling}] : []);
+  if (vpd && motions.length) throw new Error('Simultaneous VPD/VMD conversion is unsupported; composition is not implemented');
+  if (motions.length && mode === 'static') throw new Error('VMD requires mode bdef, sdef or qdef');
   if (vpd && mode === 'static') throw new Error('VPD requires mode bdef, sdef or qdef');
   if (!Number.isFinite(scale) || scale <= 0) throw new Error('scale must be finite and positive');
   if (!model.vertices.length || !model.faces.length) throw new Error('PMX has no geometry');
@@ -197,15 +202,16 @@ async function convertModelInternal(model: PMXModel, textureDirectory: string, o
   if(morph.metadata.version===3 && skin) doc.createExtension(MorphWriter).record={model:morph.metadata,nodes:skin.nodes,mesh:meshNode,raw:morphRaw};
   const unsupportedMorphs = morph.metadata.morphs.filter(m => (m.control === undefined ? m.target : m.control) === null);
   warnings.push(`Morphs: retained ${morph.targets.length} vertex/group POSITION targets; omitted unsupported source families ${JSON.stringify(unsupportedMorphs.map(m => ({ index: m.index, name: m.name, type: m.type, group: m.group, unsupported: m.unsupported })))}. Authored normals retained; no recomputation or morph normal targets.`);
-  if (vmd && skin) {
-    const motion = parseVMD(vmd), binding = bindMotion(skin.poseModel, motion, {preserveUnbound:true,...vmdBinding}, morph.metadata);
+  for (const entry of motions) if (skin) {
+    const motion = parseVMD(entry.bytes), binding = bindMotion(skin.poseModel, motion, {preserveUnbound:true,...vmdBinding,...entry.binding}, morph.metadata);
     binding.diagnostics?.push(...morph.diagnostics);
     const timeline=physicsProfile && physicsBackend ? new PhysicsTimeline(physicsBackend.api,physicsProfile,skin.poseModel.solver!) : undefined;
-    let samples;try {samples=addVMDAnimation(doc,buffer,binding,skin.nodes,vmdSampling,meshNode,timeline);}finally{timeline?.dispose();}
+    let samples;try {samples=addVMDAnimation(doc,buffer,binding,skin.nodes,{...vmdSampling,...entry.sampling},meshNode,timeline);}finally{timeline?.dispose();}
+    if(entry.name) doc.getRoot().listAnimations().at(-1)!.setName(entry.name);
     diagnostics.push(...((doc.getRoot().listAnimations().at(-1)?.getExtras() as any)?.vmd?.diagnostics??[]));
     warnings.push(`VMD: bound ${binding.tracks.length} bone tracks and ${binding.morphs?.[0]?.tracks.length ?? 0} morph tracks; unmatched morph byte keys: ${binding.unmatchedMorphs.join(', ') || 'none'}; unmatched byte keys: ${binding.unmatched.join(', ') || 'none'}. Omitted execution counts: ${JSON.stringify(binding.omitted)}. Informational model name: ${JSON.stringify(motion.modelName.text)}. Continuous-curve-v1 project policy, no original-MMD parity claim. Approximate fallback: ${samples} samples; ${physicsProfile ? 'physics execution/fallback availability is specified by animation diagnostics' : 'finite probes or diagnosed reduced sampling; no continuous error proof'}.`);
   }
-  if(physicsProfile && physicsBackend && skin && !vpd && !vmd){const timeline=new PhysicsTimeline(physicsBackend.api,physicsProfile,skin.poseModel.solver!);try{timeline.seek(physicsSettle,()=>skin.poseModel.bones).forEach(b=>skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));}catch(error){if(!(error instanceof MMDDiagnosticError))throw error;diagnostics.push(error.diagnostic);}finally{timeline.dispose();}}
+  if(physicsProfile && physicsBackend && skin && !vpd && !motions.length){const timeline=new PhysicsTimeline(physicsBackend.api,physicsProfile,skin.poseModel.solver!);try{timeline.seek(physicsSettle,()=>skin.poseModel.bones).forEach(b=>skin.nodes[b.index].setTranslation(b.translation).setRotation(b.rotation));}catch(error){if(!(error instanceof MMDDiagnosticError))throw error;diagnostics.push(error.diagnostic);}finally{timeline.dispose();}}
   if(solver==='none' && physics==='none' && model.bones.some(b=>(b.flag??0)&0x3fa0)) diagnostics.push({category:'unsupported-capability',code:'solver-not-requested',path:'PMX bones',message:'solver metadata retained in mmdSource; solver execution was not requested'});
   if(physics==='none' && (model.rigidBodies.length || model.constraints.length || model.softBodies?.length)) diagnostics.push({category:'unsupported-capability',code:'physics-not-requested',path:'PMX physics',message:'physics source retained in mmdSource; simulation was not requested'});
   if(model.materials.some(m=>m.flag&0xe0)) diagnostics.push({category:'unsupported-capability',code:'material-drawing-flags',path:'PMX materials',message:'additional PMX 2.1 drawing flags retained in source without rendering support'});

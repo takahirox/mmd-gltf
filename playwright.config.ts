@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+const previewPort=Number(process.env.MMD_PREVIEW_PORT || 43180);
 export default defineConfig({
   reporter: [['list'], ['./tools/browser-report.ts']],
   testDir: './tests/browser', timeout: 180000, workers: 1,
@@ -7,6 +8,6 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:43179/mmd-gltf/' },
   webServer: [
     { command: 'npm run dev -- --port 43179 --strictPort', url: 'http://127.0.0.1:43179/mmd-gltf/', reuseExistingServer: false },
-    { command: 'npm run preview -- --port 43180 --strictPort', url: 'http://127.0.0.1:43180/mmd-gltf/', reuseExistingServer: false },
+    { command: `npm run preview -- --port ${previewPort} --strictPort`, url: `http://127.0.0.1:${previewPort}/mmd-gltf/`, reuseExistingServer: false },
   ],
 });

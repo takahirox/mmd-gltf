@@ -83,6 +83,7 @@ export class VMDPlayer {
     private root: Object3D | undefined,
     private motion: Motion,
     private prepare: (pose: RestBone[], weights: ReturnType<typeof evaluateMorphs>) => () => void,
+    readonly name: string = 'VMD',
   ) {
     this.motion = structuredClone(motion);
     this.duration = motion.duration;
@@ -366,7 +367,7 @@ export class MMDVMDPlugin implements GLTFLoaderPlugin {
             }
             refreshDeformation(result.scene, this.options.updateBounds !== false);
           };
-        }),
+        }, def.name ?? 'VMD'),
       );
     }
     loaded.set(result, Object.freeze(players));

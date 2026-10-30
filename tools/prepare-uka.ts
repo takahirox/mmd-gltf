@@ -6,7 +6,7 @@ import { convertModel, parsePMX } from './pmx-to-gltf';
 import { parseVMD } from '../packages/mmd-vmd';
 import { inventoryUka } from './uka-inventory';
 import manifest from './uka-manifest.json';
-import { publicMotion, publicMotionMetadata, prepareBodyMotions } from './public-motion';
+import { publicMotions, writePublicMotionMetadata } from './public-motion';
 
 export const ukaAttribution = 'CG-CA Uka (c) 2023-2024 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society';
 export async function prepareUka() {
@@ -14,9 +14,9 @@ export async function prepareUka() {
   const model = parsePMX(await readFile(`${directory}/MS_Uka.pmx`));
   const inventory = inventoryUka(model, parseVMD(await readFile(`${directory}/motion/03_smile.vmd`)));
   // No source filtering, altered solver limits, or model-specific converter path.
-  const motion = await publicMotion(model, directory, 'motion/04_littlesmile.vmd');
-  const { document, io, warnings } = await convertModel(model, directory, {mode:'bdef', solver:'none', physics:'none', vmd:motion.bytes});
-  const changes = 'Unmodified PMX and official 04_littlesmile VMD converted with BDEF skin at 0.08 m/unit, exact retained VMD v6 and approximate core fallback. No IK/grant/physics. Public preview executes raw bones and vertex expressions only; active morph buffers and manual blink/smile keep original identities. Full conversion retains all supported vertex/group/bone morph data. Material/UV morphs, unresolved names and VMD scene controls are not executed. Source textures unchanged; preview limited to 1024 px.';
+  const motions = await publicMotions(model, directory, '04_littlesmile');
+  const { document, io, warnings } = await convertModel(model, directory, {mode:'bdef', solver:'none', physics:'none', vmds:motions.map(m=>({name:m.name,bytes:m.bytes})),vmdBinding:{morphTypes:[1]}});
+  const changes = 'Unmodified PMX and three official VMDs converted with BDEF skin at 0.08 m/unit, exact retained VMD v6 and approximate core fallback. Downloadable animations are solver-free. Public preview optionally evaluates the six source sleeve IK chains symmetrically after raw bones and vertex expressions; no foot IK, grants or physics; active morph buffers and manual blink/smile keep original identities. Full conversion retains all supported vertex/group/bone morph data. Material/UV morphs, unresolved names and VMD scene controls are not executed. Source textures unchanged; preview limited to 1024 px.';
   document.getRoot().setExtras({...document.getRoot().getExtras(),
     source:`https://github.com/${manifest.repository}/tree/${manifest.commit}`, sourceManifest:manifest,
     attribution:ukaAttribution, license:'CC BY 4.0',
@@ -32,7 +32,7 @@ export async function prepareUka() {
   await rm('public/uka',{recursive:true,force:true});
   await mkdir('public/uka',{recursive:true});
   await io.write('public/uka/model.gltf',document);
-  await writeFile('public/uka/motion.json',JSON.stringify(publicMotionMetadata(motion, document),null,2)+'\n');
+  await writePublicMotionMetadata(motions, document, 'public/uka');
   for (const {path} of manifest.files) {
     await mkdir(dirname(`public/uka/${path}`),{recursive:true});
     await copyFile(`${directory}/${path}`,`public/uka/${path}`);
@@ -45,6 +45,5 @@ export async function prepareUka() {
     artifacts.push({path,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
   }
   await writeFile('public/uka/conversion.json',JSON.stringify({sourceCommit:manifest.commit,attribution:ukaAttribution,changes,mode:'bdef',metersPerPMXUnit:.08,artifacts,warnings},null,2)+'\n');
-  await prepareBodyMotions(model, directory, 'public/uka', document.getRoot().getExtras());
   console.log('Generated Uka glTF with shared source textures:',artifacts);
 }

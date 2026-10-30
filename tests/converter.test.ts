@@ -101,7 +101,8 @@ test('pinned Gene conversion is deterministic, valid, attributed and has complet
   const bodyFiles:string[]=[];
   for(const clip of ['02_laugh','22_apology']) {
     const metadata=JSON.parse(await readFile(`public/gene-light/motion-${clip}.json`,'utf8'));
-    bodyFiles.push(`motion-${clip}.json`,metadata.artifact,...metadata.artifacts.map((a:{path:string})=>a.path));
+    bodyFiles.push(`motion-${clip}.json`);
+    assert.equal(metadata.animation,clip);
   }
   const expectedFiles = [...new Set(bodyFiles),...manifest.files.map((file) => file.path), 'model.glb', 'source-manifest.json', 'conversion.json', 'motion.json'].sort();
   const actualFiles = (await readdir('public/gene-light', { recursive: true, withFileTypes: true }))

@@ -6,14 +6,14 @@ test.use({ launchOptions: {
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
 } });
 
-const preview = 'http://127.0.0.1:43180/mmd-gltf/';
+const preview = `http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 
 for (const demo of ['gene', 'rig']) {
   test(`cached ${demo} viewer resumes after repeated Back navigation`, async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     // Chrome's plain-text README viewer requests an unrelated root favicon.
-    const isFavicon = (url: string) => url === 'http://127.0.0.1:43180/favicon.ico';
+    const isFavicon = (url: string) => url === new URL('/favicon.ico',preview).href;
     page.on('console', message => {
       if (message.type() === 'error' && !isFavicon(message.location().url)) errors.push(`${message.text()} (${message.location().url})`);
     });

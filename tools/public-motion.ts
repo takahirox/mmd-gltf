@@ -27,36 +27,17 @@ export function publicMotionMetadata(motion: Awaited<ReturnType<typeof publicMot
   };
 }
 
-/** Keep the original downloadable expression asset. Body clips share byte-identical
- * static buffers and original external images; only fallback samples vary. */
-export async function prepareBodyMotions(model: PMXModel, directory: string, output: string, extras: Record<string, unknown>) {
-  const { convertModel } = await import('./pmx-to-gltf');
+/** Build all motions against the same converted skeleton; no per-motion models. */
+export async function publicMotions(model: PMXModel, directory: string, sample: string) {
+  return Promise.all([sample, '02_laugh', '22_apology'].map(async name => {
+    const motion=await publicMotion(model, directory, `motion/${name}.vmd`);
+    if(name!==sample && !motion.audit.bones.some(t=>t.status==='matched' && t.changing))throw new Error(`${name}: no changing bound bone tracks`);
+    return {name,...motion};
+  }));
+}
+export async function writePublicMotionMetadata(motions: Awaited<ReturnType<typeof publicMotions>>, document: Document, output: string) {
   const { writeFile } = await import('node:fs/promises');
-  for (const id of ['02_laugh', '22_apology']) {
-    const motion = await publicMotion(model, directory, `motion/${id}.vmd`);
-    if (!motion.audit.bones.some(t=>t.status==='matched' && t.changing)) throw new Error(`${id}: no changing bound bone tracks`);
-    const {document, io, warnings} = await convertModel(model, directory, {mode:'bdef',solver:'none',physics:'none',vmd:motion.bytes,vmdBinding:{morphTypes:[1]}});
-    const {source,sourceManifest,attribution,rights,license,notices}=extras;
-    document.getRoot().setExtras({...document.getRoot().getExtras(), source,sourceManifest,attribution,rights,license,notices,
-      changes:`Original ${motion.path} retained byte-for-byte; BDEF skin and approximate core fallback. Raw bones and vertex expressions only; no IK, append/grant or physics. Unresolved names and unsupported morph families remain unexecuted. Source images shared unchanged.`,
-    });
-    for (const mesh of document.getRoot().listMeshes()) for (const primitive of mesh.listPrimitives())
-      for (const target of primitive.listTargets()) target.getAttribute('POSITION')?.setSparse(true);
-    for (const texture of document.getRoot().listTextures()) texture.setURI(texture.getName().replaceAll('\\','/'));
-    const animationBuffer=document.createBuffer('motion');
-    for (const animation of document.getRoot().listAnimations()) for (const sampler of animation.listSamplers()) {
-      sampler.getInput()!.setBuffer(animationBuffer); sampler.getOutput()!.setBuffer(animationBuffer);
-    }
-    const data=await io.writeJSON(document);
-    const artifacts=[];
-    for (const buffer of data.json.buffers ?? []) {
-      const bytes=data.resources[buffer.uri!];
-      const sha256=createHash('sha256').update(bytes).digest('hex');
-      buffer.uri=`${sha256}.bin`;
-      await writeFile(`${output}/${buffer.uri}`,bytes);
-      artifacts.push({path:buffer.uri,bytes:bytes.length,sha256});
-    }
-    await writeFile(`${output}/${id}.gltf`,JSON.stringify(data.json));
-    await writeFile(`${output}/motion-${id}.json`,JSON.stringify({...publicMotionMetadata(motion,document),artifact:`${id}.gltf`,artifacts,warnings},null,2)+'\n');
-  }
+  for (const [index, motion] of motions.entries()) await writeFile(
+    `${output}/${index===0?'motion':`motion-${motion.name}`}.json`,
+    JSON.stringify({...publicMotionMetadata(motion,document),animation:motion.name},null,2)+'\n');
 }

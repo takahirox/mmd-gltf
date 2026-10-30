@@ -590,3 +590,41 @@ test('caller-managed bounds preserve exact posed vertices without per-seek bound
   assert.ok(normalScans>0);assert.equal(fastScans,0);
   for(const gltf of [normal,fast])getVMDPlayers(gltf).forEach(p=>p.dispose());
 });
+
+test('named multi-VMD conversion shares rest, channels and morph identities in GLB/glTF and normal-loader fallback',async()=>{
+  const model=parsePMX(await bytes('morph-box.pmx'));
+  const motions=await Promise.all(['a','b'].map(async id=>({name:id,bytes:await bytes(`combined-${id}.vmd`),
+    binding:{morphUnmatched:'ignore' as const,mapping:JSON.parse(await readFile(`tests/fixtures/motion-${id}-map.json`,'utf8'))}})));
+  const result=await convertModel(model,'.',{mode:'bdef',scale:.2,vmds:motions});
+  const data=await result.io.writeJSON(result.document);
+  assert.equal(data.json.scenes!.length,1);assert.equal(data.json.skins!.length,1);assert.equal(data.json.meshes!.length,1);
+  const payloads=data.json.animations!.map(a=>(a.extensions as any).MMD_animation_vmd);
+  assert.deepEqual(payloads[0].rest,payloads[1].rest);
+  assert.notDeepEqual(payloads[0].source,payloads[1].source);
+  for(const [i,a] of data.json.animations!.entries()) {
+    assert.equal(a.name,motions[i].name);validatePayload(payloads[i],data.json.nodes!.length);
+    assert.equal(payloads[i].owned!.length,a.channels!.length);
+  }
+  const unpacked=structuredClone(data.json);
+  for(const b of unpacked.buffers!)b.uri=`data:application/octet-stream;base64,${Buffer.from(data.resources![b.uri!]).toString('base64')}`;
+  unpacked.animations!.reverse(); // Playback identity must survive exporter reordering.
+  for(const input of [await result.io.writeBinary(result.document),JSON.stringify(unpacked)]) {
+    const exact=await load(input,true),fallback=await load(input);
+    const players=getVMDPlayers(exact),byName=new Map(players.map(p=>[p.name,p]));
+    assert.deepEqual([...byName.keys()].sort(),['a','b']);
+    assert.ok(exact.animations.every(a=>a.tracks.length===0),'owned fallback must never double-play');
+    assert.ok(fallback.animations.every(a=>a.tracks.length>0),'ordinary GLTFLoader retains sampled channels');
+    const rest=snapshot(exact.scene);
+    const a=byName.get('a')!,b=byName.get('b')!;
+    a.play().seek(.5);const poseA=snapshot(exact.scene);
+    b.play().seek(.75);assert.equal(a.playing,false);assert.equal(b.playing,true);
+    b.stop();a.seek(.5);assert.deepEqual(snapshot(exact.scene),poseA);
+    a.seek(.1);a.seek(.5);assert.deepEqual(snapshot(exact.scene),poseA);
+    a.stop();assert.deepEqual(snapshot(exact.scene),rest);
+    const mixer=new AnimationMixer(fallback.scene);
+    for(const clip of fallback.animations) {const action=mixer.clipAction(clip);action.play();mixer.setTime(.5);assert.notDeepEqual(snapshot(fallback.scene),rest);mixer.stopAllAction();}
+    mixer.uncacheRoot(fallback.scene);players.forEach(p=>p.dispose());
+  }
+  await assert.rejects(()=>convertModel(model,'.',{mode:'bdef',vmds:[motions[0],motions[0]]}),/unique/);
+  await assert.rejects(()=>convertModel(model,'.',{mode:'bdef',vmd:motions[0].bytes,vmds:motions}),/not both/);
+});
