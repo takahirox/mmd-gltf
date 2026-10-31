@@ -182,6 +182,7 @@ fallback recovery. Runtime budgets do not define MMD source validity.
 
 - [Development flow and English collaboration convention](docs/development-flow.md)
 - [Review and merge guidelines](docs/review-guidelines.md)
+- [Test and CI principles](docs/browser-ci.md#test-and-ci-principles)
 - [Issue template](.github/ISSUE_TEMPLATE/issue.md)
 - [Pull request template](.github/pull_request_template.md)
 

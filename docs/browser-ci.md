@@ -1,4 +1,76 @@
-# Browser CI on CPU-backed SwiftShader
+# Testing principles and browser CI on CPU-backed SwiftShader
+
+## Test and CI principles
+
+**Detect the required failures at the lightest appropriate layer, without redundant
+execution.** Preserve required correctness, regressions, meaningful integration
+coverage and assertion strength when redistributing checks.
+
+1. **Prefer the lightest meaningful layer.** Use `npm test`'s Node and extension
+   CPU/schema/asset checks for calculations, branches, malformed inputs and broad
+   data combinations. Use Playwright/SwiftShader for shader execution, rendered
+   output, browser loading and UI lifecycle; real Uka/Gene models cover integration
+   that synthetic fixtures cannot. CPU oracles do not replace shader integration,
+   and SwiftShader does not prove hardware GPU behavior. Add tests that catch a
+   concrete defect rather than mirror the implementation.
+2. **Choose combinations deliberately.** Cover distinct byte/GLB/glTF/export,
+   BDEF/SDEF/QDEF, Toon/PBR/Outline, motion and UI paths with representative cases;
+   use exhaustive combinations where interactions require them. Follow the
+   [coverage allocation](#coverage-allocation) mapping between broad Node matrices
+   and retained GPU cases. Preserve required regressions and boundary coverage
+   rather than automatically multiplying every model, format, state and backend.
+3. **Match validation to the change.** Use the change guidance below for fast local
+   feedback, then complete applicable mandatory pre-merge checks. Full regression
+   CI and Pages publication have separate responsibilities: PR CI validates;
+   deployment runs after a successful build on a push to `main`. Keep optional
+   diagnostics separate and record genuinely post-merge-only verification as
+   pending when the Issue requires it. Pre-merge success does not prove publication.
+4. **Reuse work and avoid duplicate execution.** Reuse builds, converted fixtures
+   and downloads with keys covering relevant inputs and versions, while isolating
+   mutable test state. CI already caches npm and manifest-keyed model downloads.
+   When changing CI, avoid equivalent push/PR runs for the same revision, cancel
+   superseded validation when safe, and preserve necessary deployment ordering.
+   The current workflow validates PRs and `main` pushes and cancels superseded runs
+   per ref. Measure resource use before parallelizing independent work; more
+   workers do not necessarily improve CPU-backed rendering.
+5. **Review added confidence and cost together.** Identify the additional defect a
+   new or expanded test detects, assurance already supplied elsewhere, and added
+   execution and maintenance cost. Watch repeated fresh browser/renderer or shader
+   setup, model downloads/conversion, large fixtures, long simulation loops and
+   Cartesian-product growth. Preserve meaningful assertions when removing overlap.
+6. **Maintain an execution-time budget using evidence.** Use the recorded
+   [Ubuntu browser observation](#successful-ubuntu-pr-validation), **21m19.202s**
+   with one SwiftShader worker, as a historical comparison baseline, not a universal
+   limit or a current full-CI measurement. A normal whole-CI target remains to be
+   established during performance work. Compare equivalent environments and
+   workloads, monitor growth and investigate overruns against an established target.
+   Separate elapsed feedback time, total runner/computation time and queue time;
+   do not add overlapping phase timings. Revisit allocation, setup and duplication
+   while retaining required coverage. No new benchmark or merge gate is required
+   solely to document these principles.
+
+Use [README setup and commands](../README.md) and the
+[development validation guidance](development-flow.md#2-implement-and-validate):
+
+| Change | Relevant local validation |
+| --- | --- |
+| Documentation/templates only | Markdown/template structure, relative links and anchors, consistency, complete diff review and `git diff --check`; no application build or runtime suite solely for prose. |
+| UI/example | Typecheck and build; relevant Playwright controls, layout, transport and lifecycle checks, including real-model comparisons when affected. |
+| Converter/core/runtime/plugins | Typecheck, `npm test` (prepare `example:assets` first), build and relevant browser/shader integration and regression checks. |
+| CI/build | Inspect workflow/configuration and exercise affected setup, build, check and artifact paths; verify publication after merge only when required by the Issue. |
+
+[`pages.yml`](../.github/workflows/pages.yml) currently runs build, typecheck,
+`npm test`, the full browser suite, `npm run check:links` and whitespace validation
+on PRs and `main` pushes, without change-based selection. This guidance does not
+alter those configured checks or waive applicable pre-merge acceptance. The link
+command also checks built assets and requires `dist`; documentation-only link and
+anchor inspection can use available tooling without building the application.
+Full-matrix performance repetitions are opt-in diagnostics via the
+`browser-performance` label or dispatch input; native-WebGPU tests explicitly skip
+without an adapter. Neither is a routine additional completion gate. Workflow,
+cache, test-selection and implementation changes belong in separately scoped work.
+
+## Browser CI evidence
 
 Issue [#54](https://github.com/takahirox/mmd-gltf/issues/54) builds on the merged
 [#53](https://github.com/takahirox/mmd-gltf/pull/53). The Uka integration, synthetic

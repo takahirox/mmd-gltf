@@ -53,6 +53,10 @@ The repository has a TypeScript converter, Three.js plugin, browser example and
 Pages CI. Use the setup and relevant check commands in [README](../README.md).
 Do not add scaffolding, dependencies or tooling merely to document a process.
 
+Apply the [test and CI principles](browser-ci.md#test-and-ci-principles) when
+choosing validation and changing tests or CI. They relate the configured checks,
+coverage allocation and measured browser baseline to the change's needs.
+
 For templates/documentation changes, inspect template metadata and Markdown syntax,
 verify relative links and heading anchors, and check consistency across the
 templates, README, and guidance. Use available tooling without adding dependencies
