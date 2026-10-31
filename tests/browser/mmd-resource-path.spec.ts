@@ -1,6 +1,39 @@
 import { test, expect } from '@playwright/test';
 import { PNG } from 'pngjs';
 
+test('absolute TGA URLs retain queries in requests and decode using the pathname', async ({ page }) => {
+  // One top-origin, uncompressed 24-bit TGA pixel (BGR).
+  const tga = Buffer.alloc(21);
+  tga[2] = 2; tga[12] = 1; tga[14] = 1; tga[16] = 24; tga[17] = 32;
+  tga.set([0x33, 0x66, 0xcc], 18);
+  const requests: string[] = [];
+  await page.route('**/resource-path-harness.html', r => r.fulfill({ contentType: 'text/html', body: '<title>TGA test</title>' }));
+  await page.route('**/resource-path-fixtures/*.tga?*', r => r.fulfill({ contentType: 'image/x-tga', body: tga }));
+  page.on('request', r => { if (r.url().includes('/resource-path-fixtures/')) requests.push(r.url()); });
+  await page.goto('resource-path-harness.html');
+  const result = await page.evaluate(async () => {
+    const modulePath = '/mmd-gltf/mmd-loader-compat.ts';
+    const { createMMDLoader } = await import(modulePath) as typeof import('../../examples/mmd-loader-compat');
+    const builder = createMMDLoader().meshBuilder.materialBuilder;
+    const textures = {}, handlers: string[] = [];
+    builder.manager.getHandler = url => { handlers.push(url); return null; };
+    const urls = [1, 2].map(v => `${location.origin}/mmd-gltf/resource-path-fixtures/sphere.tga?v=${v}#texture`);
+    const loaded = urls.map(url => builder._loadTexture(url, textures));
+    const cached = builder._loadTexture(urls[0], textures) === loaded[0];
+    await Promise.all(loaded.map(texture => new Promise<void>((resolve, reject) => {
+      texture.readyCallbacks!.push(() => resolve()); texture.errorCallbacks!.push(reject);
+    })));
+    return { cached, handlers, urls, images: loaded.map(texture => {
+      const image = texture.image as { width: number; height: number; data: Uint8Array };
+      return { width: image.width, height: image.height, pixels: Array.from(image.data) };
+    }) };
+  });
+  expect(result.cached).toBe(true);
+  expect(result.handlers).toEqual(result.urls);
+  expect(requests.sort()).toEqual(result.urls.map(url => url.split('#')[0]).sort());
+  expect(result.images).toEqual(Array(2).fill({ width: 1, height: 1, pixels: [0xcc, 0x66, 0x33, 255] }));
+});
+
 test('direct MMDLoader requests canonical texture URLs before handler/cache lookup', async ({ page }) => {
   const requests: string[] = [], responses: number[] = [];
   const png = new PNG({ width: 1, height: 1 }); png.data.fill(255);

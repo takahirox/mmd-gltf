@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { DataTexture, LoadingManager, Texture } from 'three';
+import { AddOperation, DataTexture, LoadingManager, MultiplyOperation, Texture } from 'three';
 import { Parser } from 'mmd-parser';
 import { MMDLoader } from '@takahirox/three-mmd/loaders/MMDLoader.js';
 import { createMMDLoader } from '../examples/mmd-loader-compat';
@@ -98,5 +98,56 @@ test('PMX base, sphere/subtexture and custom toon share resolution while preserv
     paths.length = 0;
     loader.meshBuilder.materialBuilder.build(pmd as unknown as Parameters<typeof loader.meshBuilder.materialBuilder.build>[0], mesh.geometry);
     assert.deepEqual(paths, ['/uka/tex/hair.png', '/uka/tex/sphere.sph', '/uka/tex/custom/toon.png']);
+  }
+});
+
+test('absolute TGA URL decoder uses pathname while handlers, cache and requests retain query/fragment', () => {
+  const manager = new LoadingManager(), builder = createMMDLoader(manager).meshBuilder.materialBuilder;
+  const imagePaths: string[] = [], tgaPaths: string[] = [], handlerPaths: string[] = [];
+  builder.textureLoader.load = path => { imagePaths.push(path); return new Texture(); };
+  builder._getTGALoader().load = path => { tgaPaths.push(path); return new DataTexture(); };
+  manager.getHandler = path => { handlerPaths.push(path); return null; };
+  const textures = {};
+  for (const url of ['https://example.com/tex/sphere.tga?v=1', 'https://example.com/tex/sphere.TGA?v=2#image']) {
+    const texture = builder._loadTexture(url, textures);
+    assert.equal(builder._loadTexture(url, textures), texture);
+    assert.ok(texture instanceof DataTexture);
+  }
+  assert.deepEqual(tgaPaths, ['https://example.com/tex/sphere.tga?v=1', 'https://example.com/tex/sphere.TGA?v=2#image']);
+  const pngURL = 'https://example.com/tex/base.png?name=.tga';
+  builder._loadTexture(pngURL, textures);
+  assert.deepEqual(imagePaths, [pngURL]);
+  assert.deepEqual(handlerPaths, [...tgaPaths, pngURL]);
+  const custom = new Texture();
+  manager.getHandler = () => ({ load: () => custom }) as unknown as ReturnType<typeof manager.getHandler>;
+  assert.equal(builder._loadTexture('https://example.com/custom.tga?v=1', textures), custom);
+  assert.equal(builder.manager, manager);
+});
+
+test('PMD escaped sphere extensions keep the base map, sphere operation and original names', () => {
+  const bytes = readFileSync('tests/fixtures/bdef.pmx');
+  const data = new Parser().parsePmx(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), true);
+  const loader = createMMDLoader(), builder = loader.meshBuilder.materialBuilder.setResourcePath('/uka/');
+  const geometry = loader.meshBuilder.geometryBuilder.build(data);
+  for (const [extension, operation] of [['sph', MultiplyOperation], ['spa', AddOperation]] as const) {
+    const base = extension === 'spa' ? 'base%2Aname.png' : 'base.png';
+    const names = [`tex\\sphere.${extension}`, `tex\\sphere.%73${extension.slice(1)}`];
+    const pmd = { ...data, metadata: { ...data.metadata, format: 'pmd', materialCount: 2 },
+      materials: names.map(sphere => ({ ...data.materials[0], fileName: `tex\\${base}*${sphere}`, toonIndex: -1, edgeFlag: 1 })),
+      toonTextures: [] };
+    const before = structuredClone(pmd), paths: string[] = [];
+    builder.textureLoader.load = path => { paths.push(path); return new Texture(); };
+    const materials = builder.build(pmd, geometry);
+    assert.deepEqual(paths.filter(path => !path.startsWith('data:')), [`/uka/tex/${base.replace('%2A', '*')}`, `/uka/tex/sphere.${extension}`]);
+    assert.ok(materials[0].map);
+    assert.ok(materials[0].matcap);
+    assert.notEqual(materials[0].map, materials[0].matcap);
+    assert.equal(materials[0].map, materials[1].map);
+    assert.equal(materials[0].matcap, materials[1].matcap);
+    for (let i = 0; i < materials.length; i++) {
+      assert.equal(materials[i].matcapCombine, operation);
+      assert.equal(materials[i].userData.MMD.sourceFileName, pmd.materials[i].fileName);
+    }
+    assert.deepEqual(pmd, before);
   }
 });

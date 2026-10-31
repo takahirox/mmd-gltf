@@ -54,11 +54,20 @@ The patch uses zero context to avoid embedding upstream blank-line/tab context
 as whitespace errors in this repository; apply it only to the pinned base above.
 
 Pending an upstream release, [the compatibility factory](../examples/mmd-loader-compat.ts)
-wraps only each demo model loader's MaterialBuilder `_loadTexture` entry point.
-It uses [the same resolver](../packages/mmd-resource-path.ts) as the patch, resolves
-before cache/handler/loader selection, and restores the builder's base immediately
-after the synchronous loader call. It changes no prototype, parser record or file
-in `node_modules`. Animation-only loaders do not fetch model textures. The
+wraps each demo model loader's MaterialBuilder texture entry point and PMD material
+build. It uses [the same resolver](../packages/mmd-resource-path.ts) as the patch,
+resolves before cache/handler/loader selection, and gives PMD sphere-map
+classification canonical filenames through copied material records. Escaped
+extensions such as `sphere.%73ph` therefore retain their sphere role instead of
+replacing the base map. The original combined PMD filename is retained in
+`material.userData.MMD.sourceFileName` as well as the unchanged parser record.
+The fallback decoder uses the resolved URL pathname, so absolute TGA URLs with
+queries/fragments still use TGALoader; handlers and cache keys retain the complete
+URL. A temporary builder-local manager facade preserves custom-handler precedence
+without modifying the shared LoadingManager. The builder's base and manager are
+restored immediately after the synchronous loader call, including on failure.
+It changes no prototype, parser record or file in `node_modules`.
+Animation-only loaders do not fetch model textures. The
 dependency and lockfile intentionally remain pinned at `0.1.2`.
 
 After a corrected upstream release, verify the published package contains the
@@ -88,9 +97,11 @@ as malformed data.
 
 [Node coverage](../tests/mmd-resource-path.test.ts) checks paths, encoding,
 traversal, handler/cache ordering, failed cache callbacks, TGA, built-in toon,
-all material texture families and original-name retention. [Browser coverage](../tests/browser/mmd-resource-path.spec.ts)
+all material texture families, escaped PMD sphere extensions, query-bearing TGA
+URLs, custom-handler precedence and original-name retention. [Browser coverage](../tests/browser/mmd-resource-path.spec.ts)
 inspects actual request URLs, response statuses, decoded image dimensions,
-duplicate fetches and pre-fetch rejection. It separately exercises a 404, a
+duplicate fetches and pre-fetch rejection, including actual TGA decoding with
+query-bearing absolute request URLs. It separately exercises a 404, a
 200 response with invalid image bytes, and a browser request error.
 [The Uka browser suite](../tests/browser/uka.spec.ts)
 loads the real pinned PMX/glTF with cold and warm browser caches, requires both
