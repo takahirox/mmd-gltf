@@ -1,15 +1,36 @@
 {
-  "issue": 69,
-  "runtime": "@takahirox/three-mmd@0.1.2 CCDIKSolver; independent PMX/Toon/PBR skeletons",
-  "policy": "All source chains or unavailable; raw authored ancestors; append and physics off. Native Windows MMD parity unmeasured.",
+  "issue": 71,
+  "runtime": "Independent PMX/Toon/PBR source-ordered prerequisite grants + @takahirox/three-mmd@0.1.2 CCDIKSolver",
+  "policy": "All source chains or unavailable; only active IK dependency-closure grants; IK Off restores raw authored TRS; physics off. Native Windows MMD parity unmeasured.",
   "models": {
     "gene": {
       "sourceCommit": "c7eace43dffaccff6ad0597433ef85fa57c91e03",
       "pmxSHA256": "7ce1902e0c834a79db7070c50dcb6444d73d734f6725cad35ea25aa2dbeca4b3",
       "executedBySkin": [
-        [],
-        [],
-        []
+        [
+          38,
+          178,
+          86,
+          87,
+          97,
+          98
+        ],
+        [
+          38,
+          178,
+          86,
+          87,
+          97,
+          98
+        ],
+        [
+          38,
+          178,
+          86,
+          87,
+          97,
+          98
+        ]
       ],
       "capabilities": {
         "controllers": [
@@ -42,9 +63,7 @@
               37,
               38
             ],
-            "reasons": [
-              "append dependency 35 requires a separate runtime"
-            ]
+            "reasons": []
           },
           {
             "index": 178,
@@ -219,13 +238,126 @@
             "reasons": []
           }
         ],
-        "supported": 5,
-        "unsupported": 1,
-        "available": false,
-        "executed": [],
+        "grants": [
+          {
+            "index": 35,
+            "name": "右肩連",
+            "source": 26,
+            "sourceName": "右肩",
+            "local": false,
+            "rotation": true,
+            "translation": false,
+            "rate": 1,
+            "phase": "prePhysics",
+            "layer": 0
+          }
+        ],
+        "schedule": [
+          {
+            "kind": "grant",
+            "index": 35,
+            "phase": "prePhysics",
+            "layer": 0
+          },
+          {
+            "kind": "ik",
+            "index": 38,
+            "phase": "prePhysics",
+            "layer": 0
+          },
+          {
+            "kind": "ik",
+            "index": 178,
+            "phase": "prePhysics",
+            "layer": 0
+          },
+          {
+            "kind": "ik",
+            "index": 86,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 87,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 97,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 98,
+            "phase": "prePhysics",
+            "layer": 1
+          }
+        ],
+        "supported": 6,
+        "unsupported": 0,
+        "available": true,
+        "executed": [
+          38,
+          178,
+          86,
+          87,
+          97,
+          98
+        ],
         "disabledByMotion": [],
+        "appliedGrants": [
+          35
+        ],
+        "order": [
+          {
+            "kind": "grant",
+            "index": 35,
+            "phase": "prePhysics",
+            "layer": 0
+          },
+          {
+            "kind": "ik",
+            "index": 38,
+            "phase": "prePhysics",
+            "layer": 0
+          },
+          {
+            "kind": "ik",
+            "index": 178,
+            "phase": "prePhysics",
+            "layer": 0
+          },
+          {
+            "kind": "ik",
+            "index": 86,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 87,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 97,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 98,
+            "phase": "prePhysics",
+            "layer": 1
+          }
+        ],
+        "grantPolicy": "IK prerequisites only; IK Off restores raw pose",
         "error": "",
-        "reason": "右腕xcIK: append dependency 35 requires a separate runtime"
+        "reason": ""
       }
     },
     "uka": {
@@ -596,6 +728,69 @@
             "reasons": []
           }
         ],
+        "grants": [],
+        "schedule": [
+          {
+            "kind": "ik",
+            "index": 8,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 9,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 15,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 16,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 61,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 62,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 63,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 95,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 96,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 97,
+            "phase": "prePhysics",
+            "layer": 1
+          }
+        ],
         "supported": 10,
         "unsupported": 0,
         "available": true,
@@ -612,6 +807,70 @@
           97
         ],
         "disabledByMotion": [],
+        "appliedGrants": [],
+        "order": [
+          {
+            "kind": "ik",
+            "index": 8,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 9,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 15,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 16,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 61,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 62,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 63,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 95,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 96,
+            "phase": "prePhysics",
+            "layer": 1
+          },
+          {
+            "kind": "ik",
+            "index": 97,
+            "phase": "prePhysics",
+            "layer": 1
+          }
+        ],
+        "grantPolicy": "IK prerequisites only; IK Off restores raw pose",
         "error": "",
         "reason": ""
       }
@@ -625,21 +884,21 @@
         {
           "pane": "PMX",
           "rawMaxSleeveGapMetres": 0.525221329443763,
-          "ikMaxSleeveGapMetres": 0.000004560860617118749,
+          "ikMaxSleeveGapMetres": 4.560860617118749e-06,
           "maxLegQuaternionComponentChange": 0.026177000254392624,
           "maxIKTargetAndLinkWorldErrorFromPMXMetres": 0
         },
         {
           "pane": "Toon",
           "rawMaxSleeveGapMetres": 0.5252216717410046,
-          "ikMaxSleeveGapMetres": 0.0000032214740101697636,
+          "ikMaxSleeveGapMetres": 3.2214740101697636e-06,
           "maxLegQuaternionComponentChange": 0.026177009369923617,
           "maxIKTargetAndLinkWorldErrorFromPMXMetres": 0.00010699095612069776
         },
         {
           "pane": "PBR",
           "rawMaxSleeveGapMetres": 0.5252216717410046,
-          "ikMaxSleeveGapMetres": 0.0000032214740101697636,
+          "ikMaxSleeveGapMetres": 3.2214740101697636e-06,
           "maxLegQuaternionComponentChange": 0.026177009369923617,
           "maxIKTargetAndLinkWorldErrorFromPMXMetres": 0.00010699095612069776
         }
@@ -652,23 +911,23 @@
         {
           "pane": "PMX",
           "rawMaxSleeveGapMetres": 0.44548632593793885,
-          "ikMaxSleeveGapMetres": 0.0000027196997137974003,
+          "ikMaxSleeveGapMetres": 2.7196997137974003e-06,
           "maxLegQuaternionComponentChange": 0.026176942512392998,
           "maxIKTargetAndLinkWorldErrorFromPMXMetres": 0
         },
         {
           "pane": "Toon",
           "rawMaxSleeveGapMetres": 0.44548645397066733,
-          "ikMaxSleeveGapMetres": 0.0000027993983834445843,
+          "ikMaxSleeveGapMetres": 2.7993983834445843e-06,
           "maxLegQuaternionComponentChange": 0.026176940749338705,
-          "maxIKTargetAndLinkWorldErrorFromPMXMetres": 9.615687035224862e-7
+          "maxIKTargetAndLinkWorldErrorFromPMXMetres": 9.615687035224862e-07
         },
         {
           "pane": "PBR",
           "rawMaxSleeveGapMetres": 0.44548645397066733,
-          "ikMaxSleeveGapMetres": 0.0000027993983834445843,
+          "ikMaxSleeveGapMetres": 2.7993983834445843e-06,
           "maxLegQuaternionComponentChange": 0.026176940749338705,
-          "maxIKTargetAndLinkWorldErrorFromPMXMetres": 9.615687035224862e-7
+          "maxIKTargetAndLinkWorldErrorFromPMXMetres": 9.615687035224862e-07
         }
       ]
     }
@@ -676,30 +935,488 @@
   "bodyMotionErrors": [
     {
       "sample": "gene-02_laugh-bone-errors",
-      "local": 2.3841857793582832e-9,
+      "local": 2.3841857793582832e-09,
       "world": 0.00010407463138695228,
       "rotation": 0.00031439364484618605
     },
     {
       "sample": "gene-22_apology-bone-errors",
-      "local": 2.3841857793582832e-9,
+      "local": 2.3841857793582832e-09,
       "world": 0.000230417469580739,
       "rotation": 0.0007020052044310524
     },
     {
       "sample": "uka-02_laugh-bone-errors",
-      "local": 4.76837160034993e-9,
+      "local": 4.76837160034993e-09,
       "world": 0.00010699095612069776,
       "rotation": 0.00031439364484618605
     },
     {
       "sample": "uka-22_apology-bone-errors",
-      "local": 4.76837160034993e-9,
+      "local": 4.76837160034993e-09,
       "world": 0.00025096913037434,
       "rotation": 0.0007076913979888944
     }
   ],
-  "validation": {
+  "historicalSleeveMeasurementsIssue": 69,
+  "sourceGrantAudit": "gene-grant-audit.json",
+  "independentNodeOracle": "gene-grant-node-evidence.json",
+  "geneSamples": [
+    {
+      "clip": "sample",
+      "time": 0.5,
+      "panes": [
+        {
+          "pane": "PMX",
+          "grantRadians": 0,
+          "linkRadians": 0,
+          "effectorDelta": 0,
+          "worldError": 0,
+          "raw35": {
+            "index": 35,
+            "local": [
+              -0.021940479278564455,
+              0.15558883666992188,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.021940479272884388,
+              1.2614876556396484,
+              -0.00017983913421630582
+            ]
+          },
+          "solved35": {
+            "index": 35,
+            "local": [
+              -0.021940479278564455,
+              0.15558883666992188,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.021940479272884388,
+              1.2614876556396484,
+              -0.00017983913421630582
+            ]
+          }
+        },
+        {
+          "pane": "Toon",
+          "grantRadians": 0,
+          "linkRadians": 0,
+          "effectorDelta": 0,
+          "worldError": 4.139559542370996e-09,
+          "raw35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.021940479278564455,
+              1.2614876556396484,
+              -0.00017983913421630582
+            ]
+          },
+          "solved35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.021940479278564455,
+              1.2614876556396484,
+              -0.00017983913421630582
+            ]
+          }
+        },
+        {
+          "pane": "PBR",
+          "grantRadians": 0,
+          "linkRadians": 0,
+          "effectorDelta": 0,
+          "worldError": 4.139559542370996e-09,
+          "raw35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.021940479278564455,
+              1.2614876556396484,
+              -0.00017983913421630582
+            ]
+          },
+          "solved35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.021940479278564455,
+              1.2614876556396484,
+              -0.00017983913421630582
+            ]
+          }
+        }
+      ],
+      "pixelsChangedByHalf": {
+        "toon": [
+          259,
+          270
+        ],
+        "pbr": [
+          259,
+          291
+        ]
+      }
+    },
+    {
+      "clip": "02_laugh",
+      "time": 4,
+      "panes": [
+        {
+          "pane": "PMX",
+          "grantRadians": 0.2845453191369916,
+          "linkRadians": 0.32291659891848096,
+          "effectorDelta": 0.012620167340201518,
+          "worldError": 0,
+          "raw35": {
+            "index": 35,
+            "local": [
+              -0.021940479278564455,
+              0.15558883666992188,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.025119677535058182,
+              1.260707175686391,
+              0.10822321057454624
+            ]
+          },
+          "solved35": {
+            "index": 35,
+            "local": [
+              -0.021940479278564455,
+              0.15558883666992188,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              -0.01006482913125827,
+              -0.10432271040321922,
+              -0.09550275453998898,
+              0.9898963052683646
+            ],
+            "world": [
+              -0.025119677535058182,
+              1.260707175686391,
+              0.10822321057454624
+            ]
+          }
+        },
+        {
+          "pane": "Toon",
+          "grantRadians": 0.2845453191369916,
+          "linkRadians": 0.3229164927261585,
+          "effectorDelta": 0.012620175743672248,
+          "worldError": 0.00010407602338578792,
+          "raw35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.02511447642148712,
+              1.260698276470353,
+              0.10827715742302099
+            ]
+          },
+          "solved35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              -0.01006482913125827,
+              -0.10432271040321922,
+              -0.095502754539989,
+              0.9898963052683646
+            ],
+            "world": [
+              -0.02511447642148712,
+              1.260698276470353,
+              0.10827715742302099
+            ]
+          }
+        },
+        {
+          "pane": "PBR",
+          "grantRadians": 0.2845453191369916,
+          "linkRadians": 0.3229164927261585,
+          "effectorDelta": 0.012620175743672248,
+          "worldError": 0.00010407602338578792,
+          "raw35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.02511447642148712,
+              1.260698276470353,
+              0.10827715742302099
+            ]
+          },
+          "solved35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              -0.01006482913125827,
+              -0.10432271040321922,
+              -0.095502754539989,
+              0.9898963052683646
+            ],
+            "world": [
+              -0.02511447642148712,
+              1.260698276470353,
+              0.10827715742302099
+            ]
+          }
+        }
+      ],
+      "pixelsChangedByHalf": {
+        "toon": [
+          28883,
+          28617
+        ],
+        "pbr": [
+          28883,
+          30659
+        ]
+      }
+    },
+    {
+      "clip": "22_apology",
+      "time": 1.6666666666666667,
+      "panes": [
+        {
+          "pane": "PMX",
+          "grantRadians": 0.43999996675132097,
+          "linkRadians": 0.5553888911686504,
+          "effectorDelta": 0.2377546964868506,
+          "worldError": 0,
+          "raw35": {
+            "index": 35,
+            "local": [
+              -0.021940479278564455,
+              0.15558883666992188,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.021940479272884388,
+              1.2492406127321964,
+              0.1652050684148747
+            ]
+          },
+          "solved35": {
+            "index": 35,
+            "local": [
+              -0.021940479278564455,
+              0.15558883666992188,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0.21822960685721884,
+              0,
+              0.9758974529585287
+            ],
+            "world": [
+              -0.021940479272884388,
+              1.2492406127321964,
+              0.1652050684148747
+            ]
+          }
+        },
+        {
+          "pane": "Toon",
+          "grantRadians": 0.43999996675132097,
+          "linkRadians": 0.5553904422014695,
+          "effectorDelta": 0.2377550198976823,
+          "worldError": 3.2227446017385475e-07,
+          "raw35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.021940479278564455,
+              1.249240599706086,
+              0.16520512697797582
+            ]
+          },
+          "solved35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0.21822960685721882,
+              0,
+              0.9758974529585287
+            ],
+            "world": [
+              -0.021940479278564455,
+              1.249240599706086,
+              0.16520512697797582
+            ]
+          }
+        },
+        {
+          "pane": "PBR",
+          "grantRadians": 0.43999996675132097,
+          "linkRadians": 0.5553904422014695,
+          "effectorDelta": 0.2377550198976823,
+          "worldError": 3.2227446017385475e-07,
+          "raw35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "world": [
+              -0.021940479278564455,
+              1.249240599706086,
+              0.16520512697797582
+            ]
+          },
+          "solved35": {
+            "index": 35,
+            "local": [
+              -0.021940479284244523,
+              0.15558883666992185,
+              -0.04906903266906738
+            ],
+            "rotation": [
+              0,
+              0.21822960685721882,
+              0,
+              0.9758974529585287
+            ],
+            "world": [
+              -0.021940479278564455,
+              1.249240599706086,
+              0.16520512697797582
+            ]
+          }
+        }
+      ],
+      "pixelsChangedByHalf": {
+        "toon": [
+          27255,
+          27188
+        ],
+        "pbr": [
+          27255,
+          27715
+        ]
+      }
+    }
+  ],
+  "validationIssue69": {
     "node": {
       "command": "npm test",
       "passed": 161,
@@ -730,5 +1447,157 @@
     "typecheck": "passed",
     "localLinksChecked": 445,
     "whitespace": "git diff --check passed"
-  }
+  },
+  "ukaIssue71Regression": [
+    {
+      "clip": "02_laugh",
+      "frame": 120,
+      "panes": [
+        {
+          "pane": "PMX",
+          "rawMaxSleeveGapMetres": 0.525221329443763,
+          "ikMaxSleeveGapMetres": 4.560860617118749e-06
+        },
+        {
+          "pane": "Toon",
+          "rawMaxSleeveGapMetres": 0.5252216717410046,
+          "ikMaxSleeveGapMetres": 3.2214740101697636e-06
+        },
+        {
+          "pane": "PBR",
+          "rawMaxSleeveGapMetres": 0.5252216717410046,
+          "ikMaxSleeveGapMetres": 3.2214740101697636e-06
+        }
+      ]
+    },
+    {
+      "clip": "22_apology",
+      "frame": 50,
+      "panes": [
+        {
+          "pane": "PMX",
+          "rawMaxSleeveGapMetres": 0.44548632593793885,
+          "ikMaxSleeveGapMetres": 2.7196997137974003e-06
+        },
+        {
+          "pane": "Toon",
+          "rawMaxSleeveGapMetres": 0.44548645397066733,
+          "ikMaxSleeveGapMetres": 2.7993983834445843e-06
+        },
+        {
+          "pane": "PBR",
+          "rawMaxSleeveGapMetres": 0.44548645397066733,
+          "ikMaxSleeveGapMetres": 2.7993983834445843e-06
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "date": "2026-10-31",
+    "node": {
+      "command": "npm test",
+      "passed": 165,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 43246.219042
+    },
+    "browser": {
+      "command": "MMD_PREVIEW_PORT=43182 npm run test:browser -- tests/browser/gene-ik.spec.ts tests/browser/sleeve-motion.spec.ts tests/browser/body-motion.spec.ts tests/browser/public-motion.spec.ts tests/browser/uka.spec.ts tests/browser/unified-demo.spec.ts tests/browser/example.spec.ts",
+      "fullRun": {
+        "status": "passed",
+        "statuses": {
+          "passed": 27,
+          "skipped": 1
+        },
+        "testCount": 28,
+        "durationMs": 885284.592,
+        "suites": {
+          "body-motion.spec.ts": {
+            "durationMs": 193985,
+            "attempts": 6,
+            "statuses": {
+              "passed": 6
+            }
+          },
+          "example.spec.ts": {
+            "durationMs": 74376,
+            "attempts": 5,
+            "statuses": {
+              "passed": 4,
+              "skipped": 1
+            }
+          },
+          "gene-ik.spec.ts": {
+            "durationMs": 79975,
+            "attempts": 2,
+            "statuses": {
+              "passed": 2
+            }
+          },
+          "public-motion.spec.ts": {
+            "durationMs": 177682,
+            "attempts": 5,
+            "statuses": {
+              "passed": 5
+            }
+          },
+          "sleeve-motion.spec.ts": {
+            "durationMs": 56871,
+            "attempts": 1,
+            "statuses": {
+              "passed": 1
+            }
+          },
+          "uka.spec.ts": {
+            "durationMs": 82319,
+            "attempts": 2,
+            "statuses": {
+              "passed": 2
+            }
+          },
+          "unified-demo.spec.ts": {
+            "durationMs": 217523,
+            "attempts": 7,
+            "statuses": {
+              "passed": 7
+            }
+          }
+        }
+      },
+      "finalGeneRun": {
+        "status": "passed",
+        "statuses": {
+          "passed": 3
+        },
+        "testCount": 3,
+        "durationMs": 107012.272
+      },
+      "uniqueApplicablePasses": 28,
+      "skipped": 1,
+      "skipReason": "Native WebGPU adapter unavailable; WebGL2 / ANGLE SwiftShader path passed",
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "release": "27.2.0",
+        "node": "v26.12.1",
+        "cpu": "Apple M4 Max",
+        "logicalCPUs": 16,
+        "workers": 1,
+        "channel": "chrome",
+        "conformanceMatrix": "representative",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "resolvedAttempts": [
+        "Default preview port 43180 occupied; used free port 43182 without disturbing its owner.",
+        "Initial Gene angular assertion used nonunit raw FLOAT key quaternions; normalized both measurement inputs. Production weighted grants already normalized source rotations. That attempt had one pass and one failure; runner was interrupted after test results during delayed teardown. Full and final focused runs subsequently exited normally with zero failures."
+      ]
+    },
+    "build": "npm run build passed after final implementation; existing large-chunk warning",
+    "typecheck": "npm run typecheck passed",
+    "localLinksChecked": 448,
+    "whitespace": "git diff --check and git diff --cached --check passed",
+    "externalReference": "Pinned three-mmd ordered GrantSolver/CCDIKSolver oracle passed; original Windows MMD and MikuDanceStudio parity unmeasured.",
+    "postMerge": "None required"
+  },
+  "historicalBodyMotionErrorsIssue": 69
 }

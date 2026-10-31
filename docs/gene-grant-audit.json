@@ -1,0 +1,751 @@
+{
+  "issue": 71,
+  "source": {
+    "repository": "mmdagent-ex/gene",
+    "commit": "c7eace43dffaccff6ad0597433ef85fa57c91e03",
+    "sha256": "7ce1902e0c834a79db7070c50dcb6444d73d734f6725cad35ea25aa2dbeca4b3"
+  },
+  "coordinates": "mmd-parser right handed; Z position reflected; PMX bind local quaternion identity; PMX local axes do not rotate the rest skeleton",
+  "policy": "IK On executes only dependency-closure grants in phase/layer/source-index order, grant before IK at a shared index. IK Off restores raw authored TRS. No simulation between phases.",
+  "schedule": [
+    {
+      "kind": "grant",
+      "index": 35,
+      "phase": "prePhysics",
+      "layer": 0
+    },
+    {
+      "kind": "ik",
+      "index": 38,
+      "phase": "prePhysics",
+      "layer": 0
+    },
+    {
+      "kind": "ik",
+      "index": 178,
+      "phase": "prePhysics",
+      "layer": 0
+    },
+    {
+      "kind": "ik",
+      "index": 86,
+      "phase": "prePhysics",
+      "layer": 1
+    },
+    {
+      "kind": "ik",
+      "index": 87,
+      "phase": "prePhysics",
+      "layer": 1
+    },
+    {
+      "kind": "ik",
+      "index": 97,
+      "phase": "prePhysics",
+      "layer": 1
+    },
+    {
+      "kind": "ik",
+      "index": 98,
+      "phase": "prePhysics",
+      "layer": 1
+    }
+  ],
+  "controllers": [
+    {
+      "index": 38,
+      "name": "右腕xcIK",
+      "phase": "prePhysics",
+      "layer": 0,
+      "effector": {
+        "index": 37,
+        "name": "右腕xcb"
+      },
+      "links": [
+        {
+          "index": 36,
+          "name": "右腕xca"
+        }
+      ],
+      "dependencies": [
+        {
+          "index": 0,
+          "name": "全ての親"
+        },
+        {
+          "index": 1,
+          "name": "センター"
+        },
+        {
+          "index": 2,
+          "name": "グルーブ"
+        },
+        {
+          "index": 5,
+          "name": "上半身"
+        },
+        {
+          "index": 6,
+          "name": "上半身補"
+        },
+        {
+          "index": 7,
+          "name": "上半身2"
+        },
+        {
+          "index": 26,
+          "name": "右肩"
+        },
+        {
+          "index": 27,
+          "name": "右腕"
+        },
+        {
+          "index": 28,
+          "name": "右腕捩"
+        },
+        {
+          "index": 30,
+          "name": "右ひじ"
+        },
+        {
+          "index": 35,
+          "name": "右肩連"
+        },
+        {
+          "index": 36,
+          "name": "右腕xca"
+        },
+        {
+          "index": 37,
+          "name": "右腕xcb"
+        },
+        {
+          "index": 38,
+          "name": "右腕xcIK"
+        }
+      ],
+      "requiredGrants": [
+        35
+      ]
+    },
+    {
+      "index": 178,
+      "name": "前クローク2_1xcIK",
+      "phase": "prePhysics",
+      "layer": 0,
+      "effector": {
+        "index": 177,
+        "name": "前クローク2_1xc+"
+      },
+      "links": [
+        {
+          "index": 176,
+          "name": "前クローク2_1xca"
+        }
+      ],
+      "dependencies": [
+        {
+          "index": 0,
+          "name": "全ての親"
+        },
+        {
+          "index": 1,
+          "name": "センター"
+        },
+        {
+          "index": 2,
+          "name": "グルーブ"
+        },
+        {
+          "index": 5,
+          "name": "上半身"
+        },
+        {
+          "index": 6,
+          "name": "上半身補"
+        },
+        {
+          "index": 7,
+          "name": "上半身2"
+        },
+        {
+          "index": 26,
+          "name": "右肩"
+        },
+        {
+          "index": 27,
+          "name": "右腕"
+        },
+        {
+          "index": 176,
+          "name": "前クローク2_1xca"
+        },
+        {
+          "index": 177,
+          "name": "前クローク2_1xc+"
+        },
+        {
+          "index": 178,
+          "name": "前クローク2_1xcIK"
+        }
+      ],
+      "requiredGrants": []
+    },
+    {
+      "index": 86,
+      "name": "左足ＩＫ",
+      "phase": "prePhysics",
+      "layer": 1,
+      "effector": {
+        "index": 83,
+        "name": "左足首"
+      },
+      "links": [
+        {
+          "index": 81,
+          "name": "左ひざ"
+        },
+        {
+          "index": 79,
+          "name": "左足"
+        }
+      ],
+      "dependencies": [
+        {
+          "index": 0,
+          "name": "全ての親"
+        },
+        {
+          "index": 1,
+          "name": "センター"
+        },
+        {
+          "index": 2,
+          "name": "グルーブ"
+        },
+        {
+          "index": 3,
+          "name": "下半身"
+        },
+        {
+          "index": 79,
+          "name": "左足"
+        },
+        {
+          "index": 81,
+          "name": "左ひざ"
+        },
+        {
+          "index": 83,
+          "name": "左足首"
+        },
+        {
+          "index": 85,
+          "name": "左足IK親"
+        },
+        {
+          "index": 86,
+          "name": "左足ＩＫ"
+        }
+      ],
+      "requiredGrants": []
+    },
+    {
+      "index": 87,
+      "name": "左つま先ＩＫ",
+      "phase": "prePhysics",
+      "layer": 1,
+      "effector": {
+        "index": 84,
+        "name": "左足先"
+      },
+      "links": [
+        {
+          "index": 83,
+          "name": "左足首"
+        }
+      ],
+      "dependencies": [
+        {
+          "index": 0,
+          "name": "全ての親"
+        },
+        {
+          "index": 1,
+          "name": "センター"
+        },
+        {
+          "index": 2,
+          "name": "グルーブ"
+        },
+        {
+          "index": 3,
+          "name": "下半身"
+        },
+        {
+          "index": 79,
+          "name": "左足"
+        },
+        {
+          "index": 81,
+          "name": "左ひざ"
+        },
+        {
+          "index": 83,
+          "name": "左足首"
+        },
+        {
+          "index": 84,
+          "name": "左足先"
+        },
+        {
+          "index": 85,
+          "name": "左足IK親"
+        },
+        {
+          "index": 86,
+          "name": "左足ＩＫ"
+        },
+        {
+          "index": 87,
+          "name": "左つま先ＩＫ"
+        }
+      ],
+      "requiredGrants": []
+    },
+    {
+      "index": 97,
+      "name": "右足ＩＫ",
+      "phase": "prePhysics",
+      "layer": 1,
+      "effector": {
+        "index": 94,
+        "name": "右足首"
+      },
+      "links": [
+        {
+          "index": 92,
+          "name": "右ひざ"
+        },
+        {
+          "index": 90,
+          "name": "右足"
+        }
+      ],
+      "dependencies": [
+        {
+          "index": 0,
+          "name": "全ての親"
+        },
+        {
+          "index": 1,
+          "name": "センター"
+        },
+        {
+          "index": 2,
+          "name": "グルーブ"
+        },
+        {
+          "index": 3,
+          "name": "下半身"
+        },
+        {
+          "index": 90,
+          "name": "右足"
+        },
+        {
+          "index": 92,
+          "name": "右ひざ"
+        },
+        {
+          "index": 94,
+          "name": "右足首"
+        },
+        {
+          "index": 96,
+          "name": "右足IK親"
+        },
+        {
+          "index": 97,
+          "name": "右足ＩＫ"
+        }
+      ],
+      "requiredGrants": []
+    },
+    {
+      "index": 98,
+      "name": "右つま先ＩＫ",
+      "phase": "prePhysics",
+      "layer": 1,
+      "effector": {
+        "index": 95,
+        "name": "右足先"
+      },
+      "links": [
+        {
+          "index": 94,
+          "name": "右足首"
+        }
+      ],
+      "dependencies": [
+        {
+          "index": 0,
+          "name": "全ての親"
+        },
+        {
+          "index": 1,
+          "name": "センター"
+        },
+        {
+          "index": 2,
+          "name": "グルーブ"
+        },
+        {
+          "index": 3,
+          "name": "下半身"
+        },
+        {
+          "index": 90,
+          "name": "右足"
+        },
+        {
+          "index": 92,
+          "name": "右ひざ"
+        },
+        {
+          "index": 94,
+          "name": "右足首"
+        },
+        {
+          "index": 95,
+          "name": "右足先"
+        },
+        {
+          "index": 96,
+          "name": "右足IK親"
+        },
+        {
+          "index": 97,
+          "name": "右足ＩＫ"
+        },
+        {
+          "index": 98,
+          "name": "右つま先ＩＫ"
+        }
+      ],
+      "requiredGrants": []
+    }
+  ],
+  "grants": [
+    {
+      "destination": {
+        "index": 13,
+        "name": "左目"
+      },
+      "source": {
+        "index": 11,
+        "name": "両目"
+      },
+      "flags": 283,
+      "flagsHex": "0x11b",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": 0.15000000596046448,
+      "phase": "prePhysics",
+      "layer": 0,
+      "requiredByControllers": []
+    },
+    {
+      "destination": {
+        "index": 15,
+        "name": "右目"
+      },
+      "source": {
+        "index": 11,
+        "name": "両目"
+      },
+      "flags": 283,
+      "flagsHex": "0x11b",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": 0.15000000596046448,
+      "phase": "prePhysics",
+      "layer": 0,
+      "requiredByControllers": []
+    },
+    {
+      "destination": {
+        "index": 20,
+        "name": "左腕捩連"
+      },
+      "source": {
+        "index": 19,
+        "name": "左腕捩"
+      },
+      "flags": 275,
+      "flagsHex": "0x113",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": 0.5,
+      "phase": "prePhysics",
+      "layer": 0,
+      "requiredByControllers": []
+    },
+    {
+      "destination": {
+        "index": 23,
+        "name": "左手捩連"
+      },
+      "source": {
+        "index": 22,
+        "name": "左手捩"
+      },
+      "flags": 275,
+      "flagsHex": "0x113",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": 0.5,
+      "phase": "prePhysics",
+      "layer": 0,
+      "requiredByControllers": []
+    },
+    {
+      "destination": {
+        "index": 29,
+        "name": "右腕捩連"
+      },
+      "source": {
+        "index": 28,
+        "name": "右腕捩"
+      },
+      "flags": 275,
+      "flagsHex": "0x113",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": 0.5,
+      "phase": "prePhysics",
+      "layer": 0,
+      "requiredByControllers": []
+    },
+    {
+      "destination": {
+        "index": 32,
+        "name": "右手捩連"
+      },
+      "source": {
+        "index": 31,
+        "name": "右手捩"
+      },
+      "flags": 275,
+      "flagsHex": "0x113",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": 0.5,
+      "phase": "prePhysics",
+      "layer": 0,
+      "requiredByControllers": []
+    },
+    {
+      "destination": {
+        "index": 35,
+        "name": "右肩連"
+      },
+      "source": {
+        "index": 26,
+        "name": "右肩"
+      },
+      "flags": 257,
+      "flagsHex": "0x101",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": 1,
+      "phase": "prePhysics",
+      "layer": 0,
+      "destinationRest": {
+        "translationPMX": [
+          -0.27425599105305654,
+          1.9448604583740234,
+          -0.6133629083633423
+        ],
+        "translationMetres": [
+          -0.021940479284244523,
+          0.15558883666992188,
+          -0.04906903266906738
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "sourceRest": {
+        "translationPMX": [
+          -0.27425599105305654,
+          1.944859504699707,
+          -0.6133629083633423
+        ],
+        "translationMetres": [
+          -0.021940479284244523,
+          0.15558876037597658,
+          -0.04906903266906738
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "destinationAncestry": [
+        {
+          "index": 35,
+          "name": "右肩連"
+        },
+        {
+          "index": 7,
+          "name": "上半身2"
+        },
+        {
+          "index": 6,
+          "name": "上半身補"
+        },
+        {
+          "index": 5,
+          "name": "上半身"
+        },
+        {
+          "index": 2,
+          "name": "グルーブ"
+        },
+        {
+          "index": 1,
+          "name": "センター"
+        },
+        {
+          "index": 0,
+          "name": "全ての親"
+        }
+      ],
+      "sourceAncestry": [
+        {
+          "index": 26,
+          "name": "右肩"
+        },
+        {
+          "index": 7,
+          "name": "上半身2"
+        },
+        {
+          "index": 6,
+          "name": "上半身補"
+        },
+        {
+          "index": 5,
+          "name": "上半身"
+        },
+        {
+          "index": 2,
+          "name": "グルーブ"
+        },
+        {
+          "index": 1,
+          "name": "センター"
+        },
+        {
+          "index": 0,
+          "name": "全ての親"
+        }
+      ],
+      "sourceGrantInfluences": [],
+      "sourceIKInfluences": [],
+      "requiredByControllers": [
+        38
+      ]
+    },
+    {
+      "destination": {
+        "index": 184,
+        "name": "横クローク2_1"
+      },
+      "source": {
+        "index": 36,
+        "name": "右腕xca"
+      },
+      "flags": 257,
+      "flagsHex": "0x101",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": 0.20000000298023224,
+      "phase": "prePhysics",
+      "layer": 2,
+      "requiredByControllers": []
+    },
+    {
+      "destination": {
+        "index": 187,
+        "name": "横クローク3_1"
+      },
+      "source": {
+        "index": 36,
+        "name": "右腕xca"
+      },
+      "flags": 257,
+      "flagsHex": "0x101",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": 0.10000000149011612,
+      "phase": "prePhysics",
+      "layer": 2,
+      "requiredByControllers": []
+    },
+    {
+      "destination": {
+        "index": 190,
+        "name": "横クローク4_1"
+      },
+      "source": {
+        "index": 36,
+        "name": "右腕xca"
+      },
+      "flags": 257,
+      "flagsHex": "0x101",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": -0.10000000149011612,
+      "phase": "prePhysics",
+      "layer": 2,
+      "requiredByControllers": []
+    },
+    {
+      "destination": {
+        "index": 193,
+        "name": "横クローク5_1"
+      },
+      "source": {
+        "index": 36,
+        "name": "右腕xca"
+      },
+      "flags": 257,
+      "flagsHex": "0x101",
+      "space": "ordinary/global (source bone-local pose)",
+      "rotation": true,
+      "translation": false,
+      "rate": -0.5,
+      "phase": "prePhysics",
+      "layer": 2,
+      "requiredByControllers": []
+    }
+  ]
+}

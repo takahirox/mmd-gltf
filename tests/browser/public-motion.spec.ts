@@ -13,14 +13,13 @@ for(const model of ['uka','gene'])test(`${model}: pinned real VMD, shared absolu
   const state=()=>page.evaluate(()=>(window as any).mmdExample);
   const rest=await readComparisonBitmap(page);
   const initial=await state();
-  expect(initial.execution).toMatchObject({ik:model==='uka',ikState:model==='uka'?'on':'unavailable',grant:false,physics:false,helper:false,fallbackMixer:false});
-  expect(initial.execution.chains.map((s:any)=>s.executed.length)).toEqual(model==='uka'?[10,10,10]:[0,0,0]);
-  if(model==='gene') {
-    await expect(page.locator('#comparison-ik')).toBeDisabled();
-    await expect(page.locator('#comparison-ik')).not.toBeChecked();
-    await expect(page.locator('#comparison-ik')).toHaveAttribute('title',/append dependency 35/);
-    for(const chain of initial.execution.chains)expect(chain).toMatchObject({supported:5,unsupported:1,available:false,executed:[]});
-    await expect(page.locator('#pmx-status')).toContainText('IK unavailable');
+  expect(initial.execution).toMatchObject({ik:true,ikState:'on',grant:model==='gene',physics:false,helper:false,fallbackMixer:false});
+  expect(initial.execution.chains.map((s:any)=>s.executed.length)).toEqual(model==='uka'?[10,10,10]:[6,6,6]);
+  await expect(page.locator('#comparison-ik')).toBeEnabled();
+  await expect(page.locator('#comparison-ik')).toBeChecked();
+  if(model==='gene')for(const chain of initial.execution.chains) {
+    expect(chain).toMatchObject({supported:6,unsupported:0,available:true,appliedGrants:[35]});
+    expect(chain.order.map((s:any)=>[s.kind,s.index])).toEqual([['grant',35],...chain.controllers.map((c:any)=>['ik',c.index])]);
   }
   expect(initial.binding.boneTracks).toBe(model==='uka'?301:212);
   expect(initial.binding.activeMorphs.length).toBeGreaterThanOrEqual(3);

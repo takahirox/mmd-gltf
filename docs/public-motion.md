@@ -114,17 +114,17 @@ full shared rest and weights before another player claims the root.
 The MMD side uses cached `MMDLoader.loadAnimation()` clips and a raw
 `AnimationMixer`, filtered to exact bone names and vertex-only morphs.
 `updateMMDUVs(mesh,false)` disables extra UV execution. Absolute seek restores
-previous raw IK-link rotations before the mixer evaluates again, preventing both
-untracked-link accumulation and Three.js property-cache skips. Retained players
+previous raw IK-link and prerequisite-grant transforms before the mixer evaluates
+again, preventing both untracked-link accumulation and Three.js property-cache skips. Retained players
 write their full original rest on every seek. Rest also explicitly restores all
 PMX bone transforms and clears all weights. Hidden documents, inactive viewers
 and cached page suspension pause the same shared clock.
 
 All conversions use `mode:'bdef', solver:'none', physics:'none'`. The public **IK**
-checkbox defaults On for Uka and applies every one of its ten source chains to
+checkbox defaults On for Uka (ten chains) and Gene Light (six chains), applied to
 three independently loaded skins (PMX, Toon, PBR). Off bypasses every IK chain and
-restores raw VMD rotations, including links without animation tracks. Rest uses
-no VMD controller switches. Changing motion clears the previous clip's switches;
+restores raw VMD positions and rotations, including untracked procedural joints.
+Rest uses no VMD controller switches. Changing motion clears the previous clip's switches;
 each absolute seek derives the current switches from the selected source's display
 records at frame ≤ time × 30. Global Off overrides all records.
 
@@ -147,23 +147,39 @@ sleeve targets, never writable IK links. Their raw VMD transforms remain unchang
 IK does not project authored twists or enable a general fixed-axis solver.
 Eye grants are outside all IK dependency closures and remain off. The general
 `MMD_skeleton_solver` v3 executor's fixed-axis limitation is unchanged; this
-separate IK-only adapter neither strips source flags nor claims full PMX deformation.
+separate comparison adapter neither strips source flags nor claims full PMX deformation.
 
 Gene has six controllers in execution order: 38 (`右腕xcIK`), 178
 (`前クローク2_1xcIK`), 86/87/97/98 (foot/toe). Controller 178 has full XYZ bounds;
 controller 38's effector/link ancestry includes append bone 35 (`右肩連`, a
-rotation grant from 26 with ratio 1). Five chains are independently supported;
-one needs append execution. To keep append off and avoid a partial generic On
-claim, **Gene's entire IK control is unchecked and disabled**, with “IK unavailable”
-status and the dependency reason in its title and collapsed diagnostics. Zero
-chains execute. Follow-up work must implement and validate ordered append plus
-IK symmetrically before enabling Gene; simply dropping chain 38 is insufficient.
+rotation grant from 26 with ratio 1). **All six chains are supported and IK defaults
+On.** The required shoulder grant executes before controller 38, in pre-physics
+layer 0. Controller 178 follows in layer 0, then 86/87/97/98 in layer 1.
+The remaining ten Gene grants are outside the dependency closure and remain off.
+The [pinned source graph audit](gene-grant-audit.json) records flags, spaces,
+rest transforms, ancestry and source influences. Bone 26 is neither grant-driven
+nor an IK-written link; the other five chains read no grant-written ancestor.
+
+Grant execution belongs to IK: Off restores all procedural writes to raw authored
+TRS. A motion-disabled controller also skips any grant needed only by that chain.
+Ordinary/global grants read the source bone-local translation delta and quaternion;
+local grants read accumulated model-space deltas from the bind pose, excluding
+mesh placement. Rotation uses shortest-hemisphere weighted quaternion powers,
+including negative and extrapolated finite rates; translation adds its weighted
+delta. Each write updates matrices before the next downstream consumer. Operations
+interleave in source order rather than running all grants first. Cyclic/missing
+sources, mismatched flags, nonfinite rates, and later required grant dependencies
+are explicitly unavailable; transport remains valid without execution.
+
 Writable fixed/local-axis links, unresolved external-parent dependencies, malformed
 chains/bounds and unsupported caps likewise disable a whole model. Invalid raw
-poses are detected before any instance executes. There is no silent downselection.
+poses are detected before any instance executes. A runtime failure restores all
+three skins atomically to raw pose; the next valid evaluation can recover. There
+is no silent downselection.
 
 `info.execution` reports `ikState` (`off`, `on`, `unavailable`), actual executed
-controller indices and VMD-disabled controller indices separately for all three
+controller indices, VMD-disabled controller indices, applied grant IDs and actual
+phase/layer/source order separately for all three
 skins, supported/unsupported counts and reasons. `ik` means at least one chain
 actually ran. Executed does not mean a chain necessarily changed a pose or reached
 its target; stationary keys and limits can produce no effect or residual error.
@@ -171,7 +187,7 @@ The visible control and counts remain compact; full records live in About & cred
 
 See the [real-source sleeve investigation](uka-sleeves.md) for preserved historical
 six-chain measurements. Those measurements alone are not evidence of ten-chain
-execution. Append, physics, non-vertex morphs and VMD scene controls remain off.
+execution. Unrelated grants, physics, non-vertex morphs and VMD scene controls remain off.
 Bullet/Ammo never starts. There is no live upstream runtime fetch or original
 Windows MMD numerical parity claim. Public View presets were removed; the shared
 OrbitControls camera is initialized once per model and persists across motion,
@@ -256,5 +272,86 @@ suites passed 14 cases with the same one WebGPU skip, using real pointer gesture
 under reduced motion and retaining exact material/outline pixel assertions;
 the unchanged body/public-playback suites contributed 11 passes. All 25 applicable
 cases therefore pass. Native WebGPU had no adapter; original Windows MMD parity
-remains unmeasured. Gene's append-dependent IK remains explicitly unavailable,
-with the ordered append/IK follow-up described above. No post-merge check is required.
+remains unmeasured. At the Issue #69 checkpoint Gene's append-dependent IK was
+unavailable; Issue #71 below resolves that prerequisite. No post-merge check is required.
+
+
+### Issue #71 ordered Gene grant evidence
+
+The pinned source audit is reproducible with `npx tsx tools/audit-comparison-grants.ts`
+after fetching the public assets. Bone 35 (`右肩連`) has flags `0x101`: ordinary/global,
+rotation only, rate 1, pre-physics, layer 0, source 26 (`右肩`). Both bind quaternions
+are identity; the audit records their distinct local translations and full ancestry.
+Only controller 38 reads grant 35; the five other controllers have no indirect grant
+inputs. Uka's grants 34/36 read eye controller 32 at rate 0.0700000003 and remain
+outside its ten-chain IK closure.
+
+[Node reference measurements](gene-grant-node-evidence.json) use the pinned
+`@takahirox/three-mmd@0.1.2` helper's ordered PMX path with its own GrantSolver and
+CCDIKSolver, with physics disabled. The reference processes all source grants;
+the comparison processes only grant 35. All six chains' dependency poses agree
+within 1e-10 m at the tested frames of Happy, Laugh and Apology. The reference
+also verifies the applicable-grant policy when VMD disables the arm controller.
+Removing grant 35 changes effector 37 by **0.00767045 m at Laugh frame 120** and
+**0.02708785 m at Apology frame 50**. Happy's static shoulder produces zero append
+rotation, so it alone would not detect a stub.
+
+The general pure solver was considered, but its execution profiles impose
+additional fixed-axis and graph constraints that do not describe this raw public
+comparison. The public transport stays `solver:'none', physics:'none'`. The
+comparison adapter implements the small required grant composition, checked
+against the independent pinned library. Synthetic cases cover local/model-space
+and ordinary grants, rotation/translation, nonidentity rest, negative and
+extrapolated rates, and a genuine IK → grant → IK schedule. No unrelated PMX
+features are enabled, and no Windows MMD or MikuDanceStudio parity is claimed.
+
+Real browser conformance measures all three independently loaded skins, including
+bone 35's appended rotation, controller 38's link 36 (`右腕xca`) and effector 37
+(`右腕xcb`), and every other controller's target/link/effector. The browser uses
+normalized quaternions for angular measurements because raw FLOAT VMD keys can
+have small length errors. The reference loader's approximate Bezier inverse and
+the retained player's finer inverse still produce small cross-pane differences.
+
+| Clip / frame | Shoulder grant angle | Largest effector 37 IK On/Off displacement | Largest controller target/link/effector PMX/glTF error |
+| --- | ---: | ---: | ---: |
+| Happy / 15 | 0 rad | 0 m | 0.00000000414 m |
+| Laugh / 120 | 0.284545 rad | 0.0126202 m | 0.000104076 m |
+| Apology / 50 | 0.440000 rad | 0.237755 m | 0.0000003223 m |
+
+These On/Off displacements include both grant and IK; the Node ablation above
+isolates grant's contribution. Independent left-PMX and right-Toon/PBR pixels
+change under IK. Repeated/backward seeks, paused Off→On→Off, A→B→A, Rest, Loop,
+material changes and Uka↔Gene model round trips retain raw-pose ownership and the
+shared clock. Clip/material/IK changes issue no asset requests and preserve model
+roots and GPU geometry/texture counts. Physics stays off throughout.
+
+At 1200 × 1000 browser viewport size, pixel changes under On/Off were:
+
+| Motion | PMX pixels | Toon pixels | PBR pixels |
+| --- | ---: | ---: | ---: |
+| Happy / 15 | 259 | 270 | 291 |
+| Laugh / 120 | 28,883 | 28,617 | 30,659 |
+| Apology / 50 | 27,255 | 27,188 | 27,715 |
+
+These are canvas pixels with any RGB change, measured independently per half;
+Toon and PBR use separate loaded skeletons. Happy's small change comes from the
+remaining IK, not a nonzero shoulder grant. The [full acceptance record](comparison-ik-evidence.json)
+includes per-pane grant/link angles, effector positions, execution IDs/order,
+per-half pixels, source hashes, and the remeasured Uka sleeve regression.
+Regenerate the Node measurements with
+`MMD_IK_EVIDENCE=1 npx tsx --test tests/comparison-ik.test.ts`.
+
+Validation on 2026-10-31: final `npm run build`, `npm run typecheck`, `npm test`
+(165 passed; no failures/skips), `npm run check:links` (448 links/anchors/assets),
+and Git whitespace checks passed. The seven browser suites `gene-ik`,
+`body-motion`, `public-motion`, `sleeve-motion`, `uka`, `example` and `unified-demo`
+passed 27 cases with one native-WebGPU skip. After the final binding/inventory
+checks and added missing-source fixture, the rebuilt app's three Gene cases all
+passed, yielding 28 unique applicable browser passes and one skip overall.
+Use `MMD_PREVIEW_PORT=43182`; the default preview port was occupied. The first
+focused attempt failed an angular assertion on nonunit FLOAT quaternion inputs;
+normalizing the measurement resolved it. Production grant inputs already used
+normalization. The final full and focused runs exited normally with no failures.
+Native WebGPU had no adapter; WebGL2 used Chrome / ANGLE SwiftShader. No Bullet or
+Ammo requests occurred. Original Windows MMD / MikuDanceStudio parity remains
+unmeasured. No post-merge check is required.

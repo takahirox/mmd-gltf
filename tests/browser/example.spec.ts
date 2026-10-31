@@ -98,7 +98,7 @@ for (const backend of ['webgl', 'webgpu']) {
     await expect(accuracy).toContainText('Exact MMD visual/physics fidelity is unverified');
     await expect(accuracy).toContainText('solvers and physics use bounded profiles');
     await expect(accuracy).toContainText('IK evaluates all applicable source chains in both panes');
-    await expect(accuracy).toContainText('Grant/append and physics remain off');
+    await expect(accuracy).toContainText('unrelated grants and physics remain off');
     await expect(accuracy).toBeHidden();
     await page.locator('#about-demo > summary').click();
     await expect(accuracy).toBeVisible();
