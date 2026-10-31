@@ -116,6 +116,14 @@
       ]
     }
   ],
+  "publicationPreparation": {
+    "checkedOn": "2026-10-31",
+    "upstreamIssueComments": 1,
+    "closingComment": "https://github.com/takahirox/three-mmd-loader/issues/106#issuecomment-6540329253",
+    "closingOutcome": "Reports successful upstream Tests/Pages verification for a05444db048c7329a56e34501193f0fe1845aa59; corrected npm release, downstream migration and physical Android checks remain separate work.",
+    "registryRecheck": "npm view @takahirox/three-mmd dist-tags version gitHead --json still reports latest/version 0.1.2 and published gitHead 5ae203246ccffd86a3e8fb7be0e34b9559c33a46. Retain the shim.",
+    "scope": "Documentation-only update for the newly added closing comment; prior continuation results below remain historical evidence. Runtime suites were not repeated during publication preparation."
+  },
   "priorChecksNote": "The checks, environment, browserRuns and desktopUkaNetwork above record the initial implementation, not this continuation. Fresh continuation results are recorded separately below.",
   "dependencyContinuation": {
     "checkedOn": "2026-10-31",

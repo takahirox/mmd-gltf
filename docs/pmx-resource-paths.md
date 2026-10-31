@@ -14,8 +14,11 @@ The maintainer-requested library handoff is satisfied by
 The library's own Task completed it through
 [upstream PR #107](https://github.com/takahirox/three-mmd-loader/pull/107), merged
 at `a05444db048c7329a56e34501193f0fe1845aa59` on 2026-10-31. Issue #106 is
-closed as completed and has no comments. This downstream Task does not need to
-create an upstream branch or PR. Issue #73 permits the documented, tested shim
+closed as completed. Its [closing comment](https://github.com/takahirox/three-mmd-loader/issues/106#issuecomment-6540329253)
+reports successful upstream post-merge Tests/Pages verification and explicitly
+leaves a corrected npm release, downstream migration and physical Android checks
+as separate work. This downstream Task does not need to create an upstream branch
+or PR. Issue #73 permits the documented, tested shim
 while a corrected release is unavailable; release migration is follow-up work.
 Physical Android verification remains a separate, pending post-merge check below.
 
