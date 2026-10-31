@@ -9,25 +9,37 @@ and conversion provenance remain unchanged.
 
 ## Upstream fix and temporary integration
 
-This is a partial implementation of Issue #73 and does not close it. Submitting
-the tested patch to the reusable upstream library remains required work; the
-local patch and demo shim do not satisfy that requirement. Keep #73 open for
-upstream submission, a corrected release and dependency migration. Physical
-Android verification remains a separate, pending post-merge check below.
+The maintainer-requested library handoff is satisfied by
+[three-mmd-loader #106](https://github.com/takahirox/three-mmd-loader/issues/106).
+The library's own Task completed it through
+[upstream PR #107](https://github.com/takahirox/three-mmd-loader/pull/107), merged
+at `a05444db048c7329a56e34501193f0fe1845aa59` on 2026-10-31. Issue #106 is
+closed as completed and has no comments. This downstream Task does not need to
+create an upstream branch or PR. Issue #73 permits the documented, tested shim
+while a corrected release is unavailable; release migration is follow-up work.
+Physical Android verification remains a separate, pending post-merge check below.
 
-The latest published `@takahirox/three-mmd` was `0.1.2` when checked on
-2026-10-31. Its MaterialBuilder concatenates `resourcePath + filePath` before
-cache lookup, handler selection and image loading. A LoadingManager URL modifier
-would run too late to fix all of those operations.
+Source completion is distinct from release availability. At the merged revision,
+[MaterialBuilder](https://github.com/takahirox/three-mmd-loader/blob/a05444db048c7329a56e34501193f0fe1845aa59/src/loaders/MMDLoader.ts)
+calls the new resolver before cache lookup, handler selection and loading, but
+`package.json` still says `0.1.2`. On 2026-10-31,
+`npm view @takahirox/three-mmd dist-tags versions --json` still listed `0.1.2` as latest
+with no newer version. `npm view @takahirox/three-mmd@0.1.2 gitHead` identifies
+`5ae203246ccffd86a3e8fb7be0e34b9559c33a46`, the older published source.
+The lockfile-installed package still concatenates `resourcePath + filePath`
+before cache lookup, handler selection and image loading. A LoadingManager URL
+modifier would run too late to fix all of those operations, so the dependency
+and shim remain necessary until a corrected release is published.
 
 [The upstream source patch](../patches/three-mmd-loader-resource-path.patch)
 targets `takahirox/three-mmd-loader` commit
 `5ae203246ccffd86a3e8fb7be0e34b9559c33a46`. It adds a reusable resolver, calls it
 at the original concatenation site, uses the resolved URL for TGA selection and
 cached-failure diagnostics, and includes Node tests of the resolver and MaterialBuilder. The
-patch was applied locally and tested against upstream source. It has **not** been
-pushed, submitted or published; this task authorizes a worktree commit only.
-From that upstream checkout it can be reviewed/applied with:
+patch was applied locally and tested against that baseline and supplied as
+candidate implementation evidence in #106. It is retained as historical handoff
+evidence, not as a patch to apply to the now-corrected upstream main or to
+`node_modules`. To reproduce its original baseline validation:
 
 ```sh
 git apply --check --unidiff-zero /path/to/mmd-gltf/patches/three-mmd-loader-resource-path.patch
@@ -46,7 +58,8 @@ after the synchronous loader call. It changes no prototype, parser record or fil
 in `node_modules`. Animation-only loaders do not fetch model textures. The
 dependency and lockfile intentionally remain pinned at `0.1.2`.
 
-After a corrected upstream release, update the dependency and lockfile, replace
+After a corrected upstream release, verify the published package contains the
+merged resolver/loader correction, update the dependency and lockfile, replace
 the factory call with ordinary `new MMDLoader(manager)`, and remove the shim,
 local resolver and patch. Keep the behavior/network tests against the corrected
 loader when doing so.
@@ -87,8 +100,12 @@ for actual command results.
 Desktop browser success does not establish Android compatibility. HTTP browser
 URL parsers can already canonicalize a backslash even before this change; the
 original error string alone never proved a 404 or the Android failure's cause.
-No physical Android device was available (`adb devices -l` listed none), so
+Physical Android browser verification has not been performed, so
 **real Android cold/warm loads and the original failure's cause are unverified**.
+The original validation recorded no attached device. The dependency-continuation
+check detected a Pixel 7a through ADB; device detection alone establishes no Chrome
+request, decode or rendering result. The required deployed checks remain pending
+under the post-merge plan below.
 
 ## Required Android verification after merge
 

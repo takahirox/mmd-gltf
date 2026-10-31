@@ -38,6 +38,13 @@ Markdown syntax, links, anchors, whitespace, and consistency. Do not require
 unrelated runtime suites or introduce tooling solely to review documentation.
 Follow the [validation guidance](development-flow.md#2-implement-and-validate).
 
+Apply the [test and CI principles](browser-ci.md#test-and-ci-principles). For new
+or expanded tests, review the additional defects detected, existing or duplicate
+coverage, and execution/maintenance cost together. Ask:
+
+> Does this change provide sufficient confidence with the lightest appropriate
+> validation, without redundant execution?
+
 Require mandatory pre-merge acceptance to be achievable and verifiable before
 merge. Keep optional validation separate. Human confirmation, physical-device
 testing, subjective evaluation, and external approval are mandatory only when
