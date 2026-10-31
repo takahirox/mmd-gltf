@@ -1,0 +1,381 @@
+{
+  "issue": 73,
+  "upstreamBase": "5ae203246ccffd86a3e8fb7be0e34b9559c33a46",
+  "dependency": "@takahirox/three-mmd@0.1.2 with an instance-scoped compatibility shim",
+  "upstreamPublication": "Issue handoff satisfied by three-mmd-loader #106 (closed as completed); library source fix merged through #107 at a05444db048c7329a56e34501193f0fe1845aa59. Corrected npm release remains unavailable; retain the scoped shim and historical patch pending dependency migration.",
+  "rawHairTexture": "tex\\hair_s01.png",
+  "expectedRequestPath": "/mmd-gltf/uka/tex/hair_s01.png",
+  "physicalAndroid": {
+    "status": "unverified",
+    "reason": "Physical Android Chrome browser checks have not been performed; required deployed verification remains pending after merge. Original validation had no attached device; continuation ADB discovery detected a Pixel 7a, which establishes no browser result.",
+    "requiredPostMergePlan": "docs/pmx-resource-paths.md",
+    "originalFailureCause": "Unproven; canonicalization does not establish that request or decode/memory failures are resolved."
+  },
+  "checks": {
+    "build": "passed",
+    "typecheck": "passed",
+    "nodeTests": "170 passed, 0 failed, 0 skipped; final resource-path tests also rerun after resolver changes",
+    "upstreamSourceTests": "7 passed, 0 failed, 0 skipped (resource-path and subtexture)",
+    "playwright": "29 distinct cases passed across a 28-case regression run and a 3-case final targeted run; 0 failed, 0 skipped",
+    "links": "457 links passed",
+    "diffCheck": "passed (working and staged diffs)",
+    "upstreamSourceTypecheck": "passed with the installed TypeScript 5.9.3 / Three.js 0.186.1 toolchain",
+    "upstreamPatchApplication": "passed; zero-context patch checked and applied to the recorded base, then 7 source tests passed"
+  },
+  "environment": {
+    "node": "v26.12.1",
+    "platform": "darwin arm64",
+    "browser": "Google Chrome 156.0.8078.74",
+    "renderer": "ANGLE SwiftShader (CPU)",
+    "physicalAndroid": false
+  },
+  "setupNotes": [
+    "Initial Playwright start could not bind occupied preview port 43180; rerun uses MMD_PREVIEW_PORT=43280 without disturbing the existing service."
+  ],
+  "browserRuns": [
+    {
+      "selection": [
+        "body-motion.spec.ts",
+        "gene-ik.spec.ts",
+        "mmd-resource-path.spec.ts",
+        "public-motion.spec.ts",
+        "sleeve-motion.spec.ts",
+        "uka.spec.ts",
+        "unified-demo.spec.ts"
+      ],
+      "status": "passed",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 792117
+    },
+    {
+      "selection": [
+        "direct MMDLoader request URLs",
+        "browser request errors",
+        "pinned Uka cold/warm request URLs"
+      ],
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 48119
+    }
+  ],
+  "desktopUkaNetwork": [
+    {
+      "cache": "cold",
+      "textureRequestCount": 27,
+      "directPMXHairRequest": {
+        "path": "/mmd-gltf/uka/tex/hair_s01.png",
+        "type": "image"
+      },
+      "hairResponseStatuses": [
+        200,
+        200,
+        200
+      ],
+      "mmdPane": "Ready (image decode completed)",
+      "gltfPane": "Ready",
+      "canonicalTexturePaths": [
+        "/mmd-gltf/uka/tex/FP.png",
+        "/mmd-gltf/uka/tex/acce.png",
+        "/mmd-gltf/uka/tex/body.png",
+        "/mmd-gltf/uka/tex/btm.png",
+        "/mmd-gltf/uka/tex/eye.png",
+        "/mmd-gltf/uka/tex/face.png",
+        "/mmd-gltf/uka/tex/hair_s01.png",
+        "/mmd-gltf/uka/tex/iraira.png",
+        "/mmd-gltf/uka/tex/top.png"
+      ]
+    },
+    {
+      "cache": "warm",
+      "textureRequestCount": 27,
+      "directPMXHairRequest": {
+        "path": "/mmd-gltf/uka/tex/hair_s01.png",
+        "type": "image"
+      },
+      "hairResponseStatuses": [
+        200,
+        200,
+        200
+      ],
+      "mmdPane": "Ready (image decode completed)",
+      "gltfPane": "Ready",
+      "canonicalTexturePaths": [
+        "/mmd-gltf/uka/tex/FP.png",
+        "/mmd-gltf/uka/tex/acce.png",
+        "/mmd-gltf/uka/tex/body.png",
+        "/mmd-gltf/uka/tex/btm.png",
+        "/mmd-gltf/uka/tex/eye.png",
+        "/mmd-gltf/uka/tex/face.png",
+        "/mmd-gltf/uka/tex/hair_s01.png",
+        "/mmd-gltf/uka/tex/iraira.png",
+        "/mmd-gltf/uka/tex/top.png"
+      ]
+    }
+  ],
+  "publicationPreparation": {
+    "checkedOn": "2026-10-31",
+    "upstreamIssueComments": 1,
+    "closingComment": "https://github.com/takahirox/three-mmd-loader/issues/106#issuecomment-6540329253",
+    "closingOutcome": "Reports successful upstream Tests/Pages verification for a05444db048c7329a56e34501193f0fe1845aa59; corrected npm release, downstream migration and physical Android checks remain separate work.",
+    "registryRecheck": "npm view @takahirox/three-mmd dist-tags version gitHead --json still reports latest/version 0.1.2 and published gitHead 5ae203246ccffd86a3e8fb7be0e34b9559c33a46. Retain the shim.",
+    "scope": "Documentation-only update for the newly added closing comment; prior continuation results below remain historical evidence. Runtime suites were not repeated during publication preparation."
+  },
+  "priorChecksNote": "The checks, environment, browserRuns and desktopUkaNetwork above record the initial implementation, not this continuation. Fresh continuation results are recorded separately below.",
+  "dependencyContinuation": {
+    "checkedOn": "2026-10-31",
+    "issue": "https://github.com/takahirox/three-mmd-loader/issues/106",
+    "issueState": "closed",
+    "issueStateReason": "completed",
+    "issueComments": 0,
+    "upstreamPR": "https://github.com/takahirox/three-mmd-loader/pull/107",
+    "upstreamMergeCommit": "a05444db048c7329a56e34501193f0fe1845aa59",
+    "upstreamMergedAt": "2026-10-31T06:49:04Z",
+    "sourceInspection": "Merged MaterialBuilder calls resolveMMDResourcePath before cache/handler/loading. Source package.json still reports 0.1.2; it does not establish a corrected npm release.",
+    "registryCommands": [
+      "npm view @takahirox/three-mmd dist-tags versions time --json",
+      "npm view @takahirox/three-mmd@0.1.2 version gitHead dist.integrity dist.tarball --json"
+    ],
+    "npmLatest": "0.1.2",
+    "npmVersions": [
+      "0.0.0-stage",
+      "0.1.0",
+      "0.1.1",
+      "0.1.2"
+    ],
+    "publishedGitHead": "5ae203246ccffd86a3e8fb7be0e34b9559c33a46",
+    "installedPackageInspection": "npm ci installs the pinned 0.1.2; dist/loaders/MMDLoader.js still uses fullPath = this.resourcePath + filePath (line 1008). No vendor edits.",
+    "decision": "Retain pinned dependency/lockfile, scoped compatibility shim, resolver, patch and regressions. No corrected release is available. Future migration must verify the published package contains the correction before removing the shim/resolver/patch.",
+    "downstreamMain": "5c6a71b5d7d56c6505b7b5bf19e57539eb34f86e",
+    "mainIntegration": "Merged current main without conflicts; its changes concern test/CI and collaboration documentation/templates only.",
+    "physicalAndroid": "Unverified. ADB detected a Pixel 7a; no physical browser checks or Android success claimed. Follow docs/pmx-resource-paths.md after merge.",
+    "checks": {
+      "install": "npm ci passed; dependency and lockfile unchanged",
+      "build": "passed; existing large-chunk warning",
+      "typecheck": "passed",
+      "links": "467 local documentation links, anchors and built asset links passed",
+      "nodeTests": "npm test passed: 171 Node tests, 0 failed, 0 skipped, plus Toon/Outline schema and asset checks",
+      "upstreamSourceTests": "Not rerun in this continuation; library source and historical patch unchanged here. Prior patch tests remain historical evidence; upstream #107 reports its own source/browser validation.",
+      "fullBrowserSuite": "Not rerun; focused path, real-model loading/Retry, motion and IK regressions selected for the retained integration. Current main changes documentation/templates only.",
+      "diffCheck": "Working and staged diffs passed, including final staged documentation/validation changes",
+      "playwright": "13 passed, 0 failed, 0 skipped, 0 retries: canonical request/cache and failure diagnostics; pinned Uka cold/warm loads, rendering/layout and missing-image Retry; Uka/Gene shared facial/body playback and grant/IK regressions"
+    },
+    "browserRun": {
+      "command": "MMD_PREVIEW_PORT=43280 npx playwright test tests/browser/mmd-resource-path.spec.ts tests/browser/uka.spec.ts tests/browser/gene-ik.spec.ts tests/browser/public-motion.spec.ts tests/browser/body-motion.spec.ts tests/browser/sleeve-motion.spec.ts --grep 'canonical|browser request errors|default Uka|missing Uka texture|Gene six-chain|both official body clips|pinned real VMD|real Uka: full IK'",
+      "durationMs": 464878.361,
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "environment": {
+        "node": "v26.12.1",
+        "platform": "darwin",
+        "workers": 1,
+        "channel": "chrome",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "suitePassed": {
+        "body-motion.spec.ts": 2,
+        "gene-ik.spec.ts": 1,
+        "mmd-resource-path.spec.ts": 4,
+        "public-motion.spec.ts": 2,
+        "sleeve-motion.spec.ts": 1,
+        "uka.spec.ts": 3
+      },
+      "setup": "Used free preview port 43280; existing service on 43180 was left running."
+    },
+    "desktopUkaNetwork": [
+      {
+        "cache": "cold",
+        "browser": "156.0.8078.74",
+        "textureRequestCount": 27,
+        "directPMXHairRequests": [
+          {
+            "path": "/mmd-gltf/uka/tex/hair_s01.png",
+            "type": "image"
+          }
+        ],
+        "hairResponseStatuses": [
+          200,
+          200,
+          200
+        ],
+        "paneAssertion": "Both MMD and glTF Ready; canonical texture paths and all texture responses HTTP 200"
+      },
+      {
+        "cache": "warm",
+        "browser": "156.0.8078.74",
+        "textureRequestCount": 27,
+        "directPMXHairRequests": [
+          {
+            "path": "/mmd-gltf/uka/tex/hair_s01.png",
+            "type": "image"
+          }
+        ],
+        "hairResponseStatuses": [
+          200,
+          200,
+          200
+        ],
+        "paneAssertion": "Both MMD and glTF Ready; canonical texture paths and all texture responses HTTP 200"
+      }
+    ]
+  },
+  "reviewFixValidation": {
+    "checkedOn": "2026-10-31",
+    "findingsFixed": [
+      "Select the fallback decoder from the canonical URL pathname while preserving complete handler/request/cache URLs and custom-handler precedence.",
+      "Canonicalize copied PMD material filenames before sphere-map classification; preserve base maps, sphere operations, cache identity, escaped literal stars and original source names."
+    ],
+    "upstreamRecheck": {
+      "issue": "https://github.com/takahirox/three-mmd-loader/issues/106",
+      "outcome": "Closed as completed; read final comment identifying merged PR #107 and inspected the merged loader source.",
+      "sourceRevision": "a05444db048c7329a56e34501193f0fe1845aa59",
+      "npmLatest": "0.1.2",
+      "publishedGitHead": "5ae203246ccffd86a3e8fb7be0e34b9559c33a46",
+      "decision": "No corrected npm release available. Retain dependency/lockfile, scoped shim, resolver and historical source patch; no upstream branch/PR required."
+    },
+    "checks": {
+      "build": "passed; existing large-chunk warning",
+      "typecheck": "passed",
+      "nodeTests": "npm test passed: 173 Node tests, 0 failed, 0 skipped, plus Toon/Outline schema and asset checks; clean run after completed asset generation.",
+      "playwright": "14 passed, 0 failed, 0 skipped, 0 retries",
+      "links": "467 local links, anchors and built asset links passed",
+      "diffCheck": "Working and staged diffs passed."
+    },
+    "initialNodeRun": {
+      "passed": 171,
+      "failed": 2,
+      "skipped": 0,
+      "reason": "Started npm test before build asset generation completed. Bone/physics generated-asset checks failed with ENOENT for public/bone/box/rest.gltf and public/physics/reference.json. Rerun after build completion; no implementation change for these setup failures."
+    },
+    "browserRun": {
+      "command": "MMD_PREVIEW_PORT=43280 npx playwright test tests/browser/mmd-resource-path.spec.ts tests/browser/uka.spec.ts tests/browser/gene-ik.spec.ts tests/browser/public-motion.spec.ts tests/browser/body-motion.spec.ts tests/browser/sleeve-motion.spec.ts --grep 'absolute TGA|canonical|browser request errors|default Uka|missing Uka texture|Gene six-chain|both official body clips|pinned real VMD|real Uka: full IK'",
+      "durationMs": 771586.327,
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "environment": {
+        "node": "v26.12.1",
+        "platform": "darwin",
+        "workers": 1,
+        "channel": "chrome",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "suitePassed": {
+        "body-motion.spec.ts": 2,
+        "gene-ik.spec.ts": 1,
+        "mmd-resource-path.spec.ts": 5,
+        "public-motion.spec.ts": 2,
+        "sleeve-motion.spec.ts": 1,
+        "uka.spec.ts": 3
+      },
+      "scope": "Focused regression run, not the complete browser suite. Used free preview port 43280 without disturbing the existing service on 43180."
+    },
+    "desktopUkaNetwork": [
+      {
+        "cache": "cold",
+        "browser": "156.0.8078.74",
+        "textureRequestCount": 27,
+        "directPMXHairRequests": [
+          {
+            "path": "/mmd-gltf/uka/tex/hair_s01.png",
+            "type": "image"
+          }
+        ],
+        "allTextureResponseStatuses": [
+          200
+        ],
+        "panes": "MMD and glTF Ready"
+      },
+      {
+        "cache": "warm",
+        "browser": "156.0.8078.74",
+        "textureRequestCount": 27,
+        "directPMXHairRequests": [
+          {
+            "path": "/mmd-gltf/uka/tex/hair_s01.png",
+            "type": "image"
+          }
+        ],
+        "allTextureResponseStatuses": [
+          200
+        ],
+        "panes": "MMD and glTF Ready"
+      }
+    ],
+    "physicalAndroid": "Unverified. Desktop results do not establish Android compatibility. Required post-merge cold/warm, request/decode and Retry verification remains in docs/pmx-resource-paths.md."
+  },
+  "pmdSphereURLReviewFix": {
+    "checkedOn": "2026-10-31",
+    "findingFixed": "Classify PMD .sph/.spa roles from canonical URL pathnames, preserving complete request/cache URLs and original source names when absolute URLs contain queries or fragments.",
+    "implementation": "Copied PMD records use build-local role aliases; the texture entry point restores complete resolved names before handler/cache/load operations. Toon names bypass aliases. Restore the entry point on success and failure. Historical upstream patch and pinned assets unchanged.",
+    "upstreamRecheck": {
+      "issue": "https://github.com/takahirox/three-mmd-loader/issues/106",
+      "outcome": "Read closed/completed Issue and final comment; inspected loader source at merged revision a05444db048c7329a56e34501193f0fe1845aa59. Issue handoff is satisfied; no upstream branch/PR needed.",
+      "npmLatest": "0.1.2",
+      "npmVersions": [
+        "0.0.0-stage",
+        "0.1.0",
+        "0.1.1",
+        "0.1.2"
+      ],
+      "publishedGitHead": "5ae203246ccffd86a3e8fb7be0e34b9559c33a46",
+      "commands": [
+        "npm view @takahirox/three-mmd version gitHead dist-tags --json",
+        "npm view @takahirox/three-mmd versions --json"
+      ],
+      "installedSource": "npm ci installed 0.1.2; dist/loaders/MMDLoader.js still concatenates this.resourcePath + filePath at line 1008.",
+      "decision": "No corrected release available. Keep pinned dependency/lockfile, scoped shim, resolver and historical source patch."
+    },
+    "regressionBeforeFix": "New Node regression reproduced the defect: 8 resource-path tests passed, new PMD query/fragment role test failed. After the fix all 9 resource-path tests passed.",
+    "checks": {
+      "install": "npm ci passed; dependency and lockfile unchanged",
+      "build": "passed; existing large-chunk warning",
+      "typecheck": "passed after final test fixture correction",
+      "nodeTests": "npm test passed: 174 Node tests, 0 failed, 0 skipped, plus Toon/Outline schema and asset checks. Restored unrelated generated physics evidence.",
+      "playwright": "9 distinct focused browser cases pass across runs: all 6 resource-path cases in a clean final run plus Gene six-chain IK and pinned Uka cold/warm and missing-image Retry from the broader run. Full browser suite not rerun for this PMD-only correction.",
+      "links": "467 local links, anchors and built asset links passed",
+      "diffCheck": "Working and staged diffs passed"
+    },
+    "initialBrowserRun": {
+      "command": "MMD_PREVIEW_PORT=43280 npx playwright test tests/browser/mmd-resource-path.spec.ts tests/browser/uka.spec.ts tests/browser/gene-ik.spec.ts --grep 'PMD sphere|absolute TGA|canonical|browser request errors|missing Uka texture|Gene six-chain'",
+      "durationMs": 330042.18,
+      "passed": 8,
+      "timedOut": 1,
+      "skipped": 0,
+      "explanation": "The initial new synthetic PMD fixture lacked geometry groups for its added materials. Corrected the fixture while the worker retained the earlier test source; that PMD case timed out. A fresh isolated PMD run passed (1 test, 3.9 seconds), followed by the clean 6-case resource-path run below. No production-code change was needed for this fixture issue.",
+      "modelRegressions": [
+        "Gene six-chain ordered grant/IK, original motions, pixels and lifecycle passed",
+        "Pinned Uka cold/warm canonical HTTP 200 texture requests and both panes Ready passed",
+        "Missing Uka texture failure and Retry recovery passed"
+      ]
+    },
+    "finalResourcePathRun": {
+      "command": "MMD_PREVIEW_PORT=43280 npx playwright test tests/browser/mmd-resource-path.spec.ts",
+      "durationMs": 4801.137,
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "release": "27.2.0",
+        "node": "v26.12.1",
+        "cpu": "Apple M4 Max",
+        "logicalCPUs": 16,
+        "workers": 1,
+        "channel": "chrome",
+        "conformanceMatrix": "representative",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "coverage": "PMD .sph/.spa query/fragment roles, duplicate cache identity, misleading base query suffix, original names, HTTP 200 and image decode; TGA decoder/queries; canonical URLs/cache/traversal; HTTP 404, corrupt-image 200 and request errors."
+    },
+    "physicalAndroid": "Unverified. No physical Android browser result claimed. Required post-merge cold/warm, request/decode and Retry plan remains in docs/pmx-resource-paths.md."
+  }
+}
