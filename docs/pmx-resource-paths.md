@@ -9,6 +9,12 @@ and conversion provenance remain unchanged.
 
 ## Upstream fix and temporary integration
 
+This is a partial implementation of Issue #73 and does not close it. Submitting
+the tested patch to the reusable upstream library remains required work; the
+local patch and demo shim do not satisfy that requirement. Keep #73 open for
+upstream submission, a corrected release and dependency migration. Physical
+Android verification remains a separate, pending post-merge check below.
+
 The latest published `@takahirox/three-mmd` was `0.1.2` when checked on
 2026-10-31. Its MaterialBuilder concatenates `resourcePath + filePath` before
 cache lookup, handler selection and image loading. A LoadingManager URL modifier
