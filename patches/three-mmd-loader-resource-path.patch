@@ -15,10 +15,10 @@ index 8ba3c0b..7125077 100644
 +			loader = ( fullPath.slice( - 4 ).toLowerCase() === '.tga' )
 diff --git a/src/loaders/MMDResourcePath.ts b/src/loaders/MMDResourcePath.ts
 new file mode 100644
-index 0000000..7fe0130
+index 0000000..bcb5676
 --- /dev/null
 +++ b/src/loaders/MMDResourcePath.ts
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,49 @@
 +/** Resolve PMX/PMD resource names without changing the source records or bytes. */
 +export function resolveMMDResourcePath(resourcePath: string | undefined, filePath: string): string {
 +  const invalid = () => new Error(`THREE.MMDLoader: Unsafe relative texture path ${JSON.stringify(filePath)}`);
@@ -46,8 +46,10 @@ index 0000000..7fe0130
 +      if (/[\\/\u0000-\u001f\u007f]/.test(checked)) throw invalid();
 +      if (checked === '.' || checked === '..') break;
 +      if (!/%[\da-f]{2}/i.test(checked)) break;
-+      let next: string;
-+      try { next = decodeURIComponent(checked); } catch { throw invalid(); }
++      // Inspect nested escapes as bytes: a decoded literal percent may be
++      // followed by non-UTF-8 bytes (e.g. %25FF) in a valid filename. Only the
++      // first decoding above validates the URL's UTF-8/escape syntax.
++      const next = checked.replace(/%([\da-f]{2})/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
 +      if (next === checked) break;
 +      checked = next;
 +    }
@@ -68,10 +70,10 @@ index 0000000..7fe0130
 +}
 diff --git a/tests/resource-path.test.ts b/tests/resource-path.test.ts
 new file mode 100644
-index 0000000..b77d15d
+index 0000000..a2b5a00
 --- /dev/null
 +++ b/tests/resource-path.test.ts
-@@ -0,0 +1,83 @@
+@@ -0,0 +1,92 @@
 +import { test } from 'node:test';
 +import assert from 'node:assert/strict';
 +import { pmxBuffer } from './fixtures.ts';
@@ -93,8 +95,17 @@ index 0000000..b77d15d
 +    assert.equal(resolve('/uka/', url), url);
 +});
 +
++test('encoded literal-percent filenames remain escaped without reinterpreting their UTF-8', () => {
++  for (const name of ['%25FF.png', '100%25ab.png', '%2525FF.png', '%25literal.png', '%25FF%2520name.png']) {
++    assert.equal(resolve('/uka/', `tex/${name}`), `/uka/tex/${name}`);
++    assert.equal(resolve('/uka/', `tex\\${name}`), `/uka/tex/${name}`);
++  }
++});
++
 +test('unsafe resource names fail before fetching, including encoded traversal', () => {
 +  for (const path of ['', '.', '..\\hair.png', 'tex\\..\\..\\hair.png', '../hair.png', 'tex/%2e%2e/%2e%2e/hair.png', '%252e%252e/hair.png', 'tex/%2f..%2fimage.png', 'tex/%5c..%5cimage.png', 'tex/%255cimage.png', 'C:\\tex\\hair.png', '\\\\host\\share.png', 'tex/bad%zz.png', 'tex/\u0000hair.png', 'tex/\nhair.png'])
++    assert.throws(() => resolve('/uka/', path), /Unsafe relative texture path/, path);
++  for (const path of ['tex/%FF.png', 'tex/%ab.png', 'tex/%25FF%252fescape.png', 'tex/%25FF%255cescape.png', 'tex/%25FF%2500.png', '%25252e%25252e/hair.png'])
 +    assert.throws(() => resolve('/uka/', path), /Unsafe relative texture path/, path);
 +});
 +

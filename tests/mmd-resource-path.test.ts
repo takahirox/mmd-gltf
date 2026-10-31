@@ -26,8 +26,17 @@ test('portable resource names, safe relative segments and URL encoding', () => {
     assert.equal(resolve('/uka/', url), url);
 });
 
+test('encoded literal-percent filenames remain escaped without reinterpreting their UTF-8', () => {
+  for (const name of ['%25FF.png', '100%25ab.png', '%2525FF.png', '%25literal.png', '%25FF%2520name.png']) {
+    assert.equal(resolve('/uka/', `tex/${name}`), `/uka/tex/${name}`);
+    assert.equal(resolve('/uka/', `tex\\${name}`), `/uka/tex/${name}`);
+  }
+});
+
 test('unsafe resource names fail before fetching, including encoded traversal', () => {
   for (const path of ['', '.', '..\\hair.png', 'tex\\..\\..\\hair.png', '../hair.png', 'tex/%2e%2e/%2e%2e/hair.png', '%252e%252e/hair.png', 'tex/%2f..%2fimage.png', 'tex/%5c..%5cimage.png', 'tex/%255cimage.png', 'C:\\tex\\hair.png', '\\\\host\\share.png', 'tex/bad%zz.png', 'tex/\u0000hair.png', 'tex/\nhair.png'])
+    assert.throws(() => resolve('/uka/', path), /Unsafe relative texture path/, path);
+  for (const path of ['tex/%FF.png', 'tex/%ab.png', 'tex/%25FF%252fescape.png', 'tex/%25FF%255cescape.png', 'tex/%25FF%2500.png', '%25252e%25252e/hair.png'])
     assert.throws(() => resolve('/uka/', path), /Unsafe relative texture path/, path);
 });
 

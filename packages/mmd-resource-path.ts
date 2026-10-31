@@ -25,8 +25,10 @@ export function resolveMMDResourcePath(resourcePath: string | undefined, filePat
       if (/[\\/\u0000-\u001f\u007f]/.test(checked)) throw invalid();
       if (checked === '.' || checked === '..') break;
       if (!/%[\da-f]{2}/i.test(checked)) break;
-      let next: string;
-      try { next = decodeURIComponent(checked); } catch { throw invalid(); }
+      // Inspect nested escapes as bytes: a decoded literal percent may be
+      // followed by non-UTF-8 bytes (e.g. %25FF) in a valid filename. Only the
+      // first decoding above validates the URL's UTF-8/escape syntax.
+      const next = checked.replace(/%([\da-f]{2})/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
       if (next === checked) break;
       checked = next;
     }
