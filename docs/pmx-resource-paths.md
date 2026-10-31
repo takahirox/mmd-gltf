@@ -56,11 +56,16 @@ as whitespace errors in this repository; apply it only to the pinned base above.
 Pending an upstream release, [the compatibility factory](../examples/mmd-loader-compat.ts)
 wraps each demo model loader's MaterialBuilder texture entry point and PMD material
 build. It uses [the same resolver](../packages/mmd-resource-path.ts) as the patch,
-resolves before cache/handler/loader selection, and gives PMD sphere-map
-classification canonical filenames through copied material records. Escaped
-extensions such as `sphere.%73ph` therefore retain their sphere role instead of
-replacing the base map. The original combined PMD filename is retained in
-`material.userData.MMD.sourceFileName` as well as the unchanged parser record.
+resolves before cache/handler/loader selection, and classifies PMD sphere maps
+from canonical URL pathnames. Build-local aliases in copied material records let
+0.1.2 select `.sph`/`.spa` roles independently of queries/fragments; the texture
+entry point restores the complete URL before cache lookup, handler selection and
+loading. Custom/default toon names bypass these aliases, and the entry point is
+restored even if building fails. Escaped extensions such as `sphere.%73ph` and
+absolute URLs such as `https://example.com/sphere.sph?v=1#image` therefore retain
+their sphere role instead of replacing the base map. A base URL query ending in
+`.sph`/`.spa` does not change its role. The original combined PMD filename is
+retained in `material.userData.MMD.sourceFileName` as well as the unchanged parser record.
 The fallback decoder uses the resolved URL pathname, so absolute TGA URLs with
 queries/fragments still use TGALoader; handlers and cache keys retain the complete
 URL. A temporary builder-local manager facade preserves custom-handler precedence
@@ -97,11 +102,14 @@ as malformed data.
 
 [Node coverage](../tests/mmd-resource-path.test.ts) checks paths, encoding,
 traversal, handler/cache ordering, failed cache callbacks, TGA, built-in toon,
-all material texture families, escaped PMD sphere extensions, query-bearing TGA
-URLs, custom-handler precedence and original-name retention. [Browser coverage](../tests/browser/mmd-resource-path.spec.ts)
+all material texture families, escaped PMD sphere extensions, query/fragment-bearing
+PMD sphere URLs, query-bearing TGA URLs, custom-handler precedence and original-name
+retention. [Browser coverage](../tests/browser/mmd-resource-path.spec.ts)
 inspects actual request URLs, response statuses, decoded image dimensions,
 duplicate fetches and pre-fetch rejection, including actual TGA decoding with
-query-bearing absolute request URLs. It separately exercises a 404, a
+query-bearing absolute request URLs and PMD base/sphere map assignment with
+query/fragment-bearing URLs (fragments remain in loader URLs, but HTTP requests
+omit them). It separately exercises a 404, a
 200 response with invalid image bytes, and a browser request error.
 [The Uka browser suite](../tests/browser/uka.spec.ts)
 loads the real pinned PMX/glTF with cold and warm browser caches, requires both

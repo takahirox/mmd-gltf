@@ -151,3 +151,43 @@ test('PMD escaped sphere extensions keep the base map, sphere operation and orig
     assert.deepEqual(pmd, before);
   }
 });
+
+test('PMD sphere roles use URL pathnames while requests, handlers and cache retain queries/fragments', () => {
+  const bytes = readFileSync('tests/fixtures/bdef.pmx');
+  const data = new Parser().parsePmx(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), true);
+  const manager = new LoadingManager(), loader = createMMDLoader(manager);
+  const builder = loader.meshBuilder.materialBuilder.setResourcePath('/uka/');
+  const geometry = loader.meshBuilder.geometryBuilder.build(data);
+  const loadTexture = builder._loadTexture;
+  for (const [extension, operation] of [['sph', MultiplyOperation], ['spa', AddOperation]] as const) {
+    // A misleading base query suffix must not turn the base into a sphere map.
+    const base = `https://example.com/base.png?name=.${extension}`;
+    const spheres = [`https://example.com/sphere.${extension}?v=1`,
+      `https://example.com/sphere.${extension.toUpperCase()}#image`,
+      `//example.com/sphere.${extension}?v=2#image`];
+    const names = [...spheres, spheres[0]];
+    const pmd = { ...data, metadata: { ...data.metadata, format: 'pmd', materialCount: names.length },
+      materials: names.map(sphere => ({ ...data.materials[0], fileName: `${base}*${sphere}`, toonIndex: 0, edgeFlag: 1 })),
+      toonTextures: [{ fileName: 'tex\\custom/toon.png' }] };
+    const before = structuredClone(pmd), paths: string[] = [], handlers: string[] = [];
+    const loaded = new Map<string, Texture>();
+    builder.textureLoader.load = path => { const texture = new Texture<HTMLImageElement>(); paths.push(path); loaded.set(path, texture); return texture; };
+    manager.getHandler = path => { handlers.push(path); return null; };
+    const materials = builder.build(pmd, geometry);
+    assert.deepEqual(paths, [base, spheres[0], '/uka/tex/custom/toon.png', ...spheres.slice(1)]);
+    assert.deepEqual(handlers, paths);
+    for (let i = 0; i < materials.length; i++) {
+      assert.equal(materials[i].map, loaded.get(base));
+      assert.equal(materials[i].matcap, loaded.get(names[i]));
+      assert.equal(materials[i].matcapCombine, operation);
+      assert.equal(materials[i].userData.MMD.sourceFileName, pmd.materials[i].fileName);
+    }
+    assert.deepEqual(pmd, before);
+    assert.equal(builder._loadTexture, loadTexture);
+    manager.getHandler = () => { throw new Error('handler failure'); };
+    assert.throws(() => builder.build(pmd, geometry), /handler failure/);
+    assert.equal(builder._loadTexture, loadTexture);
+    assert.equal(builder.manager, manager);
+    assert.equal(builder.resourcePath, '/uka/');
+  }
+});

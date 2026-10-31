@@ -309,5 +309,73 @@
       }
     ],
     "physicalAndroid": "Unverified. Desktop results do not establish Android compatibility. Required post-merge cold/warm, request/decode and Retry verification remains in docs/pmx-resource-paths.md."
+  },
+  "pmdSphereURLReviewFix": {
+    "checkedOn": "2026-10-31",
+    "findingFixed": "Classify PMD .sph/.spa roles from canonical URL pathnames, preserving complete request/cache URLs and original source names when absolute URLs contain queries or fragments.",
+    "implementation": "Copied PMD records use build-local role aliases; the texture entry point restores complete resolved names before handler/cache/load operations. Toon names bypass aliases. Restore the entry point on success and failure. Historical upstream patch and pinned assets unchanged.",
+    "upstreamRecheck": {
+      "issue": "https://github.com/takahirox/three-mmd-loader/issues/106",
+      "outcome": "Read closed/completed Issue and final comment; inspected loader source at merged revision a05444db048c7329a56e34501193f0fe1845aa59. Issue handoff is satisfied; no upstream branch/PR needed.",
+      "npmLatest": "0.1.2",
+      "npmVersions": [
+        "0.0.0-stage",
+        "0.1.0",
+        "0.1.1",
+        "0.1.2"
+      ],
+      "publishedGitHead": "5ae203246ccffd86a3e8fb7be0e34b9559c33a46",
+      "commands": [
+        "npm view @takahirox/three-mmd version gitHead dist-tags --json",
+        "npm view @takahirox/three-mmd versions --json"
+      ],
+      "installedSource": "npm ci installed 0.1.2; dist/loaders/MMDLoader.js still concatenates this.resourcePath + filePath at line 1008.",
+      "decision": "No corrected release available. Keep pinned dependency/lockfile, scoped shim, resolver and historical source patch."
+    },
+    "regressionBeforeFix": "New Node regression reproduced the defect: 8 resource-path tests passed, new PMD query/fragment role test failed. After the fix all 9 resource-path tests passed.",
+    "checks": {
+      "install": "npm ci passed; dependency and lockfile unchanged",
+      "build": "passed; existing large-chunk warning",
+      "typecheck": "passed after final test fixture correction",
+      "nodeTests": "npm test passed: 174 Node tests, 0 failed, 0 skipped, plus Toon/Outline schema and asset checks. Restored unrelated generated physics evidence.",
+      "playwright": "9 distinct focused browser cases pass across runs: all 6 resource-path cases in a clean final run plus Gene six-chain IK and pinned Uka cold/warm and missing-image Retry from the broader run. Full browser suite not rerun for this PMD-only correction.",
+      "links": "467 local links, anchors and built asset links passed",
+      "diffCheck": "Working and staged diffs passed"
+    },
+    "initialBrowserRun": {
+      "command": "MMD_PREVIEW_PORT=43280 npx playwright test tests/browser/mmd-resource-path.spec.ts tests/browser/uka.spec.ts tests/browser/gene-ik.spec.ts --grep 'PMD sphere|absolute TGA|canonical|browser request errors|missing Uka texture|Gene six-chain'",
+      "durationMs": 330042.18,
+      "passed": 8,
+      "timedOut": 1,
+      "skipped": 0,
+      "explanation": "The initial new synthetic PMD fixture lacked geometry groups for its added materials. Corrected the fixture while the worker retained the earlier test source; that PMD case timed out. A fresh isolated PMD run passed (1 test, 3.9 seconds), followed by the clean 6-case resource-path run below. No production-code change was needed for this fixture issue.",
+      "modelRegressions": [
+        "Gene six-chain ordered grant/IK, original motions, pixels and lifecycle passed",
+        "Pinned Uka cold/warm canonical HTTP 200 texture requests and both panes Ready passed",
+        "Missing Uka texture failure and Retry recovery passed"
+      ]
+    },
+    "finalResourcePathRun": {
+      "command": "MMD_PREVIEW_PORT=43280 npx playwright test tests/browser/mmd-resource-path.spec.ts",
+      "durationMs": 4801.137,
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "release": "27.2.0",
+        "node": "v26.12.1",
+        "cpu": "Apple M4 Max",
+        "logicalCPUs": 16,
+        "workers": 1,
+        "channel": "chrome",
+        "conformanceMatrix": "representative",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "coverage": "PMD .sph/.spa query/fragment roles, duplicate cache identity, misleading base query suffix, original names, HTTP 200 and image decode; TGA decoder/queries; canonical URLs/cache/traversal; HTTP 404, corrupt-image 200 and request errors."
+    },
+    "physicalAndroid": "Unverified. No physical Android browser result claimed. Required post-merge cold/warm, request/decode and Retry plan remains in docs/pmx-resource-paths.md."
   }
 }

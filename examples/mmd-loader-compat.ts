@@ -13,14 +13,31 @@ export function createMMDLoader(manager?: LoadingManager): MMDLoader {
   builder.build = function (data, geometry, onProgress, onError) {
     if (data.metadata.format !== 'pmd') return build.call(this, data, geometry, onProgress, onError);
     // 0.1.2 classifies PMD sphere maps by filename suffix before _loadTexture.
-    // Give it canonical names through copied records, retaining the source data.
+    // Use build-local role aliases so queries/fragments cannot hide (or fake) a
+    // sphere suffix. Map back before resolving/loading; aliases never reach the
+    // cache, handlers, requests or original source records.
+    const paths = new Map<string, string>();
     const canonical = { ...data, materials: data.materials.map((material: { fileName: string }) => ({ ...material,
-      // Keep escaped literal '*' inside a filename distinct from PMD's separator.
-      fileName: material.fileName.split('*').map(name => name ? resolveMMDResourcePath('', name).replaceAll('*', '%2A') : name).join('*'),
+      fileName: material.fileName.split('*').map(name => {
+        if (!name) return name;
+        const path = resolveMMDResourcePath('', name);
+        const extension = new URL(path, 'https://mmd.invalid/').pathname.slice(-4).toLowerCase();
+        const alias = `mmd-compat-${paths.size}${extension === '.sph' || extension === '.spa' ? extension : ''}`;
+        paths.set(alias, path);
+        return alias;
+      }).join('*'),
     })) };
-    const materials = build.call(this, canonical, geometry, onProgress, onError);
-    materials.forEach((material, index) => { material.userData.MMD.sourceFileName = data.materials[index].fileName; });
-    return materials;
+    const loadTexture = this._loadTexture;
+    this._loadTexture = function (filePath, textures, params, onProgress, onError) {
+      // Toon filenames are independent of the base/sphere classification aliases.
+      const path = params?.isToonTexture ? filePath : paths.get(filePath) ?? filePath;
+      return loadTexture.call(this, path, textures, params, onProgress, onError);
+    };
+    try {
+      const materials = build.call(this, canonical, geometry, onProgress, onError);
+      materials.forEach((material, index) => { material.userData.MMD.sourceFileName = data.materials[index].fileName; });
+      return materials;
+    } finally { this._loadTexture = loadTexture; }
   };
   const loadTexture = builder._loadTexture;
   builder._loadTexture = function (filePath, textures, params, onProgress, onError) {

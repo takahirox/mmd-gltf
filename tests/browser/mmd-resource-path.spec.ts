@@ -1,5 +1,59 @@
 import { test, expect } from '@playwright/test';
 import { PNG } from 'pngjs';
+import { readFileSync } from 'node:fs';
+
+test('PMD sphere URL queries/fragments preserve material roles and actual request URLs', async ({ page }) => {
+  const png = new PNG({ width: 1, height: 1 }); png.data.fill(255);
+  const requests: string[] = [], statuses: number[] = [];
+  await page.route('**/resource-path-harness.html', r => r.fulfill({ contentType: 'text/html', body: '<title>PMD sphere test</title>' }));
+  await page.route('**/resource-path-fixtures/**', r => r.fulfill({ contentType: 'image/png', body: PNG.sync.write(png) }));
+  page.on('request', r => { if (r.url().includes('/resource-path-fixtures/')) requests.push(r.url()); });
+  page.on('response', r => { if (r.url().includes('/resource-path-fixtures/')) statuses.push(r.status()); });
+  await page.goto('resource-path-harness.html');
+  const result = await page.evaluate(async bytes => {
+    const modulePath = '/mmd-gltf/mmd-loader-compat.ts';
+    const { createMMDLoader } = await import(modulePath) as typeof import('../../examples/mmd-loader-compat');
+    const loader = createMMDLoader();
+    const data = loader._getParser().parsePmx(new Uint8Array(bytes).buffer, true);
+    const builder = loader.meshBuilder.materialBuilder.setResourcePath('/mmd-gltf/resource-path-fixtures/');
+    const base = `${location.origin}/mmd-gltf/resource-path-fixtures/base.png?name=.sph`;
+    const spheres = ['sphere.sph?v=1#multiply', 'sphere.sph?v=2#multiply', 'sphere.SPA#add']
+      .map(name => `${location.origin}/mmd-gltf/resource-path-fixtures/${name}`);
+    const names = [...spheres, spheres[0]];
+    const sourceNames = names.map(sphere => `${base}*${sphere}`);
+    const pmd = { ...data, metadata: { ...data.metadata, format: 'pmd', materialCount: names.length },
+      materials: sourceNames.map(fileName => ({ ...data.materials[0], fileName, toonIndex: -1, edgeFlag: 1 })),
+      toonTextures: [] };
+    const handlers: string[] = [];
+    builder.manager.getHandler = url => { handlers.push(url); return null; };
+    const geometry = loader.meshBuilder.geometryBuilder.build(data);
+    const group = geometry.groups[0];
+    geometry.clearGroups();
+    names.forEach((_, i) => geometry.addGroup(group.start, group.count, i));
+    const materials = builder.build(pmd, geometry);
+    const textures = [...new Set(materials.flatMap(m => [m.map!, m.matcap!]))] as ReturnType<typeof builder._loadTexture>[];
+    await Promise.all(textures.map(texture => new Promise<void>((resolve, reject) => {
+      texture.readyCallbacks!.push(() => resolve()); texture.errorCallbacks!.push(reject);
+    })));
+    return { base, spheres, sourceNames, handlers,
+      materials: materials.map(m => ({ base: (m.map!.image as HTMLImageElement).src,
+        sphere: (m.matcap!.image as HTMLImageElement).src, operation: m.matcapCombine,
+        original: m.userData.MMD.sourceFileName })),
+      cached: materials[0].matcap === materials[3].matcap && materials.every(m => m.map === materials[0].map),
+      dimensions: textures.map(t => { const image = t.image as HTMLImageElement; return [image.naturalWidth, image.naturalHeight]; }),
+      unchanged: pmd.materials.every((m: { fileName: string }, i: number) => m.fileName === sourceNames[i]) };
+  }, Array.from(readFileSync('tests/fixtures/bdef.pmx')));
+  expect(result.cached).toBe(true);
+  expect(result.unchanged).toBe(true);
+  expect(result.dimensions).toEqual(Array(4).fill([1, 1]));
+  expect(result.materials).toEqual([...result.spheres, result.spheres[0]].map((sphere, i) => ({
+    base: result.base, sphere, operation: i === 2 ? 2 : 0, original: result.sourceNames[i],
+  })));
+  expect(result.handlers.filter(url => !url.startsWith('data:'))).toEqual([result.base, ...result.spheres]);
+  // Fragments remain in loader/cache URLs but are never sent in HTTP requests.
+  expect(requests.sort()).toEqual([result.base, ...result.spheres].map(url => url.split('#')[0]).sort());
+  expect(statuses).toEqual(Array(4).fill(200));
+});
 
 test('absolute TGA URLs retain queries in requests and decode using the pathname', async ({ page }) => {
   // One top-origin, uncompressed 24-bit TGA pixel (BGR).
