@@ -19,9 +19,10 @@ pre-merge acceptance criteria. Accurately report failures, skipped checks, and
 unperformed checks, with reasons. Separate optional validation from required checks.
 Choose checks for the changed files and available repository tooling.
 
-No build or test commands are currently configured. For templates/documentation
-changes, check Markdown/template syntax, links, whitespace, and consistency;
-unrelated runtime tests or new tooling are not required.
+Use the configured checks in [README](../README.md) and the
+[test and CI principles](../docs/browser-ci.md#test-and-ci-principles). For
+templates/documentation changes, check Markdown/template syntax, links, anchors,
+whitespace, and consistency; unrelated runtime tests or new tooling are not required.
 
 ## Required post-merge verification
 
