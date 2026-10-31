@@ -10,11 +10,15 @@ import { parseVMD } from '../packages/mmd-vmd';
 import { inventoryUka } from '../tools/uka-inventory';
 import { prepareUka } from '../tools/prepare-uka';
 import manifest from '../tools/uka-manifest.json';
+import { Parser } from 'mmd-parser';
 
 const sha=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
 test('Uka allowlist, real source inventory, supported subset and reproducible normal conversion',async()=>{
   const directory=await fetchUka();
   const source=parsePMX(await readFile(`${directory}/MS_Uka.pmx`));
+  const raw=await readFile(`${directory}/MS_Uka.pmx`);
+  const direct=new Parser().parsePmx(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),true);
+  assert.equal(direct.textures[7],'tex\\hair_s01.png','verify the raw pinned PMX, not the normalized inventory');
   const inventory=inventoryUka(source,parseVMD(await readFile(`${directory}/motion/03_smile.vmd`)));
   assert.deepEqual(inventory,JSON.parse(await readFile('docs/uka-inventory.json','utf8')));
   assert.deepEqual(inventory.skinningTypes,{'0':21434,'1':28521});

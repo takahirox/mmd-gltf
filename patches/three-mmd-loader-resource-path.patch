@@ -1,0 +1,157 @@
+diff --git a/src/loaders/MMDLoader.ts b/src/loaders/MMDLoader.ts
+index 8ba3c0b..7125077 100644
+--- a/src/loaders/MMDLoader.ts
++++ b/src/loaders/MMDLoader.ts
+@@ -0,0 +1 @@
++import { resolveMMDResourcePath } from './MMDResourcePath.js';
+@@ -1495 +1496 @@ class MaterialBuilder {
+-			fullPath = this.resourcePath + filePath;
++			fullPath = resolveMMDResourcePath( this.resourcePath, filePath );
+@@ -1504 +1505 @@ class MaterialBuilder {
+-				if ( cached.failed ) onError( new Error( `THREE.MMDLoader: Failed texture ${filePath}` ) );
++				if ( cached.failed ) onError( new Error( `THREE.MMDLoader: Failed texture ${fullPath}` ) );
+@@ -1516 +1517 @@ class MaterialBuilder {
+-			loader = ( filePath.slice( - 4 ).toLowerCase() === '.tga' )
++			loader = ( fullPath.slice( - 4 ).toLowerCase() === '.tga' )
+diff --git a/src/loaders/MMDResourcePath.ts b/src/loaders/MMDResourcePath.ts
+new file mode 100644
+index 0000000..7fe0130
+--- /dev/null
++++ b/src/loaders/MMDResourcePath.ts
+@@ -0,0 +1,47 @@
++/** Resolve PMX/PMD resource names without changing the source records or bytes. */
++export function resolveMMDResourcePath(resourcePath: string | undefined, filePath: string): string {
++  const invalid = () => new Error(`THREE.MMDLoader: Unsafe relative texture path ${JSON.stringify(filePath)}`);
++  if (!filePath || /[\u0000-\u001f\u007f]/.test(filePath) || /^[a-z]:[\\/]/i.test(filePath) || filePath.startsWith('\\')) throw invalid();
++
++  // Explicit URL references are already URLs, not Windows resource filenames.
++  if (/^[a-z][a-z\d+.-]*:/i.test(filePath) || filePath.startsWith('//')) {
++    try {
++      const url = filePath.startsWith('//') ? new URL(filePath, 'https://mmd.invalid/') : new URL(filePath);
++      if (url.protocol !== 'data:' && filePath.includes('\\')) throw invalid();
++      return filePath;
++    } catch { throw invalid(); }
++  }
++
++  const rooted = filePath.startsWith('/');
++  const segments: string[] = [];
++  for (const segment of filePath.replaceAll('\\', '/').split('/')) {
++    if (!segment) continue;
++    let decoded: string;
++    try { decoded = decodeURIComponent(segment); } catch { throw invalid(); }
++    // Reject encoded separators and nested encodings which a server could decode
++    // into traversal. Literal Unicode and valid percent-encoded names stay intact.
++    let checked = decoded;
++    while (true) {
++      if (/[\\/\u0000-\u001f\u007f]/.test(checked)) throw invalid();
++      if (checked === '.' || checked === '..') break;
++      if (!/%[\da-f]{2}/i.test(checked)) break;
++      let next: string;
++      try { next = decodeURIComponent(checked); } catch { throw invalid(); }
++      if (next === checked) break;
++      checked = next;
++    }
++    if (checked === '.' || checked === '..') {
++      // Double-encoded dot segments must never acquire a different server meaning.
++      if (decoded !== checked) throw invalid();
++      if (checked === '..' && !segments.pop()) throw invalid();
++      continue;
++    }
++    // Encode spaces, Unicode and query/fragment delimiters once. Decoding above
++    // also gives equivalent escaped/unescaped names a single cache key.
++    segments.push(encodeURIComponent(decoded));
++  }
++  if (!segments.length) throw invalid();
++  const relative = segments.join('/');
++  if (rooted) return `/${relative}`;
++  return resourcePath ? `${resourcePath.replace(/\/+$/, '')}/${relative}` : relative;
++}
+diff --git a/tests/resource-path.test.ts b/tests/resource-path.test.ts
+new file mode 100644
+index 0000000..b77d15d
+--- /dev/null
++++ b/tests/resource-path.test.ts
+@@ -0,0 +1,83 @@
++import { test } from 'node:test';
++import assert from 'node:assert/strict';
++import { pmxBuffer } from './fixtures.ts';
++import { DataTexture, LoadingManager, Texture } from 'three';
++import { Parser } from 'mmd-parser';
++import { MMDLoader } from '../src/loaders/MMDLoader.ts';
++const createMMDLoader = (manager?: LoadingManager) => new MMDLoader(manager);
++import { resolveMMDResourcePath as resolve } from '../src/loaders/MMDResourcePath.ts';
++
++test('portable resource names, safe relative segments and URL encoding', () => {
++  for (const path of ['tex\\hair_s01.png', 'tex/hair_s01.png', 'tex\\/hair_s01.png', './tex//part/../hair_s01.png', 'tex/%2e/hair_s01.png'])
++    assert.equal(resolve('/mmd-gltf/uka/', path), '/mmd-gltf/uka/tex/hair_s01.png');
++  assert.equal(resolve('https://example.com/models/uka///', 'tex\\hair_s01.png'), 'https://example.com/models/uka/tex/hair_s01.png');
++  assert.equal(resolve('/models/uka', 'tex\\日本 語😀.png'), '/models/uka/tex/%E6%97%A5%E6%9C%AC%20%E8%AA%9E%F0%9F%98%80.png');
++  assert.equal(resolve('/uka/', 'tex/a%20b%23c.png'), '/uka/tex/a%20b%23c.png');
++  assert.equal(resolve('/uka/', 'tex/a b#c?.png'), '/uka/tex/a%20b%23c%3F.png');
++  assert.equal(resolve(undefined, 'tex\\a.png'), 'tex/a.png');
++  for (const url of ['https://example.com/日本%20語.png?q=1#x', '//example.com/a.png', '/textures/a.png', 'file:///tmp/a.png', 'custom-texture://host/image', 'data:image/png;base64,AAAA', 'data:image/svg+xml,<svg>\\</svg>', 'blob:https://example.com/id'])
++    assert.equal(resolve('/uka/', url), url);
++});
++
++test('unsafe resource names fail before fetching, including encoded traversal', () => {
++  for (const path of ['', '.', '..\\hair.png', 'tex\\..\\..\\hair.png', '../hair.png', 'tex/%2e%2e/%2e%2e/hair.png', '%252e%252e/hair.png', 'tex/%2f..%2fimage.png', 'tex/%5c..%5cimage.png', 'tex/%255cimage.png', 'C:\\tex\\hair.png', '\\\\host\\share.png', 'tex/bad%zz.png', 'tex/\u0000hair.png', 'tex/\nhair.png'])
++    assert.throws(() => resolve('/uka/', path), /Unsafe relative texture path/, path);
++});
++
++test('cache/handler lookup, TGA selection, default toon and failure callbacks use resolved paths', () => {
++  const manager = new LoadingManager(), loader = createMMDLoader(manager);
++  const builder = loader.meshBuilder.materialBuilder.setResourcePath('/uka/');
++  const paths: string[] = [], handlers: string[] = [];
++  let fail: ((error: unknown) => void) | undefined;
++  builder.textureLoader.load = (path, _loaded, _progress, onError) => { paths.push(path); fail = onError; return new Texture(); };
++  manager.getHandler = path => { handlers.push(path); return null; };
++  const textures = {};
++  const first = builder._loadTexture('tex\\hair.png', textures);
++  assert.equal(builder._loadTexture('./tex/hair.png', textures), first);
++  assert.deepEqual(paths, ['/uka/tex/hair.png']);
++  assert.deepEqual(handlers, paths);
++  const failures: unknown[] = [];
++  builder._loadTexture('tex/hair.png', textures, {}, undefined, error => failures.push(error));
++  const error = new Error('image decode failed'); fail!(error);
++  assert.equal(failures[0], error);
++  builder._loadTexture('tex\\hair.png', textures, {}, undefined, error => failures.push(error));
++  assert.match(String(failures[1]), /\/uka\/tex\/hair.png/);
++  builder._loadTexture('toon01.bmp', textures, { isDefaultToonTexture: true });
++  assert.match(paths.at(-1)!, /^data:image\/png;base64,/);
++  const tgaPaths: string[] = [];
++  builder._getTGALoader().load = path => { paths.push(path); tgaPaths.push(path); return new DataTexture(); };
++  builder._loadTexture('tex\\sphere.TGA', textures);
++  assert.equal(paths.at(-1), '/uka/tex/sphere.TGA');
++  builder._loadTexture('tex\\alternate.TGA/.', textures);
++  assert.equal(paths.at(-1), '/uka/tex/alternate.TGA');
++  assert.deepEqual(tgaPaths, ['/uka/tex/sphere.TGA', '/uka/tex/alternate.TGA']);
++  const count = paths.length;
++  assert.throws(() => builder._loadTexture('..\\escape.png', textures), /Unsafe/);
++  assert.equal(paths.length, count);
++  assert.equal(builder.resourcePath, '/uka/');
++});
++
++test('PMX base, sphere/subtexture and custom toon share resolution while preserving source names', () => {
++  for (const envFlag of [1, 2, 3]) {
++    const bytes = Buffer.from(pmxBuffer());
++    const data = new Parser().parsePmx(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), true);
++    data.textures = ['tex\\hair.png', 'tex/./sphere.png', 'tex\\custom/toon.png'];
++    for (const material of data.materials) Object.assign(material, { textureIndex: 0, envTextureIndex: 1, envFlag, toonFlag: 0, toonIndex: 2 });
++    const before = structuredClone(data), loader = createMMDLoader(), paths: string[] = [];
++    loader.meshBuilder.materialBuilder.textureLoader.load = path => { paths.push(path); return new Texture(); };
++    const mesh = loader.meshBuilder.build(data, '/uka/');
++    assert.deepEqual(paths, ['/uka/tex/hair.png', '/uka/tex/sphere.png', '/uka/tex/custom/toon.png']);
++    assert.equal(mesh.material[0].userData.MMD.mapFileName, 'tex\\hair.png');
++    assert.equal(mesh.material[0].userData.MMD.matcapFileName, 'tex/./sphere.png');
++    assert.deepEqual(data.textures, before.textures);
++    assert.deepEqual(data.materials, before.materials);
++    assert.deepEqual(bytes, Buffer.from(pmxBuffer()));
++    // PMD's base*sphere and custom toon use the same MaterialBuilder entry point.
++    const pmd = { ...data, metadata: { ...data.metadata, format: 'pmd' },
++      materials: data.materials.map((m: typeof data.materials[number]) => ({ ...m, fileName: 'tex\\hair.png*tex\\sphere.sph', toonIndex: 0, edgeFlag: 1 })),
++      toonTextures: [{ fileName: 'tex\\custom/toon.png' }] };
++    paths.length = 0;
++    loader.meshBuilder.materialBuilder.build(pmd as unknown as Parameters<typeof loader.meshBuilder.materialBuilder.build>[0], mesh.geometry);
++    assert.deepEqual(paths, ['/uka/tex/hair.png', '/uka/tex/sphere.sph', '/uka/tex/custom/toon.png']);
++  }
++});

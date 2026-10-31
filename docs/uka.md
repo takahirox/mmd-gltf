@@ -112,6 +112,10 @@ existing demo plus the above Uka files; there is no paid runner requirement.
 
 ## Validation and browser coverage
 
+See [direct MMD texture path handling](pmx-resource-paths.md) for Issue #73's raw
+PMX filename evidence, upstream patch, temporary compatibility shim, network
+assertions, and pending physical Android verification.
+
 The Uka Node integration test verifies the source inventory, rejected optional
 profiles, complete allowlist, exact shared image bytes, provenance, deterministic
 reconversion, independently decoded sparse blink/smile deltas, and glTF Validator core validity with external resources resolved.

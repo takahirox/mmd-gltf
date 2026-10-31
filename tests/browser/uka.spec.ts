@@ -6,6 +6,28 @@ import { PNG } from 'pngjs';
 test.use({ contextOptions: { reducedMotion: 'reduce' } });
 const preview=`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 
+test('pinned Uka cold/warm loads decode direct PMX images at canonical request URLs', async ({ page, browser }, info) => {
+  const requests: { path: string; type: string }[] = [], responses: { path: string; status: number }[] = [];
+  page.on('request', r => { if (r.url().includes('/uka/tex/')) requests.push({ path: new URL(r.url()).pathname, type: r.resourceType() }); });
+  page.on('response', r => { if (r.url().includes('/uka/tex/')) responses.push({ path: new URL(r.url()).pathname, status: r.status() }); });
+  for (const cache of ['cold', 'warm']) {
+    requests.length = 0; responses.length = 0;
+    if (cache === 'cold') await page.goto(preview); else await page.reload();
+    await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
+    await expect(page.locator('#pmx-status')).toContainText('Ready');
+    await expect(page.locator('#gltf-status')).toContainText('Ready');
+    const hair = '/mmd-gltf/uka/tex/hair_s01.png';
+    // ImageLoader requests distinguish the direct PMX pane from glTF's fetches.
+    expect(requests).toContainEqual({ path: hair, type: 'image' });
+    expect(responses).toContainEqual({ path: hair, status: 200 });
+    expect(requests.length).toBeGreaterThanOrEqual(9);
+    for (const { path } of requests) expect(path).not.toMatch(/\\|%5c|\/\//i);
+    for (const response of responses) expect(response.status).toBe(200);
+    await info.attach(`uka-textures-${cache}.json`, { contentType: 'application/json',
+      body: JSON.stringify({ browser: browser.version(), cache, requests, responses }) });
+  }
+});
+
 function occupied(bytes: Buffer, half: number) {
   const png=PNG.sync.read(bytes); let count=0;
   for(let y=90;y<png.height-50;y++) for(let x=half*png.width/2+10;x<(half+1)*png.width/2-10;x++) {

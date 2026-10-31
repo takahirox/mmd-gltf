@@ -1,0 +1,119 @@
+{
+  "issue": 73,
+  "upstreamBase": "5ae203246ccffd86a3e8fb7be0e34b9559c33a46",
+  "dependency": "@takahirox/three-mmd@0.1.2 with an instance-scoped compatibility shim",
+  "upstreamPublication": "Pending; source fix and tests supplied as a patch. No external writes authorized.",
+  "rawHairTexture": "tex\\hair_s01.png",
+  "expectedRequestPath": "/mmd-gltf/uka/tex/hair_s01.png",
+  "physicalAndroid": {
+    "status": "unverified",
+    "reason": "No physical device attached; adb devices -l returned an empty device list.",
+    "requiredPostMergePlan": "docs/pmx-resource-paths.md",
+    "originalFailureCause": "Unproven; canonicalization does not establish that request or decode/memory failures are resolved."
+  },
+  "checks": {
+    "build": "passed",
+    "typecheck": "passed",
+    "nodeTests": "170 passed, 0 failed, 0 skipped; final resource-path tests also rerun after resolver changes",
+    "upstreamSourceTests": "7 passed, 0 failed, 0 skipped (resource-path and subtexture)",
+    "playwright": "29 distinct cases passed across a 28-case regression run and a 3-case final targeted run; 0 failed, 0 skipped",
+    "links": "457 links passed",
+    "diffCheck": "passed (working and staged diffs)",
+    "upstreamSourceTypecheck": "passed with the installed TypeScript 5.9.3 / Three.js 0.186.1 toolchain",
+    "upstreamPatchApplication": "passed; zero-context patch checked and applied to the recorded base, then 7 source tests passed"
+  },
+  "environment": {
+    "node": "v26.12.1",
+    "platform": "darwin arm64",
+    "browser": "Google Chrome 156.0.8078.74",
+    "renderer": "ANGLE SwiftShader (CPU)",
+    "physicalAndroid": false
+  },
+  "setupNotes": [
+    "Initial Playwright start could not bind occupied preview port 43180; rerun uses MMD_PREVIEW_PORT=43280 without disturbing the existing service."
+  ],
+  "browserRuns": [
+    {
+      "selection": [
+        "body-motion.spec.ts",
+        "gene-ik.spec.ts",
+        "mmd-resource-path.spec.ts",
+        "public-motion.spec.ts",
+        "sleeve-motion.spec.ts",
+        "uka.spec.ts",
+        "unified-demo.spec.ts"
+      ],
+      "status": "passed",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 792117
+    },
+    {
+      "selection": [
+        "direct MMDLoader request URLs",
+        "browser request errors",
+        "pinned Uka cold/warm request URLs"
+      ],
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 48119
+    }
+  ],
+  "desktopUkaNetwork": [
+    {
+      "cache": "cold",
+      "textureRequestCount": 27,
+      "directPMXHairRequest": {
+        "path": "/mmd-gltf/uka/tex/hair_s01.png",
+        "type": "image"
+      },
+      "hairResponseStatuses": [
+        200,
+        200,
+        200
+      ],
+      "mmdPane": "Ready (image decode completed)",
+      "gltfPane": "Ready",
+      "canonicalTexturePaths": [
+        "/mmd-gltf/uka/tex/FP.png",
+        "/mmd-gltf/uka/tex/acce.png",
+        "/mmd-gltf/uka/tex/body.png",
+        "/mmd-gltf/uka/tex/btm.png",
+        "/mmd-gltf/uka/tex/eye.png",
+        "/mmd-gltf/uka/tex/face.png",
+        "/mmd-gltf/uka/tex/hair_s01.png",
+        "/mmd-gltf/uka/tex/iraira.png",
+        "/mmd-gltf/uka/tex/top.png"
+      ]
+    },
+    {
+      "cache": "warm",
+      "textureRequestCount": 27,
+      "directPMXHairRequest": {
+        "path": "/mmd-gltf/uka/tex/hair_s01.png",
+        "type": "image"
+      },
+      "hairResponseStatuses": [
+        200,
+        200,
+        200
+      ],
+      "mmdPane": "Ready (image decode completed)",
+      "gltfPane": "Ready",
+      "canonicalTexturePaths": [
+        "/mmd-gltf/uka/tex/FP.png",
+        "/mmd-gltf/uka/tex/acce.png",
+        "/mmd-gltf/uka/tex/body.png",
+        "/mmd-gltf/uka/tex/btm.png",
+        "/mmd-gltf/uka/tex/eye.png",
+        "/mmd-gltf/uka/tex/face.png",
+        "/mmd-gltf/uka/tex/hair_s01.png",
+        "/mmd-gltf/uka/tex/iraira.png",
+        "/mmd-gltf/uka/tex/top.png"
+      ]
+    }
+  ]
+}

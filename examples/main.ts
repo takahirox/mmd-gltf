@@ -8,6 +8,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { updateMMDUVs } from '@takahirox/three-mmd';
 import { MMDLoader } from '@takahirox/three-mmd/loaders/MMDLoader.js';
+import { createMMDLoader } from './mmd-loader-compat';
 import { MMDOutlineEffect as ReferenceOutlineEffect } from '@takahirox/three-mmd/effects/MMDOutlineEffect.js';
 import { MMDOutlinePlugin, MMDOutlineEffect } from '../packages/three-mmd-outline';
 import { MMDToonPlugin, createToonLighting } from '../packages/three-mmd-toon';
@@ -168,10 +169,10 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       const manager = new LoadingManager();
       const imagesReady = new Promise<void>((resolve, reject) => {
         manager.onLoad = resolve;
-        manager.onError = (url) => reject(new Error(`PMX resource failed: ${url}`));
+        manager.onError = (url) => reject(new Error(`PMX resource failed: ${url} (request or image decode failed; inspect the network response)`));
       });
       const results = await Promise.allSettled([
-        new MMDLoader(manager).loadAsync(`${base}${isUka ? 'MS_Uka.pmx' : 'Gene_light.pmx'}`).then(mesh => { scenes[0].add(mesh); return mesh; }), imagesReady,
+        createMMDLoader(manager).loadAsync(`${base}${isUka ? 'MS_Uka.pmx' : 'Gene_light.pmx'}`).then(mesh => { scenes[0].add(mesh); return mesh; }), imagesReady,
       ]);
       const failure = results.find(result => result.status === 'rejected');
       if (failure?.status === 'rejected') throw failure.reason;
