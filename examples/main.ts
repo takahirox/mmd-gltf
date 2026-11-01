@@ -1,5 +1,5 @@
 import { validatePhysics } from '../packages/mmd-physics';
-import { ComparisonPhysics, verifyDirectPhysics, type PublicPhysicsBinding } from './comparison-physics';
+import { ComparisonPhysics, publicPhysicsUnavailableReason, verifyDirectPhysics, type PublicPhysicsBinding } from './comparison-physics';
 import { loadAmmoBrowser } from '../packages/three-mmd-physics/ammo';
 import { PhysicsWorld } from '../packages/three-mmd-physics/world';
 let comparisonAmmo:ReturnType<typeof loadAmmoBrowser>|undefined;
@@ -334,7 +334,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       return { min: box.min.toArray(), max: box.max.toArray() };
     };
     const info = { motion: initialMotion, time: 0, referenceTime: 0, gltfTimes: activePlayers.map(()=>0), duration, playing:false, loop:false,
-      execution:{ik:false,ikState:'off',chains:ikSolvers.map(s=>s.state),grant:false,physics:false,physicsState:physics?'off':'unavailable',physicsStats:physics?.stats,physicsChains:physics?.adapters.map(a=>a.state),helper:false,fallbackMixer:false},
+      execution:{ik:false,ikState:'off',chains:ikSolvers.map(s=>s.state),grant:false,physics:false,physicsState:physics?'off':'unavailable',physicsUnavailableReason:physicsError,physicsStats:physics?.stats,physicsChains:physics?.adapters.map(a=>a.state),helper:false,fallbackMixer:false},
       binding:bindingInfo(),
       preview:{targets:previews.map(p=>p.targets),bytes:previews.reduce((n,p)=>n+p.bytes,0)}, model, expression: 'rest', backend, frames: 0, mode: select.value, meshes: 0, ready: true,
       reference: { loader: 'MMDLoader', materials: reference.material.length, scale: reference.scale.x, bounds: describeBounds(reference),
@@ -434,12 +434,27 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       }
       publishTime(time);
     }
+    function updatePhysicsAvailability() {
+      const reason=physics?publicPhysicsUnavailableReason(model,info.motion,ikControl.checked):physicsError;
+      physicsControl.disabled=!!reason;
+      physicsControl.title=reason;
+      info.execution.physicsUnavailableReason=reason;
+      if(reason) {
+        if(physicsEnabled || physicsControl.checked || physicsBusy)physicsOff();
+        physicsError=reason;physicsStatus.textContent=`Physics unavailable: ${reason}`;
+        info.execution.physics=false;info.execution.physicsState='unavailable';
+      } else if(info.execution.physicsState==='unavailable') {
+        physicsError='';physicsStatus.textContent='';info.execution.physicsState='off';
+      }
+      return !reason;
+    }
     function resetPhysics() {
       if(!physicsEnabled && info.execution.physicsState==='loading') {
         physicsControl.checked=false;physicsStatus.textContent='';info.execution.physicsState='off';
       }
       physicsRequest++;physicsBusy=false;
       physics?.reset(info.motion==='rest'?undefined:motions.find(m=>m.metadata===metadata)!.source,ikControl.checked);
+      updatePhysicsAvailability();
     }
     function pause() {info.playing=false;anchorTime=info.time;if(physicsBusy){resetPhysics();void applyTime(info.time);}updateControls();}
     function seek(time:number) {anchor=performance.now();anchorTime=Math.max(0,Math.min(duration,time));if(physicsBusy && requestedTime===anchorTime)return;if(physicsBusy)resetPhysics();void applyTime(anchorTime);}
@@ -460,6 +475,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     },{signal:events.signal});
     physicsControl.addEventListener('change',async()=>{
       const time=info.time;
+      if(!updatePhysicsAvailability()) {applyRawTime(time);return;}
       if(!physicsControl.checked) {physicsOff();applyRawTime(time);return;}
       const token=++physicsRequest;
       physicsError='';physicsStatus.textContent='Loading physics…';info.execution.physicsState='loading';

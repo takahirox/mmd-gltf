@@ -11,7 +11,18 @@ import { applyBoneMorphs, controlCount } from '../packages/mmd-morph';
 import { parseVMD, bindMotion, evaluateMotion } from '../packages/mmd-vmd';
 import { loadAmmoNode } from '../packages/three-mmd-physics/node';
 import { PhysicsWorld } from '../packages/three-mmd-physics/world';
-import { ComparisonPhysics, validatePublicPhysics, type PublicPhysicsBinding } from '../examples/comparison-physics';
+import { ComparisonPhysics, publicPhysicsUnavailableReason, validatePublicPhysics, type PublicPhysicsBinding } from '../examples/comparison-physics';
+
+test('public physics availability gates the entire Gene Apology clip with IK On',()=>{
+  for(const model of ['uka','gene'] as const)for(const motion of ['rest','sample','02_laugh','22_apology'])for(const ik of [false,true]) {
+    const reason=publicPhysicsUnavailableReason(model,motion,ik);
+    if(model==='gene' && motion==='22_apology' && ik) {
+      assert.match(reason,/joint accuracy limits/);
+      assert.match(reason,/Turn IK Off or choose another motion/);
+      assert.match(reason,/follow-up/);
+    } else assert.equal(reason,'');
+  }
+});
 
 for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0,137]],['gene-light','Gene_light',87,92,[25,9,53]]] as const)
  test(`${id}: pinned full physics source, explicit execution profile and independent deterministic worlds`,async()=>{

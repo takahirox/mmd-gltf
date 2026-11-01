@@ -62,7 +62,18 @@ while Physics is On. No approximate core glTF action runs concurrently. Each eva
 Retained rest is restored before adapter capture, including tiny translations
 that a core glTF serializer can omit as near-zero defaults.
 
-All four IK × Physics combinations execute. With Physics Off, the existing IK
+All four IK × Physics combinations are offered except **Gene Apology with IK On**.
+For that combination Physics is disabled for the entire clip, before backend
+loading or simulation, with a visible joint-accuracy reason and the alternatives
+of turning IK Off or selecting another motion. Switching into it cancels pending
+work, disposes worlds, unchecks Physics and restores the raw/IK-only pose at the
+requested time. Returning to an eligible combination enables the control but
+leaves Physics Off until explicitly selected. Source-consistent execution of the
+Gene Apology constraint conflict remains follow-up work; no source records or
+accuracy gates are changed to enable it. `execution.physicsUnavailableReason`
+also reports this restriction in diagnostics.
+
+With Physics Off, the existing IK
 adapter and its prerequisite-only grant policy remain in effect. With Physics
 On, all two Uka / eleven Gene grants execute once, regardless of the IK checkbox;
 IK controls only the ten / six chains, also respecting each VMD controller's
@@ -107,10 +118,11 @@ also record the remaining angular-limit failures found by a denser scan.
 Before reporting On, the public host checks the requested held pose's actual
 native joint frames in every world against the existing 0.005 rad angular gate.
 Failure disposes all worlds and restores Physics Off with a visible diagnostic;
-it preserves the requested VMD time and raw/IK-only playback. Gene Apology with
-IK On still fails this gate around 1.6–1.8 s, including frames 50 and 54. Successful
-simulation of that interval remains unresolved. The guard prevents false success;
-it does not establish full-clip constraint conformance. Private replay ticks are
+it preserves the requested VMD time and raw/IK-only playback. Lower-level Gene
+Apology with IK On still fails this gate around 1.6–1.8 s, including frames 50 and
+54, so the public control gates that entire combination before enabling it.
+Successful simulation of that interval remains unresolved. The guard prevents
+false success; it does not establish full-clip constraint conformance. Private replay ticks are
 not published. See the [recovery regression evidence](physics-validation.md#angular-failure-recovery-revision-issue-77).
 
 Collision filters, shapes, masses,
@@ -157,7 +169,7 @@ body transforms and the source binding. These diagnostics are read-only. Pose ar
 
 [Node tests](../tests/public-physics.test.ts) verify pins, every body/joint binding,
 free-axis retention, generic versus host capability checks, conversion identity,
-all IK × Physics combinations, both body clips, deterministic replay, forward
+IK × Physics availability, both body clips, deterministic replay, forward
 world reuse, tick hold and native teardown. Existing synthetic conformance stays
 in place. [Browser cases](../tests/browser/public-physics.spec.ts) exercise real
 Uka/Gene source and independent PMX/Toon/PBR transforms and pixels. Measured
@@ -181,7 +193,8 @@ no connected device in the implementation environment. A desktop viewport of
 3. Pause Laugh at frame 15; enable Physics. Record backend request/initialization,
    replay/slice CPU time, heap, native handles and rendered hair/clothes change.
    Repeat for Apology; compare synchronized source times and dynamic regions.
-4. Exercise all four IK/Physics states, Pause/Resume, Restart, backward/forward
+4. Exercise all eligible IK/Physics states; confirm Gene Apology with IK On
+   disables Physics with its reason. Test Pause/Resume, Restart, backward/forward
    seek, loop crossing, A→B→A, Rest/manual expressions, Toon/PBR, Outline and orbit.
    Repeat ten On/Off cycles and switch models while a replay/backend load is
    pending. Confirm handles return to zero on Off and model/texture requests do

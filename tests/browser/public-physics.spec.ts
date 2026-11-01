@@ -28,6 +28,7 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   const evidence:any[]=[];
   for(const motion of ['02_laugh','22_apology']) {
     await page.locator('#comparison-motion').selectOption(motion);
+    if(model==='gene' && motion==='22_apology')await page.locator('#comparison-ik').uncheck();
     await seek(.5);
     const off=await pose(),pixelsOff=await readComparisonBitmap(page),time=(await state()).time;
     await page.locator('#comparison-physics').check();
@@ -104,6 +105,14 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
     }
     await page.locator('#comparison-ik').check();
     await expect.poll(async()=>(await state()).execution.ik).toBe(true);
+    if(model==='gene' && motion==='22_apology') {
+      await expect(page.locator('#comparison-physics')).toBeDisabled();
+      await expect(page.locator('#comparison-physics')).not.toBeChecked();
+      expect((await resources()).physics.native).toBe(0);
+      await page.locator('#comparison-ik').uncheck();
+      await expect(page.locator('#comparison-physics')).toBeEnabled();
+      await page.locator('#comparison-physics').check();
+    }
     await expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).toBe('on');
     await page.locator('#material').selectOption('pbr');await readComparisonBitmap(page);
     await page.locator('#material').selectOption('toon');
@@ -158,7 +167,7 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   expect(errors).toEqual([]);
 });
 
-test('Gene Apology constraint failure recovers visibly at frames 50 and 54 without reloading',async({page})=>{
+test('Gene Apology gates Physics for the full clip with IK On and restores availability on control transitions',async({page})=>{
   test.setTimeout(180000);
   let backendRequests=0,modelRequests=0;
   page.on('request',r=>{if(r.url().endsWith('/ammo.js'))backendRequests++;if(/\.(pmx|glb|gltf)(\?|$)/.test(r.url()))modelRequests++;});
@@ -170,6 +179,16 @@ test('Gene Apology constraint failure recovers visibly at frames 50 and 54 witho
   const initial=await resources(),fetches=modelRequests;
   await page.locator('#comparison-motion').selectOption('22_apology');
   await expect(page.locator('#comparison-ik')).toBeChecked();
+  const physics=page.locator('#comparison-physics');
+  const unavailable=async()=>{
+    await expect(physics).toBeDisabled();await expect(physics).not.toBeChecked();
+    await expect(page.locator('#comparison-physics-status')).toContainText('Gene Apology with IK On exceeds joint accuracy limits');
+    await expect(page.locator('#comparison-physics-status')).toContainText('Turn IK Off or choose another motion');
+    expect((await state()).execution.physicsState).toBe('unavailable');
+    expect((await state()).execution.physics).toBe(false);
+    expect((await resources()).physics.native).toBe(0);
+  };
+  await unavailable();
   const seek=async(time:number)=>{
     const requested=await page.locator('#comparison-time').evaluate((e,t)=>{
       const input=e as HTMLInputElement;input.valueAsNumber=t;
@@ -178,33 +197,38 @@ test('Gene Apology constraint failure recovers visibly at frames 50 and 54 witho
     await expect.poll(async()=>(await state()).time,{timeout:60000}).toBe(requested);
     return requested;
   };
-  for(const frame of [50,54]) {
-    const requested=await seek(frame/30);
-    const raw=await pose();
-    // Cover both a fresh enable and a forward seek from a valid Physics pose.
-    if(frame===54) {
-      await seek(.5);
-      await page.locator('#comparison-physics').check();
-      await expect.poll(async()=>(await state()).execution.physicsState,{timeout:60000}).toBe('on');
-      await seek(frame/30);
-    } else await page.locator('#comparison-physics').check();
-    await expect.poll(async()=>(await state()).execution.physicsState,{timeout:60000}).toBe('error');
-    await expect(page.locator('#comparison-physics-status')).toContainText('Physics off: Joint 52 angular error');
-    await expect(page.locator('#comparison-physics')).not.toBeChecked();
-    expect((await state()).execution.physics).toBe(false);
-    expect((await state()).time).toBe(requested);
-    expect(await pose()).toEqual(raw);
-    const failures=(await state()).execution.physicsStats.constraintFailures;
-    expect([...new Set(failures.map((f:any)=>f.pane))]).toEqual([0,1,2]);
-    expect(failures.every((f:any)=>f.angular>=.005)).toBe(true);
-    expect((await resources()).physics.native).toBe(0);
-    expect(await page.evaluate(()=>(window as any).readMMDComparisonPhysics().bodies)).toEqual([]);
-    await seek(.5);
-    await page.locator('#comparison-physics').check();
-    await expect.poll(async()=>(await state()).execution.physicsState,{timeout:60000}).toBe('on');
-    expect((await state()).execution.physicsStats.constraintFailures).toEqual([]);
-    await page.locator('#comparison-physics').uncheck();
+  // The combination is unavailable at every authored frame, not only at known
+  // failing poses. Include forward/backward seeks and the endpoint before Ammo.
+  for(let frame=0;frame<=300;frame++) {
+    await seek(frame/30);
+    await expect(physics).toBeDisabled();
   }
+  for(const frame of [54,51,50,48,0]) {await seek(frame/30);await unavailable();}
+  expect(backendRequests).toBe(0);
+  await seek(1.5);
+  await page.locator('#comparison-play').click();
+  await expect.poll(async()=>(await state()).time).toBeGreaterThan(1.9);
+  await page.locator('#comparison-play').click();await unavailable();
+  await page.locator('#comparison-restart').click();expect((await state()).time).toBe(0);
+  await page.locator('#comparison-loop').check();await seek(9.9);
+  await page.locator('#comparison-play').click();
+  await expect.poll(async()=>(await state()).time).toBeLessThan(1);
+  await page.locator('#comparison-play').click();await unavailable();
+  await seek(.5);const raw=await pose();
+  await page.locator('#comparison-ik').uncheck();
+  await expect(physics).toBeEnabled();await expect(physics).not.toBeChecked();
+  await expect(page.locator('#comparison-physics-status')).toBeEmpty();
+  await physics.check();
+  await expect.poll(async()=>(await state()).execution.physicsState,{timeout:60000}).toBe('on');
+  await page.locator('#comparison-ik').check();await unavailable();
+  expect(await pose()).toEqual(raw);
+  await page.locator('#comparison-motion').selectOption('02_laugh');
+  await expect(physics).toBeEnabled();await expect(physics).not.toBeChecked();
+  await physics.check();
+  await expect.poll(async()=>(await state()).execution.physicsState,{timeout:60000}).toBe('on');
+  await page.locator('#comparison-motion').selectOption('22_apology');await unavailable();
+  await page.locator('#comparison-motion').selectOption('rest');
+  await expect(physics).toBeEnabled();await expect(physics).not.toBeChecked();
   expect(backendRequests).toBe(1);expect(modelRequests).toBe(fetches);
   expect((await resources()).roots).toEqual(initial.roots);
 });
@@ -243,9 +267,13 @@ test('pending backend enable can be cancelled without stale worlds or checked st
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   await page.locator('#comparison-physics').check();
   await expect(page.locator('#comparison-physics-status')).toContainText('Loading');
-  await page.locator('#comparison-motion').selectOption('02_laugh');
+  await page.locator('#comparison-motion').selectOption('22_apology');
   await expect(page.locator('#comparison-physics')).not.toBeChecked();
+  await expect(page.locator('#comparison-physics')).toBeDisabled();
   release();
+  await expect.poll(()=>page.evaluate(()=>(window as any).mmdExample.execution.physicsState)).toBe('unavailable');
+  expect(await page.evaluate(()=>(window as any).readMMDComparisonResources().physics.native)).toBe(0);
+  await page.locator('#comparison-motion').selectOption('02_laugh');
   await expect.poll(()=>page.evaluate(()=>(window as any).mmdExample.execution.physicsState)).toBe('off');
   expect(await page.evaluate(()=>(window as any).readMMDComparisonResources().physics.native)).toBe(0);
   await page.locator('#comparison-physics').check();
@@ -260,6 +288,7 @@ for(const model of ['uka','gene'])test(`${model}: PBR cloth and hair pixels resp
   const evidence=[];
   for(const motion of ['02_laugh','22_apology']) {
     await page.locator('#comparison-motion').selectOption(motion);
+    if(model==='gene' && motion==='22_apology')await page.locator('#comparison-ik').uncheck();
     await page.locator('#comparison-time').evaluate(e=>{(e as HTMLInputElement).valueAsNumber=.5;e.dispatchEvent(new Event('input'));});
     const off=await page.evaluate(()=>(window as any).readMMDComparisonPose()),pixelsOff=await readComparisonBitmap(page);
     await page.locator('#comparison-physics').check();

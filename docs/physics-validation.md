@@ -19,6 +19,34 @@ joint correction below. It is not evidence for the final stabilized runtime.
 
 ## Public real-model integration (Issue #77)
 
+### Whole-clip availability revision (Issue #77)
+
+Gene Apology with IK On is now explicitly unavailable for public Physics at every
+time, including Rest-to-clip selection, paused enabling and replay intermediates.
+The control stays unchecked and disabled with a visible reason and alternatives.
+Entering this combination from active Physics cancels replay/backend completion,
+disposes worlds and restores raw/IK-only playback. Turning IK Off or choosing a
+different motion makes the control available again without enabling it automatically.
+This gates the known unsupported combination; source-consistent execution remains
+follow-up work. The source pins and existing accuracy bounds remain unchanged.
+
+Node availability coverage spans both models, all motions and both IK states.
+The browser regression seeks every authored frame from 0 through 300 before any
+backend request, plays through frames 48–54, and checks restart, loop, IK and
+motion transitions, raw-pose restoration, native teardown and resource reuse.
+Pending backend cancellation also covers entering this combination during loading.
+The lower-level Node failure regressions below remain as accuracy guard coverage;
+their failing poses are never offered as supported public playback.
+
+Validation on 2026-11-02 passed: `npm run build` (existing large-chunk warning),
+final Vite bundling, `npm run typecheck`, `npm test` (180 tests, zero failures or
+skips, plus Toon/Outline schema checks), `npm run check:links` (518 links) and
+`git diff --check`. With `MMD_PREVIEW_PORT=43280` to avoid an occupied preview
+port, the `public-physics`, `gene-ik` and `public-motion` Playwright suites passed
+all 16 Chrome/SwiftShader cases in 12.8 minutes, with no failures or skips.
+The full browser matrix, physical Android and original Windows MMD verification
+were not performed; the existing physical-device plan remains pending.
+
 ### Angular-failure recovery revision (Issue #77)
 
 Before publishing a requested Physics pose, the public host now measures every
@@ -30,10 +58,11 @@ axes, the 128-sweep budget and all existing accuracy assertions are unchanged.
 Private replay ticks are not published; the guard checks the requested held pose.
 
 Gene Apology with IK On at frames 48, 50 and 54 exercises this failure path in
-Node. Frame 50 still measures joint 53 at **0.017159219 rad**. Browser coverage
-checks a failed enable at frame 50, a failed forward seek at frame 54, visible
+Node. Frame 50 still measures joint 53 at **0.017159219 rad**. Earlier browser coverage
+checked a failed enable at frame 50, a failed forward seek at frame 54, visible
 Off recovery, raw-pose restoration, zero native allocations and successful retry
-at frame 15 without fetching another model or backend.
+at frame 15 without fetching another model or backend. The whole-clip availability
+regression above supersedes that browser error-path test.
 
 The [frame-50 feasibility calculation](gene-apology-frame50-feasibility.json)
 can be reproduced with `npx tsx tools/check-gene-apology-constraints.ts`. It uses

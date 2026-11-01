@@ -16,7 +16,9 @@ Uka and Gene Light each offer their original facial sample plus Laugh and Apolog
 with authored body motion. IK defaults On for all ten Uka and all six Gene Light
 source chains. Gene evaluates its required shoulder rotation grant in source order.
 IK Off restores raw motion when Physics is Off. The adjacent Physics checkbox
-defaults Off; On runs the real Uka/Gene rigid bodies and joints in independent worlds. The right
+defaults Off; On runs the real Uka/Gene rigid bodies and joints in independent worlds.
+Gene Apology requires IK Off for Physics; with IK On, Physics is unavailable for
+the whole clip with a visible joint-accuracy diagnostic. The right
 pane also offers the independent PBR fallback. The Outline menu toggles both
 implementations; their different thickness laws are labeled in the example.
 

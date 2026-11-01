@@ -360,4 +360,7 @@ requires physical Android verification when hardware is available, as below.
 
 ## Optional public Physics
 
-The adjacent Physics control defaults Off. Its [runtime contract, full source audit, ordered grants/IK, fixed-axis treatment, shared clock, lazy backend and device limits](public-physics.md) describe the real Uka/Gene simulation. Raw retained VMD and approximate ordinary glTF playback remain separate from simulation. Windows MMD parity and physical Android verification remain unverified.
+The adjacent Physics control defaults Off. Gene Apology with IK On disables
+Physics for the whole clip because it exceeds the joint-accuracy limits; turn IK
+Off or choose another motion to make Physics available. Source-consistent
+execution of that combination remains follow-up work. Its [runtime contract, full source audit, ordered grants/IK, fixed-axis treatment, shared clock, lazy backend and device limits](public-physics.md) describe the real Uka/Gene simulation. Raw retained VMD and approximate ordinary glTF playback remain separate from simulation. Windows MMD parity and physical Android verification remain unverified.

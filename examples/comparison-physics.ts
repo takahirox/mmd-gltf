@@ -12,6 +12,12 @@ const jointProjectionIterations=128;
 const maximumAngularError=.005;
 type ConstraintFailure={pane:number;index:number;angular:number;time:number};
 export type PublicPhysicsBinding={version:1;solver:SolverProfile;physics:PhysicsProfile};
+/** Availability covers the entire clip, including seeks and replay intermediates. */
+export function publicPhysicsUnavailableReason(model:'uka'|'gene',motion:string,ik:boolean) {
+  return model==='gene' && motion==='22_apology' && ik
+    ? 'Gene Apology with IK On exceeds joint accuracy limits. Turn IK Off or choose another motion; source-consistent constraint execution needs follow-up.'
+    : '';
+}
 /** Explicit retained-source binding, separate from automatic animation solver ownership. */
 export function validatePublicPhysics(binding:PublicPhysicsBinding) {
   if(binding?.version!==1)throw new Error('Missing public physics source binding');
