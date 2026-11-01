@@ -33,3 +33,19 @@ test('inverted linear and angular limits retain free axes during stabilization',
   poses.get(1)!.elements.forEach((v,k)=>assert.ok(Math.abs(v-moving.elements[k])<1e-15));
   assert.deepEqual(jointViolations(profile,Object.fromEntries([...poses].map(([k,v])=>[k,v.toArray()]))),[{index:0,linear:0,angular:0}]);
 });
+test('coupled anchors distribute incompatible equality strain within a fixed sweep budget',()=>{
+  const profile=fixture(),joint=profile.joints[0];
+  profile.bodies=[0,1,2,3].map(index=>({...profile.bodies[1],index,mode:index<2?0:2,mass:1}));
+  // Translation-only analytical network: two animated anchors 80 mm apart,
+  // each attached to a dynamic body, whose anchors also coincide. The three
+  // equality constraints cannot all be exact. Full sequential corrections
+  // leave 40 mm at each fixed anchor; damped corrections keep every row <31 mm.
+  profile.joints=[[0,2],[1,3],[2,3]].map(([bodyA,bodyB],index)=>({...joint,index,bodyA,bodyB,
+    angularLower:[1,1,1],angularUpper:[-1,-1,-1]}));
+  const poses=new Map([0,1,2,3].map(index=>[index,new Matrix4().makeTranslation(index===1?.08:0,0,0)]));
+  const anchors=[poses.get(0)!.clone(),poses.get(1)!.clone()];
+  new JointProjector(profile,new Map([0,1,2,3].map(index=>[index,new Vector3()]))).project(poses,128);
+  assert.deepEqual([poses.get(0),poses.get(1)],anchors);
+  const errors=jointViolations(profile,Object.fromEntries([...poses].map(([k,v])=>[k,v.toArray()])));
+  assert.ok(errors.every(e=>e.linear<.031 && e.angular===0));
+});

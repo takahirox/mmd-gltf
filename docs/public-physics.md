@@ -97,6 +97,13 @@ resetting native velocities. This is a bounded numerical policy, not an original
 Windows MMD implementation. [Regression bounds and remaining cloak strain](physics-validation.md#real-model-constraint-and-performance-limits)
 are explicit and apply to all three independent native worlds.
 
+Linear equality corrections use half steps so that successive corrections in
+the coupled cloak network do not repeatedly undo earlier anchors. Nonzero
+interval boundaries and angular corrections retain full steps. The iteration
+budget and source limits are unchanged. Later-frame regressions cover frames
+45, 60 and 75; the [review revision notes](physics-validation.md#later-frame-review-revision-issue-77)
+also record the remaining angular-limit failures found by a denser scan.
+
 Collision filters, shapes, masses,
 damping, friction, restitution, joint frames and springs use the common
 `createPhysics` policy. Gravity is `[0,-9.80665,0]` m/s², scale 0.08 m/PMX unit,

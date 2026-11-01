@@ -3,6 +3,10 @@ import type {PhysicsProfile,Frame} from '../mmd-physics';
 const frame=(f:Frame)=>new Matrix4().compose(new Vector3(...f.translation),new Quaternion(...f.rotation),new Vector3(1,1,1));
 const clamp=(v:number,lo:number,hi:number)=>lo>hi?v:Math.max(lo,Math.min(hi,v));
 const locked=(j:PhysicsProfile['joints'][number])=>[...j.linearLower,...j.linearUpper,...j.angularLower,...j.angularUpper].every(v=>v===0);
+// Under-relax coupled linear equality rows: a full correction in a closed
+// network can undo earlier rows indefinitely when its animated anchors strain
+// the network. Interval boundaries retain full correction to prevent drift.
+const relaxation=.5;
 type State={p:Vector3;q:Quaternion;w:number;ii:Matrix3;members:{index:number;mass:number;offset:Matrix4}[]};
 /** Nonlinear position stabilization; native Bullet still owns contacts, springs and velocities. */
 export class JointProjector {
@@ -92,7 +96,7 @@ export class JointProjector {
             k.elements[col*3]=v.x;k.elements[col*3+1]=v.y;k.elements[col*3+2]=v.z;
           }
           const lambda=delta.applyMatrix3(k.invert()),ia=inertia(a,ra.clone().cross(lambda)),ib=inertia(b,rb.clone().cross(lambda));
-          const angle=Math.max(ia.length(),ib.length()),scale=angle>.2?.2/angle:1;
+          const angle=Math.max(ia.length(),ib.length()),scale=Math.min(relaxation,angle>0?.2/angle:relaxation);
           a.p.addScaledVector(lambda,a.w*scale);b.p.addScaledVector(lambda,-b.w*scale);
           rotate(a.q,ia.multiplyScalar(scale));rotate(b.q,ib.multiplyScalar(-scale));
           continue;
@@ -106,7 +110,7 @@ export class JointProjector {
           if(Math.abs(error)<1e-8)continue;
           const ja=ra.clone().add(delta).cross(axis),jb=rb.clone().cross(axis),ia=inertia(a,ja),ib=inertia(b,jb);
           const weight=a.w+b.w+ja.dot(ia)+jb.dot(ib);
-          let lambda=error/weight;
+          let lambda=(j.linearLower[k]===j.linearUpper[k]?relaxation:1)*error/weight;
           const angular=Math.max(ia.length(),ib.length())*Math.abs(lambda);if(angular>.2)lambda*=.2/angular;
           a.p.addScaledVector(axis,a.w*lambda);b.p.addScaledVector(axis,-b.w*lambda);
           rotate(a.q,ia.multiplyScalar(lambda));rotate(b.q,ib.multiplyScalar(-lambda));

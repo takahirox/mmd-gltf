@@ -19,6 +19,45 @@ joint correction below. It is not evidence for the final stabilized runtime.
 
 ## Public real-model integration (Issue #77)
 
+### Later-frame review revision (Issue #77)
+
+The branch incorporates main `855b189`, preserving three-mmd 0.1.3 and its
+canonical texture diagnostics alongside the public physics diagnostics.
+Half-step linear equality projection reduces the reported Gene / Apology /
+IK On frame-60 joint-52 error from 0.035278746 m to 0.025877342 m, below the
+existing 0.03 m ceiling. No source limits, test tolerances or iteration budgets
+are increased. The revised Node and Chrome 156.0.8078.74 samples agree in all
+three independent worlds, with a worst joint error of 0.028384746 m (joint 61)
+and maximum angular error of 0.000449409 rad. All unchanged per-joint assertions
+pass at that time.
+Node regressions check every joint in all three worlds at frames 45, 60 and 75
+for both characters, both motions and both IK states. Browser regressions add
+those frames with IK On and assert that forward playback reuses the worlds.
+An analytical incompatible-anchor fixture also detects the full-step residual
+bias independently of the real assets.
+
+A separate exploratory Node scan of 301 samples at 30 fps over each full Gene
+clip (0–10 s), with both IK states, exposed an additional **unresolved** limitation: Apology
+with IK On exceeds the 0.005 rad angular regression bound around 1.6–1.8 s.
+The original stabilizer also fails there (up to 0.017642 rad); equality damping
+does not resolve it (up to 0.017185 rad). Physics currently continues to report
+On at those states. The selected later-frame regressions are not full-timeline
+constraint conformance, and this revision does not establish that broader
+guarantee. This needs further execution work before claiming full-clip bounds.
+For a concrete reproduction in the same Node sampler, frame 50 (5/3 s) gives
+joint 53 an angular error of 0.017159219 rad with the revised stabilizer.
+
+Revision checks passed: build (existing large-chunk warning), typecheck, all
+179 Node tests plus Toon/Outline schema checks, 28 selected Playwright cases
+(16.8 minutes, zero case failures/skips), local links and whitespace. Browser
+coverage includes public physics/motion, synthetic physics, canonical texture
+paths and Uka comparison/recovery. Initial browser startup encountered occupied
+port 43180; the completed run used `MMD_PREVIEW_PORT=43181`. The full browser
+matrix, physical Android and original Windows MMD validation were not run.
+
+The frame-15 captures, numerical tables and performance measurements below
+precede this equality-damping revision and remain historical evidence.
+
 The [complete source audit](public-physics-audit.json),
 [runtime policy](public-physics.md), [execution measurements](public-physics-validation.json)
 and [sixteen saved canvases](public-physics-captures/README.md) extend the earlier

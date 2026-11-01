@@ -76,6 +76,22 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
     expect(maxPosition).toBeLessThan(.015);expect(maxRotation).toBeLessThan(.1);
     const created=(await state()).execution.physicsStats.worldsCreated;
     await seek(.6);expect((await state()).execution.physicsStats.worldsCreated).toBe(created);
+    // Frame-15 success alone missed Gene Apology's later cloak strain. Measure
+    // every native joint in all three worlds around the reported frame 60.
+    for(const time of [1.5,2,2.5]) {
+      await seek(time);
+      expect((await state()).execution.physicsState).toBe('on');
+      expect((await state()).execution.physicsStats.worldsCreated).toBe(created);
+      expect((await state()).execution.physicsStats.tick).toBe(time*120);
+      const later=await page.evaluate(()=>(window as any).readMMDComparisonPhysics());
+      const constraints:ReturnType<typeof jointViolations>[]=later.bodies.map((bodies:any)=>jointViolations(later.binding.physics,bodies));
+      for(const [pane,errors] of constraints.entries())for(const error of errors) {
+        const bounds=jointBounds(model,error.index);
+        expect(error.linear,`${model} ${motion} frame ${time*30} pane ${pane} joint ${error.index} linear`).toBeLessThan(bounds.linear);
+        expect(error.angular,`${model} ${motion} frame ${time*30} pane ${pane} joint ${error.index} angular`).toBeLessThan(bounds.angular);
+      }
+      evidence.push({motion,frame:time*30,constraints,execution:(await state()).execution});
+    }
     await seek(.2);await seek(.5);expect(await pose()).toEqual(on);
     await page.locator('#comparison-ik').uncheck();
     await expect.poll(async()=>(await state()).execution.ik).toBe(false);

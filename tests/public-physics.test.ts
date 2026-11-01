@@ -90,8 +90,8 @@ for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0
         const checkJoints=()=>{
           for(const bodies of physics.bodyTransforms())for(const error of jointViolations(binding.physics,bodies)) {
             const bounds=jointBounds(id,error.index);
-            assert.ok(error.linear<bounds.linear,`${id} ${clip} IK ${ik}: joint ${error.index} linear ${error.linear}`);
-            assert.ok(error.angular<bounds.angular,`${id} ${clip} IK ${ik}: joint ${error.index} angular ${error.angular}`);
+            assert.ok(error.linear<bounds.linear,`${id} ${clip} IK ${ik} time ${physics.stats.time}: joint ${error.index} linear ${error.linear}`);
+            assert.ok(error.angular<bounds.angular,`${id} ${clip} IK ${ik} time ${physics.stats.time}: joint ${error.index} angular ${error.angular}`);
           }
         };
         checkJoints();
@@ -115,6 +115,12 @@ for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0
         await physics.seek(.1,sample);await physics.seek(.25,sample);
         assert.deepEqual(physics.bindings.map(b=>b.read()),first,'backward reset/replay is deterministic');
         await physics.seek(.5,sample);checkJoints();
+        // Later authored shoulder motion strains Gene's coupled cloak network;
+        // frame 60 previously exceeded the unchanged 30 mm ceiling at joint 52.
+        for(const time of [1.5,2,2.5]) {
+          await physics.seek(time,sample);checkJoints();
+          assert.equal(physics.stats.worldsCreated,created+3,'later forward ticks reuse the replay worlds');
+        }
         physics.reset(undefined,false);assert.equal(PhysicsWorld.allocations,baseline);
       }
     }
