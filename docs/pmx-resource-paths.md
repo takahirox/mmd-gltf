@@ -110,6 +110,13 @@ the post-merge plan below.
 
 ## Required deployment and Android verification after merge
 
+The [merge-stage verification report](three-mmd-0.1.3-post-merge.json) records the
+successful deployment of merge commit `855b189c0d43beeb1ac20ba317ee246b9982d2f3`.
+Live cold-load probes remained in Loading during slow texture transfers, including
+HTTP/2 stream failures after HTTP-200 headers. Live decode/both-Ready acceptance,
+warm-load acceptance and physical Android verification remain pending; deployment
+success alone does not complete them.
+
 Confirm the merge-triggered build and Pages deployment succeeded for the exact
 merged SHA with the 0.1.3 lockfile. On the deployed app, repeat the canonical PMX
 hair request, HTTP-200/decode and both-Ready checks before recording deployment

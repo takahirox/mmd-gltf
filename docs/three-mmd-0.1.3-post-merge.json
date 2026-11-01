@@ -1,0 +1,209 @@
+{
+  "issue": 78,
+  "pullRequest": {
+    "number": 80,
+    "url": "https://github.com/takahirox/mmd-gltf/pull/80",
+    "head_sha": "d6674aac88fdfd890961eedd8a5ac63c24ba8e19"
+  },
+  "merge": {
+    "sourceIssueStateImmediatelyBeforeAttempt": "open",
+    "method": "merge",
+    "expectedHeadShaEnforced": true,
+    "merged": true,
+    "sha": "855b189c0d43beeb1ac20ba317ee246b9982d2f3",
+    "parents": [
+      "3dfa726aa38992a1f7d5ea17b377c685e839e8b8",
+      "d6674aac88fdfd890961eedd8a5ac63c24ba8e19"
+    ],
+    "preMergeWorkflow": "https://github.com/takahirox/mmd-gltf/actions/runs/41299511791",
+    "preMergeWorkflowConclusion": "success"
+  },
+  "mergedLockfile": {
+    "manifestVersion": "0.1.3",
+    "installedVersion": "0.1.3",
+    "resolved": "https://registry.npmjs.org/@takahirox/three-mmd/-/three-mmd-0.1.3.tgz",
+    "integrity": "sha512-/7WB/Wq8ME6QYrY5PEYXkXPvkGZj/wNfCfCruHPLdvOqLzj3Sfrq7C5jcao+bD1FVWq++glE2zSytFNJW60vcQ=="
+  },
+  "deployment": {
+    "status": "passed",
+    "workflowRunId": 41304304814,
+    "url": "https://github.com/takahirox/mmd-gltf/actions/runs/41304304814",
+    "headSha": "855b189c0d43beeb1ac20ba317ee246b9982d2f3",
+    "conclusion": "success",
+    "deploymentId": 7473351693,
+    "deploymentState": "success",
+    "deploymentSucceededAt": "2026-11-01T13:02:12Z",
+    "environmentUrl": "https://takahirox.github.io/mmd-gltf/",
+    "liveEntryBundle": "assets/index-DD8SPvsM.js",
+    "liveEntryBundleMatchesWorkflowBuild": true
+  },
+  "physicalAndroid": {
+    "status": "pending",
+    "discovery": "adb devices -l: no attached devices",
+    "manualSteps": "docs/pmx-resource-paths.md#required-deployment-and-android-verification-after-merge",
+    "originalFailureCause": "Unverified; canonical URLs and desktop success do not establish Android image decode or resource-exhaustion behavior."
+  },
+  "mergeTriggeredChecks": {
+    "npmCi": "passed",
+    "build": "passed",
+    "typecheck": "passed",
+    "nodeTests": {
+      "passed": 173,
+      "failed": 0,
+      "skipped": 0
+    },
+    "browserTests": {
+      "passed": 100,
+      "skipped": 2,
+      "skippedCases": [
+        "example.spec.ts: built webgpu comparison",
+        "outline.spec.ts: webgpu outline conformance"
+      ],
+      "duration": "55.1m"
+    },
+    "links": {
+      "status": "passed",
+      "checked": 471
+    },
+    "diffCheck": "passed",
+    "environment": {
+      "node": "v22.23.4",
+      "browser": "Chromium 141.0.7390.37",
+      "playwright": "1.56.1"
+    },
+    "warnings": [
+      "Existing Node.js action-runtime deprecation notices and ubuntu-latest migration notice."
+    ]
+  },
+  "liveVerification": {
+    "status": "pending",
+    "normalTransport": {
+      "status": "failed",
+      "initialWaitTimeoutMs": 180000,
+      "diagnosticWaitTimeoutMs": 600000,
+      "visibleStatus": "Loading PMX and converted glTF\u2026",
+      "hairRequests": [
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "type": "image"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "type": "fetch"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "type": "fetch"
+        }
+      ],
+      "hairResponseHeaders": [
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "status": 200
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "status": 200
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "status": 200
+        }
+      ],
+      "requestFailures": [
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/acce.png",
+          "error": "net::ERR_HTTP2_PROTOCOL_ERROR"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/acce.png",
+          "error": "net::ERR_HTTP2_PROTOCOL_ERROR"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/btm.png",
+          "error": "net::ERR_HTTP2_PROTOCOL_ERROR"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/btm.png",
+          "error": "net::ERR_HTTP2_PROTOCOL_ERROR"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "error": "net::ERR_HTTP2_PROTOCOL_ERROR"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "error": "net::ERR_HTTP2_PROTOCOL_ERROR"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/eye.png",
+          "error": "net::ERR_HTTP2_PROTOCOL_ERROR"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/face.png",
+          "error": "net::ERR_HTTP2_PROTOCOL_ERROR"
+        }
+      ],
+      "acceptance": "Unconfirmed: HTTP 200 response headers do not prove body completion, decoded images or both panes Ready."
+    },
+    "independentDownload": {
+      "status": "timed out",
+      "httpStatus": 200,
+      "bytesReceived": 10373760,
+      "expectedBytes": 12276095,
+      "timeoutSeconds": 45,
+      "bytesPerSecond": 230522
+    },
+    "environment": {
+      "node": "v26.12.1",
+      "browser": "156.0.8078.74",
+      "playwright": "1.56.1",
+      "platform": "macOS arm64",
+      "renderer": "ANGLE SwiftShader"
+    },
+    "http2DisabledDiagnostic": {
+      "status": "failed",
+      "setting": "HTTP/2 disabled in test browser for diagnosis",
+      "waitTimeoutMs": 240000,
+      "error": "TimeoutError: page.waitForFunction: Timeout 240000ms exceeded.",
+      "visibleStatus": "Loading PMX and converted glTF\u2026",
+      "responseCount": 45,
+      "requestFailures": [],
+      "hairRequests": [
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "type": "image"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "type": "fetch"
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "type": "fetch"
+        }
+      ],
+      "hairResponseHeaders": [
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "status": 200
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "status": 200
+        },
+        {
+          "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+          "status": 200
+        }
+      ],
+      "decodeAndBothReady": "Unconfirmed; probe timed out before Ready.",
+      "warmLoad": "Not reached because cold load did not complete."
+    }
+  },
+  "remainingWork": [
+    "Repeat live Uka cold/warm acceptance on a connection where full large-texture bodies complete; require the direct-PMX canonical hair request, HTTP 200, successful image decode and both panes Ready.",
+    "Investigate the observed HTTP/2 stream errors and slow/incomplete transfers separately from URL normalization; no live decode or rendering success is claimed.",
+    "Complete physical Android Chrome and interaction checklist when a device is available, following docs/pmx-resource-paths.md."
+  ]
+}
