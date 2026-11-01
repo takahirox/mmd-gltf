@@ -1,5 +1,15 @@
+import { validatePhysics } from '../packages/mmd-physics';
+import { ComparisonPhysics, verifyDirectPhysics, type PublicPhysicsBinding } from './comparison-physics';
+import { loadAmmoBrowser } from '../packages/three-mmd-physics/ammo';
+import { PhysicsWorld } from '../packages/three-mmd-physics/world';
+let comparisonAmmo:ReturnType<typeof loadAmmoBrowser>|undefined;
+function ammoBackend() {
+  comparisonAmmo ??= loadAmmoBrowser(`${import.meta.env.BASE_URL}runtime/ammo.js`).catch(error=>{comparisonAmmo=undefined;throw error;});
+  return comparisonAmmo;
+}
 import { AnimationMixer, LoopOnce, type SkinnedMesh, type AnimationClip, type AnimationAction } from 'three';
 import { MMDVMDPlugin, getVMDPlayers, parseVMD, type VMDPlayer } from '../packages/three-mmd-vmd';
+import { bindMotion, evaluateMotion } from '../packages/mmd-vmd';
 import { comparisonIK, comparisonIKCompatible } from './comparison-ik';
 import { motionPreview } from './motion-preview';
 import { disposeScene } from './scene-resources';
@@ -30,6 +40,11 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
   const loop = document.querySelector<HTMLInputElement>('#comparison-loop')!;
   const ikControl = document.querySelector<HTMLInputElement>('#comparison-ik')!;
   ikControl.checked=true;ikControl.disabled=true;
+  const physicsControl=document.querySelector<HTMLInputElement>('#comparison-physics')!;
+  const physicsStatus=document.querySelector<HTMLElement>('#comparison-physics-status')!;
+  physicsControl.checked=false;physicsControl.disabled=true;physicsStatus.textContent='';
+  let physics:ComparisonPhysics|undefined,physicsBusy=false,physicsEnabled=false,physicsRequest=0,physicsError='',requestedTime=0;
+
   const timeLabel = document.querySelector<HTMLOutputElement>('#comparison-time-label')!;
   const motionControls=[motionSelect,play,restart,timeline,loop];
   motionControls.forEach(c=>c.disabled=true);
@@ -68,7 +83,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
   let observer: ResizeObserver | undefined;
   let effects: [ReferenceOutlineEffect, MMDOutlineEffect] | undefined;
   const dispose = async () => {
-    disposed = true;
+    disposed = true;physicsRequest++;physics?.dispose();physicsEnabled=false;physicsControl.disabled=true;
     for(const [key,value] of Object.entries(diagnostics??{}))
       if(Reflect.get(window,key)===value)Reflect.deleteProperty(window,key);
     diagnostics=undefined;
@@ -181,8 +196,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       reference.scale.setScalar(0.08);
       // Gene installs UV callbacks at load time. Explicitly disable this extra family.
       updateMMDUVs(reference, false);
-      // Raw mixer first; optional source IK runs after the absolute seek.
-      // Only dependency-closure grants/IK; no full helper or physics world.
+      // Loading creates no physics world. Default playback uses the raw mixer
+      // and IK prerequisites; Physics On supplies an explicit ordered host below.
       reference.material.forEach((material) => {
         material.toneMapped = false;
       });
@@ -209,7 +224,13 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
         const retained=getVMDPlayers(loaded);
         players.push(...retained);
         if(retained.length!==3 || motions.some(m=>retained.filter(p=>p.name===m.metadata.animation && p.source?.source===m.source.source && p.duration===m.metadata.duration).length!==1))throw new Error('VMD: retained source differs from pinned motion');
-        if(loaded.parser.json.animations.some((a:any)=>a.extensions.MMD_animation_vmd.solver) || loaded.parser.json.extensions?.MMD_skeleton_solver || loaded.parser.json.extensions?.MMD_physics)throw new Error('Public comparison must be solver/physics free');
+        if(loaded.parser.json.animations.some((a:any)=>a.extensions.MMD_animation_vmd.solver))throw new Error('Public raw VMD must not own a second solver');
+        const binding=loaded.parser.json.extras.publicPhysics as PublicPhysicsBinding;
+        if(binding?.version!==1)throw new Error('Missing public physics source binding');
+        validatePhysics(binding.physics,binding.solver);
+        for(const [name,value] of Object.entries({MMD_physics:binding.physics,MMD_skeleton_solver:binding.solver}))
+          if(loaded.parser.json.extensions?.[name] && JSON.stringify(loaded.parser.json.extensions[name])!==JSON.stringify(value))
+            throw new Error(`Conflicting ${name} runtime binding`);
         await preparePreview(loaded.scene, true);
         scenes[1].add(loaded.scene);
         return loaded;
@@ -227,6 +248,9 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     if (failure?.status === 'rejected') throw failure.reason;
     const reference = (results[0] as PromiseFulfilledResult<Awaited<typeof referencePromise>>).value;
     const { toon, fallback } = (results[1] as PromiseFulfilledResult<Awaited<typeof gltfPromise>>).value;
+    // Restore retained rest before capturing adapters. Core glTF serializers may
+    // omit near-zero TRS; PMX source identities and rest metadata stay exact.
+    [toon,fallback].forEach(gltf=>getVMDPlayers(gltf)[0].stop());
     const ikSolvers=[
       comparisonIK(reference, reference.geometry.userData.MMD.bones.map((b)=>({
         index:b.index,name:b.name,flags:b.flag,layer:b.transformationClass,grant:b.grant,
@@ -245,8 +269,18 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     const ikAvailable=ikSolvers.every(s=>s.state.available);
     ikControl.disabled=!ikAvailable;ikControl.checked=ikAvailable;
     ikControl.title=ikAvailable?'All source IK chains; follows motion switches':[...new Set(ikSolvers.map(s=>s.state.reason).filter(Boolean))].join('; ');
+    try {
+      const binding=toon.parser.json.extras.publicPhysics as PublicPhysicsBinding;
+      if(JSON.stringify(binding)!==JSON.stringify(fallback.parser.json.extras.publicPhysics))throw new Error('Toon/PBR physics mismatch');
+      await verifyDirectPhysics(reference,binding);
+      physics=new ComparisonPhysics(binding,[reference,toon.scene,fallback.scene]);
+      physicsControl.disabled=false;
+    } catch(error) {physicsError=error instanceof Error?error.message:String(error);physicsStatus.textContent=`Physics unavailable: ${physicsError}`;}
     const actions = new Map<string,AnimationAction>();
     const referenceRest=reference.skeleton.bones.map(b=>({bone:b,position:b.position.clone(),rotation:b.quaternion.clone(),scale:b.scale.clone()}));
+    const rawReferenceMotions=new Map(motions.map(m=>[m.id,bindMotion({version:1,modelId:'direct-public-physics',metersPerPMXUnit:.08,
+      bones:referenceRest.map(({bone,position,rotation,scale},index)=>({index,name:reference.geometry.userData.MMD.bones[index].name,
+        parentIndex:reference.skeleton.bones.indexOf(bone.parent as typeof bone),translation:position.toArray().map(v=>v*.08) as [number,number,number],rotation:rotation.toArray(),scale:scale.toArray()}))},m.source,{preserveUnbound:true})]));
     mixer=new AnimationMixer(reference);
     for(const motion of motions) {
       const clip=await new Promise<AnimationClip>((resolve,reject)=>new MMDLoader().loadAnimation(motion.url,reference,resolve,undefined,reject));
@@ -301,7 +335,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       return { min: box.min.toArray(), max: box.max.toArray() };
     };
     const info = { motion: initialMotion, time: 0, referenceTime: 0, gltfTimes: activePlayers.map(()=>0), duration, playing:false, loop:false,
-      execution:{ik:false,ikState:'off',chains:ikSolvers.map(s=>s.state),grant:false,physics:false,helper:false,fallbackMixer:false},
+      execution:{ik:false,ikState:'off',chains:ikSolvers.map(s=>s.state),grant:false,physics:false,physicsState:physics?'off':'unavailable',physicsStats:physics?.stats,physicsChains:physics?.adapters.map(a=>a.state),helper:false,fallbackMixer:false},
       binding:bindingInfo(),
       preview:{targets:previews.map(p=>p.targets),bytes:previews.reduce((n,p)=>n+p.bytes,0)}, model, expression: 'rest', backend, frames: 0, mode: select.value, meshes: 0, ready: true,
       reference: { loader: 'MMDLoader', materials: reference.material.length, scale: reference.scale.x, bounds: describeBounds(reference),
@@ -310,14 +344,15 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     toon.scene.traverse((object: Object3D) => { if ((object as Mesh).isMesh) info.meshes++; });
     // Read-only acceptance evidence: local/world bones plus skin-only positions.
     // Start from base POSITION, deliberately excluding all facial morph weights.
+    const diagnosticNumber=(value:number)=>value===0?0:value; // Canonicalize equivalent IEEE signed zeros.
     function readPose(root: Object3D, direct: boolean) {
       root.updateMatrixWorld(true);
       const bones: Record<string,{index:number;local:number[];rotation:number[];world:number[]}>={};
       const vertices:number[][]=[];
       root.traverse(object=>{
         const name=direct?object.name:object.userData.pmxBone?.name;
-        if(object.type==='Bone' && name)bones[name]={index:direct?reference.skeleton.bones.findIndex(b=>b===object):object.userData.pmxBone.index,local:object.position.toArray().map(v=>v*(direct ? .08 : 1)),
-          rotation:object.quaternion.toArray(),world:object.getWorldPosition(new Vector3()).toArray()};
+        if(object.type==='Bone' && name)bones[name]={index:direct?reference.skeleton.bones.findIndex(b=>b===object):object.userData.pmxBone.index,local:object.position.toArray().map(v=>diagnosticNumber(v*(direct ? .08 : 1))),
+          rotation:object.quaternion.toArray().map(diagnosticNumber),world:object.getWorldPosition(new Vector3()).toArray().map(diagnosticNumber)};
         const mesh=object as SkinnedMesh;
         if(!mesh.isSkinnedMesh)return;
         mesh.skeleton.update();
@@ -325,14 +360,16 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
         for(let i=0;i<positions.count;i+=Math.max(1,Math.floor(positions.count/128))) {
           const vertex=new Vector3().fromBufferAttribute(positions,i);
           mesh.applyBoneTransform(i,vertex).applyMatrix4(mesh.matrixWorld);
-          vertices.push(vertex.toArray());
+          vertices.push(vertex.toArray().map(diagnosticNumber));
         }
       });
       return {bones,vertices};
     }
     Object.assign(window, diagnostics = { mmdExample: info,
       readMMDComparisonPose:()=>[readPose(reference,true),readPose(toon.scene,false),readPose(fallback.scene,false)],
+      readMMDComparisonPhysics:()=>structuredClone({bodies:physics?.bodyTransforms(),inputs:physics?.inputs,binding:toon.parser.json.extras.publicPhysics}),
       readMMDComparisonResources:()=>({memory:{...renderer.info.memory},roots:[reference.id,toon.scene.id,fallback.scene.id],
+        physics:{native:PhysicsWorld.allocations,stats:physics?.stats},
         heap:(performance as Performance & {memory?:{usedJSHeapSize:number}}).memory?.usedJSHeapSize,
         weights:[reference,...[toon.scene,fallback.scene].flatMap(root=>{const meshes:Mesh[]=[];root.traverse(n=>{if((n as Mesh).isMesh)meshes.push(n as Mesh);});return meshes;})].map(m=>[...(m.morphTargetInfluences??[])])}),
       captureMMDComparisonCanvas: () => disposed ? Promise.reject(new Error('Comparison disposed'))
@@ -346,23 +383,64 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       play.textContent=info.playing?'Pause':'Play';
       timeline.value=String(info.time);timeLabel.value=`${info.time.toFixed(2)} / ${duration.toFixed(2)} s`;
     }
-    function applyTime(time:number) {
-      ikSolvers.forEach(s=>s.restore());
-      action.reset().play();mixer!.setTime(time);
-      reference.updateMatrixWorld(true);
-      activePlayers.forEach(p=>p.seek(time));
-      ikSolvers.forEach(s=>s.remember());
-      if(ikAvailable && ikControl.checked && ikSolvers.map(s=>s.validatePose()).every(Boolean)) {
-        const source=motions.find(m=>m.metadata===metadata)!.source;
-        ikSolvers.forEach(solver=>solver.apply(source,time));
-        recoverIKFailure();
+    function sampleRaw(time:number) {
+      if(physicsEnabled || info.motion==='rest')referenceRest.forEach(({bone,position,rotation,scale})=>{bone.position.copy(position);bone.quaternion.copy(rotation);bone.scale.copy(scale);});
+      if(info.motion==='rest') {activePlayers.forEach(p=>p.stop());manualExpression();}
+      else {
+        action.reset().play();mixer!.setTime(time);activePlayers.forEach(p=>p.seek(time));
+        if(physicsEnabled)for(const b of evaluateMotion(rawReferenceMotions.get(info.motion as Exclude<PublicMotion,'rest'>)!,time)) {
+          const bone=reference.skeleton.bones[b.index];bone.position.fromArray(b.translation).multiplyScalar(12.5);bone.quaternion.fromArray(b.rotation);
+        }
       }
-      info.time=time;info.referenceTime=action.time;info.gltfTimes=activePlayers.map(p=>p.time);
+      reference.updateMatrixWorld(true);
+    }
+    function publishTime(time:number) {
+      info.time=time;info.referenceTime=info.motion==='rest'?0:action.time;info.gltfTimes=activePlayers.map(p=>info.motion==='rest'?0:p.time);
       info.reference.morphsActive=reference.morphTargetInfluences?.some(w=>w!==0)??false;
       reportExecution();updateControls();
     }
-    function pause() {info.playing=false;anchorTime=info.time;updateControls();}
-    function seek(time:number) {anchor=performance.now();anchorTime=Math.max(0,Math.min(duration,time));applyTime(anchorTime);}
+    function physicsOff(error='') {
+      physicsRequest++;physicsEnabled=false;physicsControl.checked=false;physicsBusy=false;
+      physics?.reset(undefined,false);
+      // Release mixer caches before restoring bones written by simulation.
+      // Otherwise unchanged track values may be skipped on the Off handoff.
+      mixer!.stopAllAction();
+      referenceRest.forEach(({bone,position,rotation,scale})=>{bone.position.copy(position);bone.quaternion.copy(rotation);bone.scale.copy(scale);});
+      physicsError=error;physicsStatus.textContent=error?`Physics off: ${error}`:'';
+      info.execution.physics=false;info.execution.physicsState=error?'error':'off';
+    }
+    async function applyTime(time:number) {
+      if(physicsEnabled && physics) {
+        if(physicsBusy)return;
+        const token=++physicsRequest;requestedTime=time;physicsBusy=true;info.execution.physicsState='simulating';
+        try {
+          if(await physics.seek(time,sampleRaw) && token===physicsRequest && !disposed) {
+            info.execution.physics=true;info.execution.physicsState='on';publishTime(time);
+            if(info.playing) {anchor=performance.now();anchorTime=time;}
+          }
+        } catch(error) {
+          if(token===physicsRequest && !disposed) {physicsOff(error instanceof Error?error.message:String(error));applyRawTime(time);}
+        } finally {if(token===physicsRequest)physicsBusy=false;}
+      } else applyRawTime(time);
+    }
+    function applyRawTime(time:number) {
+      ikSolvers.forEach(s=>s.restore());sampleRaw(time);
+      ikSolvers.forEach(s=>s.remember());
+      if(ikAvailable && ikControl.checked && ikSolvers.map(s=>s.validatePose()).every(Boolean)) {
+        const source=info.motion==='rest'?undefined:motions.find(m=>m.metadata===metadata)!.source;
+        ikSolvers.forEach(solver=>solver.apply(source,time));recoverIKFailure();
+      }
+      publishTime(time);
+    }
+    function resetPhysics() {
+      if(!physicsEnabled && info.execution.physicsState==='loading') {
+        physicsControl.checked=false;physicsStatus.textContent='';info.execution.physicsState='off';
+      }
+      physicsRequest++;physicsBusy=false;
+      physics?.reset(info.motion==='rest'?undefined:motions.find(m=>m.metadata===metadata)!.source,ikControl.checked);
+    }
+    function pause() {info.playing=false;anchorTime=info.time;if(physicsBusy){resetPhysics();void applyTime(info.time);}updateControls();}
+    function seek(time:number) {anchor=performance.now();anchorTime=Math.max(0,Math.min(duration,time));if(physicsBusy && requestedTime===anchorTime)return;if(physicsBusy)resetPhysics();void applyTime(anchorTime);}
     function manualExpression() {
       for(const [i,root] of [reference,toon.scene,fallback.scene].entries())root.traverse(object=>{
         const mesh=object as Mesh;if(!mesh.isMesh || !mesh.morphTargetInfluences)return;
@@ -376,11 +454,26 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       info.expression=expression.value;info.reference.morphsActive=expression.value!=='rest';
     }
     ikControl.addEventListener('change',()=>{
-      if(info.motion!=='rest')applyTime(info.time);else applyRestIK();
+      resetPhysics();void applyTime(info.time);
+    },{signal:events.signal});
+    physicsControl.addEventListener('change',async()=>{
+      const time=info.time;
+      if(!physicsControl.checked) {physicsOff();applyRawTime(time);return;}
+      const token=++physicsRequest;
+      physicsError='';physicsStatus.textContent='Loading physics…';info.execution.physicsState='loading';
+      pause();
+      try {
+        const {api}=await ammoBackend();
+        if(disposed || token!==physicsRequest || !physicsControl.checked)return;
+        physics!.setBackend(api);physicsEnabled=true;physicsStatus.textContent='';resetPhysics();
+        await applyTime(time);
+      } catch(error) {
+        if(token===physicsRequest && !disposed) {physicsOff(error instanceof Error?error.message:String(error));applyRawTime(time);}
+      }
     },{signal:events.signal});
     expression.addEventListener('change',manualExpression,{signal:events.signal});
     motionSelect.addEventListener('change',()=>{
-      pause();
+      pause();resetPhysics();
       ikSolvers.forEach(s=>s.restore());
       mixer!.stopAllAction();activePlayers.forEach(p=>p.stop());
       referenceRest.forEach(({bone,position,rotation,scale})=>{bone.position.copy(position);bone.quaternion.copy(rotation);bone.scale.copy(scale);});
@@ -393,7 +486,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       info.binding=bindingInfo();describeBinding();
       info.time=info.referenceTime=0;info.gltfTimes=activePlayers.map(()=>0);
       reference.updateMatrixWorld(true);
-      if(info.motion!=='rest')seek(0);else applyRestIK();
+      resetPhysics();seek(0);
       updateControls();
     },{signal:events.signal});
     play.addEventListener('click',()=>{
@@ -412,30 +505,25 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
 
     function report() { status.textContent = `Ready · ${backend} · ${select.value === 'toon' ? 'MMD toon' : 'PBR fallback'}`; }
     report();
-    function applyRestIK() {
-      ikSolvers.forEach(s=>s.restore());
-      if(ikAvailable && ikControl.checked && ikSolvers.map(s=>s.validatePose()).every(Boolean)) {
-        ikSolvers.forEach(s=>s.apply(undefined,0));recoverIKFailure();
-      }
-      reportExecution();
-    }
     function recoverIKFailure() {
       const error=ikSolvers.find(s=>s.state.error)?.state.error;
       if(error)ikSolvers.forEach(s=>{s.restore();s.state.error=error;});
     }
     function reportExecution() {
-      info.execution.grant=ikSolvers.some(s=>s.state.appliedGrants.length>0);
-      info.execution.ik=ikSolvers.some(s=>s.state.executed.length>0);
+      const executing=physicsEnabled && physics?physics.adapters:ikSolvers;
+      info.execution.chains=executing.map(s=>s.state);
+      info.execution.grant=executing.some(s=>s.state.appliedGrants.length>0);
+      info.execution.ik=executing.some(s=>s.state.executed.length>0);
       info.execution.ikState=!ikAvailable || ikSolvers.some(s=>s.state.error)?'unavailable':ikControl.checked?'on':'off';
       const text=info.execution.ikState==='unavailable'?'IK unavailable':ikControl.checked?'IK on':'IK off';
       statuses.forEach((element,i)=>{
-        const state=ikSolvers[i].state;
-        const content=`Ready · Raw VMD / BDEF · ${text}${ikControl.checked?` · ${state.executed.length}/${state.controllers.length} chains`:''} · physics off`;
+        const state=executing[i].state;
+        const content=`Ready · ${physicsEnabled?'VMD + Physics':'Raw VMD'} / BDEF · ${text}${ikControl.checked?` · ${state.executed.length}/${state.controllers.length} chains`:''} · physics ${physicsEnabled?'on':'off'}`;
         if(element.textContent!==content)element.textContent=content;
         element.dataset.ready='true';
       });
       const details=document.querySelector('#comparison-ik-diagnostics')!;
-      const content=JSON.stringify({state:info.execution.ikState,panes:ikSolvers.map(s=>s.state)},null,2);
+      const content=JSON.stringify({state:info.execution.ikState,panes:executing.map(s=>s.state),physics:{state:info.execution.physicsState,error:physicsError,stats:physics?.stats}},null,2);
       if(details.textContent!==content)details.textContent=content;
     }
     reportExecution();
@@ -449,15 +537,17 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       info.mode = select.value;
       report();
     }, { signal: events.signal });
-    const render = () => {
+    const render = async () => {
+      if(disposed || physicsBusy)return;
       if (viewport.clientWidth <= 0 || viewport.clientHeight <= 0) return;
       // A requested capture must use current layout even before ResizeObserver runs.
       if (captures.length) resize();
-      if(info.playing) {
+      if(info.playing && !physicsBusy) {
         const elapsed=anchorTime+(performance.now()-anchor)/1000;
-        applyTime(info.loop && duration>0?elapsed%duration:Math.min(elapsed,duration));
+        await applyTime(info.loop && duration>0?elapsed%duration:Math.min(elapsed,duration));
         if(!info.loop && elapsed>=duration)pause();
       }
+      if(disposed || physicsBusy)return;
       orbit.update();
       previews.forEach(p=>p.begin());
       try {

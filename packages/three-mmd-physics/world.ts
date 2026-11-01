@@ -1,10 +1,11 @@
-import { diagnosticError, validateBudget } from "../mmd-diagnostics";
+import { diagnosticError, MMDDiagnosticError, validateBudget } from "../mmd-diagnostics";
 import { Matrix4, Quaternion, Vector3 } from "three";
 import type Ammo from "ammojs-typed";
 import { solvePose, type SolverProfile } from "../mmd-solver";
 import {
   validatePhysics,
   assertPhysicsExecutable,
+  physicsBindingDiagnostics,
   type PhysicsBudget,
   type PhysicsProfile,
   type Frame,
@@ -41,6 +42,12 @@ const worlds = (pose: RestBone[]) => {
   }
   return out;
 };
+/** A host evaluator must validate its complete source operations before native allocation.
+ * It replaces, rather than supplements, the generic solver in both phases. */
+export interface PhysicsPoseEvaluator {
+  validate(): void;
+  evaluate(raw: RestBone[], enabled: ReadonlyMap<number,boolean>, phase:'pre'|'post'): RestBone[];
+}
 /** Each world owns every constructed native handle, never borrowed return values. */
 export class PhysicsWorld {
   private owned: unknown[] = [];
@@ -73,11 +80,16 @@ export class PhysicsWorld {
     initial: RestBone[],
     enabled: ReadonlyMap<number, boolean> = new Map(),
     private budget: PhysicsBudget = {},
+    private evaluator?: PhysicsPoseEvaluator,
   ) {
     checkAmmo(api);
     validatePhysics(profile, solver);
-    assertPhysicsExecutable(profile, solver, budget);
-    const pre = solvePose(solver, initial, enabled, "pre", this.budget),
+    if(evaluator) {
+      const diagnostics=physicsBindingDiagnostics(profile,solver,budget);
+      if(diagnostics.length)throw new MMDDiagnosticError(diagnostics[0]);
+      evaluator.validate();
+    } else assertPhysicsExecutable(profile, solver, budget);
+    const pre = this.evaluate(initial, enabled, "pre"),
       poseWorld = worlds(pre);
     try {
       const config = this.own(new api.btDefaultCollisionConfiguration()),
@@ -208,7 +220,7 @@ export class PhysicsWorld {
     step = true,
   ) {
     if (this.disposed) throw new Error("MMD_physics: disposed world");
-    const pre = solvePose(this.solver, raw, enabled, "pre", this.budget),
+    const pre = this.evaluate(raw, enabled, "pre"),
       animated = worlds(pre);
     for (const b of this.profile.bodies) {
       const body = this.bodies.get(b.index)!;
@@ -253,14 +265,22 @@ export class PhysicsWorld {
             q = new Quaternion();
           local.decompose(p, q, new Vector3());
           const out = byIndex.get(bone.index)!;
-          out.translation = p.toArray();
+          // Mode 2 owns rotation only. Keep authored local translation even
+          // when its parent is another dynamic body (real hair/cloth chains).
+          if(b.mode===1)out.translation = p.toArray();
           out.rotation = q.normalize().toArray();
         }
         resolvedWorld.set(bone.index, parent.clone().multiply(matrix(bone)));
         pending.splice(i, 1);
       }
     }
-    return solvePose(this.solver, result, enabled, "post", this.budget);
+    // Re-anchor mode-2 bodies in the resolved hierarchy, including dynamic parents.
+    for(const b of this.profile.bodies)if(b.mode===2 && b.bone!==-1)
+      this.align(b.index,resolvedWorld.get(b.bone)!);
+    return this.evaluate(result, enabled, "post");
+  }
+  private evaluate(raw:RestBone[],enabled:ReadonlyMap<number,boolean>,phase:'pre'|'post') {
+    return this.evaluator ? this.evaluator.evaluate(raw,enabled,phase) : solvePose(this.solver,raw,enabled,phase,this.budget);
   }
   private align(index: number, animated: Matrix4) {
     const b = this.profile.bodies.find((b) => b.index === index)!,

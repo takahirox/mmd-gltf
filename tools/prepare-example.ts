@@ -1,3 +1,4 @@
+import { publicPhysicsSource } from './audit-public-physics';
 import { publicMotions, writePublicMotionMetadata } from './public-motion';
 import { prepareUka } from './prepare-uka';
 import { copyFile, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
@@ -16,11 +17,11 @@ const motions = await publicMotions(model, directory, '01_happy');
 const { document, io, warnings } = await convertModel(model, directory, {mode:'bdef', solver:'none', physics:'none', vmds:motions.map(m=>({name:m.name,bytes:m.bytes})),vmdBinding:{morphTypes:[1]}});
 document.getRoot().setExtras({ ...document.getRoot().getExtras(),
   source: `https://github.com/${manifest.repository}/tree/${manifest.commit}`,
-  sourceManifest: manifest,
+  sourceManifest: manifest, publicPhysics:{version:1,...publicPhysicsSource(model)},
   attribution: 'CG-CA Gene (c) 2023 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society',
   license: 'CC BY 4.0', notices: ['README.md','README.ja.md'],
   rights: 'CC BY 4.0 plus original usage guidelines and retained trademark/design rights. Academic/personal noncommercial use; contact authors for other commercial use. See accompanying English/Japanese notices.',
-  changes: 'BDEF skinned PMX with three original official VMDs, exact retained VMD v6 and approximate core fallback converted to glTF geometry and MMD_materials_toon and MMD_materials_outline; independent core PBR approximation; source textures unchanged. All supported targets retained; public preview uploads only active vertex expressions. Gene preview evaluates all six source IK chains with ordered prerequisite rotation grant 35 from 26 while IK is On; IK Off restores raw motion. No physics, unrelated grants, material/UV morph or visibility execution. Original textures unchanged.',
+  changes: 'BDEF skinned PMX with three original official VMDs, exact retained VMD v6 and approximate core fallback converted to glTF geometry and MMD_materials_toon and MMD_materials_outline; independent core PBR approximation; source textures unchanged. All supported targets retained; public preview uploads only active vertex expressions. With Physics Off, Gene preview evaluates all six source IK chains with ordered prerequisite rotation grant 35 from 26 while IK is On; IK Off restores raw motion. Physics Off omits unrelated grants and simulation; optional Physics On executes all source rigid bodies/joints, fixed-axis twist projection and ordered grants via extras.publicPhysics. No material/UV morph or visibility execution. Original textures unchanged.',
 });
 // Rebuild the reviewed allowlist; stale/private files must never survive packaging.
 await rm('public/gene-light', { recursive: true, force: true });

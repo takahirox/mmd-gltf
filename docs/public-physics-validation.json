@@ -1,0 +1,1671 @@
+{
+  "issue": 77,
+  "environment": {
+    "ci": false,
+    "platform": "darwin",
+    "release": "27.2.0",
+    "node": "v26.12.1",
+    "cpu": "Apple M4 Max",
+    "logicalCPUs": 16,
+    "workers": 1,
+    "channel": "chrome",
+    "conformanceMatrix": "representative",
+    "renderer": "ANGLE SwiftShader (CPU)"
+  },
+  "browser": "156.0.8078.74",
+  "physicsPolicy": {
+    "fixedStepSeconds": 0.008333333333333333,
+    "gravityMPS2": [
+      0,
+      -9.80665,
+      0
+    ],
+    "metersPerPMXUnit": 0.08,
+    "independentWorlds": 3,
+    "sourceBodiesJoints": {
+      "uka": [
+        164,
+        151
+      ],
+      "gene": [
+        87,
+        92
+      ]
+    },
+    "poseInputResolution": 1e-07,
+    "backendSHA256": "422b87333fec6272a592088f96bd672dc8f62b9649b12d44e493fd427e89fff8"
+  },
+  "browserRuns": {
+    "regression": {
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "release": "27.2.0",
+        "node": "v26.12.1",
+        "cpu": "Apple M4 Max",
+        "logicalCPUs": 16,
+        "workers": 1,
+        "channel": "chrome",
+        "conformanceMatrix": "representative",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "status": "failed",
+      "durationMs": 662012.044,
+      "testCount": 21,
+      "attemptCount": 21,
+      "statuses": {
+        "passed": 19,
+        "failed": 2
+      },
+      "suites": {
+        "body-motion.spec.ts": {
+          "durationMs": 182752,
+          "attempts": 6,
+          "statuses": {
+            "passed": 6
+          }
+        },
+        "physics.spec.ts": {
+          "durationMs": 138798,
+          "attempts": 4,
+          "statuses": {
+            "passed": 4
+          }
+        },
+        "public-motion.spec.ts": {
+          "durationMs": 140281,
+          "attempts": 5,
+          "statuses": {
+            "passed": 5
+          }
+        },
+        "public-physics.spec.ts": {
+          "durationMs": 144033,
+          "attempts": 5,
+          "statuses": {
+            "failed": 2,
+            "passed": 3
+          }
+        },
+        "sleeve-motion.spec.ts": {
+          "durationMs": 46193,
+          "attempts": 1,
+          "statuses": {
+            "passed": 1
+          }
+        }
+      },
+      "selection": {
+        "grep": "/.*/",
+        "grepInvert": "null"
+      },
+      "baselines": [
+        {
+          "run": 69,
+          "durationMs": 2145078.161,
+          "testCount": 73
+        },
+        {
+          "run": 70,
+          "durationMs": 2059749.807,
+          "browserStepMs": 2061000,
+          "testCount": 73
+        }
+      ],
+      "cases": [
+        {
+          "title": "body-motion.spec.ts / uka: both official body clips deform both skins on the shared clock",
+          "suite": "body-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 52580
+        },
+        {
+          "title": "body-motion.spec.ts / gene: both official body clips deform both skins on the shared clock",
+          "suite": "body-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 51201
+        },
+        {
+          "title": "body-motion.spec.ts / body selection missing: fails preload and retries the character",
+          "suite": "body-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18662
+        },
+        {
+          "title": "body-motion.spec.ts / body selection corrupt: fails preload and retries the character",
+          "suite": "body-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18907
+        },
+        {
+          "title": "body-motion.spec.ts / body selection binding: fails preload and retries the character",
+          "suite": "body-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18929
+        },
+        {
+          "title": "body-motion.spec.ts / body selection retained: fails preload and retries the character",
+          "suite": "body-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 22473
+        },
+        {
+          "title": "physics.spec.ts / physics GPU bdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "suite": "physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 20844
+        },
+        {
+          "title": "physics.spec.ts / physics GPU sdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "suite": "physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 23425
+        },
+        {
+          "title": "physics.spec.ts / physics GPU qdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "suite": "physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 55212
+        },
+        {
+          "title": "physics.spec.ts / built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery",
+          "suite": "physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 39317
+        },
+        {
+          "title": "public-motion.spec.ts / uka: pinned real VMD, shared absolute seek, pixels, pause, loop and cleanup",
+          "suite": "public-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 41313
+        },
+        {
+          "title": "public-motion.spec.ts / gene: pinned real VMD, shared absolute seek, pixels, pause, loop and cleanup",
+          "suite": "public-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 42928
+        },
+        {
+          "title": "public-motion.spec.ts / VMD missing: fail closed and retry",
+          "suite": "public-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18559
+        },
+        {
+          "title": "public-motion.spec.ts / VMD corrupt: fail closed and retry",
+          "suite": "public-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18678
+        },
+        {
+          "title": "public-motion.spec.ts / VMD unmatched: fail closed and retry",
+          "suite": "public-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18803
+        },
+        {
+          "title": "public-physics.spec.ts / uka: independent real physics, synchronized controls and native lifetime",
+          "suite": "public-physics.spec.ts",
+          "status": "failed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 52639
+        },
+        {
+          "title": "public-physics.spec.ts / gene: independent real physics, synchronized controls and native lifetime",
+          "suite": "public-physics.spec.ts",
+          "status": "failed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 40360
+        },
+        {
+          "title": "public-physics.spec.ts / public physics backend missing: recover Off, retry, and unload",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18730
+        },
+        {
+          "title": "public-physics.spec.ts / public physics backend corrupt: recover Off, retry, and unload",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 17158
+        },
+        {
+          "title": "public-physics.spec.ts / pending backend enable can be cancelled without stale worlds or checked state",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 15146
+        },
+        {
+          "title": "sleeve-motion.spec.ts / real Uka: full IK A/B restores follow in both independent skins without changing authored arms",
+          "suite": "sleeve-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 46193
+        }
+      ]
+    },
+    "physics": {
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "release": "27.2.0",
+        "node": "v26.12.1",
+        "cpu": "Apple M4 Max",
+        "logicalCPUs": 16,
+        "workers": 1,
+        "channel": "chrome",
+        "conformanceMatrix": "representative",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "status": "passed",
+      "durationMs": 260905.597,
+      "testCount": 5,
+      "attemptCount": 5,
+      "statuses": {
+        "passed": 5
+      },
+      "suites": {
+        "public-physics.spec.ts": {
+          "durationMs": 257260,
+          "attempts": 5,
+          "statuses": {
+            "passed": 5
+          }
+        }
+      },
+      "selection": {
+        "grep": "/.*/",
+        "grepInvert": "null"
+      },
+      "baselines": [
+        {
+          "run": 69,
+          "durationMs": 2145078.161,
+          "testCount": 73
+        },
+        {
+          "run": 70,
+          "durationMs": 2059749.807,
+          "browserStepMs": 2061000,
+          "testCount": 73
+        }
+      ],
+      "cases": [
+        {
+          "title": "public-physics.spec.ts / uka: independent real physics, synchronized controls and native lifetime",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 110744
+        },
+        {
+          "title": "public-physics.spec.ts / gene: independent real physics, synchronized controls and native lifetime",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 91310
+        },
+        {
+          "title": "public-physics.spec.ts / public physics backend missing: recover Off, retry, and unload",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 23859
+        },
+        {
+          "title": "public-physics.spec.ts / public physics backend corrupt: recover Off, retry, and unload",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 16124
+        },
+        {
+          "title": "public-physics.spec.ts / pending backend enable can be cancelled without stale worlds or checked state",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 15223
+        }
+      ]
+    },
+    "pbr": {
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "release": "27.2.0",
+        "node": "v26.12.1",
+        "cpu": "Apple M4 Max",
+        "logicalCPUs": 16,
+        "workers": 1,
+        "channel": "chrome",
+        "conformanceMatrix": "representative",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "status": "passed",
+      "durationMs": 56981.023,
+      "testCount": 2,
+      "attemptCount": 2,
+      "statuses": {
+        "passed": 2
+      },
+      "suites": {
+        "public-physics.spec.ts": {
+          "durationMs": 54599,
+          "attempts": 2,
+          "statuses": {
+            "passed": 2
+          }
+        }
+      },
+      "selection": {
+        "grep": "/.*/",
+        "grepInvert": "null"
+      },
+      "baselines": [
+        {
+          "run": 69,
+          "durationMs": 2145078.161,
+          "testCount": 73
+        },
+        {
+          "run": 70,
+          "durationMs": 2059749.807,
+          "browserStepMs": 2061000,
+          "testCount": 73
+        }
+      ],
+      "cases": [
+        {
+          "title": "public-physics.spec.ts / uka: PBR cloth and hair pixels respond to physics in both clips",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 30748
+        },
+        {
+          "title": "public-physics.spec.ts / gene: PBR cloth and hair pixels respond to physics in both clips",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 23851
+        }
+      ]
+    },
+    "finalPublic": {
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "release": "27.2.0",
+        "node": "v26.12.1",
+        "cpu": "Apple M4 Max",
+        "logicalCPUs": 16,
+        "workers": 1,
+        "channel": "chrome",
+        "conformanceMatrix": "representative",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "status": "passed",
+      "durationMs": 318269.984,
+      "testCount": 7,
+      "attemptCount": 7,
+      "statuses": {
+        "passed": 7
+      },
+      "suites": {
+        "public-physics.spec.ts": {
+          "durationMs": 315892,
+          "attempts": 7,
+          "statuses": {
+            "passed": 7
+          }
+        }
+      },
+      "selection": {
+        "grep": "/.*/",
+        "grepInvert": "null"
+      },
+      "baselines": [
+        {
+          "run": 69,
+          "durationMs": 2145078.161,
+          "testCount": 73
+        },
+        {
+          "run": 70,
+          "durationMs": 2059749.807,
+          "browserStepMs": 2061000,
+          "testCount": 73
+        }
+      ],
+      "cases": [
+        {
+          "title": "public-physics.spec.ts / uka: independent real physics, synchronized controls and native lifetime",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 110140
+        },
+        {
+          "title": "public-physics.spec.ts / gene: independent real physics, synchronized controls and native lifetime",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 93060
+        },
+        {
+          "title": "public-physics.spec.ts / public physics backend missing: recover Off, retry, and unload",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 24429
+        },
+        {
+          "title": "public-physics.spec.ts / public physics backend corrupt: recover Off, retry, and unload",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 16457
+        },
+        {
+          "title": "public-physics.spec.ts / pending backend enable can be cancelled without stale worlds or checked state",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 15413
+        },
+        {
+          "title": "public-physics.spec.ts / uka: PBR cloth and hair pixels respond to physics in both clips",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 31077
+        },
+        {
+          "title": "public-physics.spec.ts / gene: PBR cloth and hair pixels respond to physics in both clips",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 25316
+        }
+      ]
+    }
+  },
+  "distinctRelevantCasesUltimatelyPassed": 23,
+  "realModelEvidence": {
+    "uka": {
+      "model": "uka",
+      "browser": "156.0.8078.74",
+      "memoryAfterGC": {
+        "memory": {
+          "attributes": 18,
+          "attributesSize": 30972160,
+          "geometries": 28,
+          "indexAttributes": 27,
+          "indexAttributesSize": 1402362,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 65,
+          "programsSize": 311806,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 3,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 72,
+          "texturesSize": 319417253,
+          "uniformBuffers": 201,
+          "uniformBuffersSize": 1269088,
+          "total": 353372669
+        },
+        "roots": [
+          628,
+          20,
+          21
+        ],
+        "physics": {
+          "native": 0,
+          "stats": {
+            "worldsCreated": 54,
+            "resets": 33,
+            "steps": 2142,
+            "tick": 0,
+            "time": 0,
+            "lastMS": 20.599999994039536,
+            "maxSliceMS": 73.90000000596046,
+            "cpuMS": 47891.20000016689,
+            "native": 0,
+            "backendBytes": 67108864,
+            "bodiesPerWorld": 164,
+            "jointsPerWorld": 151
+          }
+        },
+        "heap": 749150144
+      },
+      "evidence": [
+        {
+          "motion": "02_laugh",
+          "frame": 15,
+          "physicsDriven": 137,
+          "pixelChanges": [
+            15498,
+            15457
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 0.04740104647521714,
+          "dynamic": 137,
+          "maxPosition": 1.1102230246251565e-16,
+          "maxRotation": 4.2146848510894035e-08,
+          "execution": {
+            "ik": true,
+            "ikState": "on",
+            "grant": true,
+            "physics": true,
+            "physicsState": "on",
+            "physicsStats": {
+              "worldsCreated": 3,
+              "resets": 5,
+              "steps": 60,
+              "tick": 60,
+              "time": 0.5,
+              "lastMS": 1857.5,
+              "maxSliceMS": 73.90000000596046,
+              "cpuMS": 1555.6000000834465,
+              "native": 4416,
+              "backendBytes": 67108864,
+              "bodiesPerWorld": 164,
+              "jointsPerWorld": 151
+            },
+            "helper": false,
+            "fallbackMixer": false
+          },
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 16984760,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 934908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 54,
+              "programsSize": 235779,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 207806990,
+              "uniformBuffers": 140,
+              "uniformBuffersSize": 873984,
+              "total": 226836421
+            },
+            "roots": [
+              628,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 4416,
+              "stats": {
+                "worldsCreated": 3,
+                "resets": 5,
+                "steps": 60,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 1857.5,
+                "maxSliceMS": 73.90000000596046,
+                "cpuMS": 1555.6000000834465,
+                "native": 4416,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 681232568
+          }
+        },
+        {
+          "motion": "22_apology",
+          "frame": 15,
+          "physicsDriven": 136,
+          "pixelChanges": [
+            14790,
+            14503
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 0.0221565050031034,
+          "dynamic": 136,
+          "maxPosition": 2.220446049250313e-16,
+          "maxRotation": 5.16191365590357e-08,
+          "execution": {
+            "ik": true,
+            "ikState": "on",
+            "grant": true,
+            "physics": true,
+            "physicsState": "on",
+            "physicsStats": {
+              "worldsCreated": 15,
+              "resets": 12,
+              "steps": 312,
+              "tick": 60,
+              "time": 0.5,
+              "lastMS": 1695.0999999940395,
+              "maxSliceMS": 73.90000000596046,
+              "cpuMS": 7297.59999987483,
+              "native": 4416,
+              "backendBytes": 67108864,
+              "bodiesPerWorld": 164,
+              "jointsPerWorld": 151
+            },
+            "helper": false,
+            "fallbackMixer": false
+          },
+          "resources": {
+            "memory": {
+              "attributes": 18,
+              "attributesSize": 30972160,
+              "geometries": 28,
+              "indexAttributes": 27,
+              "indexAttributesSize": 1402362,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 65,
+              "programsSize": 311806,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 72,
+              "texturesSize": 319417253,
+              "uniformBuffers": 201,
+              "uniformBuffersSize": 1269088,
+              "total": 353372669
+            },
+            "roots": [
+              628,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 4416,
+              "stats": {
+                "worldsCreated": 15,
+                "resets": 12,
+                "steps": 312,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 1695.0999999940395,
+                "maxSliceMS": 73.90000000596046,
+                "cpuMS": 7297.59999987483,
+                "native": 4416,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 886351498
+          }
+        }
+      ],
+      "errors": [],
+      "requests": 1,
+      "models": 2,
+      "assets": 33,
+      "finalResources": {
+        "memory": {
+          "attributes": 18,
+          "attributesSize": 30972160,
+          "geometries": 28,
+          "indexAttributes": 27,
+          "indexAttributesSize": 1402362,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 65,
+          "programsSize": 311806,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 3,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 72,
+          "texturesSize": 319417253,
+          "uniformBuffers": 201,
+          "uniformBuffersSize": 1269088,
+          "total": 353372669
+        },
+        "roots": [
+          628,
+          20,
+          21
+        ],
+        "physics": {
+          "native": 0,
+          "stats": {
+            "worldsCreated": 54,
+            "resets": 33,
+            "steps": 2142,
+            "tick": 0,
+            "time": 0,
+            "lastMS": 20.599999994039536,
+            "maxSliceMS": 73.90000000596046,
+            "cpuMS": 47891.20000016689,
+            "native": 0,
+            "backendBytes": 67108864,
+            "bodiesPerWorld": 164,
+            "jointsPerWorld": 151
+          }
+        },
+        "heap": 749150144
+      }
+    },
+    "gene": {
+      "model": "gene",
+      "browser": "156.0.8078.74",
+      "memoryAfterGC": {
+        "memory": {
+          "attributes": 18,
+          "attributesSize": 17760580,
+          "geometries": 28,
+          "indexAttributes": 27,
+          "indexAttributesSize": 847908,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 293533,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 3,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 69,
+          "texturesSize": 292927234,
+          "uniformBuffers": 183,
+          "uniformBuffersSize": 863824,
+          "total": 312693079
+        },
+        "roots": [
+          472,
+          20,
+          21
+        ],
+        "physics": {
+          "native": 0,
+          "stats": {
+            "worldsCreated": 51,
+            "resets": 32,
+            "steps": 2123,
+            "tick": 0,
+            "time": 0,
+            "lastMS": 15.200000017881393,
+            "maxSliceMS": 53.19999998807907,
+            "cpuMS": 25789.299999803305,
+            "native": 0,
+            "backendBytes": 67108864,
+            "bodiesPerWorld": 87,
+            "jointsPerWorld": 92
+          }
+        },
+        "heap": 496795738
+      },
+      "evidence": [
+        {
+          "motion": "02_laugh",
+          "frame": 15,
+          "physicsDriven": 62,
+          "pixelChanges": [
+            5988,
+            5872
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 0.3799016640219574,
+          "dynamic": 66,
+          "maxPosition": 2.220446049250313e-16,
+          "maxRotation": 4.2146848510894035e-08,
+          "execution": {
+            "ik": true,
+            "ikState": "on",
+            "grant": true,
+            "physics": true,
+            "physicsState": "on",
+            "physicsStats": {
+              "worldsCreated": 3,
+              "resets": 5,
+              "steps": 60,
+              "tick": 60,
+              "time": 0.5,
+              "lastMS": 1092,
+              "maxSliceMS": 53.19999998807907,
+              "cpuMS": 787.999999910593,
+              "native": 2463,
+              "backendBytes": 67108864,
+              "bodiesPerWorld": 87,
+              "jointsPerWorld": 92
+            },
+            "helper": false,
+            "fallbackMixer": false
+          },
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 9739700,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 565272,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 50,
+              "programsSize": 210478,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 200315980,
+              "uniformBuffers": 125,
+              "uniformBuffersSize": 582112,
+              "total": 211413542
+            },
+            "roots": [
+              472,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 2463,
+              "stats": {
+                "worldsCreated": 3,
+                "resets": 5,
+                "steps": 60,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 1092,
+                "maxSliceMS": 53.19999998807907,
+                "cpuMS": 787.999999910593,
+                "native": 2463,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 485986231
+          }
+        },
+        {
+          "motion": "22_apology",
+          "frame": 15,
+          "physicsDriven": 62,
+          "pixelChanges": [
+            9473,
+            9323
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 0.1882119049038881,
+          "dynamic": 66,
+          "maxPosition": 1.7763568394002505e-15,
+          "maxRotation": 4.2146848510894035e-08,
+          "execution": {
+            "ik": true,
+            "ikState": "on",
+            "grant": true,
+            "physics": true,
+            "physicsState": "on",
+            "physicsStats": {
+              "worldsCreated": 15,
+              "resets": 12,
+              "steps": 312,
+              "tick": 60,
+              "time": 0.5,
+              "lastMS": 1080.4000000059605,
+              "maxSliceMS": 53.19999998807907,
+              "cpuMS": 3799.199999898672,
+              "native": 2463,
+              "backendBytes": 67108864,
+              "bodiesPerWorld": 87,
+              "jointsPerWorld": 92
+            },
+            "helper": false,
+            "fallbackMixer": false
+          },
+          "resources": {
+            "memory": {
+              "attributes": 18,
+              "attributesSize": 17760580,
+              "geometries": 28,
+              "indexAttributes": 27,
+              "indexAttributesSize": 847908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 61,
+              "programsSize": 293533,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 69,
+              "texturesSize": 292927234,
+              "uniformBuffers": 183,
+              "uniformBuffersSize": 863824,
+              "total": 312693079
+            },
+            "roots": [
+              472,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 2463,
+              "stats": {
+                "worldsCreated": 15,
+                "resets": 12,
+                "steps": 312,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 1080.4000000059605,
+                "maxSliceMS": 53.19999998807907,
+                "cpuMS": 3799.199999898672,
+                "native": 2463,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 566437811
+          }
+        }
+      ],
+      "errors": [],
+      "requests": 1,
+      "models": 2,
+      "assets": 15,
+      "finalResources": {
+        "memory": {
+          "attributes": 18,
+          "attributesSize": 17760580,
+          "geometries": 28,
+          "indexAttributes": 27,
+          "indexAttributesSize": 847908,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 293533,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 3,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 69,
+          "texturesSize": 292927234,
+          "uniformBuffers": 183,
+          "uniformBuffersSize": 863824,
+          "total": 312693079
+        },
+        "roots": [
+          472,
+          20,
+          21
+        ],
+        "physics": {
+          "native": 0,
+          "stats": {
+            "worldsCreated": 51,
+            "resets": 32,
+            "steps": 2123,
+            "tick": 0,
+            "time": 0,
+            "lastMS": 15.200000017881393,
+            "maxSliceMS": 53.19999998807907,
+            "cpuMS": 25789.299999803305,
+            "native": 0,
+            "backendBytes": 67108864,
+            "bodiesPerWorld": 87,
+            "jointsPerWorld": 92
+          }
+        },
+        "heap": 496795738
+      }
+    }
+  },
+  "pbrRegionEvidence": {
+    "uka": {
+      "model": "uka",
+      "evidence": [
+        {
+          "motion": "02_laugh",
+          "frame": 15,
+          "physicsDriven": 137,
+          "regionPixels": 40624,
+          "changedPixels": 15946
+        },
+        {
+          "motion": "22_apology",
+          "frame": 15,
+          "physicsDriven": 136,
+          "regionPixels": 41351,
+          "changedPixels": 15272
+        }
+      ]
+    },
+    "gene": {
+      "model": "gene",
+      "evidence": [
+        {
+          "motion": "02_laugh",
+          "frame": 15,
+          "physicsDriven": 62,
+          "regionPixels": 28058,
+          "changedPixels": 6179
+        },
+        {
+          "motion": "22_apology",
+          "frame": 15,
+          "physicsDriven": 62,
+          "regionPixels": 29718,
+          "changedPixels": 9630
+        }
+      ]
+    }
+  },
+  "resourceProbe": {
+    "environment": {
+      "platform": "darwin",
+      "release": "27.2.0",
+      "cpu": "Apple M4 Max",
+      "browser": "156.0.8078.74",
+      "renderer": "ANGLE SwiftShader, WebGL2; desktop, not Android"
+    },
+    "rows": [
+      {
+        "model": "uka",
+        "cache": "cold",
+        "timeDomain": "threadTicks",
+        "readyMS": 20523.829541,
+        "loadCPUSeconds": {
+          "thread": 3.185127,
+          "tasks": 2.752692
+        },
+        "off": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 16984760,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 934908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 54,
+              "programsSize": 235779,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 207806990,
+              "uniformBuffers": 140,
+              "uniformBuffersSize": 873984,
+              "total": 226836421
+            },
+            "roots": [
+              20,
+              323,
+              324
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "worldsCreated": 0,
+                "resets": 2,
+                "steps": 0,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 0,
+                "maxSliceMS": 0,
+                "cpuMS": 0,
+                "native": 0,
+                "backendBytes": 0,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 604032015
+          },
+          "heap": {
+            "usedSize": 47031056,
+            "totalSize": 49758208,
+            "embedderHeapUsedSize": 1285696,
+            "backingStorageSize": 514535384
+          },
+          "backendRequests": 0
+        },
+        "on": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 16984760,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 934908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 54,
+              "programsSize": 235779,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 207806990,
+              "uniformBuffers": 140,
+              "uniformBuffersSize": 873984,
+              "total": 226836421
+            },
+            "roots": [
+              20,
+              323,
+              324
+            ],
+            "physics": {
+              "native": 4416,
+              "stats": {
+                "worldsCreated": 3,
+                "resets": 5,
+                "steps": 60,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 1765.7999999821186,
+                "maxSliceMS": 73.60000002384186,
+                "cpuMS": 1474.9999999403954,
+                "native": 4416,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 641797220
+          },
+          "heap": {
+            "usedSize": 53696088,
+            "totalSize": 56885248,
+            "embedderHeapUsedSize": 1239976,
+            "backingStorageSize": 583525974
+          },
+          "backendRequests": 1,
+          "CPUSeconds": {
+            "thread": 1.5204149999999998,
+            "tasks": 1.5186700000000002
+          }
+        },
+        "afterOff": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 16984760,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 934908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 54,
+              "programsSize": 235779,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 207806990,
+              "uniformBuffers": 140,
+              "uniformBuffersSize": 873984,
+              "total": 226836421
+            },
+            "roots": [
+              20,
+              323,
+              324
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "worldsCreated": 3,
+                "resets": 6,
+                "steps": 60,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 1765.7999999821186,
+                "maxSliceMS": 73.60000002384186,
+                "cpuMS": 1474.9999999403954,
+                "native": 0,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 637435956
+          },
+          "heap": {
+            "usedSize": 51072220,
+            "totalSize": 52428800,
+            "embedderHeapUsedSize": 1122488,
+            "backingStorageSize": 583525974
+          },
+          "backendRequests": 1
+        },
+        "errors": []
+      },
+      {
+        "model": "uka",
+        "cache": "warm",
+        "timeDomain": "threadTicks",
+        "readyMS": 18513.032832999997,
+        "loadCPUSeconds": {
+          "thread": 3.2344280000000003,
+          "tasks": 2.788343
+        },
+        "off": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 16984760,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 934908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 54,
+              "programsSize": 235779,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 207806990,
+              "uniformBuffers": 140,
+              "uniformBuffersSize": 873984,
+              "total": 226836421
+            },
+            "roots": [
+              20,
+              323,
+              324
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "worldsCreated": 0,
+                "resets": 2,
+                "steps": 0,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 0,
+                "maxSliceMS": 0,
+                "cpuMS": 0,
+                "native": 0,
+                "backendBytes": 0,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 604247003
+          },
+          "heap": {
+            "usedSize": 47030852,
+            "totalSize": 49758208,
+            "embedderHeapUsedSize": 1477152,
+            "backingStorageSize": 514535384
+          },
+          "backendRequests": 0
+        },
+        "errors": []
+      },
+      {
+        "model": "gene",
+        "cache": "cold",
+        "timeDomain": "threadTicks",
+        "readyMS": 14055.308625000005,
+        "loadCPUSeconds": {
+          "thread": 1.5376720000000001,
+          "tasks": 1.533574
+        },
+        "off": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 9739700,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 565272,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 50,
+              "programsSize": 210478,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 200315980,
+              "uniformBuffers": 125,
+              "uniformBuffersSize": 582112,
+              "total": 211413542
+            },
+            "roots": [
+              472,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "worldsCreated": 0,
+                "resets": 2,
+                "steps": 0,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 0,
+                "maxSliceMS": 0,
+                "cpuMS": 0,
+                "native": 0,
+                "backendBytes": 0,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 382743941
+          },
+          "heap": {
+            "usedSize": 37498096,
+            "totalSize": 40763392,
+            "embedderHeapUsedSize": 1257784,
+            "backingStorageSize": 313148646
+          },
+          "backendRequests": 0
+        },
+        "on": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 9739700,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 565272,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 50,
+              "programsSize": 210478,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 200315980,
+              "uniformBuffers": 125,
+              "uniformBuffersSize": 582112,
+              "total": 211413542
+            },
+            "roots": [
+              472,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 2463,
+              "stats": {
+                "worldsCreated": 3,
+                "resets": 5,
+                "steps": 60,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 1091,
+                "maxSliceMS": 56.89999997615814,
+                "cpuMS": 797,
+                "native": 2463,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 453174425
+          },
+          "heap": {
+            "usedSize": 44598620,
+            "totalSize": 49987584,
+            "embedderHeapUsedSize": 1453952,
+            "backingStorageSize": 382139218
+          },
+          "backendRequests": 1,
+          "CPUSeconds": {
+            "thread": 0.8364050000000003,
+            "tasks": 0.8346279999999999
+          }
+        },
+        "afterOff": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 9739700,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 565272,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 50,
+              "programsSize": 210478,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 200315980,
+              "uniformBuffers": 125,
+              "uniformBuffersSize": 582112,
+              "total": 211413542
+            },
+            "roots": [
+              472,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "worldsCreated": 3,
+                "resets": 6,
+                "steps": 60,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 1091,
+                "maxSliceMS": 56.89999997615814,
+                "cpuMS": 797,
+                "native": 0,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 427282050
+          },
+          "heap": {
+            "usedSize": 43536360,
+            "totalSize": 45006848,
+            "embedderHeapUsedSize": 1004320,
+            "backingStorageSize": 382139218
+          },
+          "backendRequests": 1
+        },
+        "errors": []
+      },
+      {
+        "model": "gene",
+        "cache": "warm",
+        "timeDomain": "threadTicks",
+        "readyMS": 14222.416083000004,
+        "loadCPUSeconds": {
+          "thread": 1.443242,
+          "tasks": 1.4405459999999999
+        },
+        "off": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 9739700,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 565272,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 50,
+              "programsSize": 210478,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 200315980,
+              "uniformBuffers": 125,
+              "uniformBuffersSize": 582112,
+              "total": 211413542
+            },
+            "roots": [
+              20,
+              245,
+              246
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "worldsCreated": 0,
+                "resets": 2,
+                "steps": 0,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 0,
+                "maxSliceMS": 0,
+                "cpuMS": 0,
+                "native": 0,
+                "backendBytes": 0,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 371384262
+          },
+          "heap": {
+            "usedSize": 36847096,
+            "totalSize": 38404096,
+            "embedderHeapUsedSize": 988928,
+            "backingStorageSize": 313148646
+          },
+          "backendRequests": 0
+        },
+        "errors": []
+      }
+    ]
+  },
+  "limits": {
+    "nativeWindowsMMD": "unverified",
+    "physicalAndroid": "unperformed; adb devices -l reported no connected devices",
+    "nativeWebGPU": "not exercised in this selection",
+    "completeBrowserSuite": "not run; targeted relevant suites selected",
+    "jointAccuracy": "Measured post-mode-2-reanchoring linear residuals are not zero: maxima 0.047401 m Uka Laugh, 0.022157 m Uka Apology, 0.379902 m Gene Laugh, 0.188212 m Gene Apology. No low-residual real-model accuracy gate or native-MMD fidelity claim. Counterweights and contacts require further fidelity work.",
+    "performance": "Three worlds are not guaranteed realtime; epoch pauses during work. 150 ms slice failure guard, 30 s replay cap; no physical Android performance claim."
+  },
+  "captureHashes": {
+    "gene-02_laugh-off.png": "0a990d90f61b39ec4b8540321173ce3adad859fa26c1bd8b2b049782f3395453",
+    "gene-02_laugh-on.png": "f419952e1040e312b5bc96fc681576401a92af38459ae330c6511cf9b6959f3c",
+    "gene-02_laugh-pbr-off.png": "b25f7c691ef6ddd47d8561e5a63181ddfd8bf6d47f54572e54449d6f93016465",
+    "gene-02_laugh-pbr-on.png": "26e2e9104bd807a40c6b8272b7e60baa770be1738bb1e238a43c0cbccb450e21",
+    "gene-22_apology-off.png": "ee20288e8fab14d36afe7026b892c7bc24b3896b173987fedf559b252c38d9b3",
+    "gene-22_apology-on.png": "bf813e7322de258af54d53ec6d2aca5ef508dd26be45d73bb0e3f1eeb54cffcc",
+    "gene-22_apology-pbr-off.png": "af6a7c419aed1cdec96c321f2e55683e0e1dde547da94facef631e725c3ac7d6",
+    "gene-22_apology-pbr-on.png": "8ad3b197155dbfe16096b091d9f60052d122535d4bfa40762b3e7d6849c506c8",
+    "uka-02_laugh-off.png": "f4255f059705245e3a2dd3b1a078c4c16ee12dda5dca5d4f3187c72ec7ddfe5c",
+    "uka-02_laugh-on.png": "ae6ab026dc5183c9e260be5a0663320fc75c5e51766b671dc8775e216952c24c",
+    "uka-02_laugh-pbr-off.png": "c10c905424dea12a877269e7f2ef1a1a3f9f985a883dc6d7e8a1d1400fbb4970",
+    "uka-02_laugh-pbr-on.png": "b9fda6f244656dc2d6ffde462366dfd721c0745bcdae7b050c532a17cb43df29",
+    "uka-22_apology-off.png": "da57203e00fce50dbcac15d29a62e867d520c6216d3352e25778d720134632a0",
+    "uka-22_apology-on.png": "c8cff6007bd13a961bdc50fe64cbf6b7da4401e2aa2b18791b040a74ff87ceed",
+    "uka-22_apology-pbr-off.png": "5d3e3b1937a3615f3041cf1c1edc83b742da76558c5f09a044c8864aeb9232e0",
+    "uka-22_apology-pbr-on.png": "3328352d60e2d3801d297ab1d2d4e0869ae37fb304833ebfc6a233a3737e4098"
+  },
+  "checks": {
+    "build": "passed (existing large-chunk warning)",
+    "typecheck": "passed",
+    "node": {
+      "passed": 176,
+      "failed": 0,
+      "skipped": 0,
+      "durationMS": 32438.388459,
+      "schemaSuites": "Toon and Outline passed"
+    },
+    "links": {
+      "status": "passed",
+      "checked": 508
+    },
+    "diffCheck": "passed",
+    "sourceAudit": "regenerated from size/SHA-256-checked pins; capability checks passed"
+  }
+}

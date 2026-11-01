@@ -93,10 +93,12 @@ export async function loadAmmoBrowser(url: string): Promise<{
     throw new Error("Ammo browser resource must be same-origin");
   const script = document.createElement("script");
   script.src = source.href;
+  script.integrity = 'sha256-' + btoa(String.fromCharCode(...BACKEND_SHA256.match(/../g)!.map(v=>parseInt(v,16))));
   try {
     await new Promise<void>((resolve, reject) => {
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error("Ammo resource loading failed"));
+      const timeout=setTimeout(()=>reject(new Error('Ammo resource loading timed out')),15000);
+      script.onload = () => {clearTimeout(timeout);resolve();};
+      script.onerror = () => {clearTimeout(timeout);reject(new Error("Ammo resource loading failed (missing or integrity mismatch)"));};
       document.head.append(script);
     });
     const factory = (

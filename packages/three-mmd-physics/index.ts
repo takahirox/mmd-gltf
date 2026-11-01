@@ -28,7 +28,7 @@ import {
 } from "./registry";
 import { checkAmmo, type AmmoAPI } from "./ammo";
 export { loadAmmoBrowser, BACKEND_SHA256 } from "./ammo";
-export { PhysicsTimeline, PhysicsWorld } from "./world";
+export { PhysicsTimeline, PhysicsWorld, type PhysicsPoseEvaluator } from "./world";
 const models = new WeakMap<
   Object3D,
   {

@@ -1,4 +1,108 @@
-# Issue #45 validation
+# Physics validation
+
+## Public real-model integration (Issue #77)
+
+The [complete source audit](public-physics-audit.json),
+[runtime policy](public-physics.md), [execution measurements](public-physics-validation.json)
+and [sixteen saved canvases](public-physics-captures/README.md) extend the earlier
+synthetic evidence to the pinned Uka and Gene Light assets. They establish real
+simulation, independent instances, deterministic playback and observable pixels;
+they do not establish Windows MMD fidelity.
+
+Measured on Darwin 27.2.0, Apple M4 Max, Node 26.12.1, Chrome 156.0.8078.74,
+Playwright 1.56.1, WebGL2/ANGLE SwiftShader, 1200 × 1000 desktop viewport:
+
+| Model / motion, frame 15 (0.5 s) | Changed dynamic bones | Changed PMX / Toon pixels | Changed PBR dynamic-region pixels |
+| --- | ---: | ---: | ---: |
+| Uka / Laugh | 137 | 15,498 / 15,457 | 15,946 / 40,624 sampled |
+| Uka / Apology | 136 | 14,790 / 14,503 | 15,272 / 41,351 sampled |
+| Gene / Laugh | 62 | 5,988 / 5,872 | 6,179 / 28,058 sampled |
+| Gene / Apology | 62 | 9,473 / 9,323 | 9,630 / 29,718 sampled |
+
+Pixel counts require RGB differences greater than two byte levels. PBR regions
+are unions of 41 × 41 pixel squares around projected, actually changed source
+dynamic bones. Both material tests require over 100 changed pixels and over ten
+changed dynamic bones, alongside independent pose checks. Shading/outline
+algorithms remain different; cross-pane raster identity is not claimed.
+Across the four states, PMX/Toon/PBR body matrices were identical, world-position
+differences were at most 1.78e-15 m and quaternion angular differences 5.17e-8 rad.
+The new cross-pane bounds are 0.015 m / 0.1 rad; existing raw-body, authored-arm,
+sleeve and synthetic CPU/GPU accuracy gates remain unchanged. Strict replay and
+Off restoration compare complete independent pose/skin samples exactly.
+
+### Real-model constraint and performance limits
+
+Actual post-writeback native joint-frame linear residuals (excluding free axes)
+were **0.047401 / 0.022157 m** for Uka Laugh / Apology and
+**0.379902 / 0.188212 m** for Gene. These include mode-2 origin re-anchoring;
+they are not a low-residual constraint-conformance pass. Gene includes long
+counterweights: source body 74 has its centre at PMX Y = -78.255 and connects
+to body 64 through joint 75, with all axes locked and source springs 100,000.
+The entire source still executes; none of these bodies/joints is omitted.
+Exploratory increases in solver correction/iterations and removing mode-2
+anchoring did not establish an acceptable fidelity improvement. Those changes
+were discarded. Further work needs an independent MMD oracle and a validated
+policy for coupled mode-2 chains, long counterweights, contact and constraint
+correction. Pane agreement alone cannot prove physical accuracy. The public
+About & credits explicitly identifies this limitation.
+
+The separate reproducible `tools/measure-public-physics.ts` probe recorded cold /
+warm ready times of 20.52 / 18.51 s for Uka and 14.06 / 14.22 s for Gene. The
+first On replay to 0.5 s took 1.77 s / 1.09 s elapsed, 1.52 s / 0.84 s Chrome
+thread CPU, with maximum slices 73.6 / 56.9 ms. Thus three-world simulation on
+this CPU-rendered setup is **not realtime**. The shared clock slows during work;
+there is no unbounded catch-up queue. Responsive cancellation and a 150 ms slice
+failure guard remain necessary; one native step cannot itself be preempted.
+
+After forced GC, CDP used JS heap was 47.0 / 37.5 MB Off, 53.7 / 44.6 MB On,
+and 51.1 / 43.5 MB after Off (Uka / Gene, decimal MB). ArrayBuffer/backing storage
+was 514.5 / 313.1 MB Off and 583.5 / 382.1 MB after loading Ammo. Renderer
+resource estimates are reported separately; these figures are not total process
+RAM or measured GPU residency. A 64 MiB Ammo heap remains cached after Off.
+Owned native handles were 4,416 / 2,463 across exactly three active worlds and
+returned to zero after every tested Off, model change and unload. Repeated
+toggles/motion changes made no model/texture requests; each successful page
+requested Ammo once. Default Off made zero backend requests/native allocations.
+
+### Issue #77 checks and coverage
+
+| Check | Result |
+| --- | --- |
+| `npm run build` | Passed; existing large-chunk warning. |
+| `npm run typecheck` | Passed. |
+| `npm test` | 176 passed, zero failures/skips, plus Toon/Outline schema suites. |
+| Relevant Playwright cases | 23 distinct cases ultimately passed across the recorded selection and focused reruns. |
+| `npm run check:links` | Passed, including new evidence/capture links. |
+| `git diff --check` | Passed. |
+
+The browser selection covers existing public-motion/body-motion failure
+recovery, Uka sleeve IK/arm gates, all four synthetic physics GPU/demo cases and
+seven new real-model physics cases. It exercises IK × Physics, paused enable,
+forward/backward seek, fractional hold, Pause/Resume, Restart, loop reset, motion
+A→B→A, Rest/manual expressions, model changes, Toon/PBR, Outline, orbit, backend
+corruption/missing responses/retry, pending-load cancellation, repeated toggles,
+native teardown and a 390 px **desktop layout**. Node tests additionally exercise
+VMD per-controller switches, free-axis/binding retention, post-physics child
+translation, no-op bone morphs, cancellation, finite-pose and work-budget failure.
+
+The first 21-case selection had 19 passes and two new strict-equality failures
+caused only by IEEE signed zero in pose diagnostics. Canonicalizing zero in the
+diagnostic serialization fixed these without changing nonzero values, NaNs or
+accuracy tolerances. All five new lifecycle/recovery cases then passed, followed
+by both added PBR cases. The final combined run of all seven new public cases
+passed in 5.3 minutes. An earlier synthetic attempt used the occupied default
+preview port; the successful selection used `MMD_PREVIEW_PORT=43280`. Exact
+selection, attempts, outcomes and durations remain in the execution measurements.
+The full unrelated browser matrix and optional native-WebGPU cases were not run
+for this Issue. Historical synthetic reports below remain their original evidence.
+
+Physical Android Chrome and original Windows MMD measurements are **unperformed**.
+`adb devices -l` reported no connected device. Follow the
+[physical-device test plan](public-physics.md#validation-and-physical-android-plan)
+for the Issue's required post-merge verification when hardware is available.
+Desktop CI and viewport checks do not establish Android support.
+
+## Original Issue #45 validation
 
 The bounded rigid-body profile spans the runtime-independent contract, both PMX
 parser paths, converter API/CLI, reusable Three.js ownership/lifecycle and the
@@ -113,4 +217,5 @@ The complete group-box/A rerun passed with this observation contract.
 
 No controlled original-MMD measurements or optional native-WebGPU validation
 were performed. Original-MMD adoption/fidelity and representative integrated
-compatibility remain unresolved. No post-merge verification is required.
+compatibility remain unresolved. Issue #45 required no post-merge verification;
+Issue #77's physical Android verification is described above.

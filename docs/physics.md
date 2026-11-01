@@ -78,3 +78,7 @@ pixels. The temporary diagnostic entry was removed. Tests keep both screen and
 intrinsic captures and require exact intrinsic PNG equality. No masks, crops,
 numerical tolerances, scenarios, raster limits or timeouts were relaxed. This
 corrects an observation assumption, not MMD deformation semantics.
+
+## Public real-model comparison
+
+Issue #77 adds an Off-by-default Physics checkbox for Uka and Gene Light. The [real-model integration](public-physics.md) documents the complete source inventory, explicit retained-source host evaluator, independent worlds, lazy integrity-checked backend, incremental stepping and cancellable replay. `PhysicsWorld` accepts a validated `PhysicsPoseEvaluator` that replaces generic solving in both phases; it always checks body/joint execution dependencies. Mode-2 writeback preserves authored local translation under dynamic parents. The public integration does not change `PhysicsTimeline.seek` reset/replay semantics.
