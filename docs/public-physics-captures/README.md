@@ -2,7 +2,7 @@
 
 The sixteen PNGs show the pinned real Uka / Gene Light models at Laugh / Apology
 frame 15 (0.5 s), paused, IK On. Names identify model, motion, optional `pbr`, and
-Physics `on` / `off`. Each full canvas shows independently rendered direct PMX on
+Physics `on` / `off`. These captures were refreshed after the joint-stabilization correction. Each full canvas shows independently rendered direct PMX on
 the left and glTF Toon (or PBR) on the right. These are captured render bitmaps,
 not image comparisons against native Windows MMD.
 

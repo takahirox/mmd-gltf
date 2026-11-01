@@ -13,12 +13,9 @@ Pinned source bytes, shapes, masses, material coefficients and groups are retain
 Uka's 23 and Gene's 24 all-eligible kinematic filters remain 65535; Gene's nine
 source-zero filters remain zero.
 
-The measurements below predate this mask correction. Their poses, pixels and
-performance are historical evidence, not measurements of the revised filters.
-The joint-constraint review finding remains unresolved; matching pane poses or
-passing the existing browser tests does not establish constraint accuracy.
-[Revision evidence](physics-mask-revision.json) records the corrected-mask checks
-and the still-excessive frame-15 joint errors for both models and clips.
+[Mask revision evidence](physics-mask-revision.json) preserves the historical
+corrected-mask checks and the excessive joint errors that motivated the subsequent
+joint correction below. It is not evidence for the final stabilized runtime.
 
 ## Public real-model integration (Issue #77)
 
@@ -34,10 +31,10 @@ Playwright 1.56.1, WebGL2/ANGLE SwiftShader, 1200 × 1000 desktop viewport:
 
 | Model / motion, frame 15 (0.5 s) | Changed dynamic bones | Changed PMX / Toon pixels | Changed PBR dynamic-region pixels |
 | --- | ---: | ---: | ---: |
-| Uka / Laugh | 137 | 15,498 / 15,457 | 15,946 / 40,624 sampled |
-| Uka / Apology | 136 | 14,790 / 14,503 | 15,272 / 41,351 sampled |
-| Gene / Laugh | 62 | 5,988 / 5,872 | 6,179 / 28,058 sampled |
-| Gene / Apology | 62 | 9,473 / 9,323 | 9,630 / 29,718 sampled |
+| Uka / Laugh | 137 | 16,694 / 16,683 | 16,959 / 43,211 sampled |
+| Uka / Apology | 137 | 17,028 / 16,768 | 16,656 / 43,321 sampled |
+| Gene / Laugh | 53 | 5,958 / 5,855 | 3,551 / 22,856 sampled |
+| Gene / Apology | 47 | 5,500 / 5,285 | 3,349 / 17,932 sampled |
 
 Pixel counts require RGB differences greater than two byte levels. PBR regions
 are unions of 41 × 41 pixel squares around projected, actually changed source
@@ -45,37 +42,68 @@ dynamic bones. Both material tests require over 100 changed pixels and over ten
 changed dynamic bones, alongside independent pose checks. Shading/outline
 algorithms remain different; cross-pane raster identity is not claimed.
 Across the four states, PMX/Toon/PBR body matrices were identical, world-position
-differences were at most 1.78e-15 m and quaternion angular differences 5.17e-8 rad.
-The new cross-pane bounds are 0.015 m / 0.1 rad; existing raw-body, authored-arm,
+differences were at most 2.22e-16 m and quaternion angular differences 4.22e-8 rad.
+The cross-pane bounds are 0.015 m / 0.1 rad; existing raw-body, authored-arm,
 sleeve and synthetic CPU/GPU accuracy gates remain unchanged. Strict replay and
 Off restoration compare complete independent pose/skin samples exactly.
 
 ### Real-model constraint and performance limits
 
-Actual post-writeback native joint-frame linear residuals (excluding free axes)
-were **0.047401 / 0.022157 m** for Uka Laugh / Apology and
-**0.379902 / 0.188212 m** for Gene. These include mode-2 origin re-anchoring;
-they are not a low-residual constraint-conformance pass. Gene includes long
-counterweights: source body 74 has its centre at PMX Y = -78.255 and connects
-to body 64 through joint 75, with all axes locked and source springs 100,000.
-The entire source still executes; none of these bodies/joints is omitted.
-Exploratory increases in solver correction/iterations and removing mode-2
-anchoring did not establish an acceptable fidelity improvement. Those changes
-were discarded. Further work needs an independent MMD oracle and a validated
-policy for coupled mode-2 chains, long counterweights, contact and constraint
-correction. Pane agreement alone cannot prove physical accuracy. The public
-About & credits explicitly identifies this limitation.
+The public host now opts into bounded joint position stabilization and
+native-independent mode-2 bone writeback. The [runtime policy](public-physics.md)
+describes its fixed iteration budget, rotational gradients, rigid-cluster
+conditioning and source-parameter retention. Bullet still allocates and executes
+all 164/151 Uka and 87/92 Gene bodies/joints; no records, contact filters, masses or
+springs are removed or softened. Native worlds and their velocities persist
+between forward ticks. The original v1/synthetic policy and its accuracy gates
+remain unchanged.
+
+The regression measures **native body joint frames after final writeback**, in
+all three independently simulated panes, for both Laugh and Apology at frame 15
+and for IK On and Off. Node checks also sample frame 7.5. It skips only explicit
+inverted/free axes and uses Bullet's negative intrinsic ZYX angular coordinates.
+All Uka joints and Gene joints outside the cloak network must stay below
+**0.2 mm / 0.005 rad**. Gene's nine fully locked counterweight joints (68–76),
+including the previously failing joint 75, use **0.02 mm / 0.00002 rad** bounds.
+A seven-metre analytical fixture verifies a locked counterweight without moving
+its kinematic anchor; another checks that inverted limits remain free. A native
+mode-1/mode-2 differential test proves rotation-only bone projection cannot feed
+authored translations back into the stabilized native world.
+
+Gene's closed cloak network (joints 51–67) connects separate animated torso and
+shoulder anchors and retains finite linear strain. Only those joints receive a
+**30 mm** linear ceiling, matching the established synthetic joint-drift ceiling;
+their angular bound remains **0.005 rad**. This is a bounded approximation, not
+a zero-residual hard-constraint or original-MMD parity claim. It cannot excuse
+counterweight drift. Previously joint 75 alone exceeded 0.46 m, with angular
+errors up to 0.77 rad. No cross-pane agreement or changed pixels can substitute
+for these per-joint assertions.
+
+Fresh frame-15 measurements (worst across all three native worlds, IK On):
+
+| Model / motion | Maximum linear violation (m) | Maximum angular violation (rad) | Gene joint 75 linear violation (m) |
+| --- | ---: | ---: | ---: |
+| Uka / Laugh | 9.09e-8 | 6.73e-7 | — |
+| Uka / Apology | 1.04e-7 | 5.37e-7 | — |
+| Gene / Laugh | 0.012130 | 0.000578 | 1.90e-7 |
+| Gene / Apology | 0.023254 | 0.001753 | 2.26e-7 |
+
+The execution report retains every per-joint worst-of-three-pane error, rather
+than only the global maxima, and summarizes repeated static controller/morph
+inventories. IK Off satisfies the same per-joint assertions in the Node and
+browser cases. The wider cloak bound applies only to joints 51–67.
 
 The separate reproducible `tools/measure-public-physics.ts` probe recorded cold /
-warm ready times of 20.52 / 18.51 s for Uka and 14.06 / 14.22 s for Gene. The
-first On replay to 0.5 s took 1.77 s / 1.09 s elapsed, 1.52 s / 0.84 s Chrome
-thread CPU, with maximum slices 73.6 / 56.9 ms. Thus three-world simulation on
+warm ready times of 21.39 / 18.82 s for Uka and 14.10 / 14.32 s for Gene. The
+first On replay to 0.5 s took 2.07 s / 2.33 s elapsed, 1.82 s / 2.07 s Chrome
+thread CPU, with maximum slices 76.0 / 80.1 ms. Stabilization increases CPU cost;
+three-world simulation on
 this CPU-rendered setup is **not realtime**. The shared clock slows during work;
 there is no unbounded catch-up queue. Responsive cancellation and a 150 ms slice
 failure guard remain necessary; one native step cannot itself be preempted.
 
-After forced GC, CDP used JS heap was 47.0 / 37.5 MB Off, 53.7 / 44.6 MB On,
-and 51.1 / 43.5 MB after Off (Uka / Gene, decimal MB). ArrayBuffer/backing storage
+After forced GC, CDP used JS heap was 47.1 / 37.5 MB Off, 55.1 / 44.8 MB On,
+and 51.9 / 43.4 MB after Off (Uka / Gene, decimal MB). ArrayBuffer/backing storage
 was 514.5 / 313.1 MB Off and 583.5 / 382.1 MB after loading Ammo. Renderer
 resource estimates are reported separately; these figures are not total process
 RAM or measured GPU residency. A 64 MiB Ammo heap remains cached after Off.
@@ -90,14 +118,14 @@ requested Ammo once. Default Off made zero backend requests/native allocations.
 | --- | --- |
 | `npm run build` | Passed; existing large-chunk warning. |
 | `npm run typecheck` | Passed. |
-| `npm test` | 176 passed, zero failures/skips, plus Toon/Outline schema suites. |
-| Relevant Playwright cases | 23 distinct cases ultimately passed across the recorded selection and focused reruns. |
-| `npm run check:links` | Passed, including new evidence/capture links. |
+| `npm test` | 179 passed, zero failures/skips, plus Toon/Outline schema suites. |
+| Relevant Playwright cases | 16 distinct relevant cases ultimately passed; the final eight-case rerun passed in 7.8 minutes. |
+| `npm run check:links` | Passed; 511 local links, anchors and built asset links. |
 | `git diff --check` | Passed. |
 
-The browser selection covers existing public-motion/body-motion failure
-recovery, Uka sleeve IK/arm gates, all four synthetic physics GPU/demo cases and
-seven new real-model physics cases. It exercises IK × Physics, paused enable,
+This revision's browser selections cover the five existing public-motion and
+failure-recovery cases, all four synthetic physics GPU/demo cases and seven
+real-model physics cases. It exercises IK × Physics, paused enable,
 forward/backward seek, fractional hold, Pause/Resume, Restart, loop reset, motion
 A→B→A, Rest/manual expressions, model changes, Toon/PBR, Outline, orbit, backend
 corruption/missing responses/retry, pending-load cancellation, repeated toggles,
@@ -105,16 +133,15 @@ native teardown and a 390 px **desktop layout**. Node tests additionally exercis
 VMD per-controller switches, free-axis/binding retention, post-physics child
 translation, no-op bone morphs, cancellation, finite-pose and work-budget failure.
 
-The first 21-case selection had 19 passes and two new strict-equality failures
-caused only by IEEE signed zero in pose diagnostics. Canonicalizing zero in the
-diagnostic serialization fixed these without changing nonzero values, NaNs or
-accuracy tolerances. All five new lifecycle/recovery cases then passed, followed
-by both added PBR cases. The final combined run of all seven new public cases
-passed in 5.3 minutes. An earlier synthetic attempt used the occupied default
-preview port; the successful selection used `MMD_PREVIEW_PORT=43280`. Exact
-selection, attempts, outcomes and durations remain in the execution measurements.
-The full unrelated browser matrix and optional native-WebGPU cases were not run
-for this Issue. Historical synthetic reports below remain their original evidence.
+An initial sixteen-case run passed fourteen cases; an experimental global
+mode-2 change failed the BDEF/QDEF synthetic palette gates. The final change
+selects stabilization explicitly for the public host and retains generic v1
+behavior. After rebuilding assets, all 179 Node tests and all four synthetic
+browser gates passed with their existing bounds. Both real-model lifecycle and
+PBR cases also reran against that final build. No accuracy tolerance was widened
+in the existing synthetic tests. Exact selections and outcomes are retained in
+the execution report. The unrelated full browser matrix and optional native
+WebGPU cases were not run. Original Issue #45 reports below remain historical.
 
 Physical Android Chrome and original Windows MMD measurements are **unperformed**.
 `adb devices -l` reported no connected device. Follow the

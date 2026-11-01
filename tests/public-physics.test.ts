@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { jointBounds, jointViolations } from './physics-joints';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -86,6 +87,14 @@ for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0
         physics.reset(motion,ik);
         const sample=(t:number)=>{const raw=evaluateMotion(vmd,t);physics.bindings.forEach(b=>b.write(raw));};
         await physics.seek(.25,sample);
+        const checkJoints=()=>{
+          for(const bodies of physics.bodyTransforms())for(const error of jointViolations(binding.physics,bodies)) {
+            const bounds=jointBounds(id,error.index);
+            assert.ok(error.linear<bounds.linear,`${id} ${clip} IK ${ik}: joint ${error.index} linear ${error.linear}`);
+            assert.ok(error.angular<bounds.angular,`${id} ${clip} IK ${ik}: joint ${error.index} angular ${error.angular}`);
+          }
+        };
+        checkJoints();
         const first=physics.bindings.map(b=>b.read()),created=physics.stats.worldsCreated;
         assert.equal(physics.stats.tick,30);
         assert.equal(physics.adapters[0].state.executed.length,ik?(id==='uka'?10:6):0);
@@ -105,6 +114,7 @@ for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0
         await physics.seek(.3,sample);assert.equal(physics.stats.worldsCreated,created,'forward ticks reuse worlds');
         await physics.seek(.1,sample);await physics.seek(.25,sample);
         assert.deepEqual(physics.bindings.map(b=>b.read()),first,'backward reset/replay is deterministic');
+        await physics.seek(.5,sample);checkJoints();
         physics.reset(undefined,false);assert.equal(PhysicsWorld.allocations,baseline);
       }
     }

@@ -76,8 +76,28 @@ retain their authored local deformation under the resolved parent.
 
 Every source body and joint executes. Mode 0 follows its bone, mode 1 writes the
 simulated bone transform, and mode 2 writes rotation while preserving authored
-local translation, including under a dynamic parent. Mode-2 body origins are
-re-anchored in the resolved hierarchy. Collision filters, shapes, masses,
+local translation, including under a dynamic parent. Public mode-2 writeback
+reads native rotations without re-anchoring bodies or zeroing velocities. Those
+bone-to-body writes previously invalidated the solved joints. The public host
+explicitly selects bounded joint position stabilization after Bullet, before bone
+writeback; the generic v1/synthetic executor retains its established policy.
+
+Stabilization uses at most 128 deterministic sweeps (early exit at 1e-7 m /
+1e-6 rad), including the paused initial pose without advancing source time. It
+projects the source linear and angular limits, skipping inverted/free axes.
+Locked anchor rows use a 3×3 solve with rotational gradients. Exactly locked
+six-axis connections form rigid clusters **only within position stabilization**;
+Gene's nine counterweight joints remain individually allocated Bullet joints.
+A root-centred unit-radius inverse-mass metric conditions those clusters rather
+than iterating a seven-metre offset as independent angular rows. Ordinary bodies
+use the shape inertia computed by Ammo. Per-row rotation corrections are capped
+at 0.2 rad. Source shape/mass/inertia/springs/contact filters remain unchanged in
+Bullet; stabilization corrects positions without substituting spring forces or
+resetting native velocities. This is a bounded numerical policy, not an original
+Windows MMD implementation. [Regression bounds and remaining cloak strain](physics-validation.md#real-model-constraint-and-performance-limits)
+are explicit and apply to all three independent native worlds.
+
+Collision filters, shapes, masses,
 damping, friction, restitution, joint frames and springs use the common
 `createPhysics` policy. Gravity is `[0,-9.80665,0]` m/s², scale 0.08 m/PMX unit,
 step 1/120 s, Bullet hidden accumulator disabled, spring damping 1, equilibrium
@@ -126,8 +146,10 @@ world reuse, tick hold and native teardown. Existing synthetic conformance stays
 in place. [Browser cases](../tests/browser/public-physics.spec.ts) exercise real
 Uka/Gene source and independent PMX/Toon/PBR transforms and pixels. Measured
 results and explicit limits are recorded in [physics validation](physics-validation.md).
-The measured post-writeback joint residuals are nonzero and can be large for
-Gene counterweights; pane agreement is not an accuracy oracle. See the explicit
+Both linear and angular native joint-frame errors now have per-joint regression
+bounds in both motions and IK states. Gene's coupled cloak network retains finite
+linear strain; counterweights have separate tight rigid-joint bounds. Pane
+agreement is not an accuracy oracle. See the explicit
 [constraint and performance limits](physics-validation.md#real-model-constraint-and-performance-limits).
 Original Windows MMD parity is **unverified**.
 

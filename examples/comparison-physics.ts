@@ -7,6 +7,7 @@ import { PhysicsWorld } from '../packages/three-mmd-physics/world';
 import type { AmmoAPI } from '../packages/three-mmd-physics/ammo';
 import { comparisonIK } from './comparison-ik';
 
+const jointProjectionIterations=128;
 export type PublicPhysicsBinding={version:1;solver:SolverProfile;physics:PhysicsProfile};
 /** Explicit retained-source binding, separate from automatic animation solver ownership. */
 export function validatePublicPhysics(binding:PublicPhysicsBinding) {
@@ -67,7 +68,7 @@ export class ComparisonPhysics {
   private source?:VMD;
   private ik=true;
   private at=0;
-  readonly stats={worldsCreated:0,resets:0,steps:0,tick:0,time:0,lastMS:0,maxSliceMS:0,cpuMS:0,native:0,backendBytes:0,bodiesPerWorld:0,jointsPerWorld:0};
+  readonly stats={jointProjectionIterations,worldsCreated:0,resets:0,steps:0,tick:0,time:0,lastMS:0,maxSliceMS:0,cpuMS:0,native:0,backendBytes:0,bodiesPerWorld:0,jointsPerWorld:0};
   readonly inputs:RestBone[][]=[];
   readonly adapters:ReturnType<typeof comparisonIK>[];
   readonly bindings:ReturnType<typeof physicsBones>[];
@@ -135,7 +136,7 @@ export class ComparisonPhysics {
                   return evaluated;
                 } finally {root.scale.copy(scale);}
               },
-            });
+            },jointProjectionIterations);
             this.stats.worldsCreated++;this.worlds.push(world);
           }
         } catch(error){this.worlds.forEach(w=>w.dispose());this.worlds=[];throw error;}

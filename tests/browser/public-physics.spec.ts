@@ -1,11 +1,12 @@
 import { writeFile } from 'node:fs/promises';
-import { Matrix4, PerspectiveCamera, Quaternion, Vector3 } from 'three';
+import { PerspectiveCamera, Vector3 } from 'three';
+import { jointBounds, jointViolations } from '../physics-joints';
 import { PNG } from 'pngjs';
 import { test, expect } from '@playwright/test';
 import { comparisonHalf, readComparisonBitmap } from './comparison-bitmap';
 const preview=`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 for(const model of ['uka','gene'])test(`${model}: independent real physics, synchronized controls and native lifetime`,async({page},testInfo)=>{
-  test.setTimeout(300000);
+  test.setTimeout(600000);
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   let requests=0,models=0,assets=0;
   page.on('request',r=>{if(r.url().endsWith('/ammo.js'))requests++;if(/\.(pmx|glb|gltf|bin|png|jpe?g|bmp|tga|vmd)([?#]|$)/i.test(r.url()))assets++;if(/\.(pmx|glb|gltf)(\?|$)/.test(r.url()))models++;});
@@ -49,16 +50,17 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
       return on[0].bones[name].rotation.some((v:number,k:number)=>Math.abs(v-off[0].bones[name].rotation[k])>1e-3);
     });
     expect(physicsDriven.length).toBeGreaterThan(10);
-    let maxBodyDifference=0,maxLinearViolation=0;
+    let maxBodyDifference=0;
     for(const bodies of native.bodies.slice(1))for(const [key,values] of Object.entries(native.bodies[0]))
       maxBodyDifference=Math.max(maxBodyDifference,...(values as number[]).map((v,k)=>Math.abs(v-bodies[key][k])));
-    const frame=(f:any)=>new Matrix4().compose(new Vector3(...f.translation as [number,number,number]),new Quaternion(...f.rotation as [number,number,number,number]),new Vector3(1,1,1));
-    for(const j of native.binding.physics.joints) {
-      const a=new Matrix4().fromArray(native.bodies[0][j.bodyA]).multiply(frame(j.frameA));
-      const b=new Matrix4().fromArray(native.bodies[0][j.bodyB]).multiply(frame(j.frameB));
-      const delta=new Vector3().setFromMatrixPosition(a.invert().multiply(b)).toArray();
-      delta.forEach((v,k)=>{if(j.linearLower[k]<=j.linearUpper[k])maxLinearViolation=Math.max(maxLinearViolation,j.linearLower[k]-v,v-j.linearUpper[k],0);});
+    const constraints:ReturnType<typeof jointViolations>[]=native.bodies.map((bodies:any)=>jointViolations(native.binding.physics,bodies));
+    for(const [pane,errors] of constraints.entries())for(const error of errors) {
+      const bounds=jointBounds(model,error.index);
+      expect(error.linear,`${model} ${motion} pane ${pane} joint ${error.index} linear`).toBeLessThan(bounds.linear);
+      expect(error.angular,`${model} ${motion} pane ${pane} joint ${error.index} angular`).toBeLessThan(bounds.angular);
     }
+    const maxLinearViolation=Math.max(...constraints.flat().map(e=>e.linear));
+    const maxAngularViolation=Math.max(...constraints.flat().map(e=>e.angular));
     expect(maxBodyDifference).toBeLessThan(1e-5);
     const pngOff=PNG.sync.read(pixelsOff),pngOn=PNG.sync.read(pixelsOn),pixelChanges=[0,0];
     for(let y=0;y<pngOn.height;y++)for(let x=0;x<pngOn.width;x++) {
@@ -70,7 +72,7 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
       const path=testInfo.outputPath(`${model}-${motion}-${label}.png`);
       await writeFile(path,pixels);await testInfo.attach(`${model}-${motion}-${label}.png`,{path,contentType:'image/png'});
     }
-    evidence.push({motion,frame:15,physicsDriven:physicsDriven.length,pixelChanges,maxBodyDifference,maxLinearViolation,dynamic:dynamic.length,maxPosition,maxRotation,execution:(await state()).execution,resources:await resources()});
+    evidence.push({motion,frame:15,physicsDriven:physicsDriven.length,pixelChanges,maxBodyDifference,maxLinearViolation,maxAngularViolation,constraints,dynamic:dynamic.length,maxPosition,maxRotation,execution:(await state()).execution,resources:await resources()});
     expect(maxPosition).toBeLessThan(.015);expect(maxRotation).toBeLessThan(.1);
     const created=(await state()).execution.physicsStats.worldsCreated;
     await seek(.6);expect((await state()).execution.physicsStats.worldsCreated).toBe(created);
@@ -78,8 +80,15 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
     await page.locator('#comparison-ik').uncheck();
     await expect.poll(async()=>(await state()).execution.ik).toBe(false);
     expect((await state()).execution.physics).toBe(true);
+    await expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).toBe('on');
+    const withoutIK=await page.evaluate(()=>(window as any).readMMDComparisonPhysics());
+    for(const bodies of withoutIK.bodies)for(const error of jointViolations(withoutIK.binding.physics,bodies)) {
+      expect(error.linear,`IK Off joint ${error.index} linear`).toBeLessThan(jointBounds(model,error.index).linear);
+      expect(error.angular,`IK Off joint ${error.index} angular`).toBeLessThan(jointBounds(model,error.index).angular);
+    }
     await page.locator('#comparison-ik').check();
     await expect.poll(async()=>(await state()).execution.ik).toBe(true);
+    await expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).toBe('on');
     await page.locator('#material').selectOption('pbr');await readComparisonBitmap(page);
     await page.locator('#material').selectOption('toon');
     await page.locator('#comparison-physics').uncheck();

@@ -1,4 +1,5 @@
 import { diagnosticError, MMDDiagnosticError, validateBudget } from "../mmd-diagnostics";
+import { JointProjector } from "./joint-projection";
 import { Matrix4, Quaternion, Vector3 } from "three";
 import type Ammo from "ammojs-typed";
 import { solvePose, type SolverProfile } from "../mmd-solver";
@@ -53,6 +54,9 @@ export class PhysicsWorld {
   private owned: unknown[] = [];
   private borrowed = new Map<unknown, Map<number, unknown>>();
   private bodies = new Map<number, Ammo.btRigidBody>();
+  private projector?: JointProjector;
+  private jointProjectionIterations: number;
+  private inverseInertia = new Map<number, Vector3>();
   private constraints: Ammo.btGeneric6DofSpringConstraint[] = [];
   private world!: Ammo.btDiscreteDynamicsWorld;
   private scratch!: Ammo.btTransform;
@@ -81,8 +85,14 @@ export class PhysicsWorld {
     enabled: ReadonlyMap<number, boolean> = new Map(),
     private budget: PhysicsBudget = {},
     private evaluator?: PhysicsPoseEvaluator,
+    // A nonzero budget selects stabilized, native-independent mode-2
+    // projection. Zero retains the established synthetic/v1 execution policy.
+    jointProjectionIterations = 0,
   ) {
     checkAmmo(api);
+    if(!Number.isInteger(jointProjectionIterations) || jointProjectionIterations<0 || jointProjectionIterations>128)
+      throw new Error('MMD_physics: joint projection iteration budget must be 0..128');
+    this.jointProjectionIterations=jointProjectionIterations;
     validatePhysics(profile, solver);
     if(evaluator) {
       const diagnostics=physicsBindingDiagnostics(profile,solver,budget);
@@ -130,6 +140,7 @@ export class PhysicsWorld {
           inertia = this.own(new api.btVector3(0, 0, 0)),
           mass = b.mode === 0 ? 0 : b.mass;
         if (mass) shape.calculateLocalInertia(mass, inertia);
+        this.inverseInertia.set(b.index,new Vector3(...[inertia.x(),inertia.y(),inertia.z()].map(v=>v>0?1/v:0)));
         const info = this.own(
             new api.btRigidBodyConstructionInfo(mass, state, shape, inertia),
           ),
@@ -142,6 +153,7 @@ export class PhysicsWorld {
         this.world.addRigidBody(body, 1 << b.group, b.mask);
         this.bodies.set(b.index, body);
       }
+      if(jointProjectionIterations)this.projector=new JointProjector(profile,this.inverseInertia);
       for (const j of profile.joints) {
         const a = this.own(new api.btTransform()),
           b = this.own(new api.btTransform());
@@ -225,12 +237,9 @@ export class PhysicsWorld {
     for (const b of this.profile.bodies) {
       const body = this.bodies.get(b.index)!;
       if (b.mode === 0)
-        this.write(
-          body,
-          (animated.get(b.bone) ?? new Matrix4()).clone().multiply(matrix(b)),
-        );
-      if (b.mode === 2 && b.bone !== -1)
-        this.align(b.index, animated.get(b.bone)!);
+        this.write(body,(animated.get(b.bone) ?? new Matrix4()).clone().multiply(matrix(b)));
+      if (!this.projector && b.mode === 2 && b.bone !== -1)
+        this.align(b.index,animated.get(b.bone)!);
     }
     // maxSubSteps=0 deliberately disables Bullet's hidden accumulator and interpolation.
     if (step)
@@ -239,6 +248,17 @@ export class PhysicsWorld {
         0,
         this.profile.fixedStep,
       );
+    // The public real-model host opts into bounded position stabilization.
+    // It changes neither source parameters nor Bullet's forces/velocities.
+    if (this.projector) {
+      const transforms = new Map([...this.bodies].map(([i,b]) => [i,this.read(b)]));
+      this.projector.project(transforms,this.jointProjectionIterations);
+      for (const b of this.profile.bodies) if (b.mode !== 0) {
+        const body = this.bodies.get(b.index)!;
+        this.write(body,transforms.get(b.index)!);
+        body.updateInertiaTensor();
+      }
+    }
     const result = structuredClone(pre),
       byIndex = new Map(result.map((b) => [b.index, b])),
       pending = result.slice();
@@ -256,7 +276,7 @@ export class PhysicsWorld {
         const b = writers.get(bone.index),
           parent = resolvedWorld.get(bone.parentIndex) ?? new Matrix4();
         if (b) {
-          if (b.mode === 2) this.align(b.index, animated.get(bone.index)!);
+          if (!this.projector && b.mode === 2)this.align(b.index,animated.get(bone.index)!);
           const target = this.read(this.bodies.get(b.index)!).multiply(
             matrix(b).invert(),
           );
@@ -265,6 +285,8 @@ export class PhysicsWorld {
             q = new Quaternion();
           local.decompose(p, q, new Vector3());
           const out = byIndex.get(bone.index)!;
+          // Stabilized writeback only reads the solved native pose. Feeding
+          // authored offsets back into bodies would invalidate solved joints.
           // Mode 2 owns rotation only. Keep authored local translation even
           // when its parent is another dynamic body (real hair/cloth chains).
           if(b.mode===1)out.translation = p.toArray();
@@ -274,8 +296,7 @@ export class PhysicsWorld {
         pending.splice(i, 1);
       }
     }
-    // Re-anchor mode-2 bodies in the resolved hierarchy, including dynamic parents.
-    for(const b of this.profile.bodies)if(b.mode===2 && b.bone!==-1)
+    if (!this.projector)for(const b of this.profile.bodies)if(b.mode===2 && b.bone!==-1)
       this.align(b.index,resolvedWorld.get(b.bone)!);
     return this.evaluate(result, enabled, "post");
   }
@@ -316,6 +337,8 @@ export class PhysicsWorld {
     this.borrowed.clear();
     this.owned = [];
     this.bodies.clear();
+    this.inverseInertia.clear();
+    this.projector=undefined;
     this.constraints = [];
     this.world = undefined!;
     this.scratch = undefined!;

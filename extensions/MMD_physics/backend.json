@@ -16,6 +16,7 @@
     "btGeneric6DofSpringConstraint.setDamping",
     "btGeneric6DofSpringConstraint.setEquilibriumPoint",
     "btRigidBody.setWorldTransform",
+    "btRigidBody.updateInertiaTensor",
     "btRigidBody.setLinearVelocity",
     "destroy",
     "getPointer",

@@ -238,6 +238,22 @@ test("mode-0 follows, mode-1 writes, mode-2 aligns bone origin, unbound bodies d
   assert.ok(timeline.bodyTransforms().get(0)![13] < -1);
   timeline.dispose();
 });
+test("mode-2 projection preserves authored offsets without feeding them back into native dynamics", () => {
+  const results=[];
+  for(const mode of [1,2] as const) {
+    const {profile,solver}=base();profile.bodies[0].mode=mode;
+    const world=new PhysicsWorld(api,profile,solver,solver.bones,new Map(),{},undefined,128);
+    try {
+      let pose:import("../packages/mmd-vpd").RestBone[]=solver.bones;
+      for(let tick=0;tick<60;tick++)pose=world.resolve(solver.bones);
+      results.push(world.bodyTransforms().get(0)!);
+      if(mode===2)near(pose[0].translation,solver.bones[0].translation);
+      else assert.ok(pose[0].translation[1]<solver.bones[0].translation[1]-.1);
+    } finally {world.dispose();}
+  }
+  assert.deepEqual(results[0],results[1],"mode only selects bone writeback; native forces, transforms and velocities stay identical");
+});
+
 test("tick-zero disabled IK and player overrides initialize dynamic bodies from the controlled pose", async (t) => {
   const source = parsePMX(physicsPMX("box"));
   source.rigidBodies = [{

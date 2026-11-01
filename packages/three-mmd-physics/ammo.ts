@@ -61,6 +61,7 @@ export function checkAmmo(api: AmmoAPI) {
     btRigidBody: [
       "getWorldTransform",
       "setWorldTransform",
+      "updateInertiaTensor",
       "getMotionState",
       "setLinearVelocity",
       "setDamping",
