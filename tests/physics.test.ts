@@ -387,7 +387,7 @@ test("mode-2 spring rotation preserves the animated bone origin and composes a r
   }
 });
 
-test("independent direct Ammo contact and spring cases; raw PMX exclusions and group 15 filter through Bullet", async () => {
+test("independent direct Ammo contact and spring cases; raw PMX eligibility and asymmetric group 15 filters through Bullet", async () => {
   const direct = await directContactSpring(api);
   cases.push({
     kind: "independently authored direct-backend conformance",
@@ -398,7 +398,7 @@ test("independent direct Ammo contact and spring cases; raw PMX exclusions and g
   assert.ok(direct.springDisplacement > 1e-4);
   assert.ok(direct.jointDrift < 0.03);
   const heights: number[] = [];
-  for (const excluded of [0, 1]) {
+  for (const [floorMask, ballMask] of [[32768, 1], [32768, 0], [0, 1]]) {
     const model = parsePMX(physicsPMX("box"));
     model.constraints = [];
     model.metadata.constraintCount = 0;
@@ -407,7 +407,7 @@ test("independent direct Ammo contact and spring cases; raw PMX exclusions and g
         name: "floor",
         boneIndex: -1,
         groupIndex: 0,
-        groupTarget: 0,
+        groupTarget: floorMask,
         shapeType: 1,
         width: 5,
         height: 0.1,
@@ -425,7 +425,7 @@ test("independent direct Ammo contact and spring cases; raw PMX exclusions and g
         name: "ball",
         boneIndex: -1,
         groupIndex: 15,
-        groupTarget: excluded,
+        groupTarget: ballMask,
         shapeType: 0,
         width: 0.1,
         height: 0,
@@ -455,11 +455,13 @@ test("independent direct Ammo contact and spring cases; raw PMX exclusions and g
   }
   assert.ok(heights[0] > 0.09 && heights[0] < 0.11);
   assert.ok(heights[1] < -2);
+  assert.ok(heights[2] < -2, "a pair must pass both bodies’ eligibility filters");
   cases.push({
     kind: "raw PMX bit filtering",
     group: 15,
-    rawExclusion0: heights[0],
-    rawExclusion1: heights[1],
+    mutuallyEligible: heights[0],
+    ballExcludesFloor: heights[1],
+    floorExcludesBall: heights[2],
   });
   assert.equal(PhysicsWorld.allocations, 0);
 });
@@ -542,7 +544,7 @@ test("both PMX parser paths reflect physics once, preserve source identities and
     assert.equal(p.bodies[3].index, 3);
     assert.equal(p.bodies[3].bone, -1);
     assert.equal(p.bodies[3].group, 15);
-    assert.equal(p.bodies[3].mask, 1);
+    assert.equal(p.bodies[3].mask, 65534);
     assert.equal(p.joints[0].name, "translated rotated spring");
     near(p.bodies[1].size, [0.05, 0, 0]);
     near(p.bodies[2].size, [0.04, 0.12, 0]);

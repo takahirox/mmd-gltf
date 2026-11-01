@@ -1,6 +1,6 @@
 /** Original synthetic Issue #45 variants of Issue #43 rigs. No third-party bytes.
  * Original fixtures remain byte-identical. Physics adds three shapes, all coupling
- * modes, an unbound group-15 body, asymmetric exclusions and a post-phase consumer. */
+ * modes, an unbound group-15 body, asymmetric eligibility masks and a post-phase consumer. */
 import { writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";

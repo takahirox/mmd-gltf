@@ -26,9 +26,33 @@ for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0
   validatePublicPhysics(binding);
   for(const [i,b] of binding.physics.bodies.entries()) {
     assert.equal(b.index,i);assert.equal(b.bone,(model.rigidBodies[i] as any).boneIndex);
-    assert.equal(b.mask,~(model.rigidBodies[i] as any).groupTarget&65535);
+    assert.equal(b.mask,(model.rigidBodies[i] as any).groupTarget);
     assert.equal(b.group,(model.rigidBodies[i] as any).groupIndex);
     assert.equal(b.mass,(model.rigidBodies[i] as any).weight);
+  }
+  assert.equal(binding.physics.bodies.filter(b=>b.mode===0 && b.mask===65535).length,id==='uka'?23:24);
+  assert.equal(binding.physics.bodies.filter(b=>b.mask===0).length,id==='uka'?0:9);
+  // Actual source collider shapes/materials/groups, moved into a controlled
+  // overlap. Independent constants identify a torso and an eligible dynamic
+  // collider. Gene’s nine source-zero counterweights must make no contact;
+  // reversing only their filter provides an actual contacting positive control.
+  const {api:contactAPI}=await loadAmmoNode();
+  const eligibleCollider=id==='uka'?25:19;
+  for(const sourceIndex of [eligibleCollider,...(id==='gene-light'?Array.from({length:9},(_,i)=>72+i):[])])
+   for(const complement of [false,true]) {
+    const shouldContact=(sourceIndex===eligibleCollider)!==complement;
+    const sourcePair=[0,sourceIndex];
+    const profile=structuredClone(binding.physics);
+    profile.gravity=[0,0,0];profile.joints=[];
+    profile.bodies=sourcePair.map((sourceIndex,index)=>({...profile.bodies[sourceIndex],index,bone:-1,mode:index===0?0:1,
+      translation:[0,0,0],rotation:[0,0,0,1],mask:complement && index===1?65535-profile.bodies[sourceIndex].mask:profile.bodies[sourceIndex].mask}));
+    const solver={version:2 as const,bones:[{index:0,name:'root',parentIndex:-1,translation:[0,0,0] as [number,number,number],rotation:[0,0,0,1] as [number,number,number,number],scale:[1,1,1] as [number,number,number],layer:0,flags:0}]};
+    const world=new PhysicsWorld(contactAPI,profile,solver,solver.bones);
+    try {
+      for(let tick=0;tick<10;tick++)world.resolve(solver.bones);
+      const displacement=Math.hypot(...Array.from(world.bodyTransforms().get(1)!).slice(12,15));
+      assert.ok(shouldContact?displacement>1e-3:displacement<1e-7,`${id} body ${sourceIndex}: real collider contact must follow source eligibility`);
+    } finally {world.dispose();}
   }
   binding.physics.joints.forEach((j,i)=>{
     assert.equal(j.type,0);assert.equal(j.bodyA,(model.constraints[i] as any).rigidBodyIndex1);assert.equal(j.bodyB,(model.constraints[i] as any).rigidBodyIndex2);

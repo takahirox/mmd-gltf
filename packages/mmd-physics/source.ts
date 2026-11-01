@@ -154,7 +154,8 @@ export function createPhysics(
           .multiply(original),
       ),
       group: b.groupIndex,
-      mask: ~b.groupTarget & 65535,
+      // The parsed PMX field already contains collision eligibility bits.
+      mask: b.groupTarget,
       mass: b.weight,
       linearDamping: b.positionDamping,
       angularDamping: b.rotationDamping,

@@ -26,7 +26,7 @@ Loading this extension never starts simulation or overwrites the core snapshot.
 ## Scope and references
 
 The [format-author PMX document](https://raw.githubusercontent.com/hirakuni45/glfw3_app/master/glfw3_app/docs/PMX_spec.txt)
-defines body fields, exclusion bits, coupling modes, type-0 joints and deformation
+defines body fields, collision filters, coupling modes, type-0 joints and deformation
 phases. It describes format/editor behavior, not measured original-MMD execution.
 [Core glTF](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html) defines
 metres, node TRS, skins and sampled animation. Historical official
@@ -41,13 +41,15 @@ also appends. Corrected requirement: local append takes priority. Source: the
 Rationale: this amendment supersedes the struck-through exception; local editing
 axes are separate. Original-MMD adoption remains unresolved.
 
-Collision reconciliation: old assumption considered during implementation: pass the
-parser field `groupTarget` directly as Bullet's collision inclusion mask.
-Corrected requirement: raw PMX bits are **exclusions**; use `(~raw) & 65535`.
-Primary reference: PMX body record's `非衝突グループフラグ`. Rationale: Bullet
-requires inclusion bits. Tests feed raw bits through actual conversion and
-Bullet contact filtering, including asymmetric masks and group 15. No claim
-about historical MMD's implementation follows from the parser field name.
+Collision-mask correction (Issue #77): the parsed PMX `groupTarget` is already
+an eligibility mask and is passed unchanged to Bullet. The previous complement
+reversed the source filter, suppressing intended torso contacts and enabling
+source-zero counterweights to collide with every group. This agrees with the
+[reference importer's mapping](https://github.com/sugiany/blender_mmd_tools/blob/master/mmd_tools/core/pmx/importer.py#L293)
+and the retained direct PMX runtime. Both bodies must include the other's group;
+zero includes none and 65535 includes all sixteen. Tests independently exercise
+both asymmetric exclusions, group 15, and real Uka/Gene collider contacts.
+This interpretation does not establish original Windows MMD parity.
 
 ## Contract
 

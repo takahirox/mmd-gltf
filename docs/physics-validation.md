@@ -1,5 +1,25 @@
 # Physics validation
 
+## Collision-mask revision (Issue #77)
+
+PMX `groupTarget` now passes unchanged to Bullet. Previous complementing reversed
+collision eligibility. The regression uses independently specified asymmetric
+floor/ball masks, including group 15, and controlled overlaps of actual Uka torso
+0 / dynamic collider 25 and Gene torso 0 / dynamic collider 19. Those contacts
+must separate with source filters and remain stationary with the wrong polarity.
+Gene’s nine original counterweight colliders additionally remain stationary with
+zero filters and separate when their dynamic filters are deliberately inverted.
+Pinned source bytes, shapes, masses, material coefficients and groups are retained.
+Uka's 23 and Gene's 24 all-eligible kinematic filters remain 65535; Gene's nine
+source-zero filters remain zero.
+
+The measurements below predate this mask correction. Their poses, pixels and
+performance are historical evidence, not measurements of the revised filters.
+The joint-constraint review finding remains unresolved; matching pane poses or
+passing the existing browser tests does not establish constraint accuracy.
+[Revision evidence](physics-mask-revision.json) records the corrected-mask checks
+and the still-excessive frame-15 joint errors for both models and clips.
+
 ## Public real-model integration (Issue #77)
 
 The [complete source audit](public-physics-audit.json),
@@ -156,8 +176,8 @@ two-byte-level comparison threshold.
   rotation, unbound bodies, fixed-step partitioning and fractional holds execute.
 - Independently authored direct-Ammo contact/spring cases test the selected
   integrator separately from the adapter. The floor-contact bound is 0.01 m;
-  joint-limit drift bound is 0.03 m. Raw PMX exclusion bits exercise asymmetric
-  filtering and group 15 through actual Bullet contacts. The wrong-mask control
+  joint-limit drift bound is 0.03 m. Corrected raw PMX eligibility bits exercise
+  asymmetric filtering and group 15 through actual Bullet contacts. The wrong-mask control
   falls through the floor; it is observably separate from contact.
 - A second direct-Ammo rig reference creates its own world/bodies/constraints,
   shares the already-tested pre-IK algorithm, and authors coupling and the

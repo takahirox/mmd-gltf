@@ -1,6 +1,6 @@
 {
   "environment": {
-    "node": "v24.12.0",
+    "node": "v26.12.1",
     "platform": "darwin",
     "arch": "arm64"
   },
@@ -25,8 +25,8 @@
         0.9774313894825079
       ],
       "position": [
-        -3.4597284204185286e-9,
-        0.9999999861876926,
+        0,
+        1,
         0
       ],
       "positionBound": 0.000003
@@ -44,8 +44,9 @@
     {
       "kind": "raw PMX bit filtering",
       "group": 15,
-      "rawExclusion0": 0.09999997913837433,
-      "rawExclusion1": -3.9441890716552734
+      "mutuallyEligible": 0.09999997913837433,
+      "ballExcludesFloor": -3.9441890716552734,
+      "floorExcludesBall": -3.9441890716552734
     },
     {
       "kind": "independent direct-backend rig coupling and explicit post append",
@@ -60,7 +61,7 @@
       "mode": "bdef",
       "motion": "a",
       "sourceSHA256": "d18ae935d47496e3ba72cbfa43d6abc31bfb9566f16f1d11dd7c61dc6867a72a",
-      "GLBSHA256": "e0f4d2a7c9cf8224e0dd2ee125d45b8c1e0b7938950024de0060c894286d6721",
+      "GLBSHA256": "061230d94a97b1dd791cd0db8f0111c992b00c708834e9647af7e5f67ee5c2f4",
       "measuredFallbackTranslationError": 0.011813470822974933,
       "measuredFallbackRotationError": 0.025303258807487822,
       "measuredFallbackWeightError": 0.0008444443941115765,
@@ -79,7 +80,7 @@
       "mode": "bdef",
       "motion": "b",
       "sourceSHA256": "d18ae935d47496e3ba72cbfa43d6abc31bfb9566f16f1d11dd7c61dc6867a72a",
-      "GLBSHA256": "e1cd5103c257e922cda941af7014af079b386430bde254f3b8bad3eaf87aee64",
+      "GLBSHA256": "63b0052620e2f8c7c445d043b10fe6fe2ff5b914dfc4e8d7b63560f3bbdb297b",
       "measuredFallbackTranslationError": 0.008060949936095258,
       "measuredFallbackRotationError": 0.022247777716318886,
       "measuredFallbackWeightError": 0.0008444444727566669,
@@ -130,7 +131,7 @@
       "mode": "bdef",
       "motion": "a",
       "sourceSHA256": "567a8ffc7be23486601836f8038a342bdc19e48cfdc5c7d923bda8832ec26d72",
-      "GLBSHA256": "b076b68eda34c743d50c61d56b719842d65aa6f2aa3cb0c47983528e01720d24",
+      "GLBSHA256": "734d2ee51214b22b039e8d939c1c95963dbb220faaacbfeb488b2ea192dc0de8",
       "measuredFallbackTranslationError": 0.008836655145125862,
       "measuredFallbackRotationError": 0.01777428281068358,
       "measuredFallbackWeightError": 0.0008444443941115765,
@@ -149,7 +150,7 @@
       "mode": "bdef",
       "motion": "b",
       "sourceSHA256": "567a8ffc7be23486601836f8038a342bdc19e48cfdc5c7d923bda8832ec26d72",
-      "GLBSHA256": "9af6fbb3a154afc96a375d3b1572827c6c6773a5450274a4cd2c5ecbb5d22fce",
+      "GLBSHA256": "6c323fa31d0593bc665a6d707828a4ca9265143ef7418db877b520777506a5e9",
       "measuredFallbackTranslationError": 0.008309054953330258,
       "measuredFallbackRotationError": 0.02269707064965682,
       "measuredFallbackWeightError": 0.0008444444727566669,

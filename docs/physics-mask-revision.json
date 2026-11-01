@@ -1,0 +1,152 @@
+{
+  "issue": 77,
+  "scope": "Collision-mask review correction only; joint-constraint finding remains unresolved",
+  "collisionPolicy": "Preserve parsed PMX groupTarget as the Bullet inclusion mask; both bodies must include the other group.",
+  "regressions": {
+    "asymmetricGroup15": "Mutual eligibility contacts at y=0.1 m; either single-sided exclusion falls below y=-2 m.",
+    "realColliders": {
+      "uka": [
+        0,
+        25
+      ],
+      "gene-light": [
+        0,
+        19
+      ],
+      "contactDisplacementMinimumMetres": 0.001,
+      "noContactDisplacementMaximumMetres": 1e-07
+    },
+    "geneZeroMaskCounterweights": [
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80
+    ],
+    "sourceAudit": "All 251 converted masks corrected; source records, hashes and all non-mask metadata unchanged."
+  },
+  "jointProbe": {
+    "runtime": "One independent public PhysicsWorld, retained VMD, IK On, 1/120 s, floor tick at 0.5 seconds; actual native transforms after mode-2 writeback.",
+    "angularCoordinates": "Bullet matrixToEulerXYZ: negatives of Three intrinsic ZYX angles for frameA^-1 * frameB; skip inverted/free source limits.",
+    "status": "Unresolved; these measurements are not a constraint-conformance pass. No experimental solver corrections retained.",
+    "measurements": [
+      {
+        "model": "uka",
+        "motion": "02_laugh",
+        "frame": 15,
+        "maximumLinearViolationMetres": 0.020090008811695877,
+        "worstLinearJoint": 144,
+        "maximumAngularViolationRadians": 0.4512425219770747,
+        "worstAngularJoint": 7
+      },
+      {
+        "model": "uka",
+        "motion": "22_apology",
+        "frame": 15,
+        "maximumLinearViolationMetres": 0.015874700815813943,
+        "worstLinearJoint": 144,
+        "maximumAngularViolationRadians": 0.4397839059733476,
+        "worstAngularJoint": 12
+      },
+      {
+        "model": "gene-light",
+        "motion": "02_laugh",
+        "frame": 15,
+        "maximumLinearViolationMetres": 0.42177831166857555,
+        "worstLinearJoint": 75,
+        "maximumAngularViolationRadians": 0.5952597234954555,
+        "worstAngularJoint": 75
+      },
+      {
+        "model": "gene-light",
+        "motion": "22_apology",
+        "frame": 15,
+        "maximumLinearViolationMetres": 0.46288202244096244,
+        "worstLinearJoint": 75,
+        "maximumAngularViolationRadians": 0.773639804280779,
+        "worstAngularJoint": 74
+      }
+    ]
+  },
+  "checks": {
+    "build": "passed; existing large-chunk warning",
+    "typecheck": "passed",
+    "node": "176 passed, zero failures/skips; focused real-asset contact rerun also passed",
+    "links": "passed; 509 checked",
+    "browser": {
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 606258.107,
+      "selection": [
+        "physics.spec.ts",
+        "public-motion.spec.ts",
+        "public-physics.spec.ts"
+      ],
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "release": "27.2.0",
+        "node": "v26.12.1",
+        "cpu": "Apple M4 Max",
+        "logicalCPUs": 16,
+        "workers": 1,
+        "channel": "chrome",
+        "conformanceMatrix": "representative",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      }
+    },
+    "whitespace": "passed"
+  },
+  "unperformed": [
+    "Original Windows MMD parity",
+    "Physical Android Chrome verification; required post-merge follow-up remains pending."
+  ],
+  "remainingFinding": {
+    "priority": "P1",
+    "runtime": "packages/three-mmd-physics/world.ts:resolve",
+    "regression": "tests/browser/public-physics.spec.ts:52-73",
+    "reason": "Real native joint-frame constraints exceed bounds; the browser test still records maximumLinearViolation without asserting a tolerance. Solver and test-bound corrections remain required."
+  },
+  "browserJointResiduals": [
+    {
+      "model": "uka",
+      "browser": "156.0.8078.74",
+      "pageErrors": [],
+      "measurements": [
+        {
+          "motion": "02_laugh",
+          "maximumLinearViolationMetres": 0.020090008811695877,
+          "maximumPaneBodyMatrixDifference": 0
+        },
+        {
+          "motion": "22_apology",
+          "maximumLinearViolationMetres": 0.015874700815813943,
+          "maximumPaneBodyMatrixDifference": 0
+        }
+      ]
+    },
+    {
+      "model": "gene",
+      "browser": "156.0.8078.74",
+      "pageErrors": [],
+      "measurements": [
+        {
+          "motion": "02_laugh",
+          "maximumLinearViolationMetres": 0.42177831166857555,
+          "maximumPaneBodyMatrixDifference": 0
+        },
+        {
+          "motion": "22_apology",
+          "maximumLinearViolationMetres": 0.46288202244096244,
+          "maximumPaneBodyMatrixDifference": 0
+        }
+      ]
+    }
+  ]
+}

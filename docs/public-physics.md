@@ -82,12 +82,11 @@ damping, friction, restitution, joint frames and springs use the common
 `createPhysics` policy. Gravity is `[0,-9.80665,0]` m/s², scale 0.08 m/PMX unit,
 step 1/120 s, Bullet hidden accumulator disabled, spring damping 1, equilibrium
 zero, connected-body collision enabled, and explicit converter collision margins.
-Collision masks follow the existing extension contract: `(~groupTarget) & 65535`
-converts interpreted source exclusion bits into Bullet inclusion bits. Historical
-Three.js and reconstructed MMD implementations instead pass the raw field;
-native-MMD filter polarity has not been independently measured. These are
-disclosed policy differences, not evidence of original-MMD agreement.
-This is a consistent project policy, not an assertion of Windows MMD equivalence.
+Collision masks preserve the parsed source eligibility bits: `mask = groupTarget`.
+A set bit allows the corresponding collision group; both bodies must allow the
+other group. Zero allows none. The direct PMX runtime and reference importer use
+the same polarity. The earlier complemented-mask policy was incorrect and is
+superseded by this correction. Original Windows MMD equivalence is unverified.
 
 One requested absolute time drives all panes. The displayed source/physics pose
 holds `floor(time / fixedStep)`; there is no interpolation or pane clock. On while
