@@ -1,4 +1,5 @@
 {
+  "recordScope": "Historical Issue #73 / PR #74 evidence for 0.1.2 only. Superseded by three-mmd-0.1.3-validation.json for current integration; references to retaining the shim describe the past state.",
   "issue": 73,
   "upstreamBase": "5ae203246ccffd86a3e8fb7be0e34b9559c33a46",
   "dependency": "@takahirox/three-mmd@0.1.2 with an instance-scoped compatibility shim",

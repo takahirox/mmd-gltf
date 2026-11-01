@@ -102,7 +102,7 @@ for (const backend of ['webgl', 'webgpu']) {
     await expect(accuracy).toBeHidden();
     await page.locator('#about-demo > summary').click();
     await expect(accuracy).toBeVisible();
-    await expect(page.getByRole('link', { name: '@takahirox/three-mmd@0.1.2', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: '@takahirox/three-mmd@0.1.3', exact: true })).toBeVisible();
     await page.locator('#about-demo > summary').click();
     await expect(accuracy).toBeHidden();
     for (const id of ['pmx', 'gltf']) await expect(page.locator(`#${id}-status`)).toContainText('Ready');
