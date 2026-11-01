@@ -22,7 +22,8 @@ coverage and assertion strength when redistributing checks.
 3. **Match validation to the change.** Use the change guidance below for fast local
    feedback, then complete applicable mandatory pre-merge checks. Full regression
    CI and Pages publication have separate responsibilities: PR CI validates;
-   deployment runs after a successful build on a push to `main`. Keep optional
+   deployment waits for asset preparation, typecheck, Node/smoke checks, all browser
+   shards and the final build gate on a push to `main`. Keep optional
    diagnostics separate and record genuinely post-merge-only verification as
    pending when the Issue requires it. Pre-merge success does not prove publication.
 4. **Reuse work and avoid duplicate execution.** Reuse builds, converted fixtures
@@ -41,8 +42,9 @@ coverage and assertion strength when redistributing checks.
 6. **Maintain an execution-time budget using evidence.** Use the recorded
    [Ubuntu browser observation](#successful-ubuntu-pr-validation), **21m19.202s**
    with one SwiftShader worker, as a historical comparison baseline, not a universal
-   limit or a current full-CI measurement. A normal whole-CI target remains to be
-   established during performance work. Compare equivalent environments and
+   limit or a current full-CI measurement. Issue #81 targets approximately 20
+   minutes or less for full required PR feedback, subject to comparable hosted
+   measurements. Compare equivalent environments and
    workloads, monitor growth and investigate overruns against an established target.
    Separate elapsed feedback time, total runner/computation time and queue time;
    do not add overlapping phase timings. Revisit allocation, setup and duplication
@@ -67,10 +69,286 @@ command also checks built assets and requires `dist`; documentation-only link an
 anchor inspection can use available tooling without building the application.
 Full-matrix performance repetitions are opt-in diagnostics via the
 `browser-performance` label or dispatch input; native-WebGPU tests explicitly skip
-without an adapter. Neither is a routine additional completion gate. Workflow,
-cache, test-selection and implementation changes belong in separately scoped work.
+without an adapter. Neither is a routine additional completion gate. The required
+shard workflow is described below.
+
+## Four-runner validation and publishing gates (Issue #81)
+
+The workflow keeps every existing test and threshold. It uses explicit stable file
+assignments in [browser-shards.json](../tools/browser-shards.json), validated by
+[browser-shards.ts](../tools/browser-shards.ts). Each Actions VM runs one Chromium
+worker with CPU ANGLE SwiftShader, the supported Ubuntu 24.04 image and pinned
+Playwright dependency. The dev/preview servers still use ports 43179/43180 and
+refuse to reuse existing servers. All tests now honor the existing optional
+`MMD_PREVIEW_PORT` override for isolated local runs; the default remains 43180.
+No test assertions, GPU flags, retries or timeouts changed.
+
+The required dependency graph is:
+
+- `typecheck` starts immediately (including whitespace checks).
+- `prepare` verifies manifest-pinned sources, prepares all assets once and builds
+  `dist`. It uploads an unfiltered `--list` manifest, the Pages artifact and a
+  compressed `validated-build` tar containing `dist`, `public`, and the two source
+  cache directories. Other jobs use this run's artifacts only; npm is installed
+  separately. Model notices, source hashes and built URLs are preserved.
+- After preparation, `fast-checks` runs browser integration smoke, Node/extension
+  tests and built-site link checks. Smoke covers BDEF, loading/recovery, source transport
+  and public assets on the same dev/preview setup; it supplements full shards.
+- Four `browser` jobs run in parallel, with matrix fail-fast disabled so one
+  failure does not cancel another shard's evidence. There is no `continue-on-error`.
+- `build` (the existing required check name) runs after every shard, including
+  failures. It checks the four summaries against the unfiltered list, verifies exact ID coverage, mapping,
+  attempts, statuses and commit/run/attempt identity, and requires the browser
+  matrix, typecheck, fast-checks and preparation results to succeed. Missing
+  artifacts or summaries fail validation. The final check also runs when
+  preparation fails, so a skipped required check cannot mask that failure
+  ([GitHub status-check semantics](https://docs.github.com/en/pull-requests/reference/status-checks)).
+- Main push `deploy` needs **all five** required job groups above. GitHub's implicit
+  success condition prevents publication on failures, cancellations or skipped
+  dependencies. The `github-pages-attempt-N` artifact is the exact build tested by
+  the other jobs; deployment neither rebuilds nor runs another browser suite.
+  Its name is a preparation-job output, so a deployment-only retry uses that
+  same tested artifact.
+
+PRs and dispatches run validation without deploying. Main pushes validate the
+merge commit before deploying. Unrelated PR label events skip validation and
+retain their separate concurrency group so they cannot cancel a real run.
+`browser-performance` labels and the dispatch boolean opt into a separate
+`browser-performance` job; ordinary runs never replay full matrices. This optional
+job is outside the publication critical path. Existing per-ref cancellation and
+PR/main trigger selection remain; no doc-only or path-based bypass was added.
+
+### Measured assignment and baseline
+
+The downloaded `browser-evidence` artifact of [main run
+41304304814](https://github.com/takahirox/mmd-gltf/actions/runs/41304304814)
+contains 102 cases: 100 passed, two optional native-WebGPU skips, no retries.
+The [retained baseline](browser-ci-sharding-baseline.json) records every case's
+status/duration, suite totals, workflow/source SHA, timestamp, artifact ID/digest,
+environment and job/step timings. The workflow at SHA
+`855b189c0d43beeb1ac20ba317ee246b9982d2f3` used Ubuntu image
+`20261025.353.1`, Node `v22.23.4`, Chromium `141.0.7390.37`, AMD EPYC 7763
+(four logical CPUs), Azure northcentralus; npm cache missed and source cache hit.
+
+Observed baseline browser wall time was **55.13 minutes** (step ~55.15), workflow
+wall time **62.97 minutes**, required checks **62.05 minutes** from run creation,
+and total unrounded runner execution **62.87 runner-minutes**, including deploy
+(62.00 excluding deploy). Initial scheduling delay was ~3 seconds. Job timings
+include setup/cleanup; total runner-minutes are execution time, not rounded billing.
+
+Using the actual per-case durations, Playwright's built-in four-way file/test-count
+sharding would assign 31/21/26/24 cases and duration sums of
+**16.90/12.59/9.42/16.09 minutes**. Greedily assigning the longest measured files to
+the least-loaded group gives the following stable plan instead. These are sums of
+historical case times, **not measured parallel-run wall times**:
+
+| Shard | Suites (`.spec.ts`) | Cases | Baseline case minutes |
+| --- | --- | ---: | ---: |
+| 1 | solver, gene-ik, sdef, group | 37 | 14.36 |
+| 2 | body-motion, qdef, physics, example | 19 | 14.12 |
+| 3 | uka, unified-demo, bone-morph, vpd, outline, public-assets, bdef | 24 | 13.27 |
+| 4 | vmd, public-motion, sleeve-motion, bfcache, demo-loading, mmd-resource-path, source-transport | 22 | 13.25 |
+
+The projected worst group is 14.36 minutes, with 55.00 total browser case minutes.
+Setup, shared-build packaging/download, server start and queueing add elapsed time
+and runner cost; the early smoke intentionally repeats five cases. Four VMs plus
+fast checks may increase cost. Five consuming jobs reuse the prepared files;
+hosted transfer costs and estimated rebuild costs are compared below.
+Local macOS packaging took 6.10 seconds for a
+294,006,962-byte archive; all 1,107 archived files matched source bytes. These
+local numbers do not measure Actions transfer/setup cost.
+**Approximately 20 minutes is the feedback target; the hosted observations below
+measure it without assuming a fourfold speedup.**
+
+The [downloaded PR comparison](browser-ci-sharding-comparison.json) from [run
+41299511791](https://github.com/takahirox/mmd-gltf/actions/runs/41299511791)
+has tested merge SHA `e8b659fae23a75c658b79d75a7d1e415fc0b077b` (from checkout
+logs), distinct from the API's PR head SHA. Its tree and main's tree are both
+`113c57d1ae728606ca41bd46dd49b295abbed09d`; all 102 case titles/statuses,
+image, Node/Chromium versions, CPU and cache hit/miss states match. The PR ran in
+centralus and took 55.29 browser minutes, 61.98 required-feedback minutes and
+61.93 runner-minutes. This identical-tree comparison uses different commits/events.
+
+An **exact-SHA repeat** was then dispatched using the existing serial workflow,
+with matrix diagnostics disabled and Pages deployment skipped: [run
+41317456944](https://github.com/takahirox/mmd-gltf/actions/runs/41317456944),
+[normalized case/environment/timing evidence](browser-ci-sharding-repeat.json).
+Checkout logs confirm SHA `855b189c0d43beeb1ac20ba317ee246b9982d2f3`. It passed
+100 cases with the same two native skips and no retries. The downloaded ZIPs for
+all three runs match the digests in Actions artifact metadata.
+
+The exact-SHA pair observed browser median **55.11 minutes**, range
+**55.09–55.13**; required-feedback median **61.83 minutes**, range
+**61.60–62.05**; required runner-execution median **61.78 runner-minutes**, range
+**61.55–62.00**. The dispatch's whole workflow took 61.60 minutes and used 61.55
+runner-minutes, with ~3 seconds initial queueing. Main's 62.97 minutes/62.87
+runner-minutes include deployment. Image, Node/Chromium and four logical CPUs
+matched; the repeat used Intel Xeon Platinum 8370C in westus3 rather than AMD EPYC
+7763 in northcentralus, and npm cache hit rather than missed. Both source caches
+hit. Two observations do not characterize long-tail variability or establish a
+single cause for the historical 10/31–11/1 slowdown.
+
+Applying the stable groups to the repeat's case durations gives projected case
+sums of **14.63/14.16/13.04/13.16 minutes**. These support the initial balance but
+remain projections, not observed independent-runner shard wall times.
+
+### Hosted acceptance (2026-11-01)
+
+The [retained hosted evidence](browser-ci-sharding-hosted.json) records completed
+PR validation and two independent dispatches of unchanged source/workflow SHA
+`1f66ee10cd8575fbe7cf96fe41641755cca09228`, with optional matrix diagnostics
+disabled. The PR tested synthetic merge SHA
+`572bb049402d7302e00e6a0818083cd41eb45cca`; its Git tree matches both dispatches
+(`246df9cb0c762419e8ad55ab9aa81b7dacf55c57`). The exact-SHA dispatch pair,
+rather than the separate PR sample, supplies the median/range below.
+
+| Actions run | Event | Required feedback (min) | Worst browser job (min) | Runner-minutes |
+| --- | --- | ---: | ---: | ---: |
+| [41323290036](https://github.com/takahirox/mmd-gltf/actions/runs/41323290036) | PR merge | 18.50 | 15.63 | 65.92 |
+| [41323763034](https://github.com/takahirox/mmd-gltf/actions/runs/41323763034) | Dispatch | 16.93 | 13.97 | 56.48 |
+| [41325266522](https://github.com/takahirox/mmd-gltf/actions/runs/41325266522) | Dispatch | 16.27 | 13.95 | 52.27 |
+
+The exact-SHA pair's required-feedback median was **16.60 minutes**,
+range **16.27–16.93**, versus the serial baseline's
+61.83-minute median. Its runner-execution median was **54.38 runner-minutes**,
+range **52.27–56.48**, versus 61.78 serial runner-minutes.
+The worst observed browser job in this pair took
+**13.97 minutes**, including setup/cleanup. The approximately
+20-minute feedback target was met in these observations; two repeats do not
+establish a long-tail guarantee or isolate sharding's effect from runner variation.
+
+In the dispatch pair, typecheck completed after
+0.32–0.38 minutes, browser smoke after
+3.43–3.47 minutes, and the complete fast-check job
+(including all 177 Node tests and links) after
+7.55–7.63 minutes. Initial scheduling delay was
+3–4 seconds; per-job queues and every
+step's start/end/duration are retained. Required feedback includes preparation,
+the slowest validation dependency and final aggregation. Runner-minutes sum all
+executed jobs, including typecheck, preparation, smoke/Node checks, shards and the
+aggregate; they are unrounded execution time, not billed monetary cost.
+
+Every run passed all four shards and the final `build` gate: **102 unique IDs,
+100 passed, the same two documented native-WebGPU skips, no failures or retries**.
+Each also passed all five supplementary smoke cases and 177 Node tests. All seven
+browser evidence/manifest/aggregate ZIP digests per run match Actions metadata;
+every summary's attachment reference exists. Independently re-running
+`tools/browser-aggregate.ts` on each downloaded manifest and four summaries matched
+the hosted aggregate exactly, including attempt records and outputs. The retained
+JSON includes per-suite/per-case durations, IDs, statuses, attempts, errors, phases,
+attachment references and bounded output excerpts with original lengths/hashes;
+the referenced shard ZIPs contain full outputs and screenshots.
+
+All browser jobs used one worker, Node v22.23.4, Playwright 1.56.1 and Chromium
+141.0.7390.37 with CPU SwiftShader. CPU models and Azure regions varied across
+jobs; npm caches and preparation source caches hit. Runner setup logs report
+image `20261025.353.1`, while summary environment values report
+`20261026.354.1`. Both are retained as an unresolved metadata discrepancy, rather
+than assuming a particular image rollout. The separate PR sample and the two
+dispatches therefore must not be used to claim CPU/image-independent speedup.
+
+The shared validated-build archive was approximately 294 MB. Packaging, manifest
+and build upload, and download/extraction across all five consumers together cost
+**48–65 runner-seconds** in the exact-SHA pair. A preparation build took
+**85–115 seconds**. Five additional builds at those measured preparation rates
+would cost 7.08–9.58 runner-minutes; this is an estimate, not an executed rebuild
+comparison, since consumer CPUs can differ. The measured sharing cost is small
+relative to that estimate. Pages packaging is separately included in preparation
+job totals; no deployment or optional performance replay ran in these PR/dispatch
+samples.
+
+The conditional disposable hosted failing-test branch/PR was **not performed**:
+this revision node prohibits pushes. Existing local failure injection is retained
+below and does not demonstrate hosted failure/cancellation behavior. Verification
+of the merged main SHA and its matching Pages deployment remains a required post-merge
+check; these successful PR/dispatch runs do not demonstrate publication.
+
+### Evidence, reproduction and redistribution
+
+Each required shard uploads `browser-evidence-N` with `if: always()`, erroring on
+missing files. `browser-smoke-evidence` is separate. Summary schema v2 preserves
+stable Playwright test IDs, final outcomes, every retry's status/duration/errors,
+stdout/stderr, annotations (including skip reasons), attachment references and
+phase JSON, plus source/run identity, runner CPU/image and installed browser
+version. Screenshot and JSON oracle/phase files remain in the shard artifact.
+Only the two exact optional native-WebGPU case titles may skip; hardware adapter
+availability may make them pass. Any other skip or expected failure blocks the
+aggregate. Unexecuted, interrupted or missing cases cannot pass completeness.
+
+`browser-aggregate` contains `browser-aggregate.json`: all shard summaries and
+attempt records, completeness errors, slowest browser wall time and sum of browser
+wall times. These browser-only measures exclude installation, queue and build;
+use Actions job timings for full required latency and runner cost.
+
+```sh
+npm ci
+npm run build
+# Reproduce one failing shard without competing servers/workers:
+BROWSER_SHARD=2 PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run test:browser
+# If another local worktree uses 43180, also set MMD_PREVIEW_PORT to a free port.
+# List all expected IDs; --list never replaces measured summaries:
+BROWSER_LIST_PATH=.cache/browser-manifest.json npm run test:browser -- --list
+# Download this run's manifest to .cache/browser-shards/browser-manifest.json,
+# and shard artifacts into .cache/browser-shards/browser-evidence-{1,2,3,4}/.
+npx tsx tools/browser-aggregate.ts
+# Read-only collection of actual queue/critical path/job/step/cost timings:
+npx tsx tools/browser-ci-metrics.ts RUN_ID RUN_ID_OF_UNCHANGED_COMMIT_REPEAT
+```
+
+Validation artifacts replace the previous attempt on a full workflow rerun.
+Use **Re-run all jobs** for validation retries: the aggregate deliberately rejects
+mixed-attempt browser evidence. Deployment-only retries may reuse the completed
+validation and its recorded Pages artifact. For controlled timing repeats, prefer
+separate dispatch runs of the same SHA and preserve both sets of artifacts.
+
+Archive each invocation's `test-results` before another Playwright invocation,
+which clears it. Set `GITHUB_SHA`, `GITHUB_RUN_ID` and `GITHUB_RUN_ATTEMPT` to the
+original run when independently rechecking downloaded CI evidence. The metrics
+collector writes `.cache/browser-ci-metrics.json`; preserve it with summaries/logs.
+It reports actual execution minutes, not a monetary or rounded billing estimate.
+Only successful runs enter the feedback median/range; failed/cancelled runs retain
+their individual timings and conclusions.
+PR API metadata can identify the head rather than the tested synthetic merge;
+compare summary `commit`/`workflowSHA`, case IDs and environment before treating
+runs as unchanged/equivalent.
+
+New cases in existing files inherit that file's shard automatically. New `.spec.ts`
+files fail shard configuration until explicitly assigned; test listing/completeness
+still checks the entire registered set. The mapping test models adding a future
+`public-physics.spec.ts` (Issue #77/PR #79) to shard 4 and verifies coverage without
+depending on that work. Rebalance against new measured durations when a shard's
+elapsed time dominates or threatens the ~20-minute target; include the workload,
+new mapping and before/after timings in review. Do not change numerical/raster
+thresholds or replace GPU/readback and independent pixel oracles with Node checks.
+
+For future timing claims, run the unchanged workflow/source SHA at least twice
+on Actions, save the environment, caches and region from job logs, compare
+median/range of required feedback, worst browser shard, total runner-minutes and
+all pass/skip/failure counts. Validate the PR head, then verify the merged main
+SHA's matching Pages artifact after merge. With explicit remote authorization,
+use a disposable failing-test branch/PR to verify early failure, blocking aggregate
+and uploaded artifacts; remove it afterward. Local reporter/aggregate failure
+injection tests are useful but do not demonstrate hosted scheduling or deployment.
+
+The [worktree validation record](browser-ci-sharding-validation.json) retains
+normalized local case IDs/statuses/durations and checks. All four groups were run
+**sequentially** on macOS with one worker: 37/19/24/22 cases, 100 passed and the two
+documented native skips, no retries; completeness accepted all 102 IDs. Smoke
+passed all five cases. A disposable real-browser failure returned 1 and preserved
+its screenshot, assertion, diagnostic output and phase JSON; omitting shard 4 made
+the aggregate return 1 and identify all 22 missing IDs. These local checks do not
+measure parallel hosted latency or demonstrate an Actions deployment.
+
+A native Node WebGL/WebGPU capture prototype or hardware-GPU runner is a separate,
+optional follow-up. Compare identical pixel/vertex/normal, determinism, lifecycle
+and shader-compatibility cases at unchanged thresholds first. The experimental
+[three.js PR #34572](https://github.com/mrdoob/three.js/pull/34572) is not evidence
+of equivalence or an adopted replacement baseline. CPU SwiftShader remains required.
 
 ## Browser CI evidence
+
+The following sections retain the historical #54/#57 measurements and workload;
+they are not current 102-case full-CI timing claims.
 
 Issue [#54](https://github.com/takahirox/mmd-gltf/issues/54) builds on the merged
 [#53](https://github.com/takahirox/mmd-gltf/pull/53). The Uka integration, synthetic
@@ -80,8 +358,9 @@ it does not attribute #53's improvements to this work.
 
 ## Execution and measurement
 
-The default remains one Chromium worker with ANGLE SwiftShader. No extra runners,
-higher configured test timeouts, or native GPU are used. Build production assets first:
+The default remains one Chromium worker with ANGLE SwiftShader. CI uses four
+independent runners with one worker each; local unfiltered runs remain single-worker.
+Test timeouts and GPU flags are unchanged. Build production assets first:
 
 ```sh
 npm run build
@@ -97,7 +376,7 @@ BROWSER_CONFORMANCE_MATRIX=full PLAYWRIGHT_CHROMIUM_CHANNEL=chromium npm run tes
 Use identical source, Node/Chromium versions and runner provisioning for a pair of
 measurements; archive `test-results/browser-summary.json` after each invocation
 (the next invocation clears test-results). Repeat the pair to assess variability.
-The existing CI artifact upload retains the summary and per-test attachments.
+Each shard artifact retains its summary and per-test attachments.
 JSON body attachments are explicitly saved under `test-results/attachments` because
 the list reporter alone does not persist them. Historical Solver capture JSON and
 screenshots are refreshed together only with `UPDATE_SYNTHETIC_EVIDENCE=1`; ordinary
@@ -109,8 +388,7 @@ A filtered run's duration is not a full-suite speed measurement.
 For repeatable Ubuntu evidence, add the `browser-performance` label to the PR
 after publishing the measurement workflow. The label event (or a subsequent PR
 update while labeled) runs the normal full validation, then
-[`measure-browser-ci.sh`](../tools/measure-browser-ci.sh) on that **same**
-Ubuntu 24.04 runner. A manual workflow dispatch can also enable
+[`measure-browser-ci.sh`](../tools/measure-browser-ci.sh) in a separate opt-in Ubuntu 24.04 diagnostic job. That job first runs its own complete unfiltered default suite, then repeats matrices on that **same** runner. A manual workflow dispatch can also enable
 `compare_browser_matrices` once the dispatch trigger is available on the default
 branch. Normal unlabeled PR runs do not pay for these diagnostic repetitions.
 Remove the label after collecting the evidence.
@@ -123,8 +401,7 @@ and command exit code. `commit.txt` and `order.txt` identify the source and
 execution order. The full
 matrix replays the previous permutations on the instrumented implementation;
 it is not an uninstrumented historical-commit measurement. A failed repetition
-fails the job and preserves its evidence. The original complete-suite results
-are restored for the separate `browser-evidence` artifact even on failure.
+fails the job and preserves its evidence. The diagnostic job restores its original complete-suite results even on failure. Required shard evidence is uploaded independently as `browser-evidence-1` through `browser-evidence-4`.
 Compare both pairs' phase counts/times and variability; use the archived default
 run, rather than a filtered repetition, for #69/#70 wall-time and per-suite deltas.
 The completed Ubuntu collection and its results are recorded below.

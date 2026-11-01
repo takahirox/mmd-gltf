@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { openRigDemo } from './demo-controls';
-const preview = 'http://127.0.0.1:43180/mmd-gltf/';
+const preview = `http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 
 test('binding map failure after rig replacement keeps asset, controls and diagnostics consistent', async ({ page }) => {
   await openRigDemo(page, preview);
