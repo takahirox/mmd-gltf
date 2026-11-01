@@ -2,7 +2,7 @@
   "issue": 81,
   "recordedAt": "2026-11-01T15:46:22.004566+00:00",
   "baseCommit": "007e3a57439484327dcc1dbac7fd34282ca460a3",
-  "scope": "Implementation and local validation in the assigned worktree; no pushes, PRs, merges or comments. One validation-only dispatch of the existing workflow is authorized by the Issue measurement requirement; dispatch does not deploy Pages.",
+  "scope": "Implementation and local validation retained from the assigned worktree, with hosted acceptance added from published PR validation and two validation-only dispatches of the unchanged published SHA. No pushes, merges or comments; dispatches do not deploy Pages.",
   "baselineRepeat": {
     "runId": 41317456944,
     "url": "https://github.com/takahirox/mmd-gltf/actions/runs/41317456944",
@@ -1608,9 +1608,8 @@
     "browserInstallation": "The pinned official Playwright archive was extracted with system unzip after Node 26 installer extraction stalled; Chromium 141.0.7390.37 launched successfully."
   },
   "pending": [
-    "Run this new workflow on an authorized published PR head at least twice to establish new median/range, worst shard and total runner-minutes.",
     "Verify the merged implementation SHA and matching Pages deployment after authorized merge.",
-    "Controlled remote failure branch/PR requires separate publishing authorization; only local failure injection is performed here."
+    "Conditional controlled hosted failing-test branch/PR remains unperformed because this node prohibits pushes; existing local failure injection does not prove hosted failure handling."
   ],
   "baselineComparison": {
     "unchangedCommitRepeated": true,
@@ -1630,6 +1629,51 @@
       "minimum": 61.55,
       "maximum": 62
     },
-    "limitations": "Two runs only; CPU, region and npm-cache state differ. Dispatch excludes deployment, so compare required feedback/cost separately from whole workflow. New sharded Actions timings remain unmeasured."
+    "limitations": "Two serial baseline runs only; CPU, region and npm-cache state differ. Dispatch excludes deployment, so compare required feedback/cost separately from whole workflow. Completed sharded measurements, with their environment differences and exact-SHA repeat, are recorded separately in browser-ci-sharding-hosted.json."
+  },
+  "hostedAcceptance": {
+    "record": "browser-ci-sharding-hosted.json",
+    "collectedAt": "2026-11-01T16:31:13.126532+00:00",
+    "prRunId": 41323290036,
+    "exactCommitRepeatRunIds": [
+      41323763034,
+      41325266522
+    ],
+    "commit": "1f66ee10cd8575fbe7cf96fe41641755cca09228",
+    "workflowSHA": "1f66ee10cd8575fbe7cf96fe41641755cca09228",
+    "allRunsSuccessful": true,
+    "exactTestedCommitRepeated": true,
+    "everyRun": {
+      "uniqueTestIds": 102,
+      "passed": 100,
+      "optionalNativeSkips": 2,
+      "attempts": 102,
+      "independentAggregateMatchesHosted": true,
+      "browserZipDigestsVerified": 7,
+      "attachmentReferencesVerified": 101,
+      "supplementarySmokePassed": 5,
+      "nodeTestsPassed": 177
+    },
+    "requiredFeedbackMinutes": {
+      "samples": 2,
+      "median": 16.6,
+      "minimum": 16.266666666666666,
+      "maximum": 16.933333333333334
+    },
+    "runnerMinutes": {
+      "samples": 2,
+      "median": 54.375,
+      "minimum": 52.266666666666666,
+      "maximum": 56.483333333333334
+    },
+    "worstBrowserJobMinutes": {
+      "samples": 2,
+      "median": 13.958333333333332,
+      "minimum": 13.95,
+      "maximum": 13.966666666666667
+    },
+    "hostedFailureInjection": "Not performed: this node prohibits pushes, so no disposable failing branch/PR was published. Local failure tests are not hosted evidence.",
+    "imageVersionDiscrepancy": "Runner setup logs report 20261025.353.1; browser summaries report 20261026.354.1. Both values are retained; actual revision unresolved.",
+    "postMergePagesVerification": "Pending authorized merge; no deployment is claimed."
   }
 }

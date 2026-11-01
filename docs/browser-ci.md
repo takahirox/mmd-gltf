@@ -152,13 +152,13 @@ historical case times, **not measured parallel-run wall times**:
 The projected worst group is 14.36 minutes, with 55.00 total browser case minutes.
 Setup, shared-build packaging/download, server start and queueing add elapsed time
 and runner cost; the early smoke intentionally repeats five cases. Four VMs plus
-fast checks may increase cost. Sharing conversion avoids four extra builds (~1.92
-minutes each in the baseline), but hosted artifact-transfer cost versus rebuilding
-still needs measurement. Local macOS packaging took 6.10 seconds for a
+fast checks may increase cost. Five consuming jobs reuse the prepared files;
+hosted transfer costs and estimated rebuild costs are compared below.
+Local macOS packaging took 6.10 seconds for a
 294,006,962-byte archive; all 1,107 archived files matched source bytes. These
 local numbers do not measure Actions transfer/setup cost.
-**Approximately 20 minutes is a target, not an achieved result or guaranteed
-fourfold speedup.**
+**Approximately 20 minutes is the feedback target; the hosted observations below
+measure it without assuming a fourfold speedup.**
 
 The [downloaded PR comparison](browser-ci-sharding-comparison.json) from [run
 41299511791](https://github.com/takahirox/mmd-gltf/actions/runs/41299511791)
@@ -192,13 +192,76 @@ Applying the stable groups to the repeat's case durations gives projected case
 sums of **14.63/14.16/13.04/13.16 minutes**. These support the initial balance but
 remain projections, not observed independent-runner shard wall times.
 
-New-workflow Actions runs, PR-head validation of this change and merged-main
-publication cannot be performed before the implementation is published; this node
-explicitly prohibits pushes/PRs/merges. There is therefore no achieved
-**new-workflow** hosted median/range, worst actual shard, new total runner cost,
-or demonstrated deployment result yet. Do not attribute the 10/31–11/1 change
-solely to version 0.1.3 or the three new Uka tests. The ~20-minute target requires
-published, repeated sharded measurements.
+### Hosted acceptance (2026-11-01)
+
+The [retained hosted evidence](browser-ci-sharding-hosted.json) records completed
+PR validation and two independent dispatches of unchanged source/workflow SHA
+`1f66ee10cd8575fbe7cf96fe41641755cca09228`, with optional matrix diagnostics
+disabled. The PR tested synthetic merge SHA
+`572bb049402d7302e00e6a0818083cd41eb45cca`; its Git tree matches both dispatches
+(`246df9cb0c762419e8ad55ab9aa81b7dacf55c57`). The exact-SHA dispatch pair,
+rather than the separate PR sample, supplies the median/range below.
+
+| Actions run | Event | Required feedback (min) | Worst browser job (min) | Runner-minutes |
+| --- | --- | ---: | ---: | ---: |
+| [41323290036](https://github.com/takahirox/mmd-gltf/actions/runs/41323290036) | PR merge | 18.50 | 15.63 | 65.92 |
+| [41323763034](https://github.com/takahirox/mmd-gltf/actions/runs/41323763034) | Dispatch | 16.93 | 13.97 | 56.48 |
+| [41325266522](https://github.com/takahirox/mmd-gltf/actions/runs/41325266522) | Dispatch | 16.27 | 13.95 | 52.27 |
+
+The exact-SHA pair's required-feedback median was **16.60 minutes**,
+range **16.27–16.93**, versus the serial baseline's
+61.83-minute median. Its runner-execution median was **54.38 runner-minutes**,
+range **52.27–56.48**, versus 61.78 serial runner-minutes.
+The worst observed browser job in this pair took
+**13.97 minutes**, including setup/cleanup. The approximately
+20-minute feedback target was met in these observations; two repeats do not
+establish a long-tail guarantee or isolate sharding's effect from runner variation.
+
+In the dispatch pair, typecheck completed after
+0.32–0.38 minutes, browser smoke after
+3.43–3.47 minutes, and the complete fast-check job
+(including all 177 Node tests and links) after
+7.55–7.63 minutes. Initial scheduling delay was
+3–4 seconds; per-job queues and every
+step's start/end/duration are retained. Required feedback includes preparation,
+the slowest validation dependency and final aggregation. Runner-minutes sum all
+executed jobs, including typecheck, preparation, smoke/Node checks, shards and the
+aggregate; they are unrounded execution time, not billed monetary cost.
+
+Every run passed all four shards and the final `build` gate: **102 unique IDs,
+100 passed, the same two documented native-WebGPU skips, no failures or retries**.
+Each also passed all five supplementary smoke cases and 177 Node tests. All seven
+browser evidence/manifest/aggregate ZIP digests per run match Actions metadata;
+every summary's attachment reference exists. Independently re-running
+`tools/browser-aggregate.ts` on each downloaded manifest and four summaries matched
+the hosted aggregate exactly, including attempt records and outputs. The retained
+JSON includes per-suite/per-case durations, IDs, statuses, attempts, errors, phases,
+attachment references and bounded output excerpts with original lengths/hashes;
+the referenced shard ZIPs contain full outputs and screenshots.
+
+All browser jobs used one worker, Node v22.23.4, Playwright 1.56.1 and Chromium
+141.0.7390.37 with CPU SwiftShader. CPU models and Azure regions varied across
+jobs; npm caches and preparation source caches hit. Runner setup logs report
+image `20261025.353.1`, while summary environment values report
+`20261026.354.1`. Both are retained as an unresolved metadata discrepancy, rather
+than assuming a particular image rollout. The separate PR sample and the two
+dispatches therefore must not be used to claim CPU/image-independent speedup.
+
+The shared validated-build archive was approximately 294 MB. Packaging, manifest
+and build upload, and download/extraction across all five consumers together cost
+**48–65 runner-seconds** in the exact-SHA pair. A preparation build took
+**85–115 seconds**. Five additional builds at those measured preparation rates
+would cost 7.08–9.58 runner-minutes; this is an estimate, not an executed rebuild
+comparison, since consumer CPUs can differ. The measured sharing cost is small
+relative to that estimate. Pages packaging is separately included in preparation
+job totals; no deployment or optional performance replay ran in these PR/dispatch
+samples.
+
+The conditional disposable hosted failing-test branch/PR was **not performed**:
+this revision node prohibits pushes. Existing local failure injection is retained
+below and does not demonstrate hosted failure/cancellation behavior. Verification
+of the merged main SHA and its matching Pages deployment remains a required post-merge
+check; these successful PR/dispatch runs do not demonstrate publication.
 
 ### Evidence, reproduction and redistribution
 
@@ -258,7 +321,7 @@ elapsed time dominates or threatens the ~20-minute target; include the workload,
 new mapping and before/after timings in review. Do not change numerical/raster
 thresholds or replace GPU/readback and independent pixel oracles with Node checks.
 
-Before claiming the timing goal, run this exact workflow/source SHA at least twice
+For future timing claims, run the unchanged workflow/source SHA at least twice
 on Actions, save the environment, caches and region from job logs, compare
 median/range of required feedback, worst browser shard, total runner-minutes and
 all pass/skip/failure counts. Validate the PR head, then verify the merged main
