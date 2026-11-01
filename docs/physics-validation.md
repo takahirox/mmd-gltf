@@ -19,6 +19,50 @@ joint correction below. It is not evidence for the final stabilized runtime.
 
 ## Public real-model integration (Issue #77)
 
+### Angular-failure recovery revision (Issue #77)
+
+Before publishing a requested Physics pose, the public host now measures every
+native joint frame in all three worlds against the existing **0.005 rad** angular
+gate. A failure disposes every world, unchecks Physics, restores the raw/IK-only
+pose at the requested time and shows the joint, error and timestamp. Diagnostics
+retain all failing panes/joints; a valid retry clears them. Source limits, free
+axes, the 128-sweep budget and all existing accuracy assertions are unchanged.
+Private replay ticks are not published; the guard checks the requested held pose.
+
+Gene Apology with IK On at frames 48, 50 and 54 exercises this failure path in
+Node. Frame 50 still measures joint 53 at **0.017159219 rad**. Browser coverage
+checks a failed enable at frame 50, a failed forward seek at frame 54, visible
+Off recovery, raw-pose restoration, zero native allocations and successful retry
+at frame 15 without fetching another model or backend.
+
+The [frame-50 feasibility calculation](gene-apology-frame50-feasibility.json)
+can be reproduced with `npx tsx tools/check-gene-apology-constraints.ts`. It uses
+the pinned PMX/VMD and canonical pre-physics IK/grant pose, without Ammo. Interval
+subdivision encloses every allowed orientation for cloak joints 52 and 53,
+including the full 0.005 rad angular error allowance. Even allowing 30 mm on
+each local translation axis of both anchors, and a conservative 10 mm allowance
+for the locked-counterweight errors (calculated bound: 2.16 mm), joint 80's
+local z remains at most -4.516807 m. Its lower limit is -4.496000 m: at least
+**20.8 mm** of linear violation remains, versus its unchanged **0.2 mm** gate.
+Thus these source kinematic anchors cannot simultaneously satisfy the existing
+gates at frame 50; shifting the violation to another joint is not a correction.
+The PMX remains valid. This conflict depends on the authored animation pose and
+fixed kinematic anchors, rather than a source-transport validation error.
+
+This revision fixes false Physics On reporting and recovery. It **does not fix
+the underlying Gene Apology constraint conflict** or establish full-clip physics
+conformance. The solver work requested by the review remains unresolved; these
+error-path tests must not be cited as successful simulation of frames 48–54.
+
+Validation passed: build (existing large-chunk warning), typecheck, all 179 Node
+tests plus Toon/Outline schema checks, the interval calculation, 518 local links
+and whitespace checks. Sixteen existing selected Chrome/SwiftShader cases passed;
+the new recovery case passed on a focused rerun after fixing its initial exact
+comparison against the browser's serialized `5/3` input value. The native joint
+accuracy assertions were unchanged. Temporary alternate server ports avoided an
+occupied port 43179. The full browser matrix, physical Android and original
+Windows MMD verification were not performed.
+
 ### Later-frame review revision (Issue #77)
 
 The branch incorporates main `855b189`, preserving three-mmd 0.1.3 and its
@@ -40,8 +84,9 @@ A separate exploratory Node scan of 301 samples at 30 fps over each full Gene
 clip (0–10 s), with both IK states, exposed an additional **unresolved** limitation: Apology
 with IK On exceeds the 0.005 rad angular regression bound around 1.6–1.8 s.
 The original stabilizer also fails there (up to 0.017642 rad); equality damping
-does not resolve it (up to 0.017185 rad). Physics currently continues to report
-On at those states. The selected later-frame regressions are not full-timeline
+does not resolve it (up to 0.017185 rad). Before the angular-failure recovery
+revision above, Physics continued to report On at those states. The selected
+later-frame regressions are not full-timeline
 constraint conformance, and this revision does not establish that broader
 guarantee. This needs further execution work before claiming full-clip bounds.
 For a concrete reproduction in the same Node sampler, frame 50 (5/3 s) gives

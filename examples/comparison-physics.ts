@@ -4,10 +4,13 @@ import { validateSolver, type SolverProfile } from '../packages/mmd-solver';
 import type { RestBone } from '../packages/mmd-vpd';
 import type { VMD } from '../packages/mmd-vmd';
 import { PhysicsWorld } from '../packages/three-mmd-physics/world';
+import { jointAngularErrors } from '../packages/three-mmd-physics/joint-limits';
 import type { AmmoAPI } from '../packages/three-mmd-physics/ammo';
 import { comparisonIK } from './comparison-ik';
 
 const jointProjectionIterations=128;
+const maximumAngularError=.005;
+type ConstraintFailure={pane:number;index:number;angular:number;time:number};
 export type PublicPhysicsBinding={version:1;solver:SolverProfile;physics:PhysicsProfile};
 /** Explicit retained-source binding, separate from automatic animation solver ownership. */
 export function validatePublicPhysics(binding:PublicPhysicsBinding) {
@@ -68,7 +71,7 @@ export class ComparisonPhysics {
   private source?:VMD;
   private ik=true;
   private at=0;
-  readonly stats={jointProjectionIterations,worldsCreated:0,resets:0,steps:0,tick:0,time:0,lastMS:0,maxSliceMS:0,cpuMS:0,native:0,backendBytes:0,bodiesPerWorld:0,jointsPerWorld:0};
+  readonly stats={jointProjectionIterations,worldsCreated:0,resets:0,steps:0,tick:0,time:0,lastMS:0,maxSliceMS:0,cpuMS:0,native:0,backendBytes:0,bodiesPerWorld:0,jointsPerWorld:0,constraintFailures:[] as ConstraintFailure[]};
   readonly inputs:RestBone[][]=[];
   readonly adapters:ReturnType<typeof comparisonIK>[];
   readonly bindings:ReturnType<typeof physicsBones>[];
@@ -148,6 +151,19 @@ export class ComparisonPhysics {
       this.stats.maxSliceMS=Math.max(this.stats.maxSliceMS,cost);
       if(cost>this.workBudgetMS)throw new Error(`Physics exceeds this device’s ${this.workBudgetMS} ms work budget; switch Off or retry`);
       if(cost>=8 && this.tick<target) {await new Promise<void>(resolve=>setTimeout(resolve,0));slice=performance.now();}
+    }
+    // Never publish a successful state solely because Bullet and stabilization
+    // returned. Check every joint in every independent native world against the
+    // existing angular accuracy gate before the host can report Physics On.
+    // Replay intermediates are private; only the requested held pose is shown.
+    const failures=this.worlds.flatMap((world,pane)=>jointAngularErrors(this.binding.physics,world.bodyTransforms())
+      .filter(error=>!Number.isFinite(error.angular) || error.angular>=maximumAngularError)
+      .map(error=>({...error,pane,time:target*step})));
+    this.stats.constraintFailures=failures;
+    if(failures.length) {
+      this.reset(this.source,this.ik);
+      const first=failures[0];
+      throw new Error(`Joint ${first.index} angular error ${first.angular.toFixed(6)} rad exceeds ${maximumAngularError} at ${first.time.toFixed(3)} s`);
     }
     // Same tick calls must preserve solved bones (sampling would overwrite them).
     this.stats.backendBytes=(this.api as unknown as {HEAP8?:Int8Array}).HEAP8?.byteLength??0;

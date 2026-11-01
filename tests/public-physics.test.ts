@@ -121,6 +121,26 @@ for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0
           await physics.seek(time,sample);checkJoints();
           assert.equal(physics.stats.worldsCreated,created+3,'later forward ticks reuse the replay worlds');
         }
+        if(id==='gene-light' && clip==='22_apology' && ik) {
+          // These requested poses previously returned success despite native
+          // angular errors above the unchanged 0.005 rad gate. Do not move the
+          // error to another joint, loosen a bound, or retain any failed world.
+          for(const frame of [48,50,54]) {
+            physics.reset(motion,ik);
+            await assert.rejects(()=>physics.seek(frame/30,sample),/Joint 52 angular error .* exceeds 0\.005/);
+            const failures=physics.stats.constraintFailures;
+            assert.deepEqual([...new Set(failures.map(f=>f.pane))],[0,1,2]);
+            assert.ok(failures.every(f=>f.angular>=.005 && f.time===frame/30));
+            if(frame===50)for(const pane of [0,1,2]) {
+              const failure=failures.find(f=>f.pane===pane && f.index===53)!;
+              assert.ok(Math.abs(failure.angular-.017159219)<1e-7,'retain the reproduced native violation, not a fabricated success');
+            }
+            assert.equal(PhysicsWorld.allocations,baseline);
+            assert.deepEqual(physics.bodyTransforms(),[]);
+            await physics.seek(.5,sample);checkJoints();
+            assert.deepEqual(physics.stats.constraintFailures,[],'a valid retry clears the diagnostic');
+          }
+        }
         physics.reset(undefined,false);assert.equal(PhysicsWorld.allocations,baseline);
       }
     }

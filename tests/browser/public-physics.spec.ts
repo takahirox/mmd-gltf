@@ -158,6 +158,57 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   expect(errors).toEqual([]);
 });
 
+test('Gene Apology constraint failure recovers visibly at frames 50 and 54 without reloading',async({page})=>{
+  test.setTimeout(180000);
+  let backendRequests=0,modelRequests=0;
+  page.on('request',r=>{if(r.url().endsWith('/ammo.js'))backendRequests++;if(/\.(pmx|glb|gltf)(\?|$)/.test(r.url()))modelRequests++;});
+  await page.goto(`${preview}?demo=gene`);
+  await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
+  const state=()=>page.evaluate(()=>(window as any).mmdExample);
+  const resources=()=>page.evaluate(()=>(window as any).readMMDComparisonResources());
+  const pose=()=>page.evaluate(()=>(window as any).readMMDComparisonPose());
+  const initial=await resources(),fetches=modelRequests;
+  await page.locator('#comparison-motion').selectOption('22_apology');
+  await expect(page.locator('#comparison-ik')).toBeChecked();
+  const seek=async(time:number)=>{
+    const requested=await page.locator('#comparison-time').evaluate((e,t)=>{
+      const input=e as HTMLInputElement;input.valueAsNumber=t;
+      const accepted=input.valueAsNumber;input.dispatchEvent(new Event('input',{bubbles:true}));return accepted;
+    },time);
+    await expect.poll(async()=>(await state()).time,{timeout:60000}).toBe(requested);
+    return requested;
+  };
+  for(const frame of [50,54]) {
+    const requested=await seek(frame/30);
+    const raw=await pose();
+    // Cover both a fresh enable and a forward seek from a valid Physics pose.
+    if(frame===54) {
+      await seek(.5);
+      await page.locator('#comparison-physics').check();
+      await expect.poll(async()=>(await state()).execution.physicsState,{timeout:60000}).toBe('on');
+      await seek(frame/30);
+    } else await page.locator('#comparison-physics').check();
+    await expect.poll(async()=>(await state()).execution.physicsState,{timeout:60000}).toBe('error');
+    await expect(page.locator('#comparison-physics-status')).toContainText('Physics off: Joint 52 angular error');
+    await expect(page.locator('#comparison-physics')).not.toBeChecked();
+    expect((await state()).execution.physics).toBe(false);
+    expect((await state()).time).toBe(requested);
+    expect(await pose()).toEqual(raw);
+    const failures=(await state()).execution.physicsStats.constraintFailures;
+    expect([...new Set(failures.map((f:any)=>f.pane))]).toEqual([0,1,2]);
+    expect(failures.every((f:any)=>f.angular>=.005)).toBe(true);
+    expect((await resources()).physics.native).toBe(0);
+    expect(await page.evaluate(()=>(window as any).readMMDComparisonPhysics().bodies)).toEqual([]);
+    await seek(.5);
+    await page.locator('#comparison-physics').check();
+    await expect.poll(async()=>(await state()).execution.physicsState,{timeout:60000}).toBe('on');
+    expect((await state()).execution.physicsStats.constraintFailures).toEqual([]);
+    await page.locator('#comparison-physics').uncheck();
+  }
+  expect(backendRequests).toBe(1);expect(modelRequests).toBe(fetches);
+  expect((await resources()).roots).toEqual(initial.roots);
+});
+
 for(const failure of ['missing','corrupt'])test(`public physics backend ${failure}: recover Off, retry, and unload`,async({page})=>{
   let requests=0;page.on('request',r=>{if(r.url().endsWith('/ammo.js'))requests++;});
   await page.route('**/runtime/ammo.js',route=>route.fulfill({status:failure==='missing'?404:200,contentType:'text/javascript',body:'globalThis.badAmmoExecuted=true;'}));

@@ -104,6 +104,15 @@ budget and source limits are unchanged. Later-frame regressions cover frames
 45, 60 and 75; the [review revision notes](physics-validation.md#later-frame-review-revision-issue-77)
 also record the remaining angular-limit failures found by a denser scan.
 
+Before reporting On, the public host checks the requested held pose's actual
+native joint frames in every world against the existing 0.005 rad angular gate.
+Failure disposes all worlds and restores Physics Off with a visible diagnostic;
+it preserves the requested VMD time and raw/IK-only playback. Gene Apology with
+IK On still fails this gate around 1.6–1.8 s, including frames 50 and 54. Successful
+simulation of that interval remains unresolved. The guard prevents false success;
+it does not establish full-clip constraint conformance. Private replay ticks are
+not published. See the [recovery regression evidence](physics-validation.md#angular-failure-recovery-revision-issue-77).
+
 Collision filters, shapes, masses,
 damping, friction, restitution, joint frames and springs use the common
 `createPhysics` policy. Gravity is `[0,-9.80665,0]` m/s², scale 0.08 m/PMX unit,
