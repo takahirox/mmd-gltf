@@ -6,8 +6,10 @@ the [MMD_materials_toon](extensions/MMD_materials_toon/README.md) and
 The converter uses `mmd-parser`, a bounded PMX 2.1 reader and glTF Transform,
 without Three.js scene
 serialization. The default [Uka example](docs/uka.md) shows the original PMX loaded directly
-with pinned `@takahirox/three-mmd@0.1.2` beside converter-produced glTF loaded through
-`GLTFLoader.register()`. Orbit, pan and zoom stay synchronized through one freely controlled camera,
+with pinned `@takahirox/three-mmd@0.1.3` beside converter-produced glTF loaded through
+`GLTFLoader.register()`. The [published 0.1.3 integration](docs/pmx-resource-paths.md)
+uses the upstream path fix directly; the temporary 0.1.2 shim is removed.
+Orbit, pan and zoom stay synchronized through one freely controlled camera,
 with a useful initial front framing. Uka exposes blink/smile vertex
 expressions in Rest mode and synchronized official VMD playback in both views.
 Uka and Gene Light each offer their original facial sample plus Laugh and Apology

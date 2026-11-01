@@ -1,4 +1,4 @@
-# Direct MMD texture paths (Issue #73)
+# Direct MMD texture paths (Issues #73 and #78)
 
 The pinned Uka PMX contains the exact texture entry `tex\hair_s01.png` at index
 7. Eight of its nine raw entries use Windows separators; the inventory normalizes
@@ -7,79 +7,54 @@ assertion in [the Uka test](../tests/uka.test.ts) verifies the source entry as w
 as the existing manifest hash checks. Original PMX, images, notices, source names
 and conversion provenance remain unchanged.
 
-## Upstream fix and temporary integration
+## Published 0.1.3 integration (Issue #78)
 
-The maintainer-requested library handoff is satisfied by
-[three-mmd-loader #106](https://github.com/takahirox/three-mmd-loader/issues/106).
-The library's own Task completed it through
-[upstream PR #107](https://github.com/takahirox/three-mmd-loader/pull/107), merged
-at `a05444db048c7329a56e34501193f0fe1845aa59` on 2026-10-31. Issue #106 is
-closed as completed. Its [closing comment](https://github.com/takahirox/three-mmd-loader/issues/106#issuecomment-6540329253)
-reports successful upstream post-merge Tests/Pages verification and explicitly
-leaves a corrected npm release, downstream migration and physical Android checks
-as separate work. This downstream Task does not need to create an upstream branch
-or PR. Issue #73 permits the documented, tested shim
-while a corrected release is unavailable; release migration is follow-up work.
-Physical Android verification remains a separate, pending post-merge check below.
+The demo consumes the actual npm-published `@takahirox/three-mmd@0.1.3`, pinned
+exactly in the manifest and lockfile. Direct PMX loading uses ordinary
+`new MMDLoader(manager)`. The temporary 0.1.2 compatibility factory, duplicate
+local resolver and candidate upstream patch have been removed. No vendor edits,
+URL modifier or replacement path implementation is needed. The existing
+LoadingManager still waits for image completion, reports canonical failed URLs,
+and lets the public Retry action rebuild the comparison.
 
-Source completion is distinct from release availability. At the merged revision,
-[MaterialBuilder](https://github.com/takahirox/three-mmd-loader/blob/a05444db048c7329a56e34501193f0fe1845aa59/src/loaders/MMDLoader.ts)
-calls the new resolver before cache lookup, handler selection and loading, but
-`package.json` still says `0.1.2`. On 2026-10-31,
-`npm view @takahirox/three-mmd dist-tags versions --json` still listed `0.1.2` as latest
-with no newer version. `npm view @takahirox/three-mmd@0.1.2 gitHead` identifies
-`5ae203246ccffd86a3e8fb7be0e34b9559c33a46`, the older published source.
-The lockfile-installed package still concatenates `resourcePath + filePath`
-before cache lookup, handler selection and image loading. A LoadingManager URL
-modifier would run too late to fix all of those operations, so the dependency
-and shim remain necessary until a corrected release is published.
+Verified against the [official registry distribution](https://registry.npmjs.org/@takahirox%2fthree-mmd/0.1.3):
 
-[The upstream source patch](../patches/three-mmd-loader-resource-path.patch)
-targets `takahirox/three-mmd-loader` commit
-`5ae203246ccffd86a3e8fb7be0e34b9559c33a46`. It adds a reusable resolver, calls it
-at the original concatenation site, uses the resolved URL for TGA selection and
-cached-failure diagnostics, and includes Node tests of the resolver and MaterialBuilder. The
-patch was applied locally and tested against that baseline and supplied as
-candidate implementation evidence in #106. It is retained as historical handoff
-evidence, not as a patch to apply to the now-corrected upstream main or to
-`node_modules`. To reproduce its original baseline validation:
+- Version: `0.1.3`; published gitHead: `7b604fb1d76b26a2c46bced0cbeab2b8b5781c40`.
+- Tarball: `https://registry.npmjs.org/@takahirox/three-mmd/-/three-mmd-0.1.3.tgz`.
+- Integrity: `sha512-/7WB/Wq8ME6QYrY5PEYXkXPvkGZj/wNfCfCruHPLdvOqLzj3Sfrq7C5jcao+bD1FVWq++glE2zSytFNJW60vcQ==`.
+- The tarball's SHA-512 matches registry metadata and all 63 installed files
+  match the downloaded tarball byte for byte after clean `npm ci`.
+- The packaged resolver exactly matches TypeScript-transpiled source at the
+  published gitHead. The loader also matches except for a retained unused
+  `Camera` import; detailed hashes and comparison are in the validation record.
+- The public root and `./loaders/MMDLoader.js` exports expose MMDLoader. The
+  installed loader imports its packaged resolver, resolves before cache/handler
+  selection, classifies PMD sphere roles and TGA by canonical URL pathname, and
+  retains complete URL queries/fragments for requests and cache keys. Tests
+  import the public loader export, never the private resolver module.
+- Registry signatures are present; no provenance attestations are advertised
+  in this version's registry metadata. gitHead is publication metadata, not a
+  separate provenance attestation.
 
-```sh
-git apply --check --unidiff-zero /path/to/mmd-gltf/patches/three-mmd-loader-resource-path.patch
-git apply --unidiff-zero /path/to/mmd-gltf/patches/three-mmd-loader-resource-path.patch
-node --import tsx --test tests/resource-path.test.ts tests/subtexture.test.ts
-```
+## Original incident and upstream history
 
-The patch uses zero context to avoid embedding upstream blank-line/tab context
-as whitespace errors in this repository; apply it only to the pinned base above.
+[Downstream #73](https://github.com/takahirox/mmd-gltf/issues/73) /
+[PR #74](https://github.com/takahirox/mmd-gltf/pull/74) introduced the temporary
+shim because published 0.1.2 (gitHead
+`5ae203246ccffd86a3e8fb7be0e34b9559c33a46`) concatenated raw texture names.
+At the 2026-10-31 validation, the corrected library source was merged but not yet
+published. [Upstream #106](https://github.com/takahirox/three-mmd-loader/issues/106)
+was completed by [PR #107](https://github.com/takahirox/three-mmd-loader/pull/107),
+merged at `a05444db048c7329a56e34501193f0fe1845aa59`.
+[PR #111](https://github.com/takahirox/three-mmd-loader/pull/111) prepared 0.1.3.
+The maintainer subsequently published it; [downstream #78](https://github.com/takahirox/mmd-gltf/issues/78)
+performs this migration. The original patch and shim remain available in Git
+history for #73/#74 and must not be applied to this integration.
 
-Pending an upstream release, [the compatibility factory](../examples/mmd-loader-compat.ts)
-wraps each demo model loader's MaterialBuilder texture entry point and PMD material
-build. It uses [the same resolver](../packages/mmd-resource-path.ts) as the patch,
-resolves before cache/handler/loader selection, and classifies PMD sphere maps
-from canonical URL pathnames. Build-local aliases in copied material records let
-0.1.2 select `.sph`/`.spa` roles independently of queries/fragments; the texture
-entry point restores the complete URL before cache lookup, handler selection and
-loading. Custom/default toon names bypass these aliases, and the entry point is
-restored even if building fails. Escaped extensions such as `sphere.%73ph` and
-absolute URLs such as `https://example.com/sphere.sph?v=1#image` therefore retain
-their sphere role instead of replacing the base map. A base URL query ending in
-`.sph`/`.spa` does not change its role. The original combined PMD filename is
-retained in `material.userData.MMD.sourceFileName` as well as the unchanged parser record.
-The fallback decoder uses the resolved URL pathname, so absolute TGA URLs with
-queries/fragments still use TGALoader; handlers and cache keys retain the complete
-URL. A temporary builder-local manager facade preserves custom-handler precedence
-without modifying the shared LoadingManager. The builder's base and manager are
-restored immediately after the synchronous loader call, including on failure.
-It changes no prototype, parser record or file in `node_modules`.
-Animation-only loaders do not fetch model textures. The
-dependency and lockfile intentionally remain pinned at `0.1.2`.
-
-After a corrected upstream release, verify the published package contains the
-merged resolver/loader correction, update the dependency and lockfile, replace
-the factory call with ordinary `new MMDLoader(manager)`, and remove the shim,
-local resolver and patch. Keep the behavior/network tests against the corrected
-loader when doing so.
+The [historical validation record](pmx-resource-path-validation.json) preserves
+0.1.2 evidence as dated history. The [0.1.3 validation record](three-mmd-0.1.3-validation.json)
+records the current package and downstream checks. These changes do not add the
+separate public Physics feature requested in #77.
 
 The resolver handles PMD base/sphere maps and PMX base/sphere/subtexture/custom
 toon maps uniformly. It converts backslashes, collapses repeated separators and
@@ -88,7 +63,9 @@ query/fragment delimiters without double encoding existing escapes. Equivalent
 relative names share a cache key. Explicit absolute URLs (including custom
 handler schemes), protocol-relative, root-relative, data and blob references are
 supported; built-in default toon textures use the loader's original branch.
-Source paths are retained separately in material metadata.
+PMX base/sphere source names remain in material metadata; original PMD combined
+filenames remain intact in parser records (the removed shim-specific
+`sourceFileName` metadata is no longer synthesized).
 
 Relative traversal is checked after separator conversion and percent decoding.
 An attempt to escape the model directory, encoded separators, nested encoded dot
@@ -116,20 +93,30 @@ loads the real pinned PMX/glTF with cold and warm browser caches, requires both
 panes to reach Ready, distinguishes the direct PMX ImageLoader request from glTF
 fetches, and asserts the hair response is 200 at
 `/mmd-gltf/uka/tex/hair_s01.png`. The existing deliberate missing-image/Retry test
-remains in place. See [the validation record](pmx-resource-path-validation.json)
-for actual command results.
+remains in place. See [the 0.1.3 validation record](three-mmd-0.1.3-validation.json)
+for actual command results. Public Retry coverage also distinguishes unsafe-path
+errors from failed canonical requests and covers 404, corrupt HTTP-200 images
+and aborted requests.
 
 Desktop browser success does not establish Android compatibility. HTTP browser
 URL parsers can already canonicalize a backslash even before this change; the
 original error string alone never proved a 404 or the Android failure's cause.
 Physical Android browser verification has not been performed, so
 **real Android cold/warm loads and the original failure's cause are unverified**.
-The original validation recorded no attached device. The dependency-continuation
-check detected a Pixel 7a through ADB; device detection alone establishes no Chrome
-request, decode or rendering result. The required deployed checks remain pending
-under the post-merge plan below.
+The Issue #78 run found no attached devices via `adb devices -l`. Earlier #73
+continuation evidence detected a Pixel 7a, which established no Chrome request,
+decode or rendering result. The required deployed checks remain pending under
+the post-merge plan below.
 
-## Required Android verification after merge
+## Required deployment and Android verification after merge
+
+Confirm the merge-triggered build and Pages deployment succeeded for the exact
+merged SHA with the 0.1.3 lockfile. On the deployed app, repeat the canonical PMX
+hair request, HTTP-200/decode and both-Ready checks before recording deployment
+acceptance. Local production-preview tests do not establish deployment success.
+
+Then perform the physical-device steps below; desktop/mobile viewport emulation
+is not Android evidence.
 
 1. Connect a physical Android device and enable Chrome USB debugging. Record the
    device model, Android version, Chrome version, and deployed commit. Open the

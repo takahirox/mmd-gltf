@@ -56,9 +56,13 @@ and material-specific draw state. Differences are expected and labeled; these
 captures establish neither exact three-mmd matching nor original-MMD fidelity.
 Historical no-outline images below remain unchanged.
 
+Current direct PMX loading uses published 0.1.3 with the upstream resource-path fix;
+see the [integration and validation](pmx-resource-paths.md). The 0.1.2 captures
+below remain historical appearance evidence.
+
 ## three-mmd 0.1.2 upgrade (Issue #17)
 
-The direct PMX reference now uses the published `@takahirox/three-mmd@0.1.2`
+Issue #17 upgraded the direct PMX reference to the published `@takahirox/three-mmd@0.1.2`
 `MMDLoader.loadAsync`, sharing the existing Three.js `0.186.1` installation.
 No loader integration changes were necessary. The converted GLB, local
 `MMDToonPlugin`, independent PBR fallback, material specification, color-space
@@ -88,7 +92,7 @@ visually inspected on 2026-10-22 alongside the historical 0.1.1 captures. They
 use the fixed viewport, scale, camera and lighting documented below. Direct PMX
 is on the left and converted GLB on the right.
 
-| View | Current 0.1.2 reference | Historical 0.1.1 reference |
+| View | Historical 0.1.2 reference | Historical 0.1.1 reference |
 | --- | --- | --- |
 | Front | [Paired front, 0.1.2](comparison/three-mmd-0.1.2-front.png) | [Paired front, 0.1.1](comparison/three-mmd-0.1.1-front.png) |
 | Side | [Paired side, 0.1.2](comparison/three-mmd-0.1.2-side.png) | [Paired side, 0.1.1](comparison/three-mmd-0.1.1-side.png) |

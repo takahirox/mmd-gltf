@@ -18,7 +18,6 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { updateMMDUVs } from '@takahirox/three-mmd';
 import { MMDLoader } from '@takahirox/three-mmd/loaders/MMDLoader.js';
-import { createMMDLoader } from './mmd-loader-compat';
 import { MMDOutlineEffect as ReferenceOutlineEffect } from '@takahirox/three-mmd/effects/MMDOutlineEffect.js';
 import { MMDOutlinePlugin, MMDOutlineEffect } from '../packages/three-mmd-outline';
 import { MMDToonPlugin, createToonLighting } from '../packages/three-mmd-toon';
@@ -187,7 +186,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
         manager.onError = (url) => reject(new Error(`PMX resource failed: ${url} (request or image decode failed; inspect the network response)`));
       });
       const results = await Promise.allSettled([
-        createMMDLoader(manager).loadAsync(`${base}${isUka ? 'MS_Uka.pmx' : 'Gene_light.pmx'}`).then(mesh => { scenes[0].add(mesh); return mesh; }), imagesReady,
+        new MMDLoader(manager).loadAsync(`${base}${isUka ? 'MS_Uka.pmx' : 'Gene_light.pmx'}`).then(mesh => { scenes[0].add(mesh); return mesh; }), imagesReady,
       ]);
       const failure = results.find(result => result.status === 'rejected');
       if (failure?.status === 'rejected') throw failure.reason;
@@ -368,7 +367,10 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     Object.assign(window, diagnostics = { mmdExample: info,
       readMMDComparisonPose:()=>[readPose(reference,true),readPose(toon.scene,false),readPose(fallback.scene,false)],
       readMMDComparisonPhysics:()=>structuredClone({bodies:physics?.bodyTransforms(),inputs:physics?.inputs,binding:toon.parser.json.extras.publicPhysics}),
-      readMMDComparisonResources:()=>({memory:{...renderer.info.memory},roots:[reference.id,toon.scene.id,fallback.scene.id],
+      readMMDComparisonResources:()=>({referenceTextures:reference.material.filter(m=>m.map).map(m=>({
+        sourceName:m.userData.MMD.mapFileName as string,
+        width:(m.map!.image as {width:number}).width,height:(m.map!.image as {height:number}).height,
+      })),memory:{...renderer.info.memory},roots:[reference.id,toon.scene.id,fallback.scene.id],
         physics:{native:PhysicsWorld.allocations,stats:physics?.stats},
         heap:(performance as Performance & {memory?:{usedJSHeapSize:number}}).memory?.usedJSHeapSize,
         weights:[reference,...[toon.scene,fallback.scene].flatMap(root=>{const meshes:Mesh[]=[];root.traverse(n=>{if((n as Mesh).isMesh)meshes.push(n as Mesh);});return meshes;})].map(m=>[...(m.morphTargetInfluences??[])])}),
