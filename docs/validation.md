@@ -1313,3 +1313,20 @@ QDEF CPU/GPU deformation. See [measured validation](group-validation.md), the
 [machine-readable results](group-validation.json), and the
 [Demo frame/canvas record](group-demo-validation.json). Remaining overall work and
 original-MMD measurement limits remain explicit in that evidence.
+
+## Issue #78: consume published three-mmd 0.1.3
+
+The demo pins the official npm-published `@takahirox/three-mmd@0.1.3` and uses
+ordinary `new MMDLoader(manager)`. The 0.1.2 compatibility factory, duplicate
+resolver and candidate patch are removed. The [integration record](pmx-resource-paths.md)
+preserves the original #73/#74 incident and upstream #106/#107/#111 history.
+[Current package and check evidence](three-mmd-0.1.3-validation.json) records
+registry integrity/gitHead/exports, all 63 installed files matching the tarball,
+and the actual Node/browser results. Earlier 0.1.2 measurements in this document
+remain historical evidence.
+
+Required post-merge deployment and physical Android Chrome verification remain
+pending under the [explicit checklist](pmx-resource-paths.md#required-deployment-and-android-verification-after-merge).
+No device was attached for this run; desktop SwiftShader and narrow viewport
+checks do not prove the original Android failure is resolved. Public Physics
+controls remain separate in Issue #77.

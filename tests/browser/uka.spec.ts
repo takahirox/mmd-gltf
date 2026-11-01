@@ -2,6 +2,7 @@ import { orbitComparison } from './comparison-camera';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
 import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 test.use({ contextOptions: { reducedMotion: 'reduce' } });
 const preview=`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
@@ -23,8 +24,13 @@ test('pinned Uka cold/warm loads decode direct PMX images at canonical request U
     expect(requests.length).toBeGreaterThanOrEqual(9);
     for (const { path } of requests) expect(path).not.toMatch(/\\|%5c|\/\//i);
     for (const response of responses) expect(response.status).toBe(200);
+    const textures = await page.evaluate(() => (window as any).readMMDComparisonResources().referenceTextures);
+    const hairImage = textures.find((texture: { sourceName: string }) => texture.sourceName === 'tex\\hair_s01.png');
+    expect(hairImage).toBeDefined();
+    expect(hairImage.width).toBeGreaterThan(0);
+    expect(hairImage.height).toBeGreaterThan(0);
     await info.attach(`uka-textures-${cache}.json`, { contentType: 'application/json',
-      body: JSON.stringify({ browser: browser.version(), cache, requests, responses }) });
+      body: JSON.stringify({ browser: browser.version(), cache, requests, responses, hairImage }) });
   }
 });
 
@@ -110,11 +116,32 @@ test('default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outli
   expect(errors).toEqual([]);
 });
 
-test('missing Uka texture fails visibly and retry recovers',async({page})=>{
-  await page.route('**/uka/tex/face.png',r=>r.fulfill({status:404,body:'missing test image'}));
+for (const failure of ['missing', 'corrupt', 'request', 'unsafe path'] as const)
+test(`${failure} Uka texture fails visibly and retry recovers`, async ({ page }) => {
+  const route = failure === 'unsafe path' ? '**/uka/MS_Uka.pmx' : '**/uka/tex/face.png';
+  if (failure === 'unsafe path') {
+    // Keep the PMX binary layout intact while introducing an unsafe local name.
+    const bytes = Buffer.from(readFileSync('public/uka/MS_Uka.pmx'));
+    const original = 'tex\\hair_s01.png';
+    const offset = bytes.indexOf(Buffer.from(original, 'utf16le'));
+    expect(offset).toBeGreaterThan(0);
+    const unsafe = '..\\' + 'x'.repeat(original.length - 7) + '.png';
+    expect(unsafe.length).toBe(original.length);
+    bytes.set(Buffer.from(unsafe, 'utf16le'), offset);
+    await page.route(route, r => r.fulfill({ contentType: 'application/octet-stream', body: bytes }));
+  } else {
+    await page.route(route, r => failure === 'request' ? r.abort('failed') : r.fulfill({
+      status: failure === 'missing' ? 404 : 200, contentType: 'image/png', body: 'invalid test image',
+    }));
+  }
   await page.goto(preview);
-  await expect(page.locator('#gene-status')).toContainText('Could not load/render the comparison',{timeout:90000});
+  await expect(page.locator('#gene-status')).toContainText('Could not load/render the comparison', { timeout: 90000 });
+  await expect(page.locator('#gene-status')).toContainText(failure === 'unsafe path'
+    ? 'Unsafe relative texture path' : 'PMX resource failed:');
   await expect(page.locator('#viewport canvas')).toHaveCount(0);
-  await page.unroute('**/uka/tex/face.png');await page.locator('#demo-retry').click();
-  await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
+  await page.unroute(route);
+  await page.locator('#demo-retry').click();
+  await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
+  await expect(page.locator('#pmx-status')).toContainText('Ready');
+  await expect(page.locator('#gltf-status')).toContainText('Ready');
 });

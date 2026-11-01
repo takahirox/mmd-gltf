@@ -11,9 +11,9 @@ test('PMD sphere URL queries/fragments preserve material roles and actual reques
   page.on('response', r => { if (r.url().includes('/resource-path-fixtures/')) statuses.push(r.status()); });
   await page.goto('resource-path-harness.html');
   const result = await page.evaluate(async bytes => {
-    const modulePath = '/mmd-gltf/mmd-loader-compat.ts';
-    const { createMMDLoader } = await import(modulePath) as typeof import('../../examples/mmd-loader-compat');
-    const loader = createMMDLoader();
+    const modulePath = '/mmd-gltf/@id/@takahirox/three-mmd/loaders/MMDLoader.js';
+    const { MMDLoader } = await import(modulePath) as typeof import('@takahirox/three-mmd/loaders/MMDLoader.js');
+    const loader = new MMDLoader();
     const data = loader._getParser().parsePmx(new Uint8Array(bytes).buffer, true);
     const builder = loader.meshBuilder.materialBuilder.setResourcePath('/mmd-gltf/resource-path-fixtures/');
     const base = `${location.origin}/mmd-gltf/resource-path-fixtures/base.png?name=.sph`;
@@ -36,9 +36,9 @@ test('PMD sphere URL queries/fragments preserve material roles and actual reques
       texture.readyCallbacks!.push(() => resolve()); texture.errorCallbacks!.push(reject);
     })));
     return { base, spheres, sourceNames, handlers,
-      materials: materials.map(m => ({ base: (m.map!.image as HTMLImageElement).src,
+      materials: materials.map((m, i) => ({ base: (m.map!.image as HTMLImageElement).src,
         sphere: (m.matcap!.image as HTMLImageElement).src, operation: m.matcapCombine,
-        original: m.userData.MMD.sourceFileName })),
+        original: pmd.materials[i].fileName })),
       cached: materials[0].matcap === materials[3].matcap && materials.every(m => m.map === materials[0].map),
       dimensions: textures.map(t => { const image = t.image as HTMLImageElement; return [image.naturalWidth, image.naturalHeight]; }),
       unchanged: pmd.materials.every((m: { fileName: string }, i: number) => m.fileName === sourceNames[i]) };
@@ -66,9 +66,9 @@ test('absolute TGA URLs retain queries in requests and decode using the pathname
   page.on('request', r => { if (r.url().includes('/resource-path-fixtures/')) requests.push(r.url()); });
   await page.goto('resource-path-harness.html');
   const result = await page.evaluate(async () => {
-    const modulePath = '/mmd-gltf/mmd-loader-compat.ts';
-    const { createMMDLoader } = await import(modulePath) as typeof import('../../examples/mmd-loader-compat');
-    const builder = createMMDLoader().meshBuilder.materialBuilder;
+    const modulePath = '/mmd-gltf/@id/@takahirox/three-mmd/loaders/MMDLoader.js';
+    const { MMDLoader } = await import(modulePath) as typeof import('@takahirox/three-mmd/loaders/MMDLoader.js');
+    const builder = new MMDLoader().meshBuilder.materialBuilder;
     const textures = {}, handlers: string[] = [];
     builder.manager.getHandler = url => { handlers.push(url); return null; };
     const urls = [1, 2].map(v => `${location.origin}/mmd-gltf/resource-path-fixtures/sphere.tga?v=${v}#texture`);
@@ -98,9 +98,9 @@ test('direct MMDLoader requests canonical texture URLs before handler/cache look
   page.on('response', r => { if (r.url().includes('/resource-path-fixtures/')) responses.push(r.status()); });
   await page.goto('resource-path-harness.html');
   const result = await page.evaluate(async dataURL => {
-    const modulePath = '/mmd-gltf/mmd-loader-compat.ts';
-    const { createMMDLoader } = await import(modulePath) as typeof import('../../examples/mmd-loader-compat');
-    const builder = createMMDLoader().meshBuilder.materialBuilder.setResourcePath('/mmd-gltf/resource-path-fixtures/');
+    const modulePath = '/mmd-gltf/@id/@takahirox/three-mmd/loaders/MMDLoader.js';
+    const { MMDLoader } = await import(modulePath) as typeof import('@takahirox/three-mmd/loaders/MMDLoader.js');
+    const builder = new MMDLoader().meshBuilder.materialBuilder.setResourcePath('/mmd-gltf/resource-path-fixtures/');
     const handlers: string[] = [], textures = {};
     builder.manager.getHandler = (url: string) => { handlers.push(url); return null; };
     const names = ['tex\\hair_s01.png', './tex/hair_s01.png', 'tex\\part/../hair_s01.png', 'tex\\日本 語.png', 'tex/%E6%97%A5%E6%9C%AC%20%E8%AA%9E.png'];
@@ -148,9 +148,9 @@ for (const status of [404, 200]) test(`canonical request failure retains diagnos
   await page.goto('resource-path-harness.html');
   const response = page.waitForResponse(r => r.url().endsWith('/tex/failed.png'));
   const failure = await page.evaluate(async () => {
-    const modulePath = '/mmd-gltf/mmd-loader-compat.ts';
-    const { createMMDLoader } = await import(modulePath) as typeof import('../../examples/mmd-loader-compat');
-    const builder = createMMDLoader().meshBuilder.materialBuilder.setResourcePath('/mmd-gltf/resource-path-fixtures/');
+    const modulePath = '/mmd-gltf/@id/@takahirox/three-mmd/loaders/MMDLoader.js';
+    const { MMDLoader } = await import(modulePath) as typeof import('@takahirox/three-mmd/loaders/MMDLoader.js');
+    const builder = new MMDLoader().meshBuilder.materialBuilder.setResourcePath('/mmd-gltf/resource-path-fixtures/');
     return new Promise<string>(resolve => {
       builder.manager.onError = resolve;
       builder._loadTexture('tex\\failed.png', {});
@@ -166,9 +166,9 @@ test('browser request errors report the canonical resource URL', async ({ page }
   await page.goto('resource-path-harness.html');
   const requestFailed = page.waitForEvent('requestfailed', r => r.url().endsWith('/tex/failed.png'));
   const diagnostic = await page.evaluate(async () => {
-    const modulePath = '/mmd-gltf/mmd-loader-compat.ts';
-    const { createMMDLoader } = await import(modulePath) as typeof import('../../examples/mmd-loader-compat');
-    const builder = createMMDLoader().meshBuilder.materialBuilder.setResourcePath('/mmd-gltf/resource-path-fixtures/');
+    const modulePath = '/mmd-gltf/@id/@takahirox/three-mmd/loaders/MMDLoader.js';
+    const { MMDLoader } = await import(modulePath) as typeof import('@takahirox/three-mmd/loaders/MMDLoader.js');
+    const builder = new MMDLoader().meshBuilder.materialBuilder.setResourcePath('/mmd-gltf/resource-path-fixtures/');
     return new Promise<string>(resolve => {
       builder.manager.onError = resolve;
       builder._loadTexture('tex\\failed.png', {});

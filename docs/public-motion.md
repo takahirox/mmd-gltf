@@ -1,7 +1,7 @@
 # Public synchronized VMD comparison (Issues #63, #65, #67 and #69)
 
 Uka and Gene Light compare direct PMX rendering from
-`@takahirox/three-mmd@0.1.2` against a BDEF skinned glTF conversion.
+`@takahirox/three-mmd@0.1.3` against a BDEF skinned glTF conversion.
 Both characters offer Rest / manual, their original facial sample, Laugh · 02
 and Apology · 22. The facial samples have skeletal keys only at frame zero;
 the two added clips animate authored arms, shoulders and upper body over time.
@@ -286,7 +286,7 @@ Only controller 38 reads grant 35; the five other controllers have no indirect g
 inputs. Uka's grants 34/36 read eye controller 32 at rate 0.0700000003 and remain
 outside its ten-chain IK closure.
 
-[Node reference measurements](gene-grant-node-evidence.json) use the pinned
+[Historical Node reference measurements](gene-grant-node-evidence.json) used the pinned
 `@takahirox/three-mmd@0.1.2` helper's ordered PMX path with its own GrantSolver and
 CCDIKSolver, with physics disabled. The reference processes all source grants;
 the comparison processes only grant 35. All six chains' dependency poses agree
