@@ -1,0 +1,52 @@
+{
+  "baselineRun": 41304304814,
+  "baselineCommit": "855b189c0d43beeb1ac20ba317ee246b9982d2f3",
+  "groups": [
+    {
+      "files": [
+        "solver.spec.ts",
+        "gene-ik.spec.ts",
+        "sdef.spec.ts",
+        "group.spec.ts"
+      ],
+      "durationMs": 861588,
+      "tests": 37
+    },
+    {
+      "files": [
+        "body-motion.spec.ts",
+        "qdef.spec.ts",
+        "physics.spec.ts",
+        "example.spec.ts"
+      ],
+      "durationMs": 847287,
+      "tests": 19
+    },
+    {
+      "files": [
+        "uka.spec.ts",
+        "unified-demo.spec.ts",
+        "bone-morph.spec.ts",
+        "vpd.spec.ts",
+        "outline.spec.ts",
+        "public-assets.spec.ts",
+        "bdef.spec.ts"
+      ],
+      "durationMs": 796032,
+      "tests": 24
+    },
+    {
+      "files": [
+        "vmd.spec.ts",
+        "public-motion.spec.ts",
+        "sleeve-motion.spec.ts",
+        "bfcache.spec.ts",
+        "demo-loading.spec.ts",
+        "mmd-resource-path.spec.ts",
+        "source-transport.spec.ts"
+      ],
+      "durationMs": 795108,
+      "tests": 22
+    }
+  ]
+}

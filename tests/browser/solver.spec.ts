@@ -4,7 +4,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { validateBytes, validateString } from "gltf-validator";
 import { solverExpected, solverVertex } from "../solver-oracle";
 import { orientationError } from "../../tools/vmd-animation";
-const preview = "http://127.0.0.1:43180/mmd-gltf/";
+const preview = `http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 test("built Demo keeps IK and rig replacement locked during a delayed motion load", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));

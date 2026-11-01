@@ -2,7 +2,7 @@ import { openRigDemo } from './demo-controls';
 import { readRigBitmap } from './rig-bitmap';
 import { test, expect, type Page, type TestInfo } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
-const preview='http://127.0.0.1:43180/mmd-gltf/';
+const preview=`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 test('SDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads',async({page},info)=>{
   test.setTimeout(420000);
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));

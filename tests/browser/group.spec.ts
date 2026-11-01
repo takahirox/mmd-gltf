@@ -5,7 +5,7 @@ import { test, expect, fullConformance, conformanceURL } from './timed-test';
 import { writeFile } from 'node:fs/promises';
 import { sourceVertex } from '../sdef-oracle';
 import { groupPosition, groupWeights } from '../group-oracle';
-const preview='http://127.0.0.1:43180/mmd-gltf/';
+const preview=`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 // Exercise all three source paths across pairwise UI scenarios. Detailed
 // cross-products remain in Node and independent GPU/raster conformance tests.
 for (const [rig, motion, sources] of [['group-box','group-a',['bytes']], ['group-wedge','group-b',['glb','gltf']]] as const) {
