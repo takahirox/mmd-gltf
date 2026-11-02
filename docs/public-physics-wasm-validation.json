@@ -1,0 +1,248 @@
+{
+  "issue": 77,
+  "date": "2026-11-02",
+  "environment": {
+    "chromiumVersion": "Chromium 141.0.7390.37",
+    "playwrightVersion": "1.56.1",
+    "ci": false,
+    "platform": "darwin",
+    "release": "27.2.0",
+    "node": "v26.12.1",
+    "cpu": "Apple M4 Max",
+    "logicalCPUs": 16,
+    "workers": 1,
+    "channel": "chrome",
+    "conformanceMatrix": "representative",
+    "renderer": "ANGLE SwiftShader (CPU)"
+  },
+  "actualBrowser": "156.0.8078.74",
+  "node": {
+    "tests": 186,
+    "passed": 186,
+    "failed": 0,
+    "skipped": 0,
+    "wasmReference": "Exact contact/spring outputs and all native transforms/bone writebacks for both full real-model profiles, ticks 0..60."
+  },
+  "browser": {
+    "tests": 14,
+    "status": "passed",
+    "statuses": {
+      "passed": 14
+    },
+    "durationMS": 621519.686,
+    "cases": [
+      {
+        "title": "physics.spec.ts / physics GPU bdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+        "status": "passed",
+        "durationMS": 16822
+      },
+      {
+        "title": "physics.spec.ts / physics GPU sdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+        "status": "passed",
+        "durationMS": 24705
+      },
+      {
+        "title": "physics.spec.ts / physics GPU qdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+        "status": "passed",
+        "durationMS": 63375
+      },
+      {
+        "title": "physics.spec.ts / built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery",
+        "status": "passed",
+        "durationMS": 42206
+      },
+      {
+        "title": "public-physics.spec.ts / uka: independent real physics, synchronized controls and native lifetime",
+        "status": "passed",
+        "durationMS": 165397
+      },
+      {
+        "title": "public-physics.spec.ts / gene: independent real physics, synchronized controls and native lifetime",
+        "status": "passed",
+        "durationMS": 134001
+      },
+      {
+        "title": "public-physics.spec.ts / Gene Apology gates Physics for the full clip with IK On and restores availability on control transitions",
+        "status": "passed",
+        "durationMS": 29365
+      },
+      {
+        "title": "public-physics.spec.ts / public physics backend missing: recover Off, retry, and unload",
+        "status": "passed",
+        "durationMS": 17824
+      },
+      {
+        "title": "public-physics.spec.ts / public physics backend corrupt: recover Off, retry, and unload",
+        "status": "passed",
+        "durationMS": 17993
+      },
+      {
+        "title": "public-physics.spec.ts / public physics backend wasm-missing: recover Off, retry, and unload",
+        "status": "passed",
+        "durationMS": 16485
+      },
+      {
+        "title": "public-physics.spec.ts / public physics backend wasm-corrupt: recover Off, retry, and unload",
+        "status": "passed",
+        "durationMS": 17305
+      },
+      {
+        "title": "public-physics.spec.ts / pending backend enable can be cancelled without stale worlds or checked state",
+        "status": "passed",
+        "durationMS": 15393
+      },
+      {
+        "title": "public-physics.spec.ts / uka: PBR cloth and hair pixels respond to physics in both clips",
+        "status": "passed",
+        "durationMS": 32797
+      },
+      {
+        "title": "public-physics.spec.ts / gene: PBR cloth and hair pixels respond to physics in both clips",
+        "status": "passed",
+        "durationMS": 25289
+      }
+    ]
+  },
+  "models": [
+    {
+      "model": "uka",
+      "browser": "156.0.8078.74",
+      "nativeStep": {
+        "cpuMS": 5005.600000977516,
+        "maxMS": 4.299999952316284,
+        "calls": 7755
+      },
+      "maxSliceMS": 18.19999998807907,
+      "backendBytes": 67108864,
+      "nativeAfterOff": 0,
+      "loaderRequests": 1,
+      "binaryRequests": 1,
+      "errors": [],
+      "measurements": [
+        {
+          "motion": "02_laugh",
+          "frame": 15,
+          "pixelChanges": [
+            16981,
+            16990
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 9.181113869161095e-8,
+          "maxAngularViolation": 2.9894269243380123e-7
+        },
+        {
+          "motion": "22_apology",
+          "frame": 15,
+          "pixelChanges": [
+            16827,
+            16558
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 8.929379524680314e-8,
+          "maxAngularViolation": 9.784131129175755e-7
+        }
+      ],
+      "longSeek": [
+        {
+          "frame": 297,
+          "elapsedMS": 51663,
+          "physicsState": "on",
+          "tick": 1188
+        }
+      ]
+    },
+    {
+      "model": "gene",
+      "browser": "156.0.8078.74",
+      "nativeStep": {
+        "cpuMS": 2827.7999995946884,
+        "maxMS": 3.199999988079071,
+        "calls": 7707
+      },
+      "maxSliceMS": 13,
+      "backendBytes": 67108864,
+      "nativeAfterOff": 0,
+      "loaderRequests": 1,
+      "binaryRequests": 1,
+      "errors": [],
+      "measurements": [
+        {
+          "motion": "02_laugh",
+          "frame": 15,
+          "pixelChanges": [
+            6105,
+            6011
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 0.010273516637863245,
+          "maxAngularViolation": 0.00028542068618164773
+        },
+        {
+          "motion": "22_apology",
+          "frame": 15,
+          "pixelChanges": [
+            7284,
+            7035
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 0.015539488677238589,
+          "maxAngularViolation": 0.0006174563429169402
+        }
+      ],
+      "longSeek": [
+        {
+          "frame": 297,
+          "elapsedMS": 38291,
+          "physicsState": "on",
+          "tick": 1188
+        }
+      ]
+    }
+  ],
+  "hostedCI": "Pending publication; this node does not push.",
+  "physicalAndroid": "Unperformed; required post-merge verification remains pending.",
+  "originalWindowsMMD": "Unverified",
+  "initialAttempts": [
+    "Browser launch stopped before tests because port 43180 was occupied; successful run used 43181.",
+    "Initial Node run overlapped generated-asset rebuild and failed on missing public/physics/reference.json; serialized rerun passed all 186 tests."
+  ],
+  "chromium141": {
+    "browser": "141.0.7390.37",
+    "tests": 2,
+    "statuses": {
+      "passed": 2
+    },
+    "durationMS": 218343.46800000002,
+    "nativeStep": {
+      "cpuMS": 5206.300000309944,
+      "maxMS": 4.399999976158142,
+      "calls": 7896
+    },
+    "maxSliceMS": 18.5,
+    "nativeAfterOff": 0,
+    "loaderRequests": 1,
+    "binaryRequests": 1,
+    "errors": [],
+    "cases": [
+      {
+        "title": "public-physics.spec.ts / uka: independent real physics, synchronized controls and native lifetime",
+        "status": "passed",
+        "durationMS": 183255
+      },
+      {
+        "title": "public-physics.spec.ts / uka: PBR cloth and hair pixels respond to physics in both clips",
+        "status": "passed",
+        "durationMS": 33607
+      }
+    ]
+  },
+  "checks": {
+    "build": "passed",
+    "typecheck": "passed",
+    "links": {
+      "passed": true,
+      "checked": 531
+    },
+    "whitespace": "passed"
+  }
+}

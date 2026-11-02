@@ -498,6 +498,41 @@ Physical Android Chrome and original Windows MMD measurements are **unperformed*
 for the Issue's required post-merge verification when hardware is available.
 Desktop CI and viewport checks do not establish Android support.
 
+## Native WebAssembly revision (Issue #77)
+
+Review run `41393772385` measured isolated Uka native steps of 191.3 / 195.3 ms,
+above the unchanged 150 ms device budget. Yielding around that indivisible call
+did not fix it. Browsers now execute the matching pinned upstream native Wasm
+build instead of Bullet's generated JavaScript. The upstream JavaScript build
+is byte-identical to the retained npm/Node reference; the recovered artifact
+provenance and both browser hashes are in [backend.json](../extensions/MMD_physics/backend.json).
+Build-time checks and runtime integrity cover both the loader and binary.
+Neither is fetched with Physics Off. Failed fetch/integrity checks recover to
+Off and permit retry; repeated toggles reuse the loaded module.
+
+The [new validation record](public-physics-wasm-validation.json) separates local
+measurements from pending hosted CI. All 186 Node tests passed, including exact
+Wasm/JavaScript contact/spring outputs and every native body transform and bone
+writeback over ticks 0–60 for both full real-model profiles with moving colliders.
+All 14 selected browser cases passed: real Uka/Gene lifecycle and PBR pixels,
+unsupported-combination gating, loader/binary corruption and missing-file recovery,
+cancellation, plus the existing synthetic BDEF/SDEF/QDEF GPU and Demo suites.
+The local Chrome 156 Uka maximum native-step checkpoint was 4.3 ms and its maximum
+work slice was 18.2 ms; Gene measured 3.2 / 13.0 ms. These are local observations,
+not a controlled comparison with the hosted runner. Both used one loader fetch,
+one binary fetch, a 64 MiB backend heap, and zero tracked native handles after Off.
+The two previously failing Uka lifecycle/PBR cases also passed locally on
+Chromium 141.0.7390.37, the CI browser version. Its maximum native-step checkpoint
+was 4.4 ms and maximum work slice was 18.5 ms, with the same fetch/lifetime checks.
+
+Source pins/records, independent worlds, 1/120 s stepping, stabilization, device
+budgets and all numerical/raster gates are unchanged. Build, typecheck, links
+and whitespace checks passed. Initial local setup failures and their successful
+reruns are recorded separately. Hosted checks for the unpublished revision remain
+pending. Physical Android verification remains unperformed and pending after
+merge; original Windows MMD fidelity and Gene Apology + IK On remain unverified
+and unsupported respectively.
+
 ## Original Issue #45 validation
 
 The bounded rigid-body profile spans the runtime-independent contract, both PMX

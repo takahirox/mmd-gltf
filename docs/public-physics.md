@@ -165,8 +165,15 @@ last published time. Off/model change/unload cancel pending work and destroy
 all native handles. The successfully loaded backend module is cached until page
 unload; its reserved heap is reused, not allocated again per toggle.
 
-The same-origin Ammo artifact is fetched only on first eligible On, with the
-pinned SHA-256 enforced by script integrity and checked by asset generation.
+The same-origin Ammo WebAssembly loader and binary are fetched only on first
+eligible On, with pinned SHA-256 values enforced by script/fetch integrity and
+checked by asset generation. They come from the upstream revision whose
+JavaScript build is byte-identical to the retained Node reference backend.
+Native Wasm avoids executing Bullet through generated JavaScript during the
+indivisible native step; the fixed step, device budget and simulation parameters
+are unchanged. `tests/ammo-wasm.test.ts` compares contact/spring results and every
+native body transform and bone writeback across 60 moving-collider ticks for
+both complete real-model profiles, requiring exact equality with the reference.
 Loading/error state is visible; a failed attempt clears the backend promise for
 retry. `readMMDComparisonResources` exposes native allocation counts, world/reset/
 step counts, CPU timings (including sampling/initialization/simulation totals and

@@ -214,9 +214,9 @@ console.log('Generated Issue #43 solver rigs, motions and poses across all skinn
 // Issue #45: pinned local backend and original physics variants, through the real converter.
 const { physicsPMX } = await import('./synthetic-physics');
 const backendBytes=await readFile('node_modules/ammojs-typed/ammo/ammo.js');
-const { BACKEND_SHA256 }=await import('../packages/three-mmd-physics/ammo');
+const { BACKEND_SHA256, WASM_BACKEND }=await import('../packages/three-mmd-physics/ammo');
 if(createHash('sha256').update(backendBytes).digest('hex')!==BACKEND_SHA256)throw new Error('Pinned Ammo artifact hash mismatch');
-await mkdir('public/runtime',{recursive:true});await writeFile('public/runtime/ammo.js',backendBytes);
+const {prepareAmmo}=await import('./prepare-ammo');await prepareAmmo();
 await copyFile('extensions/MMD_physics/BACKEND-LICENSE.txt','public/runtime/ammo-LICENSE.txt');
 await rm('public/physics',{recursive:true,force:true});await mkdir('public/physics',{recursive:true});
 const physicsEvidence:object[]=[];
@@ -230,7 +230,7 @@ for(const rig of ['box','wedge'] as const)for(const mode of ['bdef','sdef','qdef
     physicsEvidence.push({rig,mode,state,sourceSHA256:createHash('sha256').update(source).digest('hex'),glbSHA256:createHash('sha256').update(await readFile(`${output}/${state}.glb`)).digest('hex'),warnings:result.warnings});
   }
 }
-await writeFile('public/physics/conversion.json',JSON.stringify({backendSHA256:BACKEND_SHA256,attribution:'Original synthetic Issue 45 variants by mmd-gltf contributors. No third-party fixture bytes; original-MMD unmeasured.',cases:physicsEvidence},null,2)+'\n');
+await writeFile('public/physics/conversion.json',JSON.stringify({backendSHA256:BACKEND_SHA256,browserBackend:WASM_BACKEND,attribution:'Original synthetic Issue 45 variants by mmd-gltf contributors. No third-party fixture bytes; original-MMD unmeasured.',cases:physicsEvidence},null,2)+'\n');
 console.log('Generated physics rigs, both motions and both VPD snapshots across BDEF/SDEF/QDEF and GLB/glTF.');
 const {writePhysicsReferences}=await import('./physics-reference');await writePhysicsReferences();
 

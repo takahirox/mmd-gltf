@@ -18,8 +18,8 @@ test.afterEach(async({page},testInfo)=>{
 for(const model of ['uka','gene'])test(`${model}: independent real physics, synchronized controls and native lifetime`,async({page},testInfo)=>{
   test.setTimeout(600000);
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
-  let requests=0,models=0,assets=0;
-  page.on('request',r=>{if(r.url().endsWith('/ammo.js'))requests++;if(/\.(pmx|glb|gltf|bin|png|jpe?g|bmp|tga|vmd)([?#]|$)/i.test(r.url()))assets++;if(/\.(pmx|glb|gltf)(\?|$)/.test(r.url()))models++;});
+  let requests=0,wasmRequests=0,models=0,assets=0;
+  page.on('request',r=>{if(r.url().endsWith('/ammo.js'))requests++;if(r.url().endsWith('/ammo.wasm.wasm'))wasmRequests++;if(/\.(pmx|glb|gltf|bin|png|jpe?g|bmp|tga|vmd)([?#]|$)/i.test(r.url()))assets++;if(/\.(pmx|glb|gltf)(\?|$)/.test(r.url()))models++;});
   await page.setViewportSize({width:1200,height:1000});
   await page.goto(`${preview}?demo=${model}`);
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
@@ -28,7 +28,7 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   const resources=()=>page.evaluate(()=>(window as any).readMMDComparisonResources());
   await expect(page.locator('#comparison-physics')).toBeEnabled();
   await expect(page.locator('#comparison-physics')).not.toBeChecked();
-  expect(requests).toBe(0);expect((await resources()).physics.native).toBe(0);
+  expect(requests).toBe(0);expect(wasmRequests).toBe(0);expect((await resources()).physics.native).toBe(0);
   const initial=await resources(),fetches=models,assetFetches=assets;
   const physicsOn=()=>expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).toBe('on');
   const ikTransitions:any[]=[];
@@ -146,7 +146,7 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
     await page.locator('#comparison-physics').uncheck();
     expect((await resources()).physics.native).toBe(0);expect(await pose()).toEqual(off);
   }
-  expect(requests).toBe(1);expect(models).toBe(fetches);expect(assets).toBe(assetFetches);
+  expect(requests).toBe(1);expect(wasmRequests).toBe(1);expect(models).toBe(fetches);expect(assets).toBe(assetFetches);
   expect((await resources()).roots).toEqual(initial.roots);
   for(let i=0;i<3;i++) {
     await page.locator('#comparison-physics').check();await physicsOn();
@@ -193,7 +193,8 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   expect(requests).toBe(1);expect(models).toBe(fetches);expect(assets).toBe(assetFetches);
   const cdp=await page.context().newCDPSession(page);await cdp.send('HeapProfiler.collectGarbage');
   const memoryAfterGC=await resources();await cdp.detach();
-  await testInfo.attach('real-physics-evidence.json',{body:JSON.stringify({model,browser:page.context().browser()?.version(),memoryAfterGC,evidence,ikTransitions,errors,requests,models,assets,finalResources:await resources()}),contentType:'application/json'});
+  expect(wasmRequests).toBe(1);
+  await testInfo.attach('real-physics-evidence.json',{body:JSON.stringify({model,browser:page.context().browser()?.version(),memoryAfterGC,evidence,ikTransitions,errors,requests,wasmRequests,models,assets,finalResources:await resources()}),contentType:'application/json'});
   await page.locator('#comparison-physics').check();await physicsOn();
   await page.locator('#demo-model').selectOption(model==='uka'?'gene':'uka');
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
@@ -267,9 +268,10 @@ test('Gene Apology gates Physics for the full clip with IK On and restores avail
   expect((await resources()).roots).toEqual(initial.roots);
 });
 
-for(const failure of ['missing','corrupt'])test(`public physics backend ${failure}: recover Off, retry, and unload`,async({page})=>{
+for(const failure of ['missing','corrupt','wasm-missing','wasm-corrupt'])test(`public physics backend ${failure}: recover Off, retry, and unload`,async({page})=>{
   let requests=0;page.on('request',r=>{if(r.url().endsWith('/ammo.js'))requests++;});
-  await page.route('**/runtime/ammo.js',route=>route.fulfill({status:failure==='missing'?404:200,contentType:'text/javascript',body:'globalThis.badAmmoExecuted=true;'}));
+  const artifact=failure.startsWith('wasm-')?'**/runtime/ammo.wasm.wasm':'**/runtime/ammo.js';
+  await page.route(artifact,route=>route.fulfill({status:failure.endsWith('missing')?404:200,contentType:failure.startsWith('wasm-')?'application/wasm':'text/javascript',body:'globalThis.badAmmoExecuted=true;'}));
   await page.goto(`${preview}?demo=gene`);
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   await page.locator('#comparison-motion').selectOption('02_laugh');
@@ -281,7 +283,7 @@ for(const failure of ['missing','corrupt'])test(`public physics backend ${failur
   await page.locator('#comparison-play').click();
   await expect.poll(()=>page.evaluate(()=>(window as any).mmdExample.time)).toBeGreaterThan(0);
   await page.locator('#comparison-play').click();
-  await page.unroute('**/runtime/ammo.js');
+  await page.unroute(artifact);
   await page.locator('#comparison-physics').check();
   await expect.poll(()=>page.evaluate(()=>(window as any).mmdExample.execution.physicsState),{timeout:30000}).toBe('on');
   expect(requests).toBe(2);

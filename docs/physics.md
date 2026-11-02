@@ -37,9 +37,14 @@ physics.dispose(); // release native handles before discarding scene
 ```
 
 Use `loadAmmoNode` from `packages/three-mmd-physics/node.ts` for Node. The exact
-npm artifact is locked and its SHA-256 is checked by tests and build. The build
-copies the same self-contained JavaScript resource and license to `public/runtime`; the production
-Demo uses a same-origin URL, with no runtime CDN or WASM sidecar. The retained
+npm JavaScript reference artifact is locked and its SHA-256 is checked by tests
+and build. Browsers use the matching upstream WebAssembly build from commit
+`3d490c2b5d9f8414a888313bee4e05529e55c86c`; that revision's JavaScript build is
+byte-identical to the npm reference. `tools/prepare-ammo.ts` fetches and verifies
+both pinned artifacts, then packages the loader as `runtime/ammo.js` and its
+binary as `runtime/ammo.wasm.wasm`, alongside the license. Both are served from
+the same origin, with SHA-256 integrity checked before instantiation; there is
+no runtime CDN. Physics Off fetches neither artifact. The retained
 physics/solver extensions require no PMX extras. Existing converter identity
 metadata remains necessary for binding external VMD/VPD names to PMX source IDs.
 
