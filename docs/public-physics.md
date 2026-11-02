@@ -146,8 +146,10 @@ change and re-enabling reset/replay from source time zero. There is no call to
 pending target are coalesced.
 
 Replay yields to events after approximately 8 ms, checking cancellation between
-source sampling, pane world initialization, native stepping and individual joint
-stabilization iterations. It uses `scheduler.yield()` (or a closed-after-use
+source sampling, pane world initialization, pre-physics evaluation, kinematic
+updates, native stepping, individual joint stabilization iterations and bone
+writeback. Native stepping starts in a fresh task, so preceding IK/body updates
+cannot consume its slice budget. It uses `scheduler.yield()` (or a closed-after-use
 `MessageChannel` fallback), avoiding the nested-timer delay that accumulated
 across long seeks. No partial three-world tick is drawn. Sliced and
 synchronous resolution use the same ordered arithmetic and convergence rule;
@@ -168,7 +170,8 @@ pinned SHA-256 enforced by script integrity and checked by asset generation.
 Loading/error state is visible; a failed attempt clears the backend promise for
 retry. `readMMDComparisonResources` exposes native allocation counts, world/reset/
 step counts, CPU timings (including sampling/initialization/simulation totals and
-maximum checkpoint costs), backend heap bytes, renderer memory, scene identities
+maximum checkpoint costs, with pre-physics, kinematics, native stepping and
+writeback reported separately), backend heap bytes, renderer memory, scene identities
 and browser heap where available. `readMMDComparisonPhysics` exposes independent
 body transforms and the source binding. These diagnostics are read-only. Pose arrays serialize IEEE signed zero as zero for exact numerical replay comparisons; original source bytes keep their original bit patterns.
 

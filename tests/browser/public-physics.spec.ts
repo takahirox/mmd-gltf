@@ -5,6 +5,16 @@ import { PNG } from 'pngjs';
 import { test, expect } from '@playwright/test';
 import { comparisonHalf, readComparisonBitmap } from './comparison-bitmap';
 const preview=`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
+test.afterEach(async({page},testInfo)=>{
+  if(testInfo.status===testInfo.expectedStatus || page.isClosed())return;
+  const failure=await page.evaluate(()=>{
+    const viewer=window as any;
+    return {state:viewer.mmdExample?.execution?.physicsState,
+      reason:document.querySelector('#comparison-physics-status')?.textContent,
+      physics:viewer.readMMDComparisonResources?.().physics};
+  });
+  await testInfo.attach('physics-failure.json',{body:JSON.stringify(failure),contentType:'application/json'});
+});
 for(const model of ['uka','gene'])test(`${model}: independent real physics, synchronized controls and native lifetime`,async({page},testInfo)=>{
   test.setTimeout(600000);
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));

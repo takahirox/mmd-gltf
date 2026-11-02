@@ -18,7 +18,10 @@ export function comparisonIK(root:Object3D, source:IKSourceBone[], direct=false,
   root.traverse(n=>{if(!mesh && (n as SkinnedMesh).isSkinnedMesh)mesh=n as SkinnedMesh;});
   if(!mesh)throw new Error('IK: missing skin');
   const bones=mesh.skeleton.bones;
-  const bone=(index:number)=>direct?bones[index]:bones.find(b=>b.userData.pmxBone?.index===index);
+  // Keep source lookup independent of skeleton array order, without scanning
+  // that array for every dependency validation in every simulated tick.
+  const sourceBones=new Map(bones.map(b=>[b.userData.pmxBone?.index,b]));
+  const bone=(index:number)=>direct?bones[index]:sourceBones.get(index);
   const byIndex=new Map(source.map(b=>[b.index,b]));
   const identity=new Map(bones.map(b=>[b,source.find(s=>bone(s.index)===b)]));
   root.updateMatrixWorld(true);

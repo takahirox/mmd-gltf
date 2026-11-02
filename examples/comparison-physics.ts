@@ -128,14 +128,14 @@ export class ComparisonPhysics {
     const token=this.generation;
     let slice=performance.now();
     let workStart=slice;
-    const checkpoint=async(phase:string)=>{
+    const checkpoint=async(phase:string,isolateNext=false)=>{
       const end=performance.now(),cost=end-slice;
       const elapsed=end-workStart,record=this.stats.phases[phase]??={cpuMS:0,maxMS:0,calls:0};
       record.cpuMS+=elapsed;record.maxMS=Math.max(record.maxMS,elapsed);record.calls++;
       this.stats.cpuMS+=elapsed;
       this.stats.maxSliceMS=Math.max(this.stats.maxSliceMS,cost);
-      if(cost>this.workBudgetMS)throw new Error(`Physics exceeds this device’s ${this.workBudgetMS} ms work budget; switch Off or retry`);
-      if(cost>=8) {await yieldReplay();slice=performance.now();}
+      if(cost>this.workBudgetMS)throw new Error(`Physics exceeds this device’s ${this.workBudgetMS} ms work budget during ${phase}; switch Off or retry`);
+      if(cost>=8 || isolateNext) {await yieldReplay();slice=performance.now();}
       workStart=performance.now();
     };
     while(this.tick<target) {
@@ -185,7 +185,9 @@ export class ComparisonPhysics {
         const work=world.resolveSteps(raw[i],new Map(),tick!==0);
         let result=work.next();
         while(!result.done) {
-          await checkpoint(`simulation.${result.value}`);
+          // Bullet's native step cannot yield. Start it in a fresh task so
+          // preceding IK/body writes cannot consume its remaining slice budget.
+          await checkpoint(`simulation.${result.value}`,result.value==='kinematics');
           if(this.closed || token!==this.generation)return false;
           result=work.next();
         }

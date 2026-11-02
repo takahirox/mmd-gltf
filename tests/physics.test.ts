@@ -269,15 +269,26 @@ test("sliced stabilization preserves every native tick and allows disposal betwe
     for(let tick=0;tick<10;tick++) {
       const expected=sync.resolve(solver.bones,new Map(),tick!==0);
       const work=sliced.resolveSteps(solver.bones,new Map(),tick!==0);
-      let result=work.next(),checkpoints=0;
-      while(!result.done) {checkpoints++;result=work.next();}
-      assert.ok(checkpoints>1,'stabilization yields inside a pane, not only after resolution');
+      const before=sliced.bodyTransforms();
+      assert.equal(work.next().value,'prePhysics');
+      assert.deepEqual(sliced.bodyTransforms(),before,'pre-physics checkpoint must precede native mutation');
+      assert.equal(work.next().value,'kinematics');
+      assert.deepEqual(sliced.bodyTransforms(),before,'native stepping has its own work interval');
+      assert.equal(work.next().value,'step');
+      let result=work.next(),projections=0;
+      while(!result.done) {if(result.value==='projection')projections++;result=work.next();}
+      assert.ok(projections>0,'stabilization remains cancellable inside a pane');
       assert.deepEqual(result.value,expected);
       assert.deepEqual(sliced.bodyTransforms(),sync.bodyTransforms());
     }
+    const beforeStep=sync.resolveSteps(solver.bones);
+    assert.equal(beforeStep.next().value,'prePhysics','cancel before native stepping');
+    beforeStep.return(solver.bones);
     const interrupted=sliced.resolveSteps(solver.bones);
-    assert.equal(interrupted.next().done,false,'pre-physics and native stepping finish first');
-    assert.equal(interrupted.next().done,false,'cancel during stabilization');
+    assert.equal(interrupted.next().value,'prePhysics');
+    assert.equal(interrupted.next().value,'kinematics');
+    assert.equal(interrupted.next().value,'step');
+    assert.equal(interrupted.next().value,'projection','cancel during stabilization');
     interrupted.return(solver.bones);
   } finally {sync.dispose();sliced.dispose();}
   assert.equal(PhysicsWorld.allocations,baseline);

@@ -19,6 +19,47 @@ joint correction below. It is not evidence for the final stabilized runtime.
 
 ## Public real-model integration (Issue #77)
 
+### Native-step isolation revision (Issue #77)
+
+Hosted run `41389128209` failed Uka's lifecycle case and both models' PBR cases
+with the unchanged 150 ms budget diagnostic. It is not passing evidence. The
+successful Gene lifecycle attachment reported a 112.2 ms maximum simulation
+checkpoint, versus 4.5 ms for stabilization iterations. Failed cases did not
+retain phase timings.
+
+A local Chrome 156 / ANGLE SwiftShader CPU profile with 4× CPU throttling
+reproduced Uka Laugh frame 15 failing at a 158.4 ms simulation checkpoint. That
+checkpoint combined pre-physics evaluation, kinematic body updates and Bullet
+stepping. Splitting those phases reached On with a 143.9 ms maximum native step;
+the accumulated slice still reached 149.6 ms. Native stepping now additionally
+starts in a fresh task, with cancellation checked before entering Bullet. Bone
+binding lookup during IK validation uses a source-index map instead of repeated
+skeleton scans. Stabilization writeback, bone resolution and post-physics
+evaluation also have separate checkpoints. Failures identify the phase and the
+browser suite attaches bounded state/native/timing diagnostics even when On fails.
+
+Every body/joint, fixed step, solver operation order, convergence rule and
+joint/pose/pixel tolerance is preserved. The 150 ms guard remains active, including
+for a single native operation that cannot yield. Synchronous resolution drains
+the same generator; the Node regression checks unchanged native transforms before
+the stepping checkpoint and exact equality with synchronous poses/transforms.
+Required hosted CI on the updated published head remains pending downstream
+publication; this fix node does not push or merge. Physical Android verification
+remains pending after merge, without an additional pre-merge human gate.
+
+Local validation on 2026-11-02 passed: asset preparation/build plus the updated
+Vite bundle, typecheck, all 185 Node tests, the final 21-case native physics
+regression run, all 12 public/synthetic physics browser cases (10.1 minutes,
+zero failures/skips), 529 link/anchor/asset checks and whitespace validation.
+Browser validation used Chromium 141.0.7390.37, Playwright 1.56.1, one ANGLE
+SwiftShader worker on macOS, Node v26.12.1 and `MMD_PREVIEW_PORT=43280`, preserving
+the existing 43180 server and port 8765. Uka/Gene lifecycle maximum slices were
+45.5 / 29.3 ms; their 0.5-to-9.9-second seeks took 56.356 / 38.395 seconds and
+retained the three independent worlds. Both completed without page errors and
+with zero native handles after Off. Both PBR cases passed the existing dynamic
+bone and rendered-pixel gates in both clips. These local outcomes do not replace
+required hosted CI on the updated published head.
+
 ### Long-seek scheduling revision (Issue #77)
 
 Hosted run `41384553101` timed out in both real-model lifecycle cases while

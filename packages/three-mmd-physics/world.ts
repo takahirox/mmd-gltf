@@ -241,10 +241,11 @@ export class PhysicsWorld {
     raw: RestBone[],
     enabled: ReadonlyMap<number, boolean> = new Map(),
     step = true,
-  ):Generator<'step'|'projection',RestBone[]> {
+  ):Generator<'prePhysics'|'kinematics'|'step'|'projection'|'stabilizationWriteback'|'bones',RestBone[]> {
     if (this.disposed) throw new Error("MMD_physics: disposed world");
-    const pre = this.evaluate(raw, enabled, "pre"),
-      animated = worlds(pre);
+    const pre = this.evaluate(raw, enabled, "pre");
+    yield 'prePhysics';
+    const animated = worlds(pre);
     for (const b of this.profile.bodies) {
       const body = this.bodies.get(b.index)!;
       if (b.mode === 0)
@@ -252,6 +253,7 @@ export class PhysicsWorld {
       if (!this.projector && b.mode === 2 && b.bone !== -1)
         this.align(b.index,animated.get(b.bone)!);
     }
+    yield 'kinematics';
     // maxSubSteps=0 deliberately disables Bullet's hidden accumulator and interpolation.
     if (step)
       this.world.stepSimulation(
@@ -271,6 +273,7 @@ export class PhysicsWorld {
         body.updateInertiaTensor();
       }
     }
+    yield 'stabilizationWriteback';
     const result = structuredClone(pre),
       byIndex = new Map(result.map((b) => [b.index, b])),
       pending = result.slice();
@@ -310,6 +313,7 @@ export class PhysicsWorld {
     }
     if (!this.projector)for(const b of this.profile.bodies)if(b.mode===2 && b.bone!==-1)
       this.align(b.index,resolvedWorld.get(b.bone)!);
+    yield 'bones';
     return this.evaluate(result, enabled, "post");
   }
   private evaluate(raw:RestBone[],enabled:ReadonlyMap<number,boolean>,phase:'pre'|'post') {
