@@ -89,9 +89,31 @@ for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0
   assert.equal(PhysicsWorld.allocations,baseline,'constructing the public binding never allocates a native world');
   const {api}=await loadAmmoNode();physics.setBackend(api);
   try {
+    // Cancellation must get a real task turn during replay, both with the
+    // browser scheduler and with the MessageChannel compatibility path.
+    if(id==='uka')for(const useScheduler of [false,true]) {
+      const descriptor=Object.getOwnPropertyDescriptor(globalThis,'scheduler');
+      let clockTime=0,yields=0;
+      const clock=t.mock.method(performance,'now',()=>clockTime+=10);
+      Object.defineProperty(globalThis,'scheduler',{configurable:true,value:useScheduler?{
+        yield:()=>new Promise<void>(resolve=>setImmediate(()=>{yields++;resolve();})),
+      }:undefined});
+      try {
+        const pending=physics.seek(1,()=>physics.bindings.forEach(b=>b.write(binding.solver.bones)));
+        await new Promise<void>(resolve=>setImmediate(()=>{physics.reset(undefined,false);resolve();}));
+        assert.equal(await pending,false,'task cancellation stops the pending replay');
+        if(useScheduler)assert.ok(yields>0);
+        assert.equal(PhysicsWorld.allocations,baseline,'cancelled task cannot retain native worlds');
+      } finally {
+        clock.mock.restore();physics.reset(undefined,false);
+        if(descriptor)Object.defineProperty(globalThis,'scheduler',descriptor);
+        else Reflect.deleteProperty(globalThis,'scheduler');
+      }
+    }
     // A rejected initialization checkpoint resumes asynchronously. Its cleanup
     // must not destroy worlds belonging to a replacement request in that gap.
     let clockCalls=0;
+    const createdBeforeStale=physics.stats.worldsCreated;
     const clock=t.mock.method(performance,'now',()=>++clockCalls===5?6000:0);
     try {
       const sample=()=>physics.bindings.forEach(b=>b.write(binding.solver.bones));
@@ -99,7 +121,7 @@ for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0
       // Sampling has its own checkpoint; reach the first native construction
       // before replacing the request while its rejected checkpoint unwinds.
       await Promise.resolve();
-      assert.equal(Number(physics.stats.worldsCreated),1);
+      assert.equal(Number(physics.stats.worldsCreated),createdBeforeStale+1);
       physics.reset(undefined,false);
       const replacement=physics.seek(0,sample);
       await assert.rejects(stale,/work budget/);

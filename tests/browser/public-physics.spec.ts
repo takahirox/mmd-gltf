@@ -160,7 +160,14 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   await page.mouse.move(box.x+box.width/3,box.y+box.height/2);await page.mouse.down();
   await page.mouse.move(box.x+box.width/3+40,box.y+box.height/2+20,{steps:5});await page.mouse.up();
   await expect.poll(async()=>JSON.stringify((await state()).cameras)).not.toBe(JSON.stringify(cameras));
-  await page.locator('#comparison-loop').check();await seek(9.9);
+  await page.locator('#comparison-loop').check();
+  const longSeekStarted=Date.now(),beforeLongSeek=(await state()).execution.physicsStats;
+  await seek(9.9);
+  const longSeek=(await state()).execution;
+  expect(longSeek.physicsState).toBe('on');expect(longSeek.physicsStats.tick).toBe(1188);
+  expect(longSeek.physicsStats.worldsCreated).toBe(beforeLongSeek.worldsCreated);
+  expect(longSeek.physicsStats.constraintFailures).toEqual([]);
+  evidence.push({motion:'22_apology',frame:297,longSeekMS:Date.now()-longSeekStarted,execution:longSeek});
   const resets=(await state()).execution.physicsStats.resets;
   await page.locator('#comparison-play').click();
   await expect.poll(async()=>(await state()).execution.physicsStats.resets,{timeout:60000}).toBeGreaterThan(resets);

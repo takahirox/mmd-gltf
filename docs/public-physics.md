@@ -147,7 +147,9 @@ pending target are coalesced.
 
 Replay yields to events after approximately 8 ms, checking cancellation between
 source sampling, pane world initialization, native stepping and individual joint
-stabilization iterations. No partial three-world tick is drawn. Sliced and
+stabilization iterations. It uses `scheduler.yield()` (or a closed-after-use
+`MessageChannel` fallback), avoiding the nested-timer delay that accumulated
+across long seeks. No partial three-world tick is drawn. Sliced and
 synchronous resolution use the same ordered arithmetic and convergence rule;
 slicing does not reduce the 128-iteration maximum or change the accuracy gates.
 Native worlds are limited to 256 bodies / 256 joints each and replay to 30 seconds

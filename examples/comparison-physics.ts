@@ -10,6 +10,18 @@ import { comparisonIK } from './comparison-ik';
 
 const jointProjectionIterations=128;
 const maximumAngularError=.005;
+/** A nested timer has a browser-enforced delay even for setTimeout(0). During
+ * long replay those delays accumulate once per slice. Yield a task without a
+ * timer so input/cancellation still runs between the same bounded work slices. */
+async function yieldReplay() {
+  const scheduler=(globalThis as typeof globalThis & {scheduler?:{yield?:()=>Promise<void>}}).scheduler;
+  if(scheduler?.yield)await scheduler.yield();
+  else await new Promise<void>(resolve=>{
+    const channel=new MessageChannel();
+    channel.port1.onmessage=()=>{channel.port1.close();channel.port2.close();resolve();};
+    channel.port2.postMessage(null);
+  });
+}
 type ConstraintFailure={pane:number;index:number;angular:number;time:number};
 export type PublicPhysicsBinding={version:1;solver:SolverProfile;physics:PhysicsProfile};
 /** Availability covers the entire clip, including seeks and replay intermediates. */
@@ -123,7 +135,7 @@ export class ComparisonPhysics {
       this.stats.cpuMS+=elapsed;
       this.stats.maxSliceMS=Math.max(this.stats.maxSliceMS,cost);
       if(cost>this.workBudgetMS)throw new Error(`Physics exceeds this device’s ${this.workBudgetMS} ms work budget; switch Off or retry`);
-      if(cost>=8) {await new Promise<void>(resolve=>setTimeout(resolve,0));slice=performance.now();}
+      if(cost>=8) {await yieldReplay();slice=performance.now();}
       workStart=performance.now();
     };
     while(this.tick<target) {

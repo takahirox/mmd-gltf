@@ -19,6 +19,49 @@ joint correction below. It is not evidence for the final stabilized runtime.
 
 ## Public real-model integration (Issue #77)
 
+### Long-seek scheduling revision (Issue #77)
+
+Hosted run `41384553101` timed out in both real-model lifecycle cases while
+seeking from 0.5 to 9.9 seconds: the last completed time stayed at 0.5 seconds
+through the existing 90-second wait. Subsequent loop, Rest, model-switch and
+cleanup checks therefore did not execute. Those failures are not passing evidence.
+
+Replay previously scheduled every approximately 8 ms work slice with
+`setTimeout(0)`. Nested browser timers impose a minimum delay, accumulating idle
+time over thousands of slices. Replay now uses `scheduler.yield()` with a
+`MessageChannel` fallback that closes both ports after each yield. Cancellation
+still gets task turns at the same checkpoints. The 150 ms work budget, fixed
+step, source sampling, independent worlds, ordered arithmetic, 128-iteration cap
+and all joint/pose/pixel gates are unchanged.
+
+A local Chrome/SwiftShader CPU profile of Gene Apology with IK Off, seeking
+0 to 9.9 seconds, measured 60.873 seconds elapsed / 39.322 seconds instrumented
+work before the change and 41.952 / 41.873 seconds afterward. Both completed
+1,188 steps in the same three worlds with no angular-gate failures. These are
+single local observations with other checks running, not hosted timing guarantees
+or physical Android evidence. The replay removes timer idle delays rather than
+reducing simulation work.
+
+The Node regression now cancels replay from a task turn through both scheduling
+paths and checks native cleanup. The existing browser lifecycle cases retain
+their 90-second seek allowance and explicitly require Physics On at tick 1,188,
+no replacement worlds and no constraint failures before continuing to loop,
+Rest, model-switch and cleanup validation. Hosted required CI remains pending
+downstream publication; this fix node does not push or merge. Physical Android
+post-merge verification remains pending.
+
+Local validation on 2026-11-02 passed: asset preparation/build and the updated
+Vite bundle build (existing large-chunk warning), typecheck, all 185 Node tests,
+all 12 public/synthetic physics browser cases (10.3 minutes, no failures/skips),
+529 link/anchor/built-asset checks and whitespace validation. The browser run
+used Chrome 156.0.8078.74, Playwright 1.56.1, one ANGLE SwiftShader worker and
+`MMD_PREVIEW_PORT=43280`, preserving the existing 43180 server and port 8765.
+The complete Uka/Gene lifecycle cases measured 55.738 / 40.882 seconds for the
+0.5-to-9.9-second seek, reached tick 1,188 without replacing worlds or failing
+the angular guard, and continued through loop, Rest, model-switch and cleanup
+assertions. Both recorded no page errors and zero native handles after Off.
+These local results do not replace required hosted CI after publication.
+
 ### IK-transition acknowledgement revision (Issue #77)
 
 Hosted run `41380557834` passed 106 browser cases but failed both real-model
