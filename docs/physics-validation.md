@@ -19,6 +19,53 @@ joint correction below. It is not evidence for the final stabilized runtime.
 
 ## Public real-model integration (Issue #77)
 
+### IK-transition acknowledgement revision (Issue #77)
+
+Hosted run `41380557834` passed 106 browser cases but failed both real-model
+lifecycle cases while polling `execution.ik` for five seconds, before waiting
+for physics replay. Execution diagnostics describe the last completed pose;
+changing IK resets and asynchronously replays all three native worlds before
+publishing the new execution result. Reporting the checkbox value immediately
+would misrepresent that completed execution.
+
+On the unchanged runtime, a local Chrome/SwiftShader measurement with 2× CPU
+throttling reproduced the ordering problem for Laugh at frame 15 in both models:
+
+| Model | Still simulating with previous IK-On result | First observed completed IK-Off result |
+| --- | ---: | ---: |
+| Uka | 8.142 s | 9.150 s |
+| Gene | 5.109 s | 6.116 s |
+
+The completed result was Physics On with zero executed IK chains in each of
+the three independent panes. These are sampled wall times including polling
+and browser automation, not isolated simulation timings or Android evidence.
+
+The lifecycle test now waits for replay completion using its existing 90-second
+physics allowance before checking actual IK execution, every pane's executed
+chains and unchanged source time. IK-On transitions use the same ordering,
+including Gene Apology's synchronous unavailable result. Transition timings and
+pending/completed execution are attached to the existing browser evidence.
+Subsequent lifecycle replay waits use that same completion allowance rather
+than an implicit five-second poll. Runtime reporting, the device work budget,
+test-case timeout, source pins and all pose/pixel/joint accuracy gates stay
+unchanged. Hosted required CI must pass after downstream publication; this fix
+node does not push or merge. Physical Android post-merge verification remains
+pending.
+
+Local validation on 2026-11-02 passed: `npm run build` (existing large-chunk
+warning), `npm run typecheck`, all 185 `npm test` cases, all eight
+`public-physics.spec.ts` browser cases (622.761 s, no failures/skips),
+`npm run check:links` (529 targets) and `git diff --check`. The browser run used
+Chrome 156.0.8078.74, Playwright 1.56.1, one ANGLE SwiftShader worker, Apple M4
+Max / Darwin 27.2.0 and Node 26.12.1, with `MMD_PREVIEW_PORT=43280` to preserve
+the existing server on 43180. In that unthrottled run, Uka's four IK transitions
+took 5.113–5.261 s; Gene Laugh's Off/On transitions took 4.063 / 4.087 s.
+Completed IK-Off snapshots had zero executed chains in every pane; re-enabling
+IK restored all ten Uka / six Gene chains. Both full lifecycle cases completed
+their subsequent joint, playback, resource-reuse and native-cleanup assertions
+with no page errors and zero native handles after Off. These local checks do
+not replace required hosted CI on the published revision.
+
 ### Replay work slicing revision (Issue #77)
 
 The seven public-physics failures in hosted run `41374803651` exceeded the existing

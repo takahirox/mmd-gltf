@@ -20,6 +20,25 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   await expect(page.locator('#comparison-physics')).not.toBeChecked();
   expect(requests).toBe(0);expect((await resources()).physics.native).toBe(0);
   const initial=await resources(),fetches=models,assetFetches=assets;
+  const physicsOn=()=>expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).toBe('on');
+  const ikTransitions:any[]=[];
+  const changeIK=async(enabled:boolean)=>{
+    const before=await state(),started=Date.now();
+    await page.locator('#comparison-ik').setChecked(enabled);
+    const pending=await state();
+    // Execution describes the last completed pose until all three worlds finish
+    // replaying. A five-second IK poll can reject a correct, slower replay.
+    await expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).not.toBe('simulating');
+    const completed=await state();
+    ikTransitions.push({motion:completed.motion,enabled,elapsedMS:Date.now()-started,
+      pending:{ik:pending.execution.ik,physicsState:pending.execution.physicsState},execution:completed.execution});
+    expect(completed.time).toBe(before.time);
+    expect(completed.execution.ik).toBe(enabled);
+    expect(completed.execution.ikState).toBe(enabled?'on':'off');
+    for(const chain of completed.execution.chains)
+      if(enabled)expect(chain.executed.length).toBeGreaterThan(0);
+      else expect(chain.executed).toEqual([]);
+  };
   const seek=async(t:number)=>{
     await page.locator('#comparison-time').evaluate((e,t)=>{(e as HTMLInputElement).valueAsNumber=t;e.dispatchEvent(new Event('input',{bubbles:true}));},t);
     await expect.poll(async()=>(await state()).time,{timeout:90000}).toBe(t);
@@ -32,7 +51,7 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
     await seek(.5);
     const off=await pose(),pixelsOff=await readComparisonBitmap(page),time=(await state()).time;
     await page.locator('#comparison-physics').check();
-    await expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).toBe('on');
+    await physicsOn();
     expect((await state()).time).toBe(time);
     const on=await pose(),pixelsOn=await readComparisonBitmap(page);
     for(const half of [0,1])expect(comparisonHalf(pixelsOn,half).equals(comparisonHalf(pixelsOff,half))).toBe(false);
@@ -94,17 +113,15 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
       evidence.push({motion,frame:time*30,constraints,execution:(await state()).execution});
     }
     await seek(.2);await seek(.5);expect(await pose()).toEqual(on);
-    await page.locator('#comparison-ik').uncheck();
-    await expect.poll(async()=>(await state()).execution.ik).toBe(false);
+    await changeIK(false);
     expect((await state()).execution.physics).toBe(true);
-    await expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).toBe('on');
+    await physicsOn();
     const withoutIK=await page.evaluate(()=>(window as any).readMMDComparisonPhysics());
     for(const bodies of withoutIK.bodies)for(const error of jointViolations(withoutIK.binding.physics,bodies)) {
       expect(error.linear,`IK Off joint ${error.index} linear`).toBeLessThan(jointBounds(model,error.index).linear);
       expect(error.angular,`IK Off joint ${error.index} angular`).toBeLessThan(jointBounds(model,error.index).angular);
     }
-    await page.locator('#comparison-ik').check();
-    await expect.poll(async()=>(await state()).execution.ik).toBe(true);
+    await changeIK(true);
     if(model==='gene' && motion==='22_apology') {
       await expect(page.locator('#comparison-physics')).toBeDisabled();
       await expect(page.locator('#comparison-physics')).not.toBeChecked();
@@ -113,7 +130,7 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
       await expect(page.locator('#comparison-physics')).toBeEnabled();
       await page.locator('#comparison-physics').check();
     }
-    await expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).toBe('on');
+    await physicsOn();
     await page.locator('#material').selectOption('pbr');await readComparisonBitmap(page);
     await page.locator('#material').selectOption('toon');
     await page.locator('#comparison-physics').uncheck();
@@ -122,16 +139,16 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   expect(requests).toBe(1);expect(models).toBe(fetches);expect(assets).toBe(assetFetches);
   expect((await resources()).roots).toEqual(initial.roots);
   for(let i=0;i<3;i++) {
-    await page.locator('#comparison-physics').check();await expect.poll(async()=>(await state()).execution.physicsState).toBe('on');
+    await page.locator('#comparison-physics').check();await physicsOn();
     await page.locator('#comparison-physics').uncheck();expect((await resources()).physics.native).toBe(0);
   }
-  await page.locator('#comparison-physics').check();await expect.poll(async()=>(await state()).execution.physicsState).toBe('on');
+  await page.locator('#comparison-physics').check();await physicsOn();
   await page.locator('#comparison-restart').click();await expect.poll(async()=>(await state()).time).toBe(0);
   expect((await state()).playing).toBe(false);
   await page.locator('#comparison-play').click();
   await expect.poll(async()=>(await state()).time,{timeout:30000}).toBeGreaterThan(.1);
   await page.locator('#comparison-play').click();
-  await expect.poll(async()=>(await state()).execution.physicsState).toBe('on');
+  await physicsOn();
   const paused=(await state()).time;await page.waitForTimeout(150);expect((await state()).time).toBe(paused);
   await seek(.5);const a=await pose();
   await page.locator('#comparison-motion').selectOption('02_laugh');await seek(.5);
@@ -149,7 +166,7 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   await expect.poll(async()=>(await state()).execution.physicsStats.resets,{timeout:60000}).toBeGreaterThan(resets);
   await page.locator('#comparison-play').click();await seek(.5);expect(await pose()).toEqual(a);
   await page.locator('#comparison-motion').selectOption('rest');
-  await expect.poll(async()=>(await state()).execution.physicsState).toBe('on');
+  await physicsOn();
   expect((await state()).time).toBe(0);await expect(page.locator('#comparison-play')).toBeDisabled();
   if(model==='uka')await page.locator('#expression').selectOption('blink');
   await page.locator('#comparison-physics').uncheck();expect((await resources()).physics.native).toBe(0);
@@ -159,8 +176,8 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   expect(requests).toBe(1);expect(models).toBe(fetches);expect(assets).toBe(assetFetches);
   const cdp=await page.context().newCDPSession(page);await cdp.send('HeapProfiler.collectGarbage');
   const memoryAfterGC=await resources();await cdp.detach();
-  await testInfo.attach('real-physics-evidence.json',{body:JSON.stringify({model,browser:page.context().browser()?.version(),memoryAfterGC,evidence,errors,requests,models,assets,finalResources:await resources()}),contentType:'application/json'});
-  await page.locator('#comparison-physics').check();await expect.poll(async()=>(await state()).execution.physicsState).toBe('on');
+  await testInfo.attach('real-physics-evidence.json',{body:JSON.stringify({model,browser:page.context().browser()?.version(),memoryAfterGC,evidence,ikTransitions,errors,requests,models,assets,finalResources:await resources()}),contentType:'application/json'});
+  await page.locator('#comparison-physics').check();await physicsOn();
   await page.locator('#demo-model').selectOption(model==='uka'?'gene':'uka');
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   expect((await resources()).physics.native).toBe(0);await expect(page.locator('#comparison-physics')).not.toBeChecked();
