@@ -1,7 +1,7 @@
 import { openRigDemo } from './demo-controls';
 import { readRigBitmap } from './rig-bitmap';
 import { test, expect } from '@playwright/test';
-const preview = 'http://127.0.0.1:43180/mmd-gltf/';
+const preview = `http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 
 test('built VPD surfaces/outlines match independent scalar predictions for both rigs/poses through runtime and GLB/glTF reloads', async ({ page }, testInfo) => {
   const errors: string[] = [];

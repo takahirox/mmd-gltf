@@ -4,7 +4,7 @@ import { readRigBitmap } from './rig-bitmap';
 import { type Page } from '@playwright/test';
 import { test, expect, fullConformance, conformanceURL } from './timed-test';
 import { morphWeights } from '../morph-oracle';
-const preview = 'http://127.0.0.1:43180/mmd-gltf/';
+const preview = `http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 test('built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines', async ({
   page,
 }, testInfo) => {

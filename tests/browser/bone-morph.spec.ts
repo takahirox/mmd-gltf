@@ -3,7 +3,7 @@ import { readRigBitmap } from './rig-bitmap';
 import { test, expect, type Page, type TestInfo } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { bonePrediction, boneControls } from '../bone-morph-oracle';
-const preview='http://127.0.0.1:43180/mmd-gltf/';
+const preview=`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
 // Exercise all three source paths across pairwise UI scenarios. Detailed
 // cross-products remain in Node and independent GPU/raster conformance tests.
 for (const [rig, motion, sources] of [['bone-box','bone-a',['bytes']], ['bone-wedge','bone-b',['glb','gltf']]] as const) {

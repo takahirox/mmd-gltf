@@ -1,7 +1,9 @@
 import { defineConfig } from '@playwright/test';
+import { shardFiles } from './tools/browser-shards';
 const previewPort=Number(process.env.MMD_PREVIEW_PORT || 43180);
 export default defineConfig({
   reporter: [['list'], ['./tools/browser-report.ts']],
+  testMatch: shardFiles(process.env.BROWSER_SHARD),
   testDir: './tests/browser', timeout: 180000, workers: 1,
   use: { screenshot: 'only-on-failure', browserName: 'chromium', channel: process.env.PLAYWRIGHT_CHROMIUM_CHANNEL || 'chrome', headless: true,
     launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] },

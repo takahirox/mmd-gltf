@@ -75,3 +75,15 @@ none is required for the collaboration templates and guidance in Issue #1.
 Pending required post-merge checks do not prevent approval when these conditions
 hold. After merge, perform those checks and record their actual results, including
 failures and follow-up work. Keep them pending until performed.
+
+## Browser CI changes (Issue #81)
+
+Preserve the [four-runner coverage and publishing gates](browser-ci.md#four-runner-validation-and-publishing-gates-issue-81).
+For CI changes, verify unfiltered test IDs occur exactly once across required
+shards, all failures/missing artifacts block aggregation, and deployment needs
+build plus every required validation job. New browser suites need an explicit
+measured assignment in `tools/browser-shards.json`; cases in existing suites
+inherit that assignment. Review comparable unchanged-commit timings, both elapsed
+feedback and total runner-minutes, before claiming performance improvements.
+Keep optional matrix diagnostics separate; record pending hosted/merged-main
+verification honestly when remote actions are outside the authorized scope.
