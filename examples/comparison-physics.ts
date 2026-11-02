@@ -160,7 +160,10 @@ export class ComparisonPhysics {
             await checkpoint();
             if(this.closed || token!==this.generation)return false;
           }
-        } catch(error){this.worlds.forEach(w=>w.dispose());this.worlds=[];throw error;}
+        } catch(error){
+          if(token===this.generation) {this.worlds.forEach(w=>w.dispose());this.worlds=[];}
+          throw error;
+        }
       }
       for(const [i,world] of this.worlds.entries()) {
         this.bindings[i].write(world.resolve(raw[i],new Map(),tick!==0));

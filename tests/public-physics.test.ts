@@ -25,7 +25,7 @@ test('public physics availability gates the entire Gene Apology clip with IK On'
 });
 
 for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0,137]],['gene-light','Gene_light',87,92,[25,9,53]]] as const)
- test(`${id}: pinned full physics source, explicit execution profile and independent deterministic worlds`,async()=>{
+ test(`${id}: pinned full physics source, explicit execution profile and independent deterministic worlds`,async(t)=>{
   const bytes=await readFile(`public/${id}/${file}.pmx`),model=parsePMX(bytes);
   const manifest=JSON.parse(await readFile(`tools/${id==='uka'?'uka':'gene-light'}-manifest.json`,'utf8'));
   assert.equal(createHash('sha256').update(bytes).digest('hex'),manifest.files.find((f:any)=>f.path.endsWith('.pmx')).sha256);
@@ -89,6 +89,20 @@ for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0
   assert.equal(PhysicsWorld.allocations,baseline,'constructing the public binding never allocates a native world');
   const {api}=await loadAmmoNode();physics.setBackend(api);
   try {
+    // A rejected initialization checkpoint resumes asynchronously. Its cleanup
+    // must not destroy worlds belonging to a replacement request in that gap.
+    let clockCalls=0;
+    const clock=t.mock.method(performance,'now',()=>++clockCalls===3?6000:0);
+    try {
+      const sample=()=>physics.bindings.forEach(b=>b.write(binding.solver.bones));
+      const stale=physics.seek(0,sample);
+      physics.reset(undefined,false);
+      const replacement=physics.seek(0,sample);
+      await assert.rejects(stale,/work budget/);
+      assert.equal(await replacement,true);
+      assert.equal(physics.bodyTransforms().length,3,'stale error cleanup cannot dispose replacement worlds');
+    } finally {clock.mock.restore();physics.reset(undefined,false);}
+    assert.equal(PhysicsWorld.allocations,baseline);
     for(const clip of ['02_laugh','22_apology']) {
       const motion=parseVMD(await readFile(`public/${id}/motion/${clip}.vmd`));
       const vmd=bindMotion({version:1,modelId:'physics-test',metersPerPMXUnit:.08,bones:binding.solver.bones},motion,{preserveUnbound:true});

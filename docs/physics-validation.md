@@ -51,6 +51,11 @@ the correction (162.2 seconds), including both real-model deterministic replay,
 unchanged joint bounds and native cleanup. Typecheck and final Vite bundling also
 passed; links now cover 529 targets. The broader first local browser attempt was
 interrupted when that Node cancellation finding was identified.
+An additional regression reproduced stale initialization-error cleanup destroying
+one replacement world (two worlds remained instead of three). Error cleanup now
+checks the request generation before disposing native worlds, preserving the
+replacement request. The regression uses a controlled clock to trigger the error
+without loosening the real work budget or physics accuracy assertions.
 
 A connected Pixel 7a (Android 17 / Chrome 156.0.8078.73) allowed a limited
 [pre-merge device attempt](public-physics-android-attempt.json). Gene reached Ready
