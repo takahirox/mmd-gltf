@@ -146,10 +146,11 @@ change and re-enabling reset/replay from source time zero. There is no call to
 pending target are coalesced.
 
 Replay yields to events after approximately 8 ms, checking cancellation between
-complete three-world ticks. No partial tick is drawn. Native worlds are limited
+pane world initialization and simulation operations. No partial three-world tick
+is drawn. Native worlds are limited
 to 256 bodies / 256 joints each and replay to 30 seconds (the clips are 10 s).
 A slice exceeding 150 ms fails back to Off with an actionable diagnostic. A
-single native step cannot be preempted; slower devices can still exceed the
+single pane's native operation cannot be preempted; slower devices can still exceed the
 nominal slice target. During live simulation the shared epoch resumes after
 completed work, so an overloaded device slows playback instead of building an
 unbounded catch-up queue. Pause cancels pending advancement and resolves the
@@ -181,9 +182,12 @@ agreement is not an accuracy oracle. See the explicit
 [constraint and performance limits](physics-validation.md#real-model-constraint-and-performance-limits).
 Original Windows MMD parity is **unverified**.
 
-Physical Android Chrome verification is **unperformed**: `adb devices -l` listed
-no connected device in the implementation environment. A desktop viewport of
-390 px is only a layout check. Required post-merge physical-device procedure:
+The initial implementation had no connected Android device. A subsequent
+[pre-merge Pixel 7a attempt](public-physics-android-attempt.json) observed Gene's
+device-budget recovery but did not establish successful physical Android playback;
+the locked/dozing device also prevented a controlled Uka load. Full physical
+Android Chrome verification remains **pending**. A desktop viewport of 390 px is
+only a layout check. Required post-merge physical-device procedure:
 
 1. Record device, Android/Chrome versions, RAM, graphics backend and thermal state.
    Remote-debug Chrome and enable network/performance/memory recording.

@@ -115,9 +115,17 @@ export class ComparisonPhysics {
     if(target<this.tick)this.reset(this.source,this.ik);
     const token=this.generation;
     let slice=performance.now();
+    let workStart=slice;
+    const checkpoint=async()=>{
+      const end=performance.now(),cost=end-slice;
+      this.stats.cpuMS+=end-workStart;
+      this.stats.maxSliceMS=Math.max(this.stats.maxSliceMS,cost);
+      if(cost>this.workBudgetMS)throw new Error(`Physics exceeds this device’s ${this.workBudgetMS} ms work budget; switch Off or retry`);
+      if(cost>=8) {await new Promise<void>(resolve=>setTimeout(resolve,0));slice=performance.now();}
+      workStart=performance.now();
+    };
     while(this.tick<target) {
       if(this.closed || token!==this.generation)return false;
-      const tickStart=performance.now();
       const tick=this.tick+1;this.at=tick*step;
       sample(this.at);
       const raw=this.bindings.map(b=>b.read());
@@ -147,16 +155,19 @@ export class ComparisonPhysics {
               },
             },jointProjectionIterations);
             this.stats.worldsCreated++;this.worlds.push(world);
+            // Initialization is native work too. Keep each pane cancellable
+            // without exposing a partially initialized or simulated tick.
+            await checkpoint();
+            if(this.closed || token!==this.generation)return false;
           }
         } catch(error){this.worlds.forEach(w=>w.dispose());this.worlds=[];throw error;}
       }
-      this.worlds.forEach((world,i)=>this.bindings[i].write(world.resolve(raw[i],new Map(),tick!==0)));
+      for(const [i,world] of this.worlds.entries()) {
+        this.bindings[i].write(world.resolve(raw[i],new Map(),tick!==0));
+        await checkpoint();
+        if(this.closed || token!==this.generation)return false;
+      }
       this.tick=tick;this.stats.steps+=tick!==0?1:0;
-      this.stats.cpuMS+=performance.now()-tickStart;
-      const cost=performance.now()-slice;
-      this.stats.maxSliceMS=Math.max(this.stats.maxSliceMS,cost);
-      if(cost>this.workBudgetMS)throw new Error(`Physics exceeds this device’s ${this.workBudgetMS} ms work budget; switch Off or retry`);
-      if(cost>=8 && this.tick<target) {await new Promise<void>(resolve=>setTimeout(resolve,0));slice=performance.now();}
     }
     // Never publish a successful state solely because Bullet and stabilization
     // returned. Check every joint in every independent native world against the

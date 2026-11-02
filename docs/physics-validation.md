@@ -19,6 +19,49 @@ joint correction below. It is not evidence for the final stabilized runtime.
 
 ## Public real-model integration (Issue #77)
 
+### Continuation integration and device attempt (2026-11-02)
+
+The saved whole-clip gate was published, then integrated with main at `e880fcb`,
+preserving its four-shard browser CI and strict coverage aggregation. The new
+`public-physics.spec.ts` suite is explicitly assigned to shard 4. A stale example
+copy assertion was updated to require default-Off behavior, lazy backend loading
+and the unsupported whole-clip reason; all rendering and accuracy assertions stay
+intact. The corrected WebGL example case passed locally (39.8 seconds).
+
+On integrated implementation `3ff77e0`, build (existing large-chunk warning),
+typecheck, all 184 Node tests, 527 links and whitespace passed. An initial Node
+attempt ran before generated fixtures were ready and failed on missing assets;
+the complete post-build rerun passed. Hosted validation results are recorded on
+PR #79 separately from these local checks. Its first integrated full run passed
+99 browser cases, failed nine and skipped two optional native-WebGPU cases.
+One failure was the stale copy assertion; all eight public physics cases exceeded
+the unchanged 150 ms work budget on Ubuntu. That run measured the public physics
+suite at 680.135 seconds (including failure waits), assigned to shard 4.
+
+Replay now checks cancellation and yields between pane world construction and
+simulation operations, while keeping the entire partial tick hidden. Previously
+all three constructions and resolves could exceed the slice budget together.
+The 150 ms cap, fixed stepping, joint records, stabilization work and numerical
+gates are unchanged. CPU accounting excludes the newly introduced event waits.
+The first slicing attempt failed the existing native-cleanup assertion during
+cancellation; the correction checks generation after each awaited checkpoint.
+The whole-clip availability and pending-backend cancellation browser cases then
+passed (two cases, 43.6 seconds). All three public physics Node tests passed after
+the correction (162.2 seconds), including both real-model deterministic replay,
+unchanged joint bounds and native cleanup. Typecheck and final Vite bundling also
+passed; links now cover 529 targets. The broader first local browser attempt was
+interrupted when that Node cancellation finding was identified.
+
+A connected Pixel 7a (Android 17 / Chrome 156.0.8078.73) allowed a limited
+[pre-merge device attempt](public-physics-android-attempt.json). Gene reached Ready
+with Physics Off and zero native handles, initially without a rendered frame.
+Laugh at frame 15 exceeded the 150 ms device budget (386.4 ms slice), recovered
+visibly to Off and released every native handle. Gene Apology with IK On showed
+the whole-clip restriction. Uka did not reach Ready within 180 seconds. The device
+was locked/dozing, so neither reliable load/rendering performance nor successful
+Android physics playback was established. Warm loads and the full device matrix
+remain unperformed; required post-merge verification remains pending.
+
 ### Whole-clip availability revision (Issue #77)
 
 Gene Apology with IK On is now explicitly unavailable for public Physics at every
