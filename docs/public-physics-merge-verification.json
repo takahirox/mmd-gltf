@@ -1,0 +1,33 @@
+{
+  "issue": 77,
+  "pullRequest": 79,
+  "mergedAt": "2026-11-02T06:56:07Z",
+  "sourceIssueImmediatelyBeforeMerge": "open",
+  "reviewedHead": "f8ca78492de8da43de2605c501da9443ad110bb6",
+  "mergeCommit": "fc72492e8e6cfa43b48ba1e30b59e8a06ab8bf00",
+  "mergeMethod": "merge",
+  "mergeParents": [
+    "e880fcbff68dba3b07a8e7d3b23b2b6c6ba9e158",
+    "f8ca78492de8da43de2605c501da9443ad110bb6"
+  ],
+  "mergeTree": "0adc835723f0ea77a142a1a0ae0ca080776b29ed",
+  "mergeVerification": "GitHub confirms the PR is merged, the expected head is its second parent, and the merge tree matches the reviewed and CI-tested tree.",
+  "preMergeCI": {
+    "run": "https://github.com/takahirox/mmd-gltf/actions/runs/41399167416",
+    "status": "success",
+    "requiredChecks": "prepare, typecheck, fast-checks, all four browser shards, and final build gate passed; rechecked remotely before merge without rerunning suites",
+    "optionalSkips": "browser-performance and PR deployment skipped by workflow policy; upstream review reports two optional native-WebGPU test skips"
+  },
+  "physicalAndroidPostMerge": {
+    "status": "pending",
+    "availabilityCheck": "adb devices -l completed successfully with an empty device list after merge",
+    "performed": false,
+    "plan": "docs/public-physics.md#validation-and-physical-android-plan",
+    "remaining": "With an unlocked physical Android Chrome device, repeat Uka/Gene cold and warm Physics-Off loads and controlled On/Off playback; record device/OS/browser, errors, timings, RAM/GPU pressure and actual pose/rendering outcomes."
+  },
+  "limitations": [
+    "Gene Apology with IK On remains unavailable for the entire clip; source-consistent execution remains follow-up scope.",
+    "Physical Android playback and native Windows MMD fidelity are unverified.",
+    "The merge confirmation does not establish deployment or successful physical-device verification."
+  ]
+}
