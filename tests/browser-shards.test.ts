@@ -16,13 +16,13 @@ function fixture() {
   return { manifest, summaries };
 }
 
-test('all current suites are assigned exactly once; new Physics suites require an explicit assignment', () => {
+test('all current suites are assigned exactly once; future suites require an explicit assignment', () => {
   const files = readdirSync('tests/browser').filter(file => file.endsWith('.spec.ts'));
   validateBrowserGroups(files);
-  assert.throws(() => validateBrowserGroups([...files, 'public-physics.spec.ts']), /unassigned=public-physics/);
+  assert.throws(() => validateBrowserGroups([...files, 'future-physics.spec.ts']), /unassigned=future-physics/);
   const updated = structuredClone(browserGroups);
-  updated[3].files.push('public-physics.spec.ts');
-  validateBrowserGroups([...files, 'public-physics.spec.ts'], updated);
+  updated[3].files.push('future-physics.spec.ts');
+  validateBrowserGroups([...files, 'future-physics.spec.ts'], updated);
   assert.throws(() => validateBrowserGroups(files, [...browserGroups, browserGroups[0]]), /Duplicate/);
   assert.throws(() => shardFiles('0'), /Invalid/);
   assert.throws(() => shardFiles('1\/4'), /Invalid/);
