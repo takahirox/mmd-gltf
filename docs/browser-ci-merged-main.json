@@ -1,0 +1,233 @@
+{
+  "repository": "takahirox/mmd-gltf",
+  "source_issue": 81,
+  "pull_request": 82,
+  "reviewed_head": "0c590719e9b4e6d47ed6a688d4beb4dfdcf5026d",
+  "merge_commit": "e880fcbff68dba3b07a8e7d3b23b2b6c6ba9e158",
+  "merge_parents": [
+    "855b189c0d43beeb1ac20ba317ee246b9982d2f3",
+    "0c590719e9b4e6d47ed6a688d4beb4dfdcf5026d"
+  ],
+  "source_issue_state_immediately_before_merge": "open",
+  "merge_method": "merge",
+  "run": {
+    "id": 41364349985,
+    "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985",
+    "event": "push",
+    "head_sha": "e880fcbff68dba3b07a8e7d3b23b2b6c6ba9e158",
+    "run_attempt": 1,
+    "created_at": "2026-11-01T23:54:17Z",
+    "run_started_at": "2026-11-01T23:54:17Z",
+    "updated_at": "2026-11-02T00:12:03Z",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "jobs": [
+    {
+      "id": 125021236327,
+      "name": "prepare",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-01T23:54:19Z",
+      "completed_at": "2026-11-01T23:56:14Z",
+      "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985/job/125021236327"
+    },
+    {
+      "id": 125021236495,
+      "name": "typecheck",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-01T23:54:19Z",
+      "completed_at": "2026-11-01T23:54:35Z",
+      "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985/job/125021236495"
+    },
+    {
+      "id": 125021701167,
+      "name": "fast-checks",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-01T23:56:16Z",
+      "completed_at": "2026-11-02T00:01:02Z",
+      "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985/job/125021701167"
+    },
+    {
+      "id": 125021701185,
+      "name": "browser (1)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-01T23:56:16Z",
+      "completed_at": "2026-11-02T00:05:47Z",
+      "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985/job/125021701185"
+    },
+    {
+      "id": 125021701227,
+      "name": "browser (3)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-01T23:56:16Z",
+      "completed_at": "2026-11-02T00:05:19Z",
+      "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985/job/125021701227"
+    },
+    {
+      "id": 125021701292,
+      "name": "browser (4)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-01T23:56:16Z",
+      "completed_at": "2026-11-02T00:10:39Z",
+      "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985/job/125021701292"
+    },
+    {
+      "id": 125021701315,
+      "name": "browser (2)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-01T23:56:16Z",
+      "completed_at": "2026-11-02T00:11:30Z",
+      "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985/job/125021701315"
+    },
+    {
+      "id": 125021702553,
+      "name": "browser-performance",
+      "status": "completed",
+      "conclusion": "skipped",
+      "started_at": "2026-11-01T23:56:15Z",
+      "completed_at": "2026-11-01T23:56:14Z",
+      "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985/job/125021702553"
+    },
+    {
+      "id": 125025597853,
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-02T00:11:32Z",
+      "completed_at": "2026-11-02T00:11:46Z",
+      "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985/job/125025597853"
+    },
+    {
+      "id": 125025665724,
+      "name": "deploy",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-02T00:11:49Z",
+      "completed_at": "2026-11-02T00:12:03Z",
+      "html_url": "https://github.com/takahirox/mmd-gltf/actions/runs/41364349985/job/125025665724"
+    }
+  ],
+  "coverage": {
+    "status": "passed",
+    "errors": [],
+    "test_count": 102,
+    "unique_test_ids": 102,
+    "attempt_count": 102,
+    "test_statuses": {
+      "passed": 100,
+      "skipped": 2
+    },
+    "independent_manifest_comparison": "All 102 IDs occur exactly once across four shard summaries; all summaries match merge SHA, run ID and attempt. All four artifact ZIP digests verified.",
+    "aggregate_zip_digest_verified": true,
+    "shards": [
+      {
+        "shard": "1",
+        "tests": 37,
+        "attempts": 37,
+        "duration_ms": 533637.586
+      },
+      {
+        "shard": "2",
+        "tests": 19,
+        "attempts": 19,
+        "duration_ms": 877580.78
+      },
+      {
+        "shard": "3",
+        "tests": 24,
+        "attempts": 24,
+        "duration_ms": 508948.736
+      },
+      {
+        "shard": "4",
+        "tests": 22,
+        "attempts": 22,
+        "duration_ms": 822675.1440000001
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "id": 13107157008,
+      "name": "browser-evidence-3",
+      "digest": "sha256:0d93b380aa523f883b202b68fa4d29c551bc8948704ccd966d5d747db414298e",
+      "size_in_bytes": 1911324
+    },
+    {
+      "id": 13106857105,
+      "name": "browser-smoke-evidence",
+      "digest": "sha256:199f86392b5b652cbb880e847277e3346f3d1f78fe584b61fdeb16c65b519ca6",
+      "size_in_bytes": 1584
+    },
+    {
+      "id": 13106777581,
+      "name": "browser-evidence-2",
+      "digest": "sha256:dee1c94b4edd93b06f7af986fbb99f9913c147781da8cf73313f9c5d41e0163d",
+      "size_in_bytes": 1284713
+    },
+    {
+      "id": 13106699285,
+      "name": "browser-aggregate",
+      "digest": "sha256:2ba9d18031da9b7bc3d841df4acc50dcbdeba8b366a8d453a4050dc47228bfff",
+      "size_in_bytes": 97289
+    },
+    {
+      "id": 13106529635,
+      "name": "browser-evidence-4",
+      "digest": "sha256:98fa9b7a99c92210bd241dfb017dfec8e4a9466b4dd1e82cf3d380c080cc3e33",
+      "size_in_bytes": 3162611
+    },
+    {
+      "id": 13106314559,
+      "name": "browser-evidence-1",
+      "digest": "sha256:5a98c782ac36e2619d2f1c41dfc33d3838b33d30e821cf90e1d13f013905bf58",
+      "size_in_bytes": 367293
+    },
+    {
+      "id": 13106278276,
+      "name": "validated-build",
+      "digest": "sha256:ec0534e6fe99e634572e735dc4d56488bd7761ecbd832316cd4e90c69ac1eb69",
+      "size_in_bytes": 294281828
+    },
+    {
+      "id": 13106228558,
+      "name": "github-pages-attempt-1",
+      "digest": "sha256:b1cb592150b1461012473106ab3a639e1d7c8d5979e50b752c0d938d77e98d34",
+      "size_in_bytes": 107958482
+    },
+    {
+      "id": 13106169207,
+      "name": "browser-manifest",
+      "digest": "sha256:bdf878c85c63dbd6c3c2637ee083e05fb069e3ff3506dfe7f56af80ee44908b5",
+      "size_in_bytes": 4816
+    }
+  ],
+  "deployment": {
+    "id": 7481232959,
+    "sha": "e880fcbff68dba3b07a8e7d3b23b2b6c6ba9e158",
+    "state": "success",
+    "environment_url": "https://takahirox.github.io/mmd-gltf/",
+    "pages_artifact_id": 13106228558,
+    "pages_artifact_name": "github-pages-attempt-1",
+    "artifact_identity_verified_in_deploy_log": true,
+    "all_required_jobs_completed_before_deploy_started": true
+  },
+  "timing": {
+    "required_feedback_minutes": 17.48,
+    "total_runner_execution_minutes_including_deploy": 55.6,
+    "worst_browser_job_minutes": 15.23,
+    "note": "One merged-main run; queueing contributes to feedback. Runner execution sums job timestamps, excluding skipped diagnostics; it is not billed rounded minutes."
+  },
+  "optional_validation": {
+    "hosted_failure_injection": "skipped (not permitted), per Issue #81 maintainer comment 6565719192; no hosted failure injection is claimed",
+    "performance_matrix": "skipped (opt-in only)"
+  },
+  "post_merge_verification": "passed"
+}
