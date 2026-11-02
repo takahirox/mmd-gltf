@@ -20,7 +20,7 @@ export function publicMotionMetadata(motion: Awaited<ReturnType<typeof publicMot
   const extras=document.getRoot().getExtras();
   return { source:extras.source, attribution:extras.attribution, rights:extras.rights, license:extras.license,
     notices:['README.md','README.ja.md'], path:motion.path,sha256:motion.sha256,bytes:motion.bytes.length,duration:motion.audit.duration,
-    policy:'Unique terminated exact names; unresolved tracks retained without execution. Raw bones and vertex expressions; no IK, grant, physics, material/group/bone/UV morph or visibility execution.',
+    policy:'Unique terminated exact names; unresolved tracks retained without execution. Retained player: raw bones and vertex expressions; no automatic IK/grant/physics. Public host: optional ordered IK prerequisites with Physics Off, or full source grants/rigid bodies/joints with Physics On via extras.publicPhysics. No material/group/bone/UV morph or visibility execution.',
     bones:motion.audit.bones,morphs:motion.audit.morphs,
     omittedActiveMorphs:motion.audit.morphs.filter(t=>t.active && (t.status!=='matched' || t.type!==1)),
     preview:motion.audit.morphs.filter(t=>t.status==='matched' && t.type===1 && previewNames.has(t.name)).map(t=>({name:t.name!,sourceIndex:t.matches[0],target:morphs.find(m=>m.index===t.matches[0])!.target!})),

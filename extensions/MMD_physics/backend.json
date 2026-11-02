@@ -7,8 +7,13 @@
   "tarball": "https://registry.npmjs.org/ammojs-typed/-/ammojs-typed-1.0.6.tgz",
   "integrity": "sha512-ut/tD0m5eEdlJ5KK97ma6SIEGZ4FN3AJTSVz8wl6C4EtnpVQdP70lOwgDMJKsHjTohxc2/xEZl6yJfMBZNlQ5w==",
   "license": "Ammo binary header: zlib; wrapper/types package metadata: MIT",
-  "bulletProvenance": "The distributed binary has no Bullet version or build commit string. The wrapper gitHead does not pin the upstream Ammo/Bullet source used for this generated binary. Exact embedded Bullet revision could not be recovered; do not infer it from current upstream README. Artifact bytes are the conformance boundary.",
-  "runtime": "Self-contained JavaScript build with a local WebAssembly shim invoking the generated JavaScript constructor. No external WASM sidecar; identical bytes for Node CommonJS factory and browser classic script factory. No claim of asm.js validation or recovered compiler flags.",
+  "bulletProvenance": "The npm artifact is byte-identical to builds/ammo.js in kripken/ammo.js commit 3d490c2b5d9f8414a888313bee4e05529e55c86c. The browser uses that commit's matching WebAssembly build. This recovers an upstream artifact match, not the original compiler invocation; artifact bytes remain the conformance boundary.",
+  "runtime": "Node retains the self-contained JavaScript reference with its local WebAssembly shim. Browsers use native WebAssembly through the matching upstream loader and binary below, both packaged same-origin and integrity-checked before instantiation. No runtime CDN or claim of recovered compiler flags.",
+  "browser": {
+    "commit": "3d490c2b5d9f8414a888313bee4e05529e55c86c",
+    "scriptSHA256": "772bb6bf4e2ad2fe2926cdb4fd5219b88eedd24e2a40aeb9da5a81377d472f27",
+    "binarySHA256": "16be07b989963bddebfef66eab28a4387536eb37014d9df1531dab380bd96a93"
+  },
   "requiredBindings": [
     "btDiscreteDynamicsWorld.stepSimulation",
     "btGeneric6DofSpringConstraint.enableSpring",
@@ -16,6 +21,7 @@
     "btGeneric6DofSpringConstraint.setDamping",
     "btGeneric6DofSpringConstraint.setEquilibriumPoint",
     "btRigidBody.setWorldTransform",
+    "btRigidBody.updateInertiaTensor",
     "btRigidBody.setLinearVelocity",
     "destroy",
     "getPointer",

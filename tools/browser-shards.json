@@ -39,6 +39,7 @@
       "files": [
         "vmd.spec.ts",
         "public-motion.spec.ts",
+        "public-physics.spec.ts",
         "sleeve-motion.spec.ts",
         "bfcache.spec.ts",
         "demo-loading.spec.ts",

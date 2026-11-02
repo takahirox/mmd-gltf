@@ -177,7 +177,7 @@ async function convertModelInternal(model: PMXModel, textureDirectory: string, o
     diagnostics.push(...physicsDiagnostics(physicsProfile,skin!.poseModel.solver!));
     if (!diagnostics.length) physicsBackend = await loadAmmoNode();
     const writer=doc.createExtension(PhysicsWriter); writer.profile=physicsProfile;writer.solver=skin!.poseModel.solver;
-    warnings[0]='Rigid-body-v1: sphere/box/capsule, modes 0/1/2, complemented raw PMX exclusion bits, spring-6DOF; ordered pre/post solver v2. Synthetic project policy; original-MMD fidelity unmeasured.';
+    warnings[0]='Rigid-body-v1: sphere/box/capsule, modes 0/1/2, preserved raw PMX collision eligibility bits, spring-6DOF; ordered pre/post solver v2. Synthetic project policy; original-MMD fidelity unmeasured.';
   }
   const sdef = mode === 'sdef' || mode === 'qdef' ? createSDEFAttributes(doc, buffer, model, scale) : null;
   const qdef = mode === 'qdef' ? createQDEFSelector(doc, buffer, model) : null;

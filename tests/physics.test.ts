@@ -238,6 +238,62 @@ test("mode-0 follows, mode-1 writes, mode-2 aligns bone origin, unbound bodies d
   assert.ok(timeline.bodyTransforms().get(0)![13] < -1);
   timeline.dispose();
 });
+test("mode-2 projection preserves authored offsets without feeding them back into native dynamics", () => {
+  const results=[];
+  for(const mode of [1,2] as const) {
+    const {profile,solver}=base();profile.bodies[0].mode=mode;
+    const world=new PhysicsWorld(api,profile,solver,solver.bones,new Map(),{},undefined,128);
+    try {
+      let pose:import("../packages/mmd-vpd").RestBone[]=solver.bones;
+      for(let tick=0;tick<60;tick++)pose=world.resolve(solver.bones);
+      results.push(world.bodyTransforms().get(0)!);
+      if(mode===2)near(pose[0].translation,solver.bones[0].translation);
+      else assert.ok(pose[0].translation[1]<solver.bones[0].translation[1]-.1);
+    } finally {world.dispose();}
+  }
+  assert.deepEqual(results[0],results[1],"mode only selects bone writeback; native forces, transforms and velocities stay identical");
+});
+
+test("sliced stabilization preserves every native tick and allows disposal between iterations", () => {
+  const {profile,solver}=base();
+  profile.bodies[0].mask=0;
+  profile.bodies.push({...structuredClone(profile.bodies[0]),index:1,bone:-1,mode:0,mass:0,translation:[0,1,0]});
+  profile.joints=[{index:0,name:'strained anchor',type:0,bodyA:0,bodyB:1,
+    frameA:{translation:[0,0,0],rotation:[0,0,0,1]},frameB:{translation:[0,0,0],rotation:[0,0,0,1]},
+    linearLower:[0,0,0],linearUpper:[0,0,0],angularLower:[-.1,-.1,-.1],angularUpper:[.1,.1,.1],
+    linearSpring:[0,0,0],angularSpring:[0,0,0]}];
+  const baseline=PhysicsWorld.allocations;
+  const sync=new PhysicsWorld(api,profile,solver,solver.bones,new Map(),{},undefined,128);
+  const sliced=new PhysicsWorld(api,profile,solver,solver.bones,new Map(),{},undefined,128);
+  try {
+    for(let tick=0;tick<10;tick++) {
+      const expected=sync.resolve(solver.bones,new Map(),tick!==0);
+      const work=sliced.resolveSteps(solver.bones,new Map(),tick!==0);
+      const before=sliced.bodyTransforms();
+      assert.equal(work.next().value,'prePhysics');
+      assert.deepEqual(sliced.bodyTransforms(),before,'pre-physics checkpoint must precede native mutation');
+      assert.equal(work.next().value,'kinematics');
+      assert.deepEqual(sliced.bodyTransforms(),before,'native stepping has its own work interval');
+      assert.equal(work.next().value,'step');
+      let result=work.next(),projections=0;
+      while(!result.done) {if(result.value==='projection')projections++;result=work.next();}
+      assert.ok(projections>0,'stabilization remains cancellable inside a pane');
+      assert.deepEqual(result.value,expected);
+      assert.deepEqual(sliced.bodyTransforms(),sync.bodyTransforms());
+    }
+    const beforeStep=sync.resolveSteps(solver.bones);
+    assert.equal(beforeStep.next().value,'prePhysics','cancel before native stepping');
+    beforeStep.return(solver.bones);
+    const interrupted=sliced.resolveSteps(solver.bones);
+    assert.equal(interrupted.next().value,'prePhysics');
+    assert.equal(interrupted.next().value,'kinematics');
+    assert.equal(interrupted.next().value,'step');
+    assert.equal(interrupted.next().value,'projection','cancel during stabilization');
+    interrupted.return(solver.bones);
+  } finally {sync.dispose();sliced.dispose();}
+  assert.equal(PhysicsWorld.allocations,baseline);
+});
+
 test("tick-zero disabled IK and player overrides initialize dynamic bodies from the controlled pose", async (t) => {
   const source = parsePMX(physicsPMX("box"));
   source.rigidBodies = [{
@@ -387,7 +443,7 @@ test("mode-2 spring rotation preserves the animated bone origin and composes a r
   }
 });
 
-test("independent direct Ammo contact and spring cases; raw PMX exclusions and group 15 filter through Bullet", async () => {
+test("independent direct Ammo contact and spring cases; raw PMX eligibility and asymmetric group 15 filters through Bullet", async () => {
   const direct = await directContactSpring(api);
   cases.push({
     kind: "independently authored direct-backend conformance",
@@ -398,7 +454,7 @@ test("independent direct Ammo contact and spring cases; raw PMX exclusions and g
   assert.ok(direct.springDisplacement > 1e-4);
   assert.ok(direct.jointDrift < 0.03);
   const heights: number[] = [];
-  for (const excluded of [0, 1]) {
+  for (const [floorMask, ballMask] of [[32768, 1], [32768, 0], [0, 1]]) {
     const model = parsePMX(physicsPMX("box"));
     model.constraints = [];
     model.metadata.constraintCount = 0;
@@ -407,7 +463,7 @@ test("independent direct Ammo contact and spring cases; raw PMX exclusions and g
         name: "floor",
         boneIndex: -1,
         groupIndex: 0,
-        groupTarget: 0,
+        groupTarget: floorMask,
         shapeType: 1,
         width: 5,
         height: 0.1,
@@ -425,7 +481,7 @@ test("independent direct Ammo contact and spring cases; raw PMX exclusions and g
         name: "ball",
         boneIndex: -1,
         groupIndex: 15,
-        groupTarget: excluded,
+        groupTarget: ballMask,
         shapeType: 0,
         width: 0.1,
         height: 0,
@@ -455,11 +511,13 @@ test("independent direct Ammo contact and spring cases; raw PMX exclusions and g
   }
   assert.ok(heights[0] > 0.09 && heights[0] < 0.11);
   assert.ok(heights[1] < -2);
+  assert.ok(heights[2] < -2, "a pair must pass both bodies’ eligibility filters");
   cases.push({
     kind: "raw PMX bit filtering",
     group: 15,
-    rawExclusion0: heights[0],
-    rawExclusion1: heights[1],
+    mutuallyEligible: heights[0],
+    ballExcludesFloor: heights[1],
+    floorExcludesBall: heights[2],
   });
   assert.equal(PhysicsWorld.allocations, 0);
 });
@@ -542,7 +600,7 @@ test("both PMX parser paths reflect physics once, preserve source identities and
     assert.equal(p.bodies[3].index, 3);
     assert.equal(p.bodies[3].bone, -1);
     assert.equal(p.bodies[3].group, 15);
-    assert.equal(p.bodies[3].mask, 1);
+    assert.equal(p.bodies[3].mask, 65534);
     assert.equal(p.joints[0].name, "translated rotated spring");
     near(p.bodies[1].size, [0.05, 0, 0]);
     near(p.bodies[2].size, [0.04, 0.12, 0]);

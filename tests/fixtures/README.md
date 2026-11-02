@@ -282,7 +282,7 @@ physics branch of the existing solver generator. Their distinct geometry and
 hierarchy, vertex/group targets and mixed weights come from the attributed
 Issue #43 works. The original fixtures and generator defaults remain unchanged.
 The variants add sphere/box/capsule bodies, modes 0/1/2, an unbound group-15 body,
-asymmetric exclusion bits, a translated/rotated spring joint with asymmetric
+asymmetric eligibility bits, a translated/rotated spring joint with asymmetric
 limits, and a post-physics local append consumer. They reuse both original
 `solver-{a,b}.vmd` motions and both `solver-{a,b}.vpd` poses without changing those
 bytes. All are repository-authored works by mmd-gltf contributors; no third-party

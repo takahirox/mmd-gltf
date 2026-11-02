@@ -5,7 +5,7 @@ Uka and Gene Light compare direct PMX rendering from
 Both characters offer Rest / manual, their original facial sample, Laugh · 02
 and Apology · 22. The facial samples have skeletal keys only at frame zero;
 the two added clips animate authored arms, shoulders and upper body over time.
-The downloadable animations remain solver-free. The Uka preview additionally offers all ten source IK chains in both panes; native MikuMikuDance parity is unmeasured.
+The downloadable core animations remain solver-free; optional public Physics executes a separate retained-source runtime binding (see [public physics](public-physics.md)). The Uka preview additionally offers all ten source IK chains in both panes; native MikuMikuDance parity is unmeasured.
 
 Selection starts paused at frame zero. Play/Pause, Restart, arbitrary forward or
 backward seek and Loop use one absolute time in seconds (VMD frame / 30), derived
@@ -14,8 +14,8 @@ the base pose and enables Uka's manual blink/smile. All three pinned motions,
 PMX mixer clips and both glTF instances are prepared once per character. Selection
 stops the old action/players, restores the full original pose and zero weights,
 then selects the new action and retained players by animation name. It preserves
-camera, material, outline, loop and IK controls without creating a renderer,
-canvas, model or GPU layout. A model change rebuilds the character and restores Rest.
+camera, material, outline, loop, IK and Physics controls without creating a renderer,
+canvas, model or GPU layout. A model change rebuilds the character, restores Rest and defaults Physics Off.
 Missing/corrupt/binding-incompatible inputs fail preload with disabled controls
 and an in-place Retry. Preload settles all requests before releasing failed resources.
 
@@ -113,14 +113,16 @@ full shared rest and weights before another player claims the root.
 
 The MMD side uses cached `MMDLoader.loadAnimation()` clips and a raw
 `AnimationMixer`, filtered to exact bone names and vertex-only morphs.
-`updateMMDUVs(mesh,false)` disables extra UV execution. Absolute seek restores
+`updateMMDUVs(mesh,false)` disables extra UV execution. This describes Physics Off; Physics On replaces the mixer's bone result with an independent exact source VMD binding before the ordered host pipeline. Absolute seek restores
 previous raw IK-link and prerequisite-grant transforms before the mixer evaluates
 again, preventing both untracked-link accumulation and Three.js property-cache skips. Retained players
 write their full original rest on every seek. Rest also explicitly restores all
 PMX bone transforms and clears all weights. Hidden documents, inactive viewers
 and cached page suspension pause the same shared clock.
 
-All conversions use `mode:'bdef', solver:'none', physics:'none'`. The public **IK**
+### IK-only playback (Physics Off)
+
+All conversions use `mode:'bdef', solver:'none', physics:'none'`; the separate [retained-source physics binding](public-physics.md) is attached by public asset preparation. The public **IK**
 checkbox defaults On for Uka (ten chains) and Gene Light (six chains), applied to
 three independently loaded skins (PMX, Toon, PBR). Off bypasses every IK chain and
 restores raw VMD positions and rotations, including untracked procedural joints.
@@ -135,7 +137,7 @@ CCDIKSolver, which supports unrestricted links and full XYZ bounds, after raw
 bone/morph motion. No rotations or vertices are copied between skeletons. Source
 iteration caps and maximum per-step angles are retained; iteration caps outside
 1–1024 are explicitly unavailable. Execution sorts by pre/post-physics phase,
-deformation layer, then source index; physics is off, so the phase boundary has
+deformation layer, then source index; Physics is Off in this path, so the phase boundary has
 no simulation step. Source link order is unchanged. PMX axial X/Y bounds are
 negated and exchanged for reflected right-handed execution; Z bounds are unchanged.
 The loader already performs this reflection, so its limits are normalized back
@@ -160,7 +162,7 @@ The [pinned source graph audit](gene-grant-audit.json) records flags, spaces,
 rest transforms, ancestry and source influences. Bone 26 is neither grant-driven
 nor an IK-written link; the other five chains read no grant-written ancestor.
 
-Grant execution belongs to IK: Off restores all procedural writes to raw authored
+With Physics Off, grant execution belongs to IK: IK Off restores all procedural writes to raw authored
 TRS. A motion-disabled controller also skips any grant needed only by that chain.
 Ordinary/global grants read the source bone-local translation delta and quaternion;
 local grants read accumulated model-space deltas from the bind pose, excluding
@@ -187,8 +189,7 @@ The visible control and counts remain compact; full records live in About & cred
 
 See the [real-source sleeve investigation](uka-sleeves.md) for preserved historical
 six-chain measurements. Those measurements alone are not evidence of ten-chain
-execution. Unrelated grants, physics, non-vertex morphs and VMD scene controls remain off.
-Bullet/Ammo never starts. There is no live upstream runtime fetch or original
+execution. With Physics Off, unrelated grants and simulation remain off and Bullet/Ammo never starts. [Physics On](public-physics.md) executes the full supported source physics/grant profile through the host evaluator. Non-vertex morphs and VMD scene controls remain omitted in both states. There is no live upstream runtime fetch or original
 Windows MMD numerical parity claim. Public View presets were removed; the shared
 OrbitControls camera is initialized once per model and persists across motion,
 IK, material and outline changes. Browser evidence uses real pointer orbit gestures under the reduced-motion
@@ -354,4 +355,12 @@ normalizing the measurement resolved it. Production grant inputs already used
 normalization. The final full and focused runs exited normally with no failures.
 Native WebGPU had no adapter; WebGL2 used Chrome / ANGLE SwiftShader. No Bullet or
 Ammo requests occurred. Original Windows MMD / MikuDanceStudio parity remains
-unmeasured. No post-merge check is required.
+unmeasured. That earlier IK-only work required no post-merge check. Issue #77
+requires physical Android verification when hardware is available, as below.
+
+## Optional public Physics
+
+The adjacent Physics control defaults Off. Gene Apology with IK On disables
+Physics for the whole clip because it exceeds the joint-accuracy limits; turn IK
+Off or choose another motion to make Physics available. Source-consistent
+execution of that combination remains follow-up work. Its [runtime contract, full source audit, ordered grants/IK, fixed-axis treatment, shared clock, lazy backend and device limits](public-physics.md) describe the real Uka/Gene simulation. Raw retained VMD and approximate ordinary glTF playback remain separate from simulation. Windows MMD parity and physical Android verification remain unverified.

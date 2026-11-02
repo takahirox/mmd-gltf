@@ -1,10 +1,12 @@
-import { diagnosticError, validateBudget } from "../mmd-diagnostics";
+import { diagnosticError, MMDDiagnosticError, validateBudget } from "../mmd-diagnostics";
+import { JointProjector } from "./joint-projection";
 import { Matrix4, Quaternion, Vector3 } from "three";
 import type Ammo from "ammojs-typed";
 import { solvePose, type SolverProfile } from "../mmd-solver";
 import {
   validatePhysics,
   assertPhysicsExecutable,
+  physicsBindingDiagnostics,
   type PhysicsBudget,
   type PhysicsProfile,
   type Frame,
@@ -41,11 +43,20 @@ const worlds = (pose: RestBone[]) => {
   }
   return out;
 };
+/** A host evaluator must validate its complete source operations before native allocation.
+ * It replaces, rather than supplements, the generic solver in both phases. */
+export interface PhysicsPoseEvaluator {
+  validate(): void;
+  evaluate(raw: RestBone[], enabled: ReadonlyMap<number,boolean>, phase:'pre'|'post'): RestBone[];
+}
 /** Each world owns every constructed native handle, never borrowed return values. */
 export class PhysicsWorld {
   private owned: unknown[] = [];
   private borrowed = new Map<unknown, Map<number, unknown>>();
   private bodies = new Map<number, Ammo.btRigidBody>();
+  private projector?: JointProjector;
+  private jointProjectionIterations: number;
+  private inverseInertia = new Map<number, Vector3>();
   private constraints: Ammo.btGeneric6DofSpringConstraint[] = [];
   private world!: Ammo.btDiscreteDynamicsWorld;
   private scratch!: Ammo.btTransform;
@@ -73,11 +84,22 @@ export class PhysicsWorld {
     initial: RestBone[],
     enabled: ReadonlyMap<number, boolean> = new Map(),
     private budget: PhysicsBudget = {},
+    private evaluator?: PhysicsPoseEvaluator,
+    // A nonzero budget selects stabilized, native-independent mode-2
+    // projection. Zero retains the established synthetic/v1 execution policy.
+    jointProjectionIterations = 0,
   ) {
     checkAmmo(api);
+    if(!Number.isInteger(jointProjectionIterations) || jointProjectionIterations<0 || jointProjectionIterations>128)
+      throw new Error('MMD_physics: joint projection iteration budget must be 0..128');
+    this.jointProjectionIterations=jointProjectionIterations;
     validatePhysics(profile, solver);
-    assertPhysicsExecutable(profile, solver, budget);
-    const pre = solvePose(solver, initial, enabled, "pre", this.budget),
+    if(evaluator) {
+      const diagnostics=physicsBindingDiagnostics(profile,solver,budget);
+      if(diagnostics.length)throw new MMDDiagnosticError(diagnostics[0]);
+      evaluator.validate();
+    } else assertPhysicsExecutable(profile, solver, budget);
+    const pre = this.evaluate(initial, enabled, "pre"),
       poseWorld = worlds(pre);
     try {
       const config = this.own(new api.btDefaultCollisionConfiguration()),
@@ -118,6 +140,7 @@ export class PhysicsWorld {
           inertia = this.own(new api.btVector3(0, 0, 0)),
           mass = b.mode === 0 ? 0 : b.mass;
         if (mass) shape.calculateLocalInertia(mass, inertia);
+        this.inverseInertia.set(b.index,new Vector3(...[inertia.x(),inertia.y(),inertia.z()].map(v=>v>0?1/v:0)));
         const info = this.own(
             new api.btRigidBodyConstructionInfo(mass, state, shape, inertia),
           ),
@@ -130,6 +153,7 @@ export class PhysicsWorld {
         this.world.addRigidBody(body, 1 << b.group, b.mask);
         this.bodies.set(b.index, body);
       }
+      if(jointProjectionIterations)this.projector=new JointProjector(profile,this.inverseInertia);
       for (const j of profile.joints) {
         const a = this.own(new api.btTransform()),
           b = this.own(new api.btTransform());
@@ -207,19 +231,29 @@ export class PhysicsWorld {
     enabled: ReadonlyMap<number, boolean> = new Map(),
     step = true,
   ) {
+    const work=this.resolveSteps(raw,enabled,step);
+    let result=work.next();
+    while(!result.done)result=work.next();
+    return result.value;
+  }
+  /** Cancellable host work; callers must discard a world if resolution is interrupted. */
+  *resolveSteps(
+    raw: RestBone[],
+    enabled: ReadonlyMap<number, boolean> = new Map(),
+    step = true,
+  ):Generator<'prePhysics'|'kinematics'|'step'|'projection'|'stabilizationWriteback'|'bones',RestBone[]> {
     if (this.disposed) throw new Error("MMD_physics: disposed world");
-    const pre = solvePose(this.solver, raw, enabled, "pre", this.budget),
-      animated = worlds(pre);
+    const pre = this.evaluate(raw, enabled, "pre");
+    yield 'prePhysics';
+    const animated = worlds(pre);
     for (const b of this.profile.bodies) {
       const body = this.bodies.get(b.index)!;
       if (b.mode === 0)
-        this.write(
-          body,
-          (animated.get(b.bone) ?? new Matrix4()).clone().multiply(matrix(b)),
-        );
-      if (b.mode === 2 && b.bone !== -1)
-        this.align(b.index, animated.get(b.bone)!);
+        this.write(body,(animated.get(b.bone) ?? new Matrix4()).clone().multiply(matrix(b)));
+      if (!this.projector && b.mode === 2 && b.bone !== -1)
+        this.align(b.index,animated.get(b.bone)!);
     }
+    yield 'kinematics';
     // maxSubSteps=0 deliberately disables Bullet's hidden accumulator and interpolation.
     if (step)
       this.world.stepSimulation(
@@ -227,6 +261,19 @@ export class PhysicsWorld {
         0,
         this.profile.fixedStep,
       );
+    yield 'step';
+    // The public real-model host opts into bounded position stabilization.
+    // It changes neither source parameters nor Bullet's forces/velocities.
+    if (this.projector) {
+      const transforms = new Map([...this.bodies].map(([i,b]) => [i,this.read(b)]));
+      for(const _ of this.projector.projectSteps(transforms,this.jointProjectionIterations))yield 'projection';
+      for (const b of this.profile.bodies) if (b.mode !== 0) {
+        const body = this.bodies.get(b.index)!;
+        this.write(body,transforms.get(b.index)!);
+        body.updateInertiaTensor();
+      }
+    }
+    yield 'stabilizationWriteback';
     const result = structuredClone(pre),
       byIndex = new Map(result.map((b) => [b.index, b])),
       pending = result.slice();
@@ -244,7 +291,7 @@ export class PhysicsWorld {
         const b = writers.get(bone.index),
           parent = resolvedWorld.get(bone.parentIndex) ?? new Matrix4();
         if (b) {
-          if (b.mode === 2) this.align(b.index, animated.get(bone.index)!);
+          if (!this.projector && b.mode === 2)this.align(b.index,animated.get(bone.index)!);
           const target = this.read(this.bodies.get(b.index)!).multiply(
             matrix(b).invert(),
           );
@@ -253,14 +300,24 @@ export class PhysicsWorld {
             q = new Quaternion();
           local.decompose(p, q, new Vector3());
           const out = byIndex.get(bone.index)!;
-          out.translation = p.toArray();
+          // Stabilized writeback only reads the solved native pose. Feeding
+          // authored offsets back into bodies would invalidate solved joints.
+          // Mode 2 owns rotation only. Keep authored local translation even
+          // when its parent is another dynamic body (real hair/cloth chains).
+          if(b.mode===1)out.translation = p.toArray();
           out.rotation = q.normalize().toArray();
         }
         resolvedWorld.set(bone.index, parent.clone().multiply(matrix(bone)));
         pending.splice(i, 1);
       }
     }
-    return solvePose(this.solver, result, enabled, "post", this.budget);
+    if (!this.projector)for(const b of this.profile.bodies)if(b.mode===2 && b.bone!==-1)
+      this.align(b.index,resolvedWorld.get(b.bone)!);
+    yield 'bones';
+    return this.evaluate(result, enabled, "post");
+  }
+  private evaluate(raw:RestBone[],enabled:ReadonlyMap<number,boolean>,phase:'pre'|'post') {
+    return this.evaluator ? this.evaluator.evaluate(raw,enabled,phase) : solvePose(this.solver,raw,enabled,phase,this.budget);
   }
   private align(index: number, animated: Matrix4) {
     const b = this.profile.bodies.find((b) => b.index === index)!,
@@ -296,6 +353,8 @@ export class PhysicsWorld {
     this.borrowed.clear();
     this.owned = [];
     this.bodies.clear();
+    this.inverseInertia.clear();
+    this.projector=undefined;
     this.constraints = [];
     this.world = undefined!;
     this.scratch = undefined!;

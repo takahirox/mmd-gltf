@@ -169,6 +169,7 @@ export function applyBoneMorphs(model: MorphModel, weights: readonly number[], r
   const {bones}=reduceMorphs(model,weights), result=structuredClone(raw), byIndex=new Map(result.map(b=>[b.index,b]));
   for(const m of model.morphs) if(m.type===2 && model.version===3) {
     const w=bones.get(m.index)??0;
+    if(w===0)continue; // A zero-weight bone morph must leave raw TRS bit-for-bit unchanged.
     for(const e of m.bone!) {
       const b=byIndex.get(e.index); if(!b) throw new Error('Morph: missing raw bone');
       b.translation=b.translation.map((v,i)=>v+w*e.translation[i]) as Vec3;

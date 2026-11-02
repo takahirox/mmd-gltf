@@ -1,3 +1,4 @@
+import { publicPhysicsSource } from './audit-public-physics';
 import { copyFile, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -16,9 +17,9 @@ export async function prepareUka() {
   // No source filtering, altered solver limits, or model-specific converter path.
   const motions = await publicMotions(model, directory, '04_littlesmile');
   const { document, io, warnings } = await convertModel(model, directory, {mode:'bdef', solver:'none', physics:'none', vmds:motions.map(m=>({name:m.name,bytes:m.bytes})),vmdBinding:{morphTypes:[1]}});
-  const changes = 'Unmodified PMX and three official VMDs converted with BDEF skin at 0.08 m/unit, exact retained VMD v6 and approximate core fallback. Downloadable animations are solver-free. Public preview optionally evaluates all ten source IK chains symmetrically after raw bones and vertex expressions, with source XYZ limits and VMD controller switches; no grants or physics; active morph buffers and manual blink/smile keep original identities. Full conversion retains all supported vertex/group/bone morph data. Material/UV morphs, unresolved names and VMD scene controls are not executed. Source textures unchanged; preview limited to 1024 px.';
+  const changes = 'Unmodified PMX and three official VMDs converted with BDEF skin at 0.08 m/unit, exact retained VMD v6 and approximate core fallback. Downloadable animations are solver-free. Public preview optionally evaluates all ten source IK chains symmetrically after raw bones and vertex expressions, with source XYZ limits and VMD controller switches; Physics Off uses no other grants or simulation; optional Physics On executes all source rigid bodies/joints and ordered grants through extras.publicPhysics; active morph buffers and manual blink/smile keep original identities. Full conversion retains all supported vertex/group/bone morph data. Material/UV morphs, unresolved names and VMD scene controls are not executed. Source textures unchanged; preview limited to 1024 px.';
   document.getRoot().setExtras({...document.getRoot().getExtras(),
-    source:`https://github.com/${manifest.repository}/tree/${manifest.commit}`, sourceManifest:manifest,
+    source:`https://github.com/${manifest.repository}/tree/${manifest.commit}`, sourceManifest:manifest, publicPhysics:{version:1,...publicPhysicsSource(model)},
     attribution:ukaAttribution, license:'CC BY 4.0',
     notices:['README.md','README.ja.md'], rights:'CC BY 4.0; preserve attribution, source and change notice. Original usage guidelines apply; see both accompanying READMEs. No endorsement implied.', changes,
   });

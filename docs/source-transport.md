@@ -175,3 +175,7 @@ provides reverse-engineering evidence, not proof of fidelity:
 Windows original-MMD v9.32/MikuDanceStudio trajectory comparison was not run in
 this environment. It remains optional. No table entry claims measured original
 fidelity; the reference implementation's reconstructed comments are evidence.
+
+## Public comparison retained-source binding
+
+The Uka/Gene public asset builders additionally attach `extras.publicPhysics` version 1 with complete solver-3 and physics-2 payloads. This [explicit runtime binding](public-physics.md) avoids making retained VMD players own a second solver; ordinary glTF still plays its raw approximate core animations. The public host implements its ordered pose operations, including fixed-axis twist projection and all source grants, while `physicsBindingDiagnostics` independently validates physics dependencies. The generic executor still reports its fixed-axis limitation. No source records or bytes are filtered to suppress those diagnostics.

@@ -305,7 +305,13 @@ function validatePhysicsInternal(
 export interface PhysicsBudget extends SolverBudget { maxBodies?: number; maxJoints?: number }
 export function physicsDiagnostics(profile: PhysicsProfile, solver: SolverProfile, budget: PhysicsBudget = {}): Diagnostic[] {
   validatePhysics(profile,solver);
-  const result=solverDiagnostics(solver,budget);
+  return [...solverDiagnostics(solver,budget), ...physicsBindingDiagnostics(profile,solver,budget)];
+}
+/** Body/joint capability checks for hosts that supply their own ordered pose evaluator.
+ * This does not assert that the generic skeleton solver can execute the source. */
+export function physicsBindingDiagnostics(profile: PhysicsProfile, solver: SolverProfile, budget: PhysicsBudget = {}): Diagnostic[] {
+  validatePhysics(profile,solver);
+  const result:Diagnostic[]=[];
   const maxBodies=budget.maxBodies??1024, maxJoints=budget.maxJoints??4096;
   validateBudget(maxBodies,EXTENSION_NAME);validateBudget(maxJoints,EXTENSION_NAME);
   if(profile.bodies.length>maxBodies || profile.joints.length>maxJoints) result.push({category:'resource-exhaustion',code:'physics-count-budget',path:EXTENSION_NAME,message:`body/joint execution budget exceeded (${maxBodies}/${maxJoints})`});

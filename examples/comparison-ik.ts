@@ -3,7 +3,7 @@ import { CCDIKSolver } from '@takahirox/three-mmd/animation/CCDIKSolver.js';
 import type { VMD } from '../packages/mmd-vmd';
 
 /** PMX axial limits remain left handed after mmd-parser reflects positions. */
-export type IKSourceBone = {index:number;name:string;flags?:number;layer?:number;grant?:unknown;ik?:{
+export type IKSourceBone = {index:number;name:string;flags?:number;layer?:number;fixAxis?:number[];grant?:unknown;ik?:{
   effector:number;iteration:number;maxAngle:number;links:{index:number;angleLimitation:number;
     lowerLimitationAngle?:number[];upperLimitationAngle?:number[]}[];
 }};
@@ -11,14 +11,17 @@ type Grant = {parentIndex:number;ratio:number;isLocal:boolean;affectRotation:boo
 const order=(a:IKSourceBone,b:IKSourceBone)=>
   Number(!!((a.flags??0)&0x1000))-Number(!!((b.flags??0)&0x1000)) || (a.layer??0)-(b.layer??0) || a.index-b.index;
 
-/** Only grants in the IK read closure execute, and only while IK is On.
- * Each instance owns its raw pose; no completed pose is copied between skins. */
-export function comparisonIK(root:Object3D, source:IKSourceBone[], direct=false) {
+/** Default: IK read-closure grants only. The physics host requests all source
+ * grants and separates pre/post phases. Each instance owns its raw pose. */
+export function comparisonIK(root:Object3D, source:IKSourceBone[], direct=false, physics=false, metersPerUnit=direct?.08:1) {
   let mesh:SkinnedMesh | undefined;
   root.traverse(n=>{if(!mesh && (n as SkinnedMesh).isSkinnedMesh)mesh=n as SkinnedMesh;});
   if(!mesh)throw new Error('IK: missing skin');
   const bones=mesh.skeleton.bones;
-  const bone=(index:number)=>direct?bones[index]:bones.find(b=>b.userData.pmxBone?.index===index);
+  // Keep source lookup independent of skeleton array order, without scanning
+  // that array for every dependency validation in every simulated tick.
+  const sourceBones=new Map(bones.map(b=>[b.userData.pmxBone?.index,b]));
+  const bone=(index:number)=>direct?bones[index]:sourceBones.get(index);
   const byIndex=new Map(source.map(b=>[b.index,b]));
   const identity=new Map(bones.map(b=>[b,source.find(s=>bone(s.index)===b)]));
   root.updateMatrixWorld(true);
@@ -107,7 +110,7 @@ export function comparisonIK(root:Object3D, source:IKSourceBone[], direct=false)
       dependencies:[...dependencies].sort((a,b)=>a-b),reasons:[...new Set(reasons)]};
   });
   const required=new Set(controllers.flatMap(c=>c.dependencies));
-  const grants=source.filter(s=>required.has(s.index) && s.grant).sort(order).map(s=>{
+  const grants=source.filter(s=>(physics || required.has(s.index)) && s.grant).sort(order).map(s=>{
     const g=s.grant as Grant;
     return {index:s.index,name:s.name,source:g.parentIndex,sourceName:byIndex.get(g.parentIndex)?.name,
       local:g.isLocal,rotation:g.affectRotation,translation:g.affectPosition,rate:g.ratio,
@@ -119,14 +122,15 @@ export function comparisonIK(root:Object3D, source:IKSourceBone[], direct=false)
     iteration:c.iteration,maxAngle:c.maxAngle,links:c.links.map(l=>({index:bones.indexOf(bone(l.index)!),
       ...(l.lower && l.upper?{rotationMin:new Vector3().fromArray(l.lower),rotationMax:new Vector3().fromArray(l.upper)}:{})}))})):[];
   const solver=new CCDIKSolver(mesh,iks);
-  const writes=[...new Set([...iks.flatMap(ik=>ik.links.map(l=>bones[l.index])),...grants.map(g=>bone(g.index)!).filter(Boolean)])];
+  const writes=[...new Set([...(physics?bones:[]),...iks.flatMap(ik=>ik.links.map(l=>bones[l.index])),...grants.map(g=>bone(g.index)!).filter(Boolean)])];
   const raw=writes.map(b=>({position:b.position.clone(),rotation:b.quaternion.clone(),scale:b.scale.clone()}));
   const schedule=source.filter(s=>selected.includes(s) || grants.some(g=>g.index===s.index)).sort(order)
     .flatMap(s=>[...(grants.some(g=>g.index===s.index)?[{kind:'grant',index:s.index,phase:(s.flags??0)&0x1000?'postPhysics':'prePhysics',layer:s.layer??0}]:[]),
       ...(s.ik?[{kind:'ik',index:s.index,phase:(s.flags??0)&0x1000?'postPhysics':'prePhysics',layer:s.layer??0}]:[])]);
   const state={controllers,grants,schedule,supported,unsupported:controllers.length-supported,available,
     executed:[] as number[],disabledByMotion:[] as number[],appliedGrants:[] as number[],order:[] as typeof schedule,
-    grantPolicy:'IK prerequisites only; IK Off restores raw pose',
+    grantPolicy:physics?'All source grants in phase/layer/index order; IK independently controls chains':'IK prerequisites only; IK Off restores raw pose',
+    fixedAxes:physics?source.filter(s=>s.fixAxis).map(s=>s.index):[],
     error:'',reason:controllers.length===0?'No source IK controllers':controllers.flatMap(c=>c.reasons.map(r=>`${c.name}: ${r}`)).join('; ')};
   const remember=()=>writes.forEach((b,i)=>{raw[i].position.copy(b.position);raw[i].rotation.copy(b.quaternion);raw[i].scale.copy(b.scale);});
   const clear=()=>{state.executed=[];state.disabledByMotion=[];state.appliedGrants=[];state.order=[];state.error='';};
@@ -171,22 +175,30 @@ export function comparisonIK(root:Object3D, source:IKSourceBone[], direct=false)
     bind.premultiply(parent<0?mesh!.bindMatrix.clone().invert():mesh!.skeleton.boneInverses[parent]);
     const bindPosition=new Vector3(),bindRotation=new Quaternion(),bindScale=new Vector3();
     bind.decompose(bindPosition,bindRotation,bindScale);
-    return {bindTranslation:bindPosition.toArray().map(v=>v*(direct?.08:1)),bindRotation:bindRotation.toArray(),bindScale:bindScale.toArray(),index,name:byIndex.get(index)?.name,parent:b?.parent?identity.get(b.parent as typeof bones[number])?.index??-1:-1,
-      translation:r?.local.toArray().map(v=>v*(direct?.08:1)),rotation:r?.rotation.toArray(),scale:r?.scale.toArray()};
+    return {bindTranslation:bindPosition.toArray().map(v=>v*metersPerUnit),bindRotation:bindRotation.toArray(),bindScale:bindScale.toArray(),index,name:byIndex.get(index)?.name,parent:b?.parent?identity.get(b.parent as typeof bones[number])?.index??-1:-1,
+      translation:r?.local.toArray().map(v=>v*metersPerUnit),rotation:r?.rotation.toArray(),scale:r?.scale.toArray()};
   });
   return {state,bindings,validatePose,remember,restore,
-    apply:(motion:VMD | undefined,time:number)=>{
-      clear();if(!state.available || !validatePose())return;
+    apply:(motion:VMD | undefined,time:number,phase?:'prePhysics'|'postPhysics',ikEnabled=true)=>{
+      if(phase!=='postPhysics')clear();if(!state.available || !validatePose())return;
       remember();
       const switches=new Map<string,boolean>();
       for(const record of [...(motion?.displays??[])].sort((a,b)=>a.frame-b.frame))if(record.frame<=time*30)
         for(const item of record.ik)if(item.name.terminated && item.name.text)switches.set(item.name.text,item.enabled!==0);
-      const active=controllers.filter(c=>switches.get(c.name)!==false);
+      const active=controllers.filter(c=>ikEnabled && switches.get(c.name)!==false);
       state.disabledByMotion=controllers.filter(c=>!active.includes(c)).map(c=>c.index);
       const needed=new Set(active.flatMap(c=>c.dependencies));
       try {
+        if(physics)for(const s of source) {
+          if(!s.fixAxis || (!!((s.flags??0)&0x1000)?'postPhysics':'prePhysics')!==(phase??'prePhysics'))continue;
+          const axis=new Vector3(s.fixAxis[0],s.fixAxis[1],-s.fixAxis[2]).normalize(),q=bone(s.index)!.quaternion;
+          const twist=q.x*axis.x+q.y*axis.y+q.z*axis.z;
+          q.set(axis.x*twist,axis.y*twist,axis.z*twist,q.w);
+          if(q.lengthSq()<1e-20)q.identity();else q.normalize();
+        }
         for(const step of schedule) {
-          if(step.kind==='grant' && needed.has(step.index)) {applyGrant(grants.find(g=>g.index===step.index)!);state.appliedGrants.push(step.index);}
+          if(phase && step.phase!==phase)continue;
+          if(step.kind==='grant' && (physics || needed.has(step.index))) {applyGrant(grants.find(g=>g.index===step.index)!);state.appliedGrants.push(step.index);}
           else if(step.kind==='ik' && active.some(c=>c.index===step.index)) {
             root.updateMatrixWorld(true);solver.updateOne(iks[controllers.findIndex(c=>c.index===step.index)]);state.executed.push(step.index);
           } else continue;

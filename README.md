@@ -15,7 +15,10 @@ expressions in Rest mode and synchronized official VMD playback in both views.
 Uka and Gene Light each offer their original facial sample plus Laugh and Apology
 with authored body motion. IK defaults On for all ten Uka and all six Gene Light
 source chains. Gene evaluates its required shoulder rotation grant in source order.
-IK Off restores raw motion; unrelated grants and physics remain disabled. The right
+IK Off restores raw motion when Physics is Off. The adjacent Physics checkbox
+defaults Off; On runs the real Uka/Gene rigid bodies and joints in independent worlds.
+Gene Apology requires IK Off for Physics; with IK On, Physics is unavailable for
+the whole clip with a visible joint-accuracy diagnostic. The right
 pane also offers the independent PBR fallback. The Outline menu toggles both
 implementations; their different thickness laws are labeled in the example.
 
@@ -70,9 +73,11 @@ The public Uka and Gene comparisons offer synchronized official VMD playback,
 three named animations per character without reloading on clip selection. Both panes
 use raw bone offsets and vertex expressions. The **IK** checkbox runs all ten Uka
 foot/toe/sleeve chains or all six Gene chains symmetrically, subject to VMD controller
-switches. Gene shoulder grant 35 from 26 runs before arm controller 38. Off restores
-the raw pose, including grant writes. Counts, identities, grant order, XYZ bounds and
-unavailable reasons are in About & credits → IK diagnostics. Unrelated grants and physics remain off. See the
+switches. Gene shoulder grant 35 from 26 runs before arm controller 38. With Physics
+Off, IK Off restores the raw pose, including grant writes. Counts, identities, grant order, XYZ bounds and
+unavailable reasons are in About & credits → IK & Physics diagnostics. Physics defaults
+Off; On executes the complete supported body/joint profile and ordered source
+grants. See the [real-model physics audit, runtime and device limits](docs/public-physics.md) and
 [pinned motion audit and playback scope](docs/public-motion.md). The internal synthetic BDEF
 test harness loads two VPD poses and two VMD bone motions, two combined bone/morph motions and morph-only motion on two distinct BDEF rigs, supports local files with explicit
 encoding/binding maps, and provides pose apply/reset plus motion transport and fractional seeking. It applies raw
@@ -125,7 +130,7 @@ Use `--mode qdef` with `MMDQDEFPlugin` for the bounded
 PMX 2.1 rigid dual-quaternion profile; see the [QDEF guide](docs/qdef.md) and
 [extension draft](extensions/MMD_skinning_qdef/README.md). Ordinary loaders retain
 an approximate BDEF4 fallback. Ordered pre-physics IK/append is available with
-`--solver pre-physics-v1`; see the [solver guide](docs/solver.md). General PMX 2.1, post-physics, simulation,
+`--solver pre-physics-v1`; see the [solver guide](docs/solver.md). Unrestricted PMX 2.1, arbitrary solver/physics profiles,
 other morph-family evaluation and scene VMD execution remain unsupported. PMX type-1 vertex morphs and one-hop vertex-only groups convert in static and all skinned modes. Skinned conversion also retains type-2 bone offsets and supported one-hop mixed groups in optional [MMD_morphs](extensions/MMD_morphs/README.md); independent controls feed raw bones before the existing solver/physics pipeline; VMD weights share the bone transport. Solver-free VPD bone offsets are supported;
 see the [VPD contract and APIs](docs/pipeline.md#vpd-bone-offsets). The outline effect
 also accepts core POSITION/NORMAL morph deformation from other assets.
@@ -197,6 +202,6 @@ Issue #43 adds optional [pre-physics IK and append](docs/solver.md), the
 and solver Demo presets with explicit IK controls and applied-state export.
 Enable conversion with `--solver pre-physics-v1`; default conversion stays solver-free.
 
-Opt-in [bounded rigid-body physics](docs/physics.md) supports both synthetic rigs, VMD/VPD, BDEF/SDEF/QDEF, spring joints and applied-state export. This is a project profile; original-MMD fidelity remains unmeasured.
+Opt-in [bounded rigid-body physics](docs/physics.md) supports the [public Uka/Gene comparisons](docs/public-physics.md) and both synthetic rigs, VMD/VPD, BDEF/SDEF/QDEF, spring joints and applied-state export. This is a project profile; original-MMD fidelity remains unmeasured. Physical Android Chrome Physics verification is pending; the [device test plan](docs/public-physics.md#validation-and-physical-android-plan) separates desktop layout checks from real hardware results.
 
 [Bone/mixed morph implementation and validation](docs/bone-morphs.md) covers the independent scalar API, VMD v5 transport, VPD handoffs and applied-state exports.

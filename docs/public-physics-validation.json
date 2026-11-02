@@ -1,0 +1,6486 @@
+{
+  "issue": 77,
+  "revision": "Bounded joint stabilization and native-independent public mode-2 writeback",
+  "measuredAtUTC": "2026-11-01T12:33:57.666494+00:00",
+  "environment": {
+    "ci": false,
+    "platform": "darwin",
+    "release": "27.2.0",
+    "node": "v26.12.1",
+    "cpu": "Apple M4 Max",
+    "logicalCPUs": 16,
+    "workers": 1,
+    "channel": "chrome",
+    "conformanceMatrix": "representative",
+    "renderer": "ANGLE SwiftShader (CPU)"
+  },
+  "browser": "156.0.8078.74",
+  "physicsPolicy": {
+    "fixedStepSeconds": 0.008333333333333333,
+    "gravityMPS2": [
+      0,
+      -9.80665,
+      0
+    ],
+    "metersPerPMXUnit": 0.08,
+    "independentWorlds": 3,
+    "sourceBodiesJoints": {
+      "uka": [
+        164,
+        151
+      ],
+      "gene": [
+        87,
+        92
+      ]
+    },
+    "poseInputResolution": 1e-07,
+    "backendSHA256": "422b87333fec6272a592088f96bd672dc8f62b9649b12d44e493fd427e89fff8",
+    "mode2Writeback": "Rotation only; authored local translation preserved; no native origin or velocity feedback.",
+    "jointPositionStabilization": {
+      "maximumSweeps": 128,
+      "earlyExitLinearMetres": 1e-07,
+      "earlyExitAngularRadians": 1e-06,
+      "rotationCorrectionCapRadians": 0.2,
+      "lockedJointClusters": "Position projection only, root-centred unit-radius inverse-mass metric. All source Bullet bodies/joints/masses/inertias/springs/filters retained.",
+      "otherBodies": "Ammo-calculated shape inertia; 3x3 locked-anchor block solves and angular/limited-axis gradients."
+    },
+    "regressionBounds": {
+      "ordinaryJoints": {
+        "linearMetres": 0.0002,
+        "angularRadians": 0.005
+      },
+      "geneCloakJoints51Through67": {
+        "linearMetres": 0.03,
+        "angularRadians": 0.005
+      },
+      "geneLockedCounterweightJoints68Through76": {
+        "linearMetres": 2e-05,
+        "angularRadians": 2e-05
+      }
+    },
+    "legacyV1SyntheticPolicy": "Unchanged; stabilized mode is explicitly selected by the public host."
+  },
+  "browserRuns": {
+    "initial": {
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "release": "27.2.0",
+        "node": "v26.12.1",
+        "cpu": "Apple M4 Max",
+        "logicalCPUs": 16,
+        "workers": 1,
+        "channel": "chrome",
+        "conformanceMatrix": "representative",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "status": "failed",
+      "durationMs": 681975.1220000001,
+      "testCount": 16,
+      "attemptCount": 16,
+      "statuses": {
+        "failed": 2,
+        "passed": 14
+      },
+      "suites": {
+        "physics.spec.ts": {
+          "durationMs": 141801,
+          "attempts": 4,
+          "statuses": {
+            "failed": 2,
+            "passed": 2
+          }
+        },
+        "public-motion.spec.ts": {
+          "durationMs": 149793,
+          "attempts": 5,
+          "statuses": {
+            "passed": 5
+          }
+        },
+        "public-physics.spec.ts": {
+          "durationMs": 385013,
+          "attempts": 7,
+          "statuses": {
+            "passed": 7
+          }
+        }
+      },
+      "selection": {
+        "grep": "/.*/",
+        "grepInvert": "null"
+      },
+      "baselines": [
+        {
+          "run": 69,
+          "durationMs": 2145078.161,
+          "testCount": 73
+        },
+        {
+          "run": 70,
+          "durationMs": 2059749.807,
+          "browserStepMs": 2061000,
+          "testCount": 73
+        }
+      ],
+      "cases": [
+        {
+          "title": "physics.spec.ts / physics GPU bdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "suite": "physics.spec.ts",
+          "status": "failed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 15230
+        },
+        {
+          "title": "physics.spec.ts / physics GPU sdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "suite": "physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 25582
+        },
+        {
+          "title": "physics.spec.ts / physics GPU qdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "suite": "physics.spec.ts",
+          "status": "failed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 58777
+        },
+        {
+          "title": "physics.spec.ts / built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery",
+          "suite": "physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 42212
+        },
+        {
+          "title": "public-motion.spec.ts / uka: pinned real VMD, shared absolute seek, pixels, pause, loop and cleanup",
+          "suite": "public-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 49334
+        },
+        {
+          "title": "public-motion.spec.ts / gene: pinned real VMD, shared absolute seek, pixels, pause, loop and cleanup",
+          "suite": "public-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 43968
+        },
+        {
+          "title": "public-motion.spec.ts / VMD missing: fail closed and retry",
+          "suite": "public-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18683
+        },
+        {
+          "title": "public-motion.spec.ts / VMD corrupt: fail closed and retry",
+          "suite": "public-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18768
+        },
+        {
+          "title": "public-motion.spec.ts / VMD unmatched: fail closed and retry",
+          "suite": "public-motion.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 19040
+        },
+        {
+          "title": "public-physics.spec.ts / uka: independent real physics, synchronized controls and native lifetime",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 129142
+        },
+        {
+          "title": "public-physics.spec.ts / gene: independent real physics, synchronized controls and native lifetime",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 135574
+        },
+        {
+          "title": "public-physics.spec.ts / public physics backend missing: recover Off, retry, and unload",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 25915
+        },
+        {
+          "title": "public-physics.spec.ts / public physics backend corrupt: recover Off, retry, and unload",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18372
+        },
+        {
+          "title": "public-physics.spec.ts / pending backend enable can be cancelled without stale worlds or checked state",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 15375
+        },
+        {
+          "title": "public-physics.spec.ts / uka: PBR cloth and hair pixels respond to physics in both clips",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 33191
+        },
+        {
+          "title": "public-physics.spec.ts / gene: PBR cloth and hair pixels respond to physics in both clips",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 27444
+        }
+      ]
+    },
+    "final": {
+      "environment": {
+        "ci": false,
+        "platform": "darwin",
+        "release": "27.2.0",
+        "node": "v26.12.1",
+        "cpu": "Apple M4 Max",
+        "logicalCPUs": 16,
+        "workers": 1,
+        "channel": "chrome",
+        "conformanceMatrix": "representative",
+        "renderer": "ANGLE SwiftShader (CPU)"
+      },
+      "status": "passed",
+      "durationMs": 465596.934,
+      "testCount": 8,
+      "attemptCount": 8,
+      "statuses": {
+        "passed": 8
+      },
+      "suites": {
+        "physics.spec.ts": {
+          "durationMs": 139359,
+          "attempts": 4,
+          "statuses": {
+            "passed": 4
+          }
+        },
+        "public-physics.spec.ts": {
+          "durationMs": 323763,
+          "attempts": 4,
+          "statuses": {
+            "passed": 4
+          }
+        }
+      },
+      "selection": {
+        "grep": "/.*/",
+        "grepInvert": "null"
+      },
+      "baselines": [
+        {
+          "run": 69,
+          "durationMs": 2145078.161,
+          "testCount": 73
+        },
+        {
+          "run": 70,
+          "durationMs": 2059749.807,
+          "browserStepMs": 2061000,
+          "testCount": 73
+        }
+      ],
+      "cases": [
+        {
+          "title": "physics.spec.ts / physics GPU bdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "suite": "physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 18989
+        },
+        {
+          "title": "physics.spec.ts / physics GPU sdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "suite": "physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 24555
+        },
+        {
+          "title": "physics.spec.ts / physics GPU qdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+          "suite": "physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 55997
+        },
+        {
+          "title": "physics.spec.ts / built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery",
+          "suite": "physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 39818
+        },
+        {
+          "title": "public-physics.spec.ts / uka: independent real physics, synchronized controls and native lifetime",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 121692
+        },
+        {
+          "title": "public-physics.spec.ts / gene: independent real physics, synchronized controls and native lifetime",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 135539
+        },
+        {
+          "title": "public-physics.spec.ts / uka: PBR cloth and hair pixels respond to physics in both clips",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 39726
+        },
+        {
+          "title": "public-physics.spec.ts / gene: PBR cloth and hair pixels respond to physics in both clips",
+          "suite": "public-physics.spec.ts",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "retry": 0,
+          "durationMs": 26806
+        }
+      ]
+    },
+    "initialFailures": "An experimental global mode-2 change failed BDEF/QDEF synthetic palettes. The final policy is explicitly public; generic v1 behavior and all existing tolerances are retained. Assets were rebuilt, then all four synthetic cases and the real-model pose/pixel cases reran."
+  },
+  "distinctRelevantCasesUltimatelyPassed": 16,
+  "realModelEvidence": {
+    "uka": {
+      "model": "uka",
+      "browser": "156.0.8078.74",
+      "memoryAfterGC": {
+        "memory": {
+          "attributes": 18,
+          "attributesSize": 30972160,
+          "geometries": 28,
+          "indexAttributes": 27,
+          "indexAttributesSize": 1402362,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 65,
+          "programsSize": 311806,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 3,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 72,
+          "texturesSize": 319417253,
+          "uniformBuffers": 201,
+          "uniformBuffersSize": 1269088,
+          "total": 353372669
+        },
+        "roots": [
+          20,
+          323,
+          324
+        ],
+        "physics": {
+          "native": 0,
+          "stats": {
+            "jointProjectionIterations": 128,
+            "worldsCreated": 57,
+            "resets": 34,
+            "steps": 2147,
+            "tick": 0,
+            "time": 0,
+            "lastMS": 21.200000017881393,
+            "maxSliceMS": 74,
+            "cpuMS": 62099.19999939203,
+            "native": 0,
+            "backendBytes": 67108864,
+            "bodiesPerWorld": 164,
+            "jointsPerWorld": 151
+          }
+        },
+        "heap": 783109964,
+        "morphWeightSummary": {
+          "scalarsPerMesh": [
+            216,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203
+          ],
+          "nonzeroPerMesh": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sha256": "972eb81355e69b3af59a2f2f728aa9698094ffc92737652f04b0e7970f0d38ee"
+        }
+      },
+      "evidence": [
+        {
+          "motion": "02_laugh",
+          "frame": 15,
+          "physicsDriven": 137,
+          "pixelChanges": [
+            16694,
+            16683
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 9.087042984745608e-08,
+          "maxAngularViolation": 6.726042878282823e-07,
+          "dynamic": 137,
+          "maxPosition": 2.220446049250313e-16,
+          "maxRotation": 4.2146848510894035e-08,
+          "execution": {
+            "ik": true,
+            "ikState": "on",
+            "chains": [
+              {
+                "supported": 10,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  8,
+                  9,
+                  15,
+                  16,
+                  61,
+                  62,
+                  63,
+                  95,
+                  96,
+                  97
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  34,
+                  36
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 34,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 36,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 8,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 9,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 16,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 61,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 62,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 63,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 95,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 96,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  52,
+                  54,
+                  86,
+                  88
+                ],
+                "error": "",
+                "reason": ""
+              },
+              {
+                "supported": 10,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  8,
+                  9,
+                  15,
+                  16,
+                  61,
+                  62,
+                  63,
+                  95,
+                  96,
+                  97
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  34,
+                  36
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 34,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 36,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 8,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 9,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 16,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 61,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 62,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 63,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 95,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 96,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  52,
+                  54,
+                  86,
+                  88
+                ],
+                "error": "",
+                "reason": ""
+              },
+              {
+                "supported": 10,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  8,
+                  9,
+                  15,
+                  16,
+                  61,
+                  62,
+                  63,
+                  95,
+                  96,
+                  97
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  34,
+                  36
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 34,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 36,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 8,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 9,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 16,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 61,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 62,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 63,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 95,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 96,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  52,
+                  54,
+                  86,
+                  88
+                ],
+                "error": "",
+                "reason": ""
+              }
+            ],
+            "grant": true,
+            "physics": true,
+            "physicsState": "on",
+            "physicsStats": {
+              "jointProjectionIterations": 128,
+              "worldsCreated": 3,
+              "resets": 5,
+              "steps": 60,
+              "tick": 60,
+              "time": 0.5,
+              "lastMS": 2100.5999999940395,
+              "maxSliceMS": 74,
+              "cpuMS": 1796.1000000834465,
+              "native": 4416,
+              "backendBytes": 67108864,
+              "bodiesPerWorld": 164,
+              "jointsPerWorld": 151
+            },
+            "helper": false,
+            "fallbackMixer": false,
+            "physicsChainsSameAsChains": true
+          },
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 16984760,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 934908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 54,
+              "programsSize": 235779,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 207806990,
+              "uniformBuffers": 140,
+              "uniformBuffersSize": 873984,
+              "total": 226836421
+            },
+            "roots": [
+              20,
+              323,
+              324
+            ],
+            "physics": {
+              "native": 4416,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 3,
+                "resets": 5,
+                "steps": 60,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 2100.5999999940395,
+                "maxSliceMS": 74,
+                "cpuMS": 1796.1000000834465,
+                "native": 4416,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 675129954,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                216,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203
+              ],
+              "nonzeroPerMesh": [
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3
+              ],
+              "sha256": "e39b3de09865acabdfb12a9aeeb39744eddd25fe050a2ae2c3d7d4be24e00202"
+            }
+          },
+          "jointErrorsWorstAcrossPanes": [
+            {
+              "index": 0,
+              "linear": 8.190632755367133e-09,
+              "angular": 0
+            },
+            {
+              "index": 1,
+              "linear": 5.203173181200782e-08,
+              "angular": 0
+            },
+            {
+              "index": 2,
+              "linear": 7.098850485220964e-08,
+              "angular": 0
+            },
+            {
+              "index": 3,
+              "linear": 8.21792272009958e-08,
+              "angular": 0
+            },
+            {
+              "index": 4,
+              "linear": 2.110286612122536e-09,
+              "angular": 3.2169016617178414e-09
+            },
+            {
+              "index": 5,
+              "linear": 2.2926096576725286e-08,
+              "angular": 0
+            },
+            {
+              "index": 6,
+              "linear": 2.763138362560369e-08,
+              "angular": 5.9498714621852855e-08
+            },
+            {
+              "index": 7,
+              "linear": 4.398382258408162e-08,
+              "angular": 2.3913219071580727e-08
+            },
+            {
+              "index": 8,
+              "linear": 4.4420140010714704e-08,
+              "angular": 0
+            },
+            {
+              "index": 9,
+              "linear": 9.087042984745608e-08,
+              "angular": 1.5337766351430915e-07
+            },
+            {
+              "index": 10,
+              "linear": 2.2325131743272664e-08,
+              "angular": 1.0704853614651455e-08
+            },
+            {
+              "index": 11,
+              "linear": 4.118453689194723e-08,
+              "angular": 0
+            },
+            {
+              "index": 12,
+              "linear": 6.086838122421057e-08,
+              "angular": 0
+            },
+            {
+              "index": 13,
+              "linear": 7.711909599805722e-08,
+              "angular": 2.22834444507658e-07
+            },
+            {
+              "index": 14,
+              "linear": 7.817507308160998e-09,
+              "angular": 2.942128041194536e-08
+            },
+            {
+              "index": 15,
+              "linear": 6.518850570458312e-09,
+              "angular": 1.9238135862131855e-08
+            },
+            {
+              "index": 16,
+              "linear": 2.073888660802936e-08,
+              "angular": 1.3209318065754427e-07
+            },
+            {
+              "index": 17,
+              "linear": 3.821861516151159e-08,
+              "angular": 6.584850054114355e-08
+            },
+            {
+              "index": 18,
+              "linear": 2.095760209819275e-08,
+              "angular": 1.1200887189977138e-08
+            },
+            {
+              "index": 19,
+              "linear": 9.165278980205471e-09,
+              "angular": 6.70228206267609e-10
+            },
+            {
+              "index": 20,
+              "linear": 2.931873566147658e-08,
+              "angular": 0
+            },
+            {
+              "index": 21,
+              "linear": 3.142061544281205e-08,
+              "angular": 2.093111003270698e-08
+            },
+            {
+              "index": 22,
+              "linear": 4.563657318712444e-08,
+              "angular": 4.969183037273339e-09
+            },
+            {
+              "index": 23,
+              "linear": 3.0981911036676024e-08,
+              "angular": 3.5951533666755964e-08
+            },
+            {
+              "index": 24,
+              "linear": 7.040737326491353e-09,
+              "angular": 5.3694665352876925e-08
+            },
+            {
+              "index": 25,
+              "linear": 1.7453740674966411e-09,
+              "angular": 5.6254798305732656e-08
+            },
+            {
+              "index": 26,
+              "linear": 3.916086543931385e-08,
+              "angular": 0
+            },
+            {
+              "index": 27,
+              "linear": 2.0676665102303815e-09,
+              "angular": 1.4098263362294361e-08
+            },
+            {
+              "index": 28,
+              "linear": 3.093443234902793e-08,
+              "angular": 0
+            },
+            {
+              "index": 29,
+              "linear": 3.7160093668830996e-08,
+              "angular": 9.817169473180787e-09
+            },
+            {
+              "index": 30,
+              "linear": 4.216010318636165e-08,
+              "angular": 3.936206310894974e-08
+            },
+            {
+              "index": 31,
+              "linear": 3.378366364437113e-08,
+              "angular": 4.677053348778326e-09
+            },
+            {
+              "index": 32,
+              "linear": 1.2593373011071662e-09,
+              "angular": 2.3607148333382177e-08
+            },
+            {
+              "index": 33,
+              "linear": 4.7504604916426274e-08,
+              "angular": 1.5411268150522517e-08
+            },
+            {
+              "index": 34,
+              "linear": 2.001304744148058e-08,
+              "angular": 6.226683965659952e-08
+            },
+            {
+              "index": 35,
+              "linear": 1.3550176758414523e-08,
+              "angular": 9.381370302818937e-08
+            },
+            {
+              "index": 36,
+              "linear": 3.366458667386496e-08,
+              "angular": 8.025577169501474e-08
+            },
+            {
+              "index": 37,
+              "linear": 5.2096539304713474e-08,
+              "angular": 3.25699787695477e-08
+            },
+            {
+              "index": 38,
+              "linear": 1.6530127266989325e-08,
+              "angular": 7.126683220642915e-08
+            },
+            {
+              "index": 39,
+              "linear": 1.9242825111120965e-09,
+              "angular": 6.432462779093484e-08
+            },
+            {
+              "index": 40,
+              "linear": 2.0958581536945076e-08,
+              "angular": 8.494420217219911e-08
+            },
+            {
+              "index": 41,
+              "linear": 2.725995784658153e-08,
+              "angular": 6.187574125293693e-08
+            },
+            {
+              "index": 42,
+              "linear": 3.854011421111636e-08,
+              "angular": 3.701861438915044e-08
+            },
+            {
+              "index": 43,
+              "linear": 6.359575066561263e-08,
+              "angular": 1.6036062960855801e-07
+            },
+            {
+              "index": 44,
+              "linear": 1.2537722693384268e-08,
+              "angular": 1.813047544180213e-07
+            },
+            {
+              "index": 45,
+              "linear": 6.0001590362901425e-09,
+              "angular": 2.8520195524683878e-08
+            },
+            {
+              "index": 46,
+              "linear": 4.452367963203585e-08,
+              "angular": 6.818748754522375e-08
+            },
+            {
+              "index": 47,
+              "linear": 3.956616168032667e-08,
+              "angular": 1.3820978388839888e-07
+            },
+            {
+              "index": 48,
+              "linear": 4.30247888427715e-08,
+              "angular": 1.4733853193060753e-08
+            },
+            {
+              "index": 49,
+              "linear": 6.113811568120298e-08,
+              "angular": 2.6214869663920837e-08
+            },
+            {
+              "index": 50,
+              "linear": 4.8864448931595916e-08,
+              "angular": 0
+            },
+            {
+              "index": 51,
+              "linear": 4.3496664936526486e-08,
+              "angular": 5.482566128867106e-08
+            },
+            {
+              "index": 52,
+              "linear": 6.443399214184353e-08,
+              "angular": 0
+            },
+            {
+              "index": 53,
+              "linear": 2.7075881758875653e-08,
+              "angular": 5.0055744854615725e-08
+            },
+            {
+              "index": 54,
+              "linear": 3.7256751683756306e-08,
+              "angular": 8.861371150054032e-08
+            },
+            {
+              "index": 55,
+              "linear": 1.601543808682493e-08,
+              "angular": 0
+            },
+            {
+              "index": 56,
+              "linear": 1.540676031197563e-08,
+              "angular": 2.2080372696908768e-08
+            },
+            {
+              "index": 57,
+              "linear": 5.308206096898971e-08,
+              "angular": 9.06464632383086e-08
+            },
+            {
+              "index": 58,
+              "linear": 3.762282929642424e-09,
+              "angular": 3.750408073682765e-08
+            },
+            {
+              "index": 59,
+              "linear": 2.1585413678693044e-08,
+              "angular": 0
+            },
+            {
+              "index": 60,
+              "linear": 3.336734288872378e-08,
+              "angular": 0
+            },
+            {
+              "index": 61,
+              "linear": 4.943696030323963e-08,
+              "angular": 9.104136176191213e-08
+            },
+            {
+              "index": 62,
+              "linear": 1.9757653291208044e-09,
+              "angular": 3.290114115178655e-08
+            },
+            {
+              "index": 63,
+              "linear": 1.0736524558296878e-08,
+              "angular": 0
+            },
+            {
+              "index": 64,
+              "linear": 4.145866738802795e-08,
+              "angular": 2.6987531549782506e-08
+            },
+            {
+              "index": 65,
+              "linear": 5.526131729993722e-08,
+              "angular": 0
+            },
+            {
+              "index": 66,
+              "linear": 1.4467708808751922e-08,
+              "angular": 0
+            },
+            {
+              "index": 67,
+              "linear": 1.894330736718075e-08,
+              "angular": 6.225443765356387e-08
+            },
+            {
+              "index": 68,
+              "linear": 2.6920939477648176e-08,
+              "angular": 1.836831242663095e-09
+            },
+            {
+              "index": 69,
+              "linear": 5.011410642019598e-08,
+              "angular": 2.5963433396281044e-08
+            },
+            {
+              "index": 70,
+              "linear": 2.7287252457597333e-09,
+              "angular": 7.341780711156431e-08
+            },
+            {
+              "index": 71,
+              "linear": 3.1459575389192196e-08,
+              "angular": 0
+            },
+            {
+              "index": 72,
+              "linear": 5.123408741702917e-08,
+              "angular": 0
+            },
+            {
+              "index": 73,
+              "linear": 5.8410414949250367e-08,
+              "angular": 2.9624834210761897e-08
+            },
+            {
+              "index": 74,
+              "linear": 4.745695170171871e-09,
+              "angular": 8.580423205284404e-09
+            },
+            {
+              "index": 75,
+              "linear": 4.191145852594502e-08,
+              "angular": 0
+            },
+            {
+              "index": 76,
+              "linear": 3.624076239105989e-08,
+              "angular": 1.4509232435649944e-07
+            },
+            {
+              "index": 77,
+              "linear": 6.467021385070382e-08,
+              "angular": 0
+            },
+            {
+              "index": 78,
+              "linear": 3.7067546809765872e-09,
+              "angular": 0
+            },
+            {
+              "index": 79,
+              "linear": 3.496236566924438e-08,
+              "angular": 1.4955222542301083e-07
+            },
+            {
+              "index": 80,
+              "linear": 1.3214492611268724e-08,
+              "angular": 5.381351558808589e-08
+            },
+            {
+              "index": 81,
+              "linear": 3.8042008654315396e-08,
+              "angular": 0
+            },
+            {
+              "index": 82,
+              "linear": 1.2070607846581538e-08,
+              "angular": 0
+            },
+            {
+              "index": 83,
+              "linear": 2.4369256834688713e-08,
+              "angular": 0
+            },
+            {
+              "index": 84,
+              "linear": 4.4205954230491784e-08,
+              "angular": 5.625495406308412e-08
+            },
+            {
+              "index": 85,
+              "linear": 2.851997082942148e-09,
+              "angular": 0
+            },
+            {
+              "index": 86,
+              "linear": 3.168754925120254e-08,
+              "angular": 5.6876060840205245e-08
+            },
+            {
+              "index": 87,
+              "linear": 6.8002650177589885e-09,
+              "angular": 0
+            },
+            {
+              "index": 88,
+              "linear": 3.027854700299315e-08,
+              "angular": 5.837030251504283e-08
+            },
+            {
+              "index": 89,
+              "linear": 1.3049056724057095e-08,
+              "angular": 0
+            },
+            {
+              "index": 90,
+              "linear": 2.2491720930162273e-08,
+              "angular": 1.7186983974903924e-08
+            },
+            {
+              "index": 91,
+              "linear": 6.260536178359644e-08,
+              "angular": 0
+            },
+            {
+              "index": 92,
+              "linear": 2.83236900600059e-08,
+              "angular": 6.726042878282823e-07
+            },
+            {
+              "index": 93,
+              "linear": 3.244586432860075e-09,
+              "angular": 2.108774915798861e-08
+            },
+            {
+              "index": 94,
+              "linear": 1.9649544658051354e-08,
+              "angular": 5.2727170692101755e-08
+            },
+            {
+              "index": 95,
+              "linear": 2.2408874755797115e-08,
+              "angular": 2.4869564740903627e-10
+            },
+            {
+              "index": 96,
+              "linear": 4.008531284682704e-08,
+              "angular": 5.0493492484426916e-08
+            },
+            {
+              "index": 97,
+              "linear": 9.664543609844145e-09,
+              "angular": 0
+            },
+            {
+              "index": 98,
+              "linear": 7.826709946812116e-09,
+              "angular": 0
+            },
+            {
+              "index": 99,
+              "linear": 6.446815747906953e-09,
+              "angular": 0
+            },
+            {
+              "index": 100,
+              "linear": 5.574467687452511e-08,
+              "angular": 0
+            },
+            {
+              "index": 101,
+              "linear": 3.348494392874102e-08,
+              "angular": 0
+            },
+            {
+              "index": 102,
+              "linear": 2.470679705268708e-08,
+              "angular": 0
+            },
+            {
+              "index": 103,
+              "linear": 2.797508491525491e-08,
+              "angular": 1.237888126170983e-07
+            },
+            {
+              "index": 104,
+              "linear": 1.8813245183935123e-08,
+              "angular": 9.931240274596576e-10
+            },
+            {
+              "index": 105,
+              "linear": 4.27931110547064e-08,
+              "angular": 5.4970112350893885e-09
+            },
+            {
+              "index": 106,
+              "linear": 4.024088839926776e-09,
+              "angular": 0
+            },
+            {
+              "index": 107,
+              "linear": 1.4098929135286653e-08,
+              "angular": 1.6146388108484455e-08
+            },
+            {
+              "index": 108,
+              "linear": 4.250116980575314e-09,
+              "angular": 0
+            },
+            {
+              "index": 109,
+              "linear": 2.661347364707467e-08,
+              "angular": 0
+            },
+            {
+              "index": 110,
+              "linear": 1.2827419793026706e-08,
+              "angular": 0
+            },
+            {
+              "index": 111,
+              "linear": 3.612426024979243e-08,
+              "angular": 2.3603710985753423e-08
+            },
+            {
+              "index": 112,
+              "linear": 4.695716748770451e-08,
+              "angular": 0
+            },
+            {
+              "index": 113,
+              "linear": 5.6684097415882206e-08,
+              "angular": 0
+            },
+            {
+              "index": 114,
+              "linear": 7.38539873701427e-09,
+              "angular": 0
+            },
+            {
+              "index": 115,
+              "linear": 5.6839400963681896e-08,
+              "angular": 0
+            },
+            {
+              "index": 116,
+              "linear": 5.550340365090278e-08,
+              "angular": 6.232524246696514e-09
+            },
+            {
+              "index": 117,
+              "linear": 9.353978480675096e-09,
+              "angular": 3.9254381689612927e-10
+            },
+            {
+              "index": 118,
+              "linear": 8.883883850785423e-09,
+              "angular": 0
+            },
+            {
+              "index": 119,
+              "linear": 1.4861073927008306e-08,
+              "angular": 0
+            },
+            {
+              "index": 120,
+              "linear": 6.034098110063724e-09,
+              "angular": 0
+            },
+            {
+              "index": 121,
+              "linear": 5.937599856231657e-09,
+              "angular": 0
+            },
+            {
+              "index": 122,
+              "linear": 9.671834000357649e-09,
+              "angular": 2.1310779738104024e-08
+            },
+            {
+              "index": 123,
+              "linear": 4.662442598668548e-09,
+              "angular": 3.5911915746700274e-08
+            },
+            {
+              "index": 124,
+              "linear": 1.5933365404841027e-08,
+              "angular": 0
+            },
+            {
+              "index": 125,
+              "linear": 3.253115110624094e-08,
+              "angular": 0
+            },
+            {
+              "index": 126,
+              "linear": 4.143463327999086e-08,
+              "angular": 0
+            },
+            {
+              "index": 127,
+              "linear": 9.13480772957425e-09,
+              "angular": 0
+            },
+            {
+              "index": 128,
+              "linear": 1.3782102126214113e-08,
+              "angular": 0
+            },
+            {
+              "index": 129,
+              "linear": 1.4180290247578498e-08,
+              "angular": 4.709406009606454e-08
+            },
+            {
+              "index": 130,
+              "linear": 3.1727414029347756e-08,
+              "angular": 6.424818169981084e-07
+            },
+            {
+              "index": 131,
+              "linear": 4.653636620499668e-08,
+              "angular": 1.2888134456878753e-07
+            },
+            {
+              "index": 132,
+              "linear": 4.653443196750429e-09,
+              "angular": 2.572881764584256e-08
+            },
+            {
+              "index": 133,
+              "linear": 1.708736935279731e-08,
+              "angular": 0
+            },
+            {
+              "index": 134,
+              "linear": 2.0032457581642404e-08,
+              "angular": 0
+            },
+            {
+              "index": 135,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 136,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 137,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 138,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 139,
+              "linear": 2.0061027611664728e-08,
+              "angular": 0
+            },
+            {
+              "index": 140,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 141,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 142,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 143,
+              "linear": 1.2472796732942992e-08,
+              "angular": 0
+            },
+            {
+              "index": 144,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 145,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 146,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 147,
+              "linear": 5.820348647489482e-09,
+              "angular": 0
+            },
+            {
+              "index": 148,
+              "linear": 2.6825499599425484e-09,
+              "angular": 1.0786674449481115e-08
+            },
+            {
+              "index": 149,
+              "linear": 2.1140616035530968e-08,
+              "angular": 0
+            },
+            {
+              "index": 150,
+              "linear": 7.203044161130379e-09,
+              "angular": 0
+            }
+          ],
+          "paneJointMaxima": [
+            {
+              "linear": 9.087042984745608e-08,
+              "angular": 6.726042878282823e-07
+            },
+            {
+              "linear": 9.087042984745608e-08,
+              "angular": 6.726042878282823e-07
+            },
+            {
+              "linear": 9.087042984745608e-08,
+              "angular": 6.726042878282823e-07
+            }
+          ]
+        },
+        {
+          "motion": "22_apology",
+          "frame": 15,
+          "physicsDriven": 137,
+          "pixelChanges": [
+            17028,
+            16768
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 1.0348347689870252e-07,
+          "maxAngularViolation": 5.363625965731922e-07,
+          "dynamic": 137,
+          "maxPosition": 2.220446049250313e-16,
+          "maxRotation": 4.2146848510894035e-08,
+          "execution": {
+            "ik": true,
+            "ikState": "on",
+            "chains": [
+              {
+                "supported": 10,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  8,
+                  9,
+                  15,
+                  16,
+                  61,
+                  62,
+                  63,
+                  95,
+                  96,
+                  97
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  34,
+                  36
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 34,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 36,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 8,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 9,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 16,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 61,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 62,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 63,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 95,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 96,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  52,
+                  54,
+                  86,
+                  88
+                ],
+                "error": "",
+                "reason": ""
+              },
+              {
+                "supported": 10,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  8,
+                  9,
+                  15,
+                  16,
+                  61,
+                  62,
+                  63,
+                  95,
+                  96,
+                  97
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  34,
+                  36
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 34,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 36,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 8,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 9,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 16,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 61,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 62,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 63,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 95,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 96,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  52,
+                  54,
+                  86,
+                  88
+                ],
+                "error": "",
+                "reason": ""
+              },
+              {
+                "supported": 10,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  8,
+                  9,
+                  15,
+                  16,
+                  61,
+                  62,
+                  63,
+                  95,
+                  96,
+                  97
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  34,
+                  36
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 34,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 36,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 8,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 9,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 16,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 61,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 62,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 63,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 95,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 96,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  52,
+                  54,
+                  86,
+                  88
+                ],
+                "error": "",
+                "reason": ""
+              }
+            ],
+            "grant": true,
+            "physics": true,
+            "physicsState": "on",
+            "physicsStats": {
+              "jointProjectionIterations": 128,
+              "worldsCreated": 15,
+              "resets": 12,
+              "steps": 312,
+              "tick": 60,
+              "time": 0.5,
+              "lastMS": 2000.4000000059605,
+              "maxSliceMS": 74,
+              "cpuMS": 8766.700000047684,
+              "native": 4416,
+              "backendBytes": 67108864,
+              "bodiesPerWorld": 164,
+              "jointsPerWorld": 151
+            },
+            "helper": false,
+            "fallbackMixer": false,
+            "physicsChainsSameAsChains": true
+          },
+          "resources": {
+            "memory": {
+              "attributes": 18,
+              "attributesSize": 30972160,
+              "geometries": 28,
+              "indexAttributes": 27,
+              "indexAttributesSize": 1402362,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 65,
+              "programsSize": 311806,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 72,
+              "texturesSize": 319417253,
+              "uniformBuffers": 201,
+              "uniformBuffersSize": 1269088,
+              "total": 353372669
+            },
+            "roots": [
+              20,
+              323,
+              324
+            ],
+            "physics": {
+              "native": 4416,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 15,
+                "resets": 12,
+                "steps": 312,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 2000.4000000059605,
+                "maxSliceMS": 74,
+                "cpuMS": 8766.700000047684,
+                "native": 4416,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 789666641,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                216,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203
+              ],
+              "nonzeroPerMesh": [
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2
+              ],
+              "sha256": "73980145de636e4a10afc54d0261e0578a1a3eab36ccbd9dd1e389de229859c2"
+            }
+          },
+          "jointErrorsWorstAcrossPanes": [
+            {
+              "index": 0,
+              "linear": 2.8853899047831533e-08,
+              "angular": 0
+            },
+            {
+              "index": 1,
+              "linear": 1.382209768863163e-08,
+              "angular": 7.16075740092581e-08
+            },
+            {
+              "index": 2,
+              "linear": 1.8658627976009257e-08,
+              "angular": 0
+            },
+            {
+              "index": 3,
+              "linear": 4.835086886423312e-08,
+              "angular": 0
+            },
+            {
+              "index": 4,
+              "linear": 3.550545191188803e-09,
+              "angular": 3.709187944289649e-08
+            },
+            {
+              "index": 5,
+              "linear": 1.3179680680153183e-08,
+              "angular": 0
+            },
+            {
+              "index": 6,
+              "linear": 5.6472373666238695e-08,
+              "angular": 0
+            },
+            {
+              "index": 7,
+              "linear": 1.475411193219145e-08,
+              "angular": 1.7721786094160308e-08
+            },
+            {
+              "index": 8,
+              "linear": 3.1771161701499295e-08,
+              "angular": 1.6064501520696162e-08
+            },
+            {
+              "index": 9,
+              "linear": 4.6523424224176324e-08,
+              "angular": 0
+            },
+            {
+              "index": 10,
+              "linear": 3.128156578213748e-08,
+              "angular": 1.212705622033461e-07
+            },
+            {
+              "index": 11,
+              "linear": 6.525402884705045e-09,
+              "angular": 1.0705794373233601e-07
+            },
+            {
+              "index": 12,
+              "linear": 5.762826904565088e-08,
+              "angular": 0
+            },
+            {
+              "index": 13,
+              "linear": 9.221019059424407e-09,
+              "angular": 9.944566871367133e-08
+            },
+            {
+              "index": 14,
+              "linear": 5.579089012996974e-08,
+              "angular": 5.363625965731922e-07
+            },
+            {
+              "index": 15,
+              "linear": 7.905969545696223e-09,
+              "angular": 3.495692799670991e-07
+            },
+            {
+              "index": 16,
+              "linear": 2.9491477038234848e-08,
+              "angular": 1.3486186273281575e-07
+            },
+            {
+              "index": 17,
+              "linear": 1.0543721007394424e-08,
+              "angular": 0
+            },
+            {
+              "index": 18,
+              "linear": 3.175779195174755e-08,
+              "angular": 5.6534664068241813e-08
+            },
+            {
+              "index": 19,
+              "linear": 2.9575564219896933e-08,
+              "angular": 4.704504796837483e-08
+            },
+            {
+              "index": 20,
+              "linear": 2.43495812402017e-08,
+              "angular": 1.2262124760020754e-08
+            },
+            {
+              "index": 21,
+              "linear": 5.283098314379231e-08,
+              "angular": 6.92191196860481e-08
+            },
+            {
+              "index": 22,
+              "linear": 5.896326737975244e-08,
+              "angular": 3.048265861949062e-09
+            },
+            {
+              "index": 23,
+              "linear": 3.999002551324793e-08,
+              "angular": 2.345656782698491e-08
+            },
+            {
+              "index": 24,
+              "linear": 8.727105771377808e-08,
+              "angular": 9.575523459565138e-08
+            },
+            {
+              "index": 25,
+              "linear": 3.087061228868038e-08,
+              "angular": 5.304017997032062e-08
+            },
+            {
+              "index": 26,
+              "linear": 1.868051735520737e-08,
+              "angular": 8.471600559945003e-08
+            },
+            {
+              "index": 27,
+              "linear": 5.263571911662268e-08,
+              "angular": 6.898683957423657e-09
+            },
+            {
+              "index": 28,
+              "linear": 1.0348347689870252e-07,
+              "angular": 1.4236402889888922e-08
+            },
+            {
+              "index": 29,
+              "linear": 1.2776151692150961e-08,
+              "angular": 1.644397382843943e-08
+            },
+            {
+              "index": 30,
+              "linear": 5.946464698425302e-08,
+              "angular": 5.57747625029581e-08
+            },
+            {
+              "index": 31,
+              "linear": 9.172761950004826e-08,
+              "angular": 0
+            },
+            {
+              "index": 32,
+              "linear": 3.2525833137952986e-08,
+              "angular": 1.3226551041911616e-08
+            },
+            {
+              "index": 33,
+              "linear": 4.033271738812516e-08,
+              "angular": 0
+            },
+            {
+              "index": 34,
+              "linear": 3.419221439315834e-08,
+              "angular": 0
+            },
+            {
+              "index": 35,
+              "linear": 1.7716867084516252e-08,
+              "angular": 2.8057660202140955e-08
+            },
+            {
+              "index": 36,
+              "linear": 2.5477800758011426e-08,
+              "angular": 1.2827031992124205e-08
+            },
+            {
+              "index": 37,
+              "linear": 4.65422236306523e-08,
+              "angular": 0
+            },
+            {
+              "index": 38,
+              "linear": 1.5291504507075615e-08,
+              "angular": 1.4968705173284969e-07
+            },
+            {
+              "index": 39,
+              "linear": 2.3979110030936113e-08,
+              "angular": 7.324195736707617e-08
+            },
+            {
+              "index": 40,
+              "linear": 1.6076692421762573e-08,
+              "angular": 4.2625981466759555e-08
+            },
+            {
+              "index": 41,
+              "linear": 7.272979885009079e-09,
+              "angular": 2.0417883037082696e-08
+            },
+            {
+              "index": 42,
+              "linear": 2.2837535418318566e-08,
+              "angular": 1.5152877397284215e-08
+            },
+            {
+              "index": 43,
+              "linear": 3.493064992809991e-08,
+              "angular": 1.6190139762867206e-07
+            },
+            {
+              "index": 44,
+              "linear": 2.664494114235083e-08,
+              "angular": 0
+            },
+            {
+              "index": 45,
+              "linear": 8.441497501010531e-09,
+              "angular": 9.709542836411345e-09
+            },
+            {
+              "index": 46,
+              "linear": 1.6204553254794973e-09,
+              "angular": 1.3236655813098075e-08
+            },
+            {
+              "index": 47,
+              "linear": 2.0840314363113066e-08,
+              "angular": 3.0398443387480434e-08
+            },
+            {
+              "index": 48,
+              "linear": 3.7941250585760145e-08,
+              "angular": 6.45310838723323e-08
+            },
+            {
+              "index": 49,
+              "linear": 5.742829833899066e-08,
+              "angular": 8.269200914290398e-09
+            },
+            {
+              "index": 50,
+              "linear": 4.043947932075298e-08,
+              "angular": 0
+            },
+            {
+              "index": 51,
+              "linear": 2.7512656264327973e-08,
+              "angular": 4.9577817962109805e-09
+            },
+            {
+              "index": 52,
+              "linear": 2.190727643736068e-08,
+              "angular": 1.672422286977393e-07
+            },
+            {
+              "index": 53,
+              "linear": 2.243886232378145e-08,
+              "angular": 0
+            },
+            {
+              "index": 54,
+              "linear": 2.3942637428220337e-08,
+              "angular": 1.1470915022709915e-07
+            },
+            {
+              "index": 55,
+              "linear": 4.9975817262293276e-08,
+              "angular": 2.715956642918016e-08
+            },
+            {
+              "index": 56,
+              "linear": 1.2575465446751366e-08,
+              "angular": 0
+            },
+            {
+              "index": 57,
+              "linear": 2.0353539742501425e-08,
+              "angular": 8.226003512384894e-08
+            },
+            {
+              "index": 58,
+              "linear": 3.026690342800009e-08,
+              "angular": 1.3727305070432294e-08
+            },
+            {
+              "index": 59,
+              "linear": 3.2596508603432994e-08,
+              "angular": 0
+            },
+            {
+              "index": 60,
+              "linear": 2.685300071192387e-08,
+              "angular": 5.897776493568596e-08
+            },
+            {
+              "index": 61,
+              "linear": 1.5416294907311112e-08,
+              "angular": 0
+            },
+            {
+              "index": 62,
+              "linear": 5.9425767195975254e-08,
+              "angular": 2.0895362211337254e-08
+            },
+            {
+              "index": 63,
+              "linear": 5.449272566515617e-08,
+              "angular": 3.810669578496739e-09
+            },
+            {
+              "index": 64,
+              "linear": 3.071876508720095e-08,
+              "angular": 0
+            },
+            {
+              "index": 65,
+              "linear": 8.19449619271495e-09,
+              "angular": 8.099979358772158e-08
+            },
+            {
+              "index": 66,
+              "linear": 2.1209522360621236e-08,
+              "angular": 6.759350794360852e-08
+            },
+            {
+              "index": 67,
+              "linear": 1.0649495951753352e-08,
+              "angular": 4.826002882041269e-09
+            },
+            {
+              "index": 68,
+              "linear": 3.271094239920558e-08,
+              "angular": 2.377674512138439e-08
+            },
+            {
+              "index": 69,
+              "linear": 4.325543923044961e-08,
+              "angular": 9.572228951149064e-08
+            },
+            {
+              "index": 70,
+              "linear": 3.613021704040875e-08,
+              "angular": 0
+            },
+            {
+              "index": 71,
+              "linear": 5.508756451000352e-08,
+              "angular": 4.190547992638516e-08
+            },
+            {
+              "index": 72,
+              "linear": 1.9733262357490844e-08,
+              "angular": 5.016221368836504e-09
+            },
+            {
+              "index": 73,
+              "linear": 8.78074835064524e-09,
+              "angular": 5.118990074881591e-08
+            },
+            {
+              "index": 74,
+              "linear": 2.232986373584822e-08,
+              "angular": 0
+            },
+            {
+              "index": 75,
+              "linear": 1.8642498433862897e-08,
+              "angular": 5.393005417242414e-10
+            },
+            {
+              "index": 76,
+              "linear": 3.365523970622064e-08,
+              "angular": 0
+            },
+            {
+              "index": 77,
+              "linear": 4.804519582179978e-08,
+              "angular": 2.764511787475832e-07
+            },
+            {
+              "index": 78,
+              "linear": 1.773012603401014e-08,
+              "angular": 6.121196950703567e-08
+            },
+            {
+              "index": 79,
+              "linear": 1.8417635194722948e-08,
+              "angular": 0
+            },
+            {
+              "index": 80,
+              "linear": 4.0816507507202004e-08,
+              "angular": 0
+            },
+            {
+              "index": 81,
+              "linear": 5.6199681575108684e-08,
+              "angular": 0
+            },
+            {
+              "index": 82,
+              "linear": 3.086776678706826e-08,
+              "angular": 6.846676747079838e-08
+            },
+            {
+              "index": 83,
+              "linear": 3.338239706884849e-08,
+              "angular": 3.5430382162859875e-08
+            },
+            {
+              "index": 84,
+              "linear": 9.69657126814738e-09,
+              "angular": 1.029434459134948e-07
+            },
+            {
+              "index": 85,
+              "linear": 8.082979396917267e-09,
+              "angular": 0
+            },
+            {
+              "index": 86,
+              "linear": 4.985625579045916e-08,
+              "angular": 0
+            },
+            {
+              "index": 87,
+              "linear": 5.5795686071391515e-08,
+              "angular": 1.4541920697469513e-07
+            },
+            {
+              "index": 88,
+              "linear": 1.1550311151964365e-08,
+              "angular": 1.2526748312258196e-07
+            },
+            {
+              "index": 89,
+              "linear": 2.4377414975518263e-08,
+              "angular": 0
+            },
+            {
+              "index": 90,
+              "linear": 3.867557496484153e-08,
+              "angular": 1.6529594235037415e-08
+            },
+            {
+              "index": 91,
+              "linear": 5.1501116926644386e-08,
+              "angular": 3.241154055561024e-08
+            },
+            {
+              "index": 92,
+              "linear": 8.070092344381052e-09,
+              "angular": 0
+            },
+            {
+              "index": 93,
+              "linear": 4.0066879369859976e-08,
+              "angular": 4.69128041129252e-07
+            },
+            {
+              "index": 94,
+              "linear": 3.5342587745290643e-08,
+              "angular": 0
+            },
+            {
+              "index": 95,
+              "linear": 2.220603523284126e-08,
+              "angular": 3.411274671072384e-08
+            },
+            {
+              "index": 96,
+              "linear": 4.8419286358125646e-08,
+              "angular": 1.6223125447883957e-07
+            },
+            {
+              "index": 97,
+              "linear": 5.576626516123895e-08,
+              "angular": 0
+            },
+            {
+              "index": 98,
+              "linear": 1.2187013231912402e-08,
+              "angular": 7.070661176000748e-08
+            },
+            {
+              "index": 99,
+              "linear": 2.223740169782218e-08,
+              "angular": 0
+            },
+            {
+              "index": 100,
+              "linear": 2.2889955264560058e-08,
+              "angular": 7.895089592507842e-08
+            },
+            {
+              "index": 101,
+              "linear": 4.0478861151882484e-08,
+              "angular": 2.517632650966828e-09
+            },
+            {
+              "index": 102,
+              "linear": 1.2864235232612486e-08,
+              "angular": 9.430161581475138e-08
+            },
+            {
+              "index": 103,
+              "linear": 4.412427112576722e-08,
+              "angular": 0
+            },
+            {
+              "index": 104,
+              "linear": 2.935980569773733e-08,
+              "angular": 1.3043035626547628e-07
+            },
+            {
+              "index": 105,
+              "linear": 9.12793463037076e-09,
+              "angular": 0
+            },
+            {
+              "index": 106,
+              "linear": 5.209457198951384e-08,
+              "angular": 1.4926244962243373e-10
+            },
+            {
+              "index": 107,
+              "linear": 2.9859154260236664e-08,
+              "angular": 2.3181179330256096e-08
+            },
+            {
+              "index": 108,
+              "linear": 2.67765831729605e-08,
+              "angular": 0
+            },
+            {
+              "index": 109,
+              "linear": 5.617791676293393e-08,
+              "angular": 4.70523149539992e-08
+            },
+            {
+              "index": 110,
+              "linear": 3.028988260211918e-08,
+              "angular": 0
+            },
+            {
+              "index": 111,
+              "linear": 1.0529634719702585e-08,
+              "angular": 0
+            },
+            {
+              "index": 112,
+              "linear": 4.377761819718273e-08,
+              "angular": 0
+            },
+            {
+              "index": 113,
+              "linear": 5.0066081724864375e-08,
+              "angular": 0
+            },
+            {
+              "index": 114,
+              "linear": 5.8221421683768426e-08,
+              "angular": 0
+            },
+            {
+              "index": 115,
+              "linear": 1.029369931654367e-08,
+              "angular": 0
+            },
+            {
+              "index": 116,
+              "linear": 3.405452642102347e-08,
+              "angular": 0
+            },
+            {
+              "index": 117,
+              "linear": 4.830118971455022e-08,
+              "angular": 4.7320853041599165e-08
+            },
+            {
+              "index": 118,
+              "linear": 6.215483350224815e-09,
+              "angular": 0
+            },
+            {
+              "index": 119,
+              "linear": 2.5064265329888258e-08,
+              "angular": 0
+            },
+            {
+              "index": 120,
+              "linear": 2.2799647503291e-08,
+              "angular": 1.68890089857765e-07
+            },
+            {
+              "index": 121,
+              "linear": 1.2620788414352546e-08,
+              "angular": 0
+            },
+            {
+              "index": 122,
+              "linear": 1.566738716540783e-08,
+              "angular": 0
+            },
+            {
+              "index": 123,
+              "linear": 5.739225816814297e-09,
+              "angular": 0
+            },
+            {
+              "index": 124,
+              "linear": 3.131540426970503e-08,
+              "angular": 2.373239813835415e-07
+            },
+            {
+              "index": 125,
+              "linear": 2.6513377271442096e-08,
+              "angular": 0
+            },
+            {
+              "index": 126,
+              "linear": 4.1559813368508e-09,
+              "angular": 9.814091379845014e-09
+            },
+            {
+              "index": 127,
+              "linear": 5.1230381936662184e-08,
+              "angular": 0
+            },
+            {
+              "index": 128,
+              "linear": 2.6182951806674737e-08,
+              "angular": 0
+            },
+            {
+              "index": 129,
+              "linear": 5.7743952119881925e-09,
+              "angular": 0
+            },
+            {
+              "index": 130,
+              "linear": 1.7321388101620983e-08,
+              "angular": 6.327452811705214e-09
+            },
+            {
+              "index": 131,
+              "linear": 4.481431903347044e-08,
+              "angular": 0
+            },
+            {
+              "index": 132,
+              "linear": 2.2028402657525703e-08,
+              "angular": 5.811557607371398e-08
+            },
+            {
+              "index": 133,
+              "linear": 2.306795099382697e-08,
+              "angular": 0
+            },
+            {
+              "index": 134,
+              "linear": 2.265142418078625e-08,
+              "angular": 2.3685787298166616e-07
+            },
+            {
+              "index": 135,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 136,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 137,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 138,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 139,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 140,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 141,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 142,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 143,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 144,
+              "linear": 1.7054661016757677e-09,
+              "angular": 0
+            },
+            {
+              "index": 145,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 146,
+              "linear": 6.34016256856329e-09,
+              "angular": 0
+            },
+            {
+              "index": 147,
+              "linear": 1.5634370353900806e-08,
+              "angular": 0
+            },
+            {
+              "index": 148,
+              "linear": 2.8711663935254705e-08,
+              "angular": 0
+            },
+            {
+              "index": 149,
+              "linear": 2.4326379466366177e-08,
+              "angular": 0
+            },
+            {
+              "index": 150,
+              "linear": 1.8832854498107565e-08,
+              "angular": 0
+            }
+          ],
+          "paneJointMaxima": [
+            {
+              "linear": 1.0348347689870252e-07,
+              "angular": 5.363625965731922e-07
+            },
+            {
+              "linear": 1.0348347689870252e-07,
+              "angular": 5.363625965731922e-07
+            },
+            {
+              "linear": 1.0348347689870252e-07,
+              "angular": 5.363625965731922e-07
+            }
+          ]
+        }
+      ],
+      "errors": [],
+      "requests": 1,
+      "models": 2,
+      "assets": 33,
+      "finalResources": {
+        "memory": {
+          "attributes": 18,
+          "attributesSize": 30972160,
+          "geometries": 28,
+          "indexAttributes": 27,
+          "indexAttributesSize": 1402362,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 65,
+          "programsSize": 311806,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 3,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 72,
+          "texturesSize": 319417253,
+          "uniformBuffers": 201,
+          "uniformBuffersSize": 1269088,
+          "total": 353372669
+        },
+        "roots": [
+          20,
+          323,
+          324
+        ],
+        "physics": {
+          "native": 0,
+          "stats": {
+            "jointProjectionIterations": 128,
+            "worldsCreated": 57,
+            "resets": 34,
+            "steps": 2147,
+            "tick": 0,
+            "time": 0,
+            "lastMS": 21.200000017881393,
+            "maxSliceMS": 74,
+            "cpuMS": 62099.19999939203,
+            "native": 0,
+            "backendBytes": 67108864,
+            "bodiesPerWorld": 164,
+            "jointsPerWorld": 151
+          }
+        },
+        "heap": 701935655,
+        "morphWeightSummary": {
+          "scalarsPerMesh": [
+            216,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203,
+            203
+          ],
+          "nonzeroPerMesh": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sha256": "972eb81355e69b3af59a2f2f728aa9698094ffc92737652f04b0e7970f0d38ee"
+        }
+      }
+    },
+    "gene": {
+      "model": "gene",
+      "browser": "156.0.8078.74",
+      "memoryAfterGC": {
+        "memory": {
+          "attributes": 18,
+          "attributesSize": 17760580,
+          "geometries": 28,
+          "indexAttributes": 27,
+          "indexAttributesSize": 847908,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 293533,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 3,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 69,
+          "texturesSize": 292927234,
+          "uniformBuffers": 183,
+          "uniformBuffersSize": 863824,
+          "total": 312693079
+        },
+        "roots": [
+          472,
+          20,
+          21
+        ],
+        "physics": {
+          "native": 0,
+          "stats": {
+            "jointProjectionIterations": 128,
+            "worldsCreated": 57,
+            "resets": 34,
+            "steps": 2154,
+            "tick": 0,
+            "time": 0,
+            "lastMS": 18.80000001192093,
+            "maxSliceMS": 74.10000002384186,
+            "cpuMS": 68479.99999949336,
+            "native": 0,
+            "backendBytes": 67108864,
+            "bodiesPerWorld": 87,
+            "jointsPerWorld": 92
+          }
+        },
+        "heap": 597364136,
+        "morphWeightSummary": {
+          "scalarsPerMesh": [
+            184,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180
+          ],
+          "nonzeroPerMesh": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "sha256": "f0ba161594dad45f84bae1024549c4cf7737e262f759008abcfc0c9d05b0375d"
+        }
+      },
+      "evidence": [
+        {
+          "motion": "02_laugh",
+          "frame": 15,
+          "physicsDriven": 53,
+          "pixelChanges": [
+            5958,
+            5855
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 0.01212981904991195,
+          "maxAngularViolation": 0.0005777184487471276,
+          "dynamic": 57,
+          "maxPosition": 2.220446049250313e-16,
+          "maxRotation": 4.2146848510894035e-08,
+          "execution": {
+            "ik": true,
+            "ikState": "on",
+            "chains": [
+              {
+                "supported": 6,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  38,
+                  178,
+                  86,
+                  87,
+                  97,
+                  98
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  13,
+                  15,
+                  20,
+                  23,
+                  29,
+                  32,
+                  35,
+                  184,
+                  187,
+                  190,
+                  193
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 13,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 20,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 23,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 29,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 32,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 35,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 38,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 178,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 86,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 87,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 98,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 184,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 187,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 190,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 193,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  19,
+                  22,
+                  28,
+                  31
+                ],
+                "error": "",
+                "reason": ""
+              },
+              {
+                "supported": 6,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  38,
+                  178,
+                  86,
+                  87,
+                  97,
+                  98
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  13,
+                  15,
+                  20,
+                  23,
+                  29,
+                  32,
+                  35,
+                  184,
+                  187,
+                  190,
+                  193
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 13,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 20,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 23,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 29,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 32,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 35,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 38,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 178,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 86,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 87,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 98,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 184,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 187,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 190,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 193,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  19,
+                  22,
+                  28,
+                  31
+                ],
+                "error": "",
+                "reason": ""
+              },
+              {
+                "supported": 6,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  38,
+                  178,
+                  86,
+                  87,
+                  97,
+                  98
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  13,
+                  15,
+                  20,
+                  23,
+                  29,
+                  32,
+                  35,
+                  184,
+                  187,
+                  190,
+                  193
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 13,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 20,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 23,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 29,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 32,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 35,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 38,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 178,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 86,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 87,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 98,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 184,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 187,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 190,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 193,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  19,
+                  22,
+                  28,
+                  31
+                ],
+                "error": "",
+                "reason": ""
+              }
+            ],
+            "grant": true,
+            "physics": true,
+            "physicsState": "on",
+            "physicsStats": {
+              "jointProjectionIterations": 128,
+              "worldsCreated": 3,
+              "resets": 5,
+              "steps": 60,
+              "tick": 60,
+              "time": 0.5,
+              "lastMS": 2397.5,
+              "maxSliceMS": 74.10000002384186,
+              "cpuMS": 2098.2000001072884,
+              "native": 2463,
+              "backendBytes": 67108864,
+              "bodiesPerWorld": 87,
+              "jointsPerWorld": 92
+            },
+            "helper": false,
+            "fallbackMixer": false,
+            "physicsChainsSameAsChains": true
+          },
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 9739700,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 565272,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 50,
+              "programsSize": 210478,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 200315980,
+              "uniformBuffers": 125,
+              "uniformBuffersSize": 582112,
+              "total": 211413542
+            },
+            "roots": [
+              472,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 2463,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 3,
+                "resets": 5,
+                "steps": 60,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 2397.5,
+                "maxSliceMS": 74.10000002384186,
+                "cpuMS": 2098.2000001072884,
+                "native": 2463,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 508524485,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                184,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180
+              ],
+              "nonzeroPerMesh": [
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3
+              ],
+              "sha256": "8a2150048c6c49bcd83a533ff66480489f9d0cef2579cd5cd44a87bc568a1f24"
+            }
+          },
+          "jointErrorsWorstAcrossPanes": [
+            {
+              "index": 0,
+              "linear": 1.6947133252287472e-08,
+              "angular": 0
+            },
+            {
+              "index": 1,
+              "linear": 1.8313458638452573e-08,
+              "angular": 8.19059187938398e-08
+            },
+            {
+              "index": 2,
+              "linear": 5.527116897496853e-08,
+              "angular": 6.3716539822067375e-09
+            },
+            {
+              "index": 3,
+              "linear": 4.016740451362466e-08,
+              "angular": 0
+            },
+            {
+              "index": 4,
+              "linear": 4.9652178368830846e-08,
+              "angular": 0
+            },
+            {
+              "index": 5,
+              "linear": 3.797650727221935e-08,
+              "angular": 1.33115497374936e-08
+            },
+            {
+              "index": 6,
+              "linear": 2.400901744081807e-08,
+              "angular": 0
+            },
+            {
+              "index": 7,
+              "linear": 4.613100990091823e-08,
+              "angular": 0
+            },
+            {
+              "index": 8,
+              "linear": 6.468442004248232e-08,
+              "angular": 6.981160614871751e-09
+            },
+            {
+              "index": 9,
+              "linear": 4.4940708932017515e-08,
+              "angular": 1.652998470741407e-08
+            },
+            {
+              "index": 10,
+              "linear": 3.6366047284630554e-08,
+              "angular": 1.7364703008837523e-08
+            },
+            {
+              "index": 11,
+              "linear": 4.7971595362739095e-08,
+              "angular": 5.00785291707162e-09
+            },
+            {
+              "index": 12,
+              "linear": 3.688027172543684e-08,
+              "angular": 4.271476106154637e-08
+            },
+            {
+              "index": 13,
+              "linear": 2.909466401135319e-08,
+              "angular": 7.712661787007136e-09
+            },
+            {
+              "index": 14,
+              "linear": 4.555926591542914e-08,
+              "angular": 8.176537835691278e-09
+            },
+            {
+              "index": 15,
+              "linear": 5.186364182563352e-08,
+              "angular": 1.2192674703204176e-08
+            },
+            {
+              "index": 16,
+              "linear": 4.829499244962676e-08,
+              "angular": 0
+            },
+            {
+              "index": 17,
+              "linear": 4.230546180039596e-08,
+              "angular": 2.3362323825493192e-08
+            },
+            {
+              "index": 18,
+              "linear": 6.539548458306399e-08,
+              "angular": 0
+            },
+            {
+              "index": 19,
+              "linear": 3.233129497459686e-08,
+              "angular": 3.250788987996245e-08
+            },
+            {
+              "index": 20,
+              "linear": 1.8579631611004288e-08,
+              "angular": 4.415266507962201e-08
+            },
+            {
+              "index": 21,
+              "linear": 4.182012869335949e-08,
+              "angular": 0
+            },
+            {
+              "index": 22,
+              "linear": 2.3811867144729604e-08,
+              "angular": 0
+            },
+            {
+              "index": 23,
+              "linear": 7.492621967308821e-09,
+              "angular": 0
+            },
+            {
+              "index": 24,
+              "linear": 3.343941323841193e-08,
+              "angular": 3.526500783057607e-08
+            },
+            {
+              "index": 25,
+              "linear": 2.694771872313595e-08,
+              "angular": 0
+            },
+            {
+              "index": 26,
+              "linear": 4.3057891252473723e-08,
+              "angular": 5.060406360613001e-08
+            },
+            {
+              "index": 27,
+              "linear": 6.528811491435249e-08,
+              "angular": 1.552718970065925e-07
+            },
+            {
+              "index": 28,
+              "linear": 2.450545055765474e-08,
+              "angular": 1.2670730187291923e-08
+            },
+            {
+              "index": 29,
+              "linear": 1.1514035724857763e-08,
+              "angular": 2.431865242513709e-08
+            },
+            {
+              "index": 30,
+              "linear": 4.7704363570488795e-08,
+              "angular": 1.3609870563868753e-08
+            },
+            {
+              "index": 31,
+              "linear": 3.669620718405042e-08,
+              "angular": 4.213800114394317e-09
+            },
+            {
+              "index": 32,
+              "linear": 2.0461399463655994e-08,
+              "angular": 2.0351336338375603e-08
+            },
+            {
+              "index": 33,
+              "linear": 4.6202698777975115e-08,
+              "angular": 2.6481386111720795e-09
+            },
+            {
+              "index": 34,
+              "linear": 2.834877022017679e-08,
+              "angular": 2.5224457439465553e-08
+            },
+            {
+              "index": 35,
+              "linear": 5.39669647858787e-09,
+              "angular": 0
+            },
+            {
+              "index": 36,
+              "linear": 3.6761168775711894e-08,
+              "angular": 1.1665596544307988e-08
+            },
+            {
+              "index": 37,
+              "linear": 2.3974854101993515e-08,
+              "angular": 1.3665271858531725e-08
+            },
+            {
+              "index": 38,
+              "linear": 9.056142502572584e-09,
+              "angular": 0
+            },
+            {
+              "index": 39,
+              "linear": 2.525803943775884e-08,
+              "angular": 0
+            },
+            {
+              "index": 40,
+              "linear": 1.426762460399189e-07,
+              "angular": 0
+            },
+            {
+              "index": 41,
+              "linear": 7.056714301789668e-08,
+              "angular": 0
+            },
+            {
+              "index": 42,
+              "linear": 1.150208224220961e-07,
+              "angular": 7.626114817416152e-08
+            },
+            {
+              "index": 43,
+              "linear": 1.9786821014999845e-07,
+              "angular": 0
+            },
+            {
+              "index": 44,
+              "linear": 1.9627067526784003e-08,
+              "angular": 0
+            },
+            {
+              "index": 45,
+              "linear": 2.1953678430719492e-08,
+              "angular": 0
+            },
+            {
+              "index": 46,
+              "linear": 6.387992224077266e-08,
+              "angular": 1.505334603912889e-07
+            },
+            {
+              "index": 47,
+              "linear": 7.21803496972484e-08,
+              "angular": 0
+            },
+            {
+              "index": 48,
+              "linear": 9.842387083125459e-08,
+              "angular": 1.4818513285885793e-07
+            },
+            {
+              "index": 49,
+              "linear": 3.615022881042762e-08,
+              "angular": 0
+            },
+            {
+              "index": 50,
+              "linear": 2.070574423029825e-08,
+              "angular": 0
+            },
+            {
+              "index": 51,
+              "linear": 0.0007301348055016588,
+              "angular": 0
+            },
+            {
+              "index": 52,
+              "linear": 0.005533092814764662,
+              "angular": 0.000305960502873015
+            },
+            {
+              "index": 53,
+              "linear": 0.008816883910771844,
+              "angular": 0.0005777184487471276
+            },
+            {
+              "index": 54,
+              "linear": 0.01212981904991195,
+              "angular": 0
+            },
+            {
+              "index": 55,
+              "linear": 0.00951684875383188,
+              "angular": 0
+            },
+            {
+              "index": 56,
+              "linear": 0.0009107255136682202,
+              "angular": 4.248408702933748e-05
+            },
+            {
+              "index": 57,
+              "linear": 0.0021584209216324868,
+              "angular": 0.00023100430245825976
+            },
+            {
+              "index": 58,
+              "linear": 0.0009402149644800184,
+              "angular": 0
+            },
+            {
+              "index": 59,
+              "linear": 0.0014233007140895398,
+              "angular": 0
+            },
+            {
+              "index": 60,
+              "linear": 0.004948880918400678,
+              "angular": 0
+            },
+            {
+              "index": 61,
+              "linear": 0.004289821084864309,
+              "angular": 0
+            },
+            {
+              "index": 62,
+              "linear": 0.00827919711362185,
+              "angular": 0
+            },
+            {
+              "index": 63,
+              "linear": 0.0005015570801690794,
+              "angular": 0
+            },
+            {
+              "index": 64,
+              "linear": 0.0006243141631379068,
+              "angular": 0
+            },
+            {
+              "index": 65,
+              "linear": 0.0017568172972317886,
+              "angular": 0
+            },
+            {
+              "index": 66,
+              "linear": 0.0008059577421571928,
+              "angular": 0
+            },
+            {
+              "index": 67,
+              "linear": 3.389268476983176e-08,
+              "angular": 0
+            },
+            {
+              "index": 68,
+              "linear": 4.21437440500938e-08,
+              "angular": 4.7992958316952766e-08
+            },
+            {
+              "index": 69,
+              "linear": 2.3956540307068508e-08,
+              "angular": 2.858749013585231e-08
+            },
+            {
+              "index": 70,
+              "linear": 2.7177362582619935e-08,
+              "angular": 3.234665221785172e-08
+            },
+            {
+              "index": 71,
+              "linear": 6.389100826176275e-08,
+              "angular": 1.3119046356721308e-07
+            },
+            {
+              "index": 72,
+              "linear": 3.9018729580675426e-08,
+              "angular": 6.05158351207891e-08
+            },
+            {
+              "index": 73,
+              "linear": 1.307822550256077e-08,
+              "angular": 1.077585244295141e-07
+            },
+            {
+              "index": 74,
+              "linear": 5.862184337956933e-08,
+              "angular": 5.4866347933575585e-08
+            },
+            {
+              "index": 75,
+              "linear": 1.8986450989189052e-07,
+              "angular": 2.2838214072306773e-07
+            },
+            {
+              "index": 76,
+              "linear": 4.4413327460191e-08,
+              "angular": 3.52470416942921e-08
+            },
+            {
+              "index": 77,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 78,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 79,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 80,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 81,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 82,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 83,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 84,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 85,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 86,
+              "linear": 2.378275931746998e-08,
+              "angular": 0
+            },
+            {
+              "index": 87,
+              "linear": 2.105700791510401e-08,
+              "angular": 0
+            },
+            {
+              "index": 88,
+              "linear": 1.7329854662406774e-08,
+              "angular": 0
+            },
+            {
+              "index": 89,
+              "linear": 2.3345041344491335e-08,
+              "angular": 0
+            },
+            {
+              "index": 90,
+              "linear": 1.4760695554727477e-08,
+              "angular": 0
+            },
+            {
+              "index": 91,
+              "linear": 2.530518838916862e-08,
+              "angular": 0
+            }
+          ],
+          "paneJointMaxima": [
+            {
+              "linear": 0.01212981904991195,
+              "angular": 0.0005777184487471276
+            },
+            {
+              "linear": 0.01212981904991195,
+              "angular": 0.0005777184487471276
+            },
+            {
+              "linear": 0.01212981904991195,
+              "angular": 0.0005777184487471276
+            }
+          ],
+          "lockedCounterweightMaxima": {
+            "linear": 1.8986450989189052e-07,
+            "angular": 2.2838214072306773e-07
+          }
+        },
+        {
+          "motion": "22_apology",
+          "frame": 15,
+          "physicsDriven": 47,
+          "pixelChanges": [
+            5500,
+            5285
+          ],
+          "maxBodyDifference": 0,
+          "maxLinearViolation": 0.023253758441710373,
+          "maxAngularViolation": 0.0017527871119788901,
+          "dynamic": 51,
+          "maxPosition": 2.220446049250313e-16,
+          "maxRotation": 4.2146848510894035e-08,
+          "execution": {
+            "ik": true,
+            "ikState": "on",
+            "chains": [
+              {
+                "supported": 6,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  38,
+                  178,
+                  86,
+                  87,
+                  97,
+                  98
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  13,
+                  15,
+                  20,
+                  23,
+                  29,
+                  32,
+                  35,
+                  184,
+                  187,
+                  190,
+                  193
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 13,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 20,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 23,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 29,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 32,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 35,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 38,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 178,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 86,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 87,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 98,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 184,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 187,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 190,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 193,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  19,
+                  22,
+                  28,
+                  31
+                ],
+                "error": "",
+                "reason": ""
+              },
+              {
+                "supported": 6,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  38,
+                  178,
+                  86,
+                  87,
+                  97,
+                  98
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  13,
+                  15,
+                  20,
+                  23,
+                  29,
+                  32,
+                  35,
+                  184,
+                  187,
+                  190,
+                  193
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 13,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 20,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 23,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 29,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 32,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 35,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 38,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 178,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 86,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 87,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 98,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 184,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 187,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 190,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 193,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  19,
+                  22,
+                  28,
+                  31
+                ],
+                "error": "",
+                "reason": ""
+              },
+              {
+                "supported": 6,
+                "unsupported": 0,
+                "available": true,
+                "executed": [
+                  38,
+                  178,
+                  86,
+                  87,
+                  97,
+                  98
+                ],
+                "disabledByMotion": [],
+                "appliedGrants": [
+                  13,
+                  15,
+                  20,
+                  23,
+                  29,
+                  32,
+                  35,
+                  184,
+                  187,
+                  190,
+                  193
+                ],
+                "order": [
+                  {
+                    "kind": "grant",
+                    "index": 13,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 15,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 20,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 23,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 29,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 32,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 35,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 38,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 178,
+                    "phase": "prePhysics",
+                    "layer": 0
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 86,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 87,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 97,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "ik",
+                    "index": 98,
+                    "phase": "prePhysics",
+                    "layer": 1
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 184,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 187,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 190,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  },
+                  {
+                    "kind": "grant",
+                    "index": 193,
+                    "phase": "prePhysics",
+                    "layer": 2
+                  }
+                ],
+                "grantPolicy": "All source grants in phase/layer/index order; IK independently controls chains",
+                "fixedAxes": [
+                  19,
+                  22,
+                  28,
+                  31
+                ],
+                "error": "",
+                "reason": ""
+              }
+            ],
+            "grant": true,
+            "physics": true,
+            "physicsState": "on",
+            "physicsStats": {
+              "jointProjectionIterations": 128,
+              "worldsCreated": 15,
+              "resets": 12,
+              "steps": 312,
+              "tick": 60,
+              "time": 0.5,
+              "lastMS": 2237.5999999940395,
+              "maxSliceMS": 74.10000002384186,
+              "cpuMS": 10157.500000029802,
+              "native": 2463,
+              "backendBytes": 67108864,
+              "bodiesPerWorld": 87,
+              "jointsPerWorld": 92
+            },
+            "helper": false,
+            "fallbackMixer": false,
+            "physicsChainsSameAsChains": true
+          },
+          "resources": {
+            "memory": {
+              "attributes": 18,
+              "attributesSize": 17760580,
+              "geometries": 28,
+              "indexAttributes": 27,
+              "indexAttributesSize": 847908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 61,
+              "programsSize": 293533,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 69,
+              "texturesSize": 292927234,
+              "uniformBuffers": 183,
+              "uniformBuffersSize": 863824,
+              "total": 312693079
+            },
+            "roots": [
+              472,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 2463,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 15,
+                "resets": 12,
+                "steps": 312,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 2237.5999999940395,
+                "maxSliceMS": 74.10000002384186,
+                "cpuMS": 10157.500000029802,
+                "native": 2463,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 589380874,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                184,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180
+              ],
+              "nonzeroPerMesh": [
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                6
+              ],
+              "sha256": "4d9716caf971580905fd0e8be6a74c2318269e509882337ebbf83405722e0397"
+            }
+          },
+          "jointErrorsWorstAcrossPanes": [
+            {
+              "index": 0,
+              "linear": 7.045274585948391e-09,
+              "angular": 3.704714446328694e-08
+            },
+            {
+              "index": 1,
+              "linear": 1.4281084093070717e-09,
+              "angular": 0
+            },
+            {
+              "index": 2,
+              "linear": 3.160685180247924e-08,
+              "angular": 5.481619727576437e-09
+            },
+            {
+              "index": 3,
+              "linear": 5.428461546941321e-08,
+              "angular": 0
+            },
+            {
+              "index": 4,
+              "linear": 3.430808170890032e-08,
+              "angular": 0
+            },
+            {
+              "index": 5,
+              "linear": 5.116204571109506e-09,
+              "angular": 0
+            },
+            {
+              "index": 6,
+              "linear": 4.1415902041208597e-08,
+              "angular": 0
+            },
+            {
+              "index": 7,
+              "linear": 8.70344263326217e-09,
+              "angular": 0
+            },
+            {
+              "index": 8,
+              "linear": 2.9245238897246395e-08,
+              "angular": 8.753485405202377e-07
+            },
+            {
+              "index": 9,
+              "linear": 2.3721141051424866e-08,
+              "angular": 0
+            },
+            {
+              "index": 10,
+              "linear": 4.624794902596818e-08,
+              "angular": 0
+            },
+            {
+              "index": 11,
+              "linear": 3.533357473273213e-08,
+              "angular": 1.0572406269893087e-08
+            },
+            {
+              "index": 12,
+              "linear": 4.740125847391141e-09,
+              "angular": 1.1349704703844665e-08
+            },
+            {
+              "index": 13,
+              "linear": 4.4285493494555794e-08,
+              "angular": 0
+            },
+            {
+              "index": 14,
+              "linear": 8.859120104176554e-09,
+              "angular": 2.820954444551771e-07
+            },
+            {
+              "index": 15,
+              "linear": 2.3684776806476293e-08,
+              "angular": 0
+            },
+            {
+              "index": 16,
+              "linear": 2.7629344367952058e-08,
+              "angular": 1.0549533177584003e-08
+            },
+            {
+              "index": 17,
+              "linear": 4.489803395735237e-08,
+              "angular": 1.0345055645455403e-09
+            },
+            {
+              "index": 18,
+              "linear": 6.795007601034797e-08,
+              "angular": 0
+            },
+            {
+              "index": 19,
+              "linear": 2.7418953107982702e-08,
+              "angular": 0
+            },
+            {
+              "index": 20,
+              "linear": 2.8713820876546947e-08,
+              "angular": 0
+            },
+            {
+              "index": 21,
+              "linear": 1.5300489208947e-09,
+              "angular": 0
+            },
+            {
+              "index": 22,
+              "linear": 2.073765570376196e-08,
+              "angular": 0
+            },
+            {
+              "index": 23,
+              "linear": 1.6509149602939033e-08,
+              "angular": 2.031512530420443e-08
+            },
+            {
+              "index": 24,
+              "linear": 2.5008611403976033e-08,
+              "angular": 0
+            },
+            {
+              "index": 25,
+              "linear": 1.498897228557894e-08,
+              "angular": 0
+            },
+            {
+              "index": 26,
+              "linear": 2.9796604517073888e-08,
+              "angular": 0
+            },
+            {
+              "index": 27,
+              "linear": 2.2467135263326554e-08,
+              "angular": 1.7018017475778358e-07
+            },
+            {
+              "index": 28,
+              "linear": 5.171361117106699e-09,
+              "angular": 2.847502802993951e-08
+            },
+            {
+              "index": 29,
+              "linear": 4.6821887256243144e-08,
+              "angular": 2.6560415894438805e-08
+            },
+            {
+              "index": 30,
+              "linear": 1.3797524900382996e-08,
+              "angular": 6.671247360090504e-09
+            },
+            {
+              "index": 31,
+              "linear": 4.9805531476820875e-08,
+              "angular": 3.8948248987091816e-08
+            },
+            {
+              "index": 32,
+              "linear": 1.3149633049103215e-09,
+              "angular": 3.024284733754712e-08
+            },
+            {
+              "index": 33,
+              "linear": 5.344927900274854e-08,
+              "angular": 0
+            },
+            {
+              "index": 34,
+              "linear": 3.5343881821248146e-08,
+              "angular": 8.295212794440232e-09
+            },
+            {
+              "index": 35,
+              "linear": 2.998175441248918e-08,
+              "angular": 6.095054301546998e-09
+            },
+            {
+              "index": 36,
+              "linear": 5.339539743687283e-08,
+              "angular": 2.6949047937652182e-08
+            },
+            {
+              "index": 37,
+              "linear": 4.0584441585167497e-08,
+              "angular": 1.486153711205418e-08
+            },
+            {
+              "index": 38,
+              "linear": 3.772953105496413e-08,
+              "angular": 5.769088984308723e-09
+            },
+            {
+              "index": 39,
+              "linear": 3.952328442302644e-08,
+              "angular": 0
+            },
+            {
+              "index": 40,
+              "linear": 9.03390957596173e-08,
+              "angular": 4.344506927128622e-08
+            },
+            {
+              "index": 41,
+              "linear": 3.349573063360367e-08,
+              "angular": 0
+            },
+            {
+              "index": 42,
+              "linear": 7.014633107704782e-08,
+              "angular": 9.047017929947332e-08
+            },
+            {
+              "index": 43,
+              "linear": 1.3207358406930325e-07,
+              "angular": 0
+            },
+            {
+              "index": 44,
+              "linear": 8.394418493651301e-09,
+              "angular": 1.556476138253604e-07
+            },
+            {
+              "index": 45,
+              "linear": 3.5872991910324004e-08,
+              "angular": 0
+            },
+            {
+              "index": 46,
+              "linear": 5.1382672117128436e-08,
+              "angular": 0
+            },
+            {
+              "index": 47,
+              "linear": 4.2437085179258816e-08,
+              "angular": 1.350141940192895e-07
+            },
+            {
+              "index": 48,
+              "linear": 7.174938421172783e-08,
+              "angular": 0
+            },
+            {
+              "index": 49,
+              "linear": 8.381158322912086e-08,
+              "angular": 1.026111324728407e-07
+            },
+            {
+              "index": 50,
+              "linear": 9.413504198363398e-09,
+              "angular": 0
+            },
+            {
+              "index": 51,
+              "linear": 0.002094895597851998,
+              "angular": 0
+            },
+            {
+              "index": 52,
+              "linear": 0.023253758441710373,
+              "angular": 0.0017527871119788901
+            },
+            {
+              "index": 53,
+              "linear": 0.012054658166671978,
+              "angular": 0.0005322473510948854
+            },
+            {
+              "index": 54,
+              "linear": 0.014782996260748138,
+              "angular": 0.0006226548481108596
+            },
+            {
+              "index": 55,
+              "linear": 0.011108693558319893,
+              "angular": 0
+            },
+            {
+              "index": 56,
+              "linear": 0.002062421877094933,
+              "angular": 0.00013069881028249242
+            },
+            {
+              "index": 57,
+              "linear": 0.001479912681591422,
+              "angular": 9.678609030405738e-05
+            },
+            {
+              "index": 58,
+              "linear": 0.002574847203271547,
+              "angular": 0
+            },
+            {
+              "index": 59,
+              "linear": 0.004617762694262728,
+              "angular": 0.0004001475551023703
+            },
+            {
+              "index": 60,
+              "linear": 0.019979492347834835,
+              "angular": 0
+            },
+            {
+              "index": 61,
+              "linear": 0.00804836579964013,
+              "angular": 0
+            },
+            {
+              "index": 62,
+              "linear": 0.00712939049194506,
+              "angular": 0
+            },
+            {
+              "index": 63,
+              "linear": 0.0023780845074475865,
+              "angular": 0
+            },
+            {
+              "index": 64,
+              "linear": 0.005736328059961271,
+              "angular": 0
+            },
+            {
+              "index": 65,
+              "linear": 0.005197971258670303,
+              "angular": 0
+            },
+            {
+              "index": 66,
+              "linear": 0.003586182340523103,
+              "angular": 0
+            },
+            {
+              "index": 67,
+              "linear": 5.562695998828637e-07,
+              "angular": 0
+            },
+            {
+              "index": 68,
+              "linear": 2.1144970552278153e-08,
+              "angular": 5.1836030739143077e-08
+            },
+            {
+              "index": 69,
+              "linear": 6.296909016434427e-08,
+              "angular": 5.309295588085889e-08
+            },
+            {
+              "index": 70,
+              "linear": 1.7365384463730038e-08,
+              "angular": 1.3000393230709634e-07
+            },
+            {
+              "index": 71,
+              "linear": 8.751497859726953e-09,
+              "angular": 1.3674418776467163e-07
+            },
+            {
+              "index": 72,
+              "linear": 8.008864171848984e-08,
+              "angular": 4.290408910606606e-08
+            },
+            {
+              "index": 73,
+              "linear": 3.55473883661972e-08,
+              "angular": 1.3823498896794952e-07
+            },
+            {
+              "index": 74,
+              "linear": 7.673000634866867e-08,
+              "angular": 2.152283759539804e-07
+            },
+            {
+              "index": 75,
+              "linear": 2.2591652448777921e-07,
+              "angular": 2.0388778738613972e-07
+            },
+            {
+              "index": 76,
+              "linear": 3.7860862445171506e-08,
+              "angular": 1.3668877551082372e-07
+            },
+            {
+              "index": 77,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 78,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 79,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 80,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 81,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 82,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 83,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 84,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 85,
+              "linear": 0,
+              "angular": 0
+            },
+            {
+              "index": 86,
+              "linear": 6.051180667654421e-09,
+              "angular": 0
+            },
+            {
+              "index": 87,
+              "linear": 2.3504953317043942e-08,
+              "angular": 0
+            },
+            {
+              "index": 88,
+              "linear": 2.097338125395254e-08,
+              "angular": 0
+            },
+            {
+              "index": 89,
+              "linear": 1.213040312642022e-08,
+              "angular": 0
+            },
+            {
+              "index": 90,
+              "linear": 2.2010214983936294e-08,
+              "angular": 0
+            },
+            {
+              "index": 91,
+              "linear": 2.4118707031561826e-08,
+              "angular": 0
+            }
+          ],
+          "paneJointMaxima": [
+            {
+              "linear": 0.023253758441710373,
+              "angular": 0.0017527871119788901
+            },
+            {
+              "linear": 0.023253758441710373,
+              "angular": 0.0017527871119788901
+            },
+            {
+              "linear": 0.023253758441710373,
+              "angular": 0.0017527871119788901
+            }
+          ],
+          "lockedCounterweightMaxima": {
+            "linear": 2.2591652448777921e-07,
+            "angular": 2.152283759539804e-07
+          }
+        }
+      ],
+      "errors": [],
+      "requests": 1,
+      "models": 2,
+      "assets": 15,
+      "finalResources": {
+        "memory": {
+          "attributes": 18,
+          "attributesSize": 17760580,
+          "geometries": 28,
+          "indexAttributes": 27,
+          "indexAttributesSize": 847908,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 293533,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 3,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 69,
+          "texturesSize": 292927234,
+          "uniformBuffers": 183,
+          "uniformBuffersSize": 863824,
+          "total": 312693079
+        },
+        "roots": [
+          472,
+          20,
+          21
+        ],
+        "physics": {
+          "native": 0,
+          "stats": {
+            "jointProjectionIterations": 128,
+            "worldsCreated": 57,
+            "resets": 34,
+            "steps": 2154,
+            "tick": 0,
+            "time": 0,
+            "lastMS": 18.80000001192093,
+            "maxSliceMS": 74.10000002384186,
+            "cpuMS": 68479.99999949336,
+            "native": 0,
+            "backendBytes": 67108864,
+            "bodiesPerWorld": 87,
+            "jointsPerWorld": 92
+          }
+        },
+        "heap": 597364136,
+        "morphWeightSummary": {
+          "scalarsPerMesh": [
+            184,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180
+          ],
+          "nonzeroPerMesh": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "sha256": "f0ba161594dad45f84bae1024549c4cf7737e262f759008abcfc0c9d05b0375d"
+        }
+      }
+    }
+  },
+  "pbrRegionEvidence": {
+    "uka": {
+      "model": "uka",
+      "evidence": [
+        {
+          "motion": "02_laugh",
+          "frame": 15,
+          "physicsDriven": 137,
+          "regionPixels": 43211,
+          "changedPixels": 16959
+        },
+        {
+          "motion": "22_apology",
+          "frame": 15,
+          "physicsDriven": 137,
+          "regionPixels": 43321,
+          "changedPixels": 16656
+        }
+      ]
+    },
+    "gene": {
+      "model": "gene",
+      "evidence": [
+        {
+          "motion": "02_laugh",
+          "frame": 15,
+          "physicsDriven": 53,
+          "regionPixels": 22856,
+          "changedPixels": 3551
+        },
+        {
+          "motion": "22_apology",
+          "frame": 15,
+          "physicsDriven": 47,
+          "regionPixels": 17932,
+          "changedPixels": 3349
+        }
+      ]
+    }
+  },
+  "resourceProbe": {
+    "environment": {
+      "platform": "darwin",
+      "release": "27.2.0",
+      "cpu": "Apple M4 Max",
+      "browser": "156.0.8078.74",
+      "renderer": "ANGLE SwiftShader, WebGL2; desktop, not Android"
+    },
+    "rows": [
+      {
+        "model": "uka",
+        "cache": "cold",
+        "timeDomain": "threadTicks",
+        "readyMS": 21390.902084,
+        "loadCPUSeconds": {
+          "thread": 3.2633780000000003,
+          "tasks": 2.827738
+        },
+        "off": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 16984760,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 934908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 54,
+              "programsSize": 235779,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 207806990,
+              "uniformBuffers": 140,
+              "uniformBuffersSize": 873984,
+              "total": 226836421
+            },
+            "roots": [
+              20,
+              323,
+              324
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 0,
+                "resets": 2,
+                "steps": 0,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 0,
+                "maxSliceMS": 0,
+                "cpuMS": 0,
+                "native": 0,
+                "backendBytes": 0,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 581945186,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                216,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203
+              ],
+              "nonzeroPerMesh": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "sha256": "7c5dd63f57acae8902fbf4eeb7d2660794bfc80a652e5de91f13c5aa0114f686"
+            }
+          },
+          "heap": {
+            "usedSize": 47072028,
+            "totalSize": 49496064,
+            "embedderHeapUsedSize": 1324352,
+            "backingStorageSize": 514540618
+          },
+          "backendRequests": 0
+        },
+        "on": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 16984760,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 934908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 54,
+              "programsSize": 235779,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 207806990,
+              "uniformBuffers": 140,
+              "uniformBuffersSize": 873984,
+              "total": 226836421
+            },
+            "roots": [
+              20,
+              323,
+              324
+            ],
+            "physics": {
+              "native": 4416,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 3,
+                "resets": 5,
+                "steps": 60,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 2067.5,
+                "maxSliceMS": 76,
+                "cpuMS": 1774.0999999642372,
+                "native": 4416,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 650375642,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                216,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203
+              ],
+              "nonzeroPerMesh": [
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3
+              ],
+              "sha256": "e39b3de09865acabdfb12a9aeeb39744eddd25fe050a2ae2c3d7d4be24e00202"
+            }
+          },
+          "heap": {
+            "usedSize": 55101804,
+            "totalSize": 57933824,
+            "embedderHeapUsedSize": 1560176,
+            "backingStorageSize": 583531208
+          },
+          "backendRequests": 1,
+          "CPUSeconds": {
+            "thread": 1.8242620000000005,
+            "tasks": 1.8222450000000001
+          }
+        },
+        "afterOff": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 16984760,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 934908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 54,
+              "programsSize": 235779,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 207806990,
+              "uniformBuffers": 140,
+              "uniformBuffersSize": 873984,
+              "total": 226836421
+            },
+            "roots": [
+              20,
+              323,
+              324
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 3,
+                "resets": 6,
+                "steps": 60,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 2067.5,
+                "maxSliceMS": 76,
+                "cpuMS": 1774.0999999642372,
+                "native": 0,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 638936813,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                216,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203
+              ],
+              "nonzeroPerMesh": [
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3
+              ],
+              "sha256": "e39b3de09865acabdfb12a9aeeb39744eddd25fe050a2ae2c3d7d4be24e00202"
+            }
+          },
+          "heap": {
+            "usedSize": 51905296,
+            "totalSize": 54001664,
+            "embedderHeapUsedSize": 1123728,
+            "backingStorageSize": 583531208
+          },
+          "backendRequests": 1
+        },
+        "errors": []
+      },
+      {
+        "model": "uka",
+        "cache": "warm",
+        "timeDomain": "threadTicks",
+        "readyMS": 18820.901083000004,
+        "loadCPUSeconds": {
+          "thread": 3.20401,
+          "tasks": 2.7534509999999996
+        },
+        "off": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 16984760,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 934908,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 54,
+              "programsSize": 235779,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 207806990,
+              "uniformBuffers": 140,
+              "uniformBuffersSize": 873984,
+              "total": 226836421
+            },
+            "roots": [
+              20,
+              323,
+              324
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 0,
+                "resets": 2,
+                "steps": 0,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 0,
+                "maxSliceMS": 0,
+                "cpuMS": 0,
+                "native": 0,
+                "backendBytes": 0,
+                "bodiesPerWorld": 164,
+                "jointsPerWorld": 151
+              }
+            },
+            "heap": 604796333,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                216,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203,
+                203
+              ],
+              "nonzeroPerMesh": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "sha256": "7c5dd63f57acae8902fbf4eeb7d2660794bfc80a652e5de91f13c5aa0114f686"
+            }
+          },
+          "heap": {
+            "usedSize": 47037040,
+            "totalSize": 49758208,
+            "embedderHeapUsedSize": 1478840,
+            "backingStorageSize": 514540618
+          },
+          "backendRequests": 0
+        },
+        "errors": []
+      },
+      {
+        "model": "gene",
+        "cache": "cold",
+        "timeDomain": "threadTicks",
+        "readyMS": 14100.435458,
+        "loadCPUSeconds": {
+          "thread": 1.5493679999999999,
+          "tasks": 1.545314
+        },
+        "off": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 9739700,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 565272,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 50,
+              "programsSize": 210478,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 200315980,
+              "uniformBuffers": 125,
+              "uniformBuffersSize": 582112,
+              "total": 211413542
+            },
+            "roots": [
+              472,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 0,
+                "resets": 2,
+                "steps": 0,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 0,
+                "maxSliceMS": 0,
+                "cpuMS": 0,
+                "native": 0,
+                "backendBytes": 0,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 382356251,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                184,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180
+              ],
+              "nonzeroPerMesh": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "sha256": "f0ba161594dad45f84bae1024549c4cf7737e262f759008abcfc0c9d05b0375d"
+            }
+          },
+          "heap": {
+            "usedSize": 37505552,
+            "totalSize": 40763392,
+            "embedderHeapUsedSize": 1257016,
+            "backingStorageSize": 313154084
+          },
+          "backendRequests": 0
+        },
+        "on": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 9739700,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 565272,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 50,
+              "programsSize": 210478,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 200315980,
+              "uniformBuffers": 125,
+              "uniformBuffersSize": 582112,
+              "total": 211413542
+            },
+            "roots": [
+              472,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 2463,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 3,
+                "resets": 5,
+                "steps": 60,
+                "tick": 60,
+                "time": 0.5,
+                "lastMS": 2328.7000000178814,
+                "maxSliceMS": 80.09999999403954,
+                "cpuMS": 2033.2000001966953,
+                "native": 2463,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 437626947,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                184,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180
+              ],
+              "nonzeroPerMesh": [
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3
+              ],
+              "sha256": "8a2150048c6c49bcd83a533ff66480489f9d0cef2579cd5cd44a87bc568a1f24"
+            }
+          },
+          "heap": {
+            "usedSize": 44828112,
+            "totalSize": 48152576,
+            "embedderHeapUsedSize": 1463392,
+            "backingStorageSize": 382144656
+          },
+          "backendRequests": 1,
+          "CPUSeconds": {
+            "thread": 2.0748919999999997,
+            "tasks": 2.072638
+          }
+        },
+        "afterOff": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 9739700,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 565272,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 50,
+              "programsSize": 210478,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 200315980,
+              "uniformBuffers": 125,
+              "uniformBuffersSize": 582112,
+              "total": 211413542
+            },
+            "roots": [
+              472,
+              20,
+              21
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 3,
+                "resets": 6,
+                "steps": 60,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 2328.7000000178814,
+                "maxSliceMS": 80.09999999403954,
+                "cpuMS": 2033.2000001966953,
+                "native": 0,
+                "backendBytes": 67108864,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 427336731,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                184,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180
+              ],
+              "nonzeroPerMesh": [
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3
+              ],
+              "sha256": "8a2150048c6c49bcd83a533ff66480489f9d0cef2579cd5cd44a87bc568a1f24"
+            }
+          },
+          "heap": {
+            "usedSize": 43362372,
+            "totalSize": 45006848,
+            "embedderHeapUsedSize": 1002304,
+            "backingStorageSize": 382144656
+          },
+          "backendRequests": 1
+        },
+        "errors": []
+      },
+      {
+        "model": "gene",
+        "cache": "warm",
+        "timeDomain": "threadTicks",
+        "readyMS": 14316.114042000001,
+        "loadCPUSeconds": {
+          "thread": 1.4555609999999999,
+          "tasks": 1.4527349999999999
+        },
+        "off": {
+          "resources": {
+            "memory": {
+              "attributes": 13,
+              "attributesSize": 9739700,
+              "geometries": 15,
+              "indexAttributes": 14,
+              "indexAttributesSize": 565272,
+              "indirectStorageAttributes": 0,
+              "indirectStorageAttributesSize": 0,
+              "programs": 50,
+              "programsSize": 210478,
+              "readbackBuffers": 0,
+              "readbackBuffersSize": 0,
+              "renderTargets": 3,
+              "storageAttributes": 0,
+              "storageAttributesSize": 0,
+              "textures": 46,
+              "texturesSize": 200315980,
+              "uniformBuffers": 125,
+              "uniformBuffersSize": 582112,
+              "total": 211413542
+            },
+            "roots": [
+              20,
+              245,
+              246
+            ],
+            "physics": {
+              "native": 0,
+              "stats": {
+                "jointProjectionIterations": 128,
+                "worldsCreated": 0,
+                "resets": 2,
+                "steps": 0,
+                "tick": 0,
+                "time": 0,
+                "lastMS": 0,
+                "maxSliceMS": 0,
+                "cpuMS": 0,
+                "native": 0,
+                "backendBytes": 0,
+                "bodiesPerWorld": 87,
+                "jointsPerWorld": 92
+              }
+            },
+            "heap": 366808964,
+            "morphWeightSummary": {
+              "scalarsPerMesh": [
+                184,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180,
+                180
+              ],
+              "nonzeroPerMesh": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "sha256": "f0ba161594dad45f84bae1024549c4cf7737e262f759008abcfc0c9d05b0375d"
+            }
+          },
+          "heap": {
+            "usedSize": 37495232,
+            "totalSize": 40239104,
+            "embedderHeapUsedSize": 1264064,
+            "backingStorageSize": 313154084
+          },
+          "backendRequests": 0
+        },
+        "errors": []
+      }
+    ]
+  },
+  "limits": {
+    "nativeWindowsMMD": "Unverified; position stabilization is a project numerical policy, not original-MMD parity.",
+    "physicalAndroid": "Unperformed; existing required post-merge device plan remains pending.",
+    "completeBrowserSuite": "Only the recorded relevant selections were run; no unrelated full matrix or optional native-WebGPU run.",
+    "jointAccuracy": "Both models/motions and IK states have explicit per-joint linear/angular bounds in all three worlds. Gene cloak joints 51..67 retain finite linear strain; the 30 mm ceiling matches the established synthetic drift bound and never applies to locked counterweights.",
+    "performance": "Three-world Physics On is opt-in and not realtime in this software-rendered environment; fixed tick scheduling, cancellation and the existing 150 ms device work guard remain."
+  },
+  "captureHashes": {
+    "gene-02_laugh-off.png": "0a990d90f61b39ec4b8540321173ce3adad859fa26c1bd8b2b049782f3395453",
+    "gene-02_laugh-on.png": "895f6a98e5b198c721f687b065b48a8130946f075b2cb624a68ab26aab389b9a",
+    "gene-02_laugh-pbr-off.png": "b25f7c691ef6ddd47d8561e5a63181ddfd8bf6d47f54572e54449d6f93016465",
+    "gene-02_laugh-pbr-on.png": "dffdda7e6d70c79b6f8cc517236bf0f2d53a6d32e96778bc93b397192ea08789",
+    "gene-22_apology-off.png": "ee20288e8fab14d36afe7026b892c7bc24b3896b173987fedf559b252c38d9b3",
+    "gene-22_apology-on.png": "3bbda6cb866dc012539b864433ab1d9ab737ed3e026a9304b81388bf8fa47cab",
+    "gene-22_apology-pbr-off.png": "af6a7c419aed1cdec96c321f2e55683e0e1dde547da94facef631e725c3ac7d6",
+    "gene-22_apology-pbr-on.png": "df4ee42736f67114a277c89ade4ab71c1eb1ffc57e6d5b6f4a7da5e6304e6f59",
+    "uka-02_laugh-off.png": "f4255f059705245e3a2dd3b1a078c4c16ee12dda5dca5d4f3187c72ec7ddfe5c",
+    "uka-02_laugh-on.png": "0ae2b953b02bae72e2051e857f1fbffc58426a7c9a40861168458025d0258e39",
+    "uka-02_laugh-pbr-off.png": "c10c905424dea12a877269e7f2ef1a1a3f9f985a883dc6d7e8a1d1400fbb4970",
+    "uka-02_laugh-pbr-on.png": "b26b6cc6bea09ef1e6d5e30eb1d7529070cbf8db6ad484e3e16a62369eba5eeb",
+    "uka-22_apology-off.png": "da57203e00fce50dbcac15d29a62e867d520c6216d3352e25778d720134632a0",
+    "uka-22_apology-on.png": "c6a1299be98aee8aa47736a44c3f6facb5f8e8018816952b9e263776407aba32",
+    "uka-22_apology-pbr-off.png": "5d3e3b1937a3615f3041cf1c1edc83b742da76558c5f09a044c8864aeb9232e0",
+    "uka-22_apology-pbr-on.png": "033872798f3575710a6d278e70bc717e745de30cf28e1fbef3f192537e105e6d"
+  },
+  "checks": {
+    "build": "Passed; existing large-chunk warning",
+    "typecheck": "Passed",
+    "node": {
+      "passed": 179,
+      "failed": 0,
+      "skipped": 0,
+      "durationMS": 32760.115333,
+      "schemaSuites": "Toon and Outline passed"
+    },
+    "links": "Passed; final count recorded in physics-validation.md",
+    "diffCheck": "Passed",
+    "sourceAudit": "Unchanged pinned full audit; source SHA-256, full body/joint bindings and converted asset identities checked in the Node suite."
+  },
+  "evidenceSerialization": "Complete per-joint errors are worst-of-three-pane maxima. Static controller inventories are in public-physics-audit.json; duplicate chain inventories and repeated morph weight arrays are summarized here."
+}
