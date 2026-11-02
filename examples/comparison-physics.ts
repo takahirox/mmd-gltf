@@ -77,7 +77,7 @@ export class ComparisonPhysics {
   private source?:VMD;
   private ik=true;
   private at=0;
-  readonly stats={jointProjectionIterations,worldsCreated:0,resets:0,steps:0,tick:0,time:0,lastMS:0,maxSliceMS:0,cpuMS:0,native:0,backendBytes:0,bodiesPerWorld:0,jointsPerWorld:0,constraintFailures:[] as ConstraintFailure[]};
+  readonly stats={jointProjectionIterations,worldsCreated:0,resets:0,steps:0,tick:0,time:0,lastMS:0,maxSliceMS:0,cpuMS:0,native:0,backendBytes:0,bodiesPerWorld:0,jointsPerWorld:0,phases:{} as Record<string,{cpuMS:number;maxMS:number;calls:number}>,constraintFailures:[] as ConstraintFailure[]};
   readonly inputs:RestBone[][]=[];
   readonly adapters:ReturnType<typeof comparisonIK>[];
   readonly bindings:ReturnType<typeof physicsBones>[];
@@ -116,9 +116,11 @@ export class ComparisonPhysics {
     const token=this.generation;
     let slice=performance.now();
     let workStart=slice;
-    const checkpoint=async()=>{
+    const checkpoint=async(phase:string)=>{
       const end=performance.now(),cost=end-slice;
-      this.stats.cpuMS+=end-workStart;
+      const elapsed=end-workStart,record=this.stats.phases[phase]??={cpuMS:0,maxMS:0,calls:0};
+      record.cpuMS+=elapsed;record.maxMS=Math.max(record.maxMS,elapsed);record.calls++;
+      this.stats.cpuMS+=elapsed;
       this.stats.maxSliceMS=Math.max(this.stats.maxSliceMS,cost);
       if(cost>this.workBudgetMS)throw new Error(`Physics exceeds this device’s ${this.workBudgetMS} ms work budget; switch Off or retry`);
       if(cost>=8) {await new Promise<void>(resolve=>setTimeout(resolve,0));slice=performance.now();}
@@ -129,6 +131,8 @@ export class ComparisonPhysics {
       const tick=this.tick+1;this.at=tick*step;
       sample(this.at);
       const raw=this.bindings.map(b=>b.read());
+      await checkpoint('sampling');
+      if(this.closed || token!==this.generation)return false;
       if(!this.worlds.length) {
         try {
           for(const [i,b] of this.bindings.entries()) {
@@ -157,7 +161,7 @@ export class ComparisonPhysics {
             this.stats.worldsCreated++;this.worlds.push(world);
             // Initialization is native work too. Keep each pane cancellable
             // without exposing a partially initialized or simulated tick.
-            await checkpoint();
+            await checkpoint('initialization');
             if(this.closed || token!==this.generation)return false;
           }
         } catch(error){
@@ -166,8 +170,15 @@ export class ComparisonPhysics {
         }
       }
       for(const [i,world] of this.worlds.entries()) {
-        this.bindings[i].write(world.resolve(raw[i],new Map(),tick!==0));
-        await checkpoint();
+        const work=world.resolveSteps(raw[i],new Map(),tick!==0);
+        let result=work.next();
+        while(!result.done) {
+          await checkpoint(`simulation.${result.value}`);
+          if(this.closed || token!==this.generation)return false;
+          result=work.next();
+        }
+        this.bindings[i].write(result.value);
+        await checkpoint('simulation.writeback');
         if(this.closed || token!==this.generation)return false;
       }
       this.tick=tick;this.stats.steps+=tick!==0?1:0;

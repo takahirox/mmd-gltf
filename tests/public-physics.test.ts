@@ -92,10 +92,14 @@ for(const [id,file,bodyCount,jointCount,modes] of [['uka','MS_Uka',164,151,[27,0
     // A rejected initialization checkpoint resumes asynchronously. Its cleanup
     // must not destroy worlds belonging to a replacement request in that gap.
     let clockCalls=0;
-    const clock=t.mock.method(performance,'now',()=>++clockCalls===3?6000:0);
+    const clock=t.mock.method(performance,'now',()=>++clockCalls===5?6000:0);
     try {
       const sample=()=>physics.bindings.forEach(b=>b.write(binding.solver.bones));
       const stale=physics.seek(0,sample);
+      // Sampling has its own checkpoint; reach the first native construction
+      // before replacing the request while its rejected checkpoint unwinds.
+      await Promise.resolve();
+      assert.equal(Number(physics.stats.worldsCreated),1);
       physics.reset(undefined,false);
       const replacement=physics.seek(0,sample);
       await assert.rejects(stale,/work budget/);

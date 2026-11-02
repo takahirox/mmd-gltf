@@ -146,13 +146,16 @@ change and re-enabling reset/replay from source time zero. There is no call to
 pending target are coalesced.
 
 Replay yields to events after approximately 8 ms, checking cancellation between
-pane world initialization and simulation operations. No partial three-world tick
-is drawn. Native worlds are limited
-to 256 bodies / 256 joints each and replay to 30 seconds (the clips are 10 s).
+source sampling, pane world initialization, native stepping and individual joint
+stabilization iterations. No partial three-world tick is drawn. Sliced and
+synchronous resolution use the same ordered arithmetic and convergence rule;
+slicing does not reduce the 128-iteration maximum or change the accuracy gates.
+Native worlds are limited to 256 bodies / 256 joints each and replay to 30 seconds
+(the clips are 10 s).
 A slice exceeding 150 ms fails back to Off with an actionable diagnostic. A
-single pane's native operation cannot be preempted; slower devices can still exceed the
-nominal slice target. During live simulation the shared epoch resumes after
-completed work, so an overloaded device slows playback instead of building an
+single native operation, source sampling or initialization cannot be preempted;
+slower devices can still exceed the nominal slice target. During live simulation
+the shared epoch resumes after completed work, so an overloaded device slows playback instead of building an
 unbounded catch-up queue. Pause cancels pending advancement and resolves the
 last published time. Off/model change/unload cancel pending work and destroy
 all native handles. The successfully loaded backend module is cached until page
@@ -162,7 +165,8 @@ The same-origin Ammo artifact is fetched only on first eligible On, with the
 pinned SHA-256 enforced by script integrity and checked by asset generation.
 Loading/error state is visible; a failed attempt clears the backend promise for
 retry. `readMMDComparisonResources` exposes native allocation counts, world/reset/
-step counts, CPU timings, backend heap bytes, renderer memory, scene identities
+step counts, CPU timings (including sampling/initialization/simulation totals and
+maximum checkpoint costs), backend heap bytes, renderer memory, scene identities
 and browser heap where available. `readMMDComparisonPhysics` exposes independent
 body transforms and the source binding. These diagnostics are read-only. Pose arrays serialize IEEE signed zero as zero for exact numerical replay comparisons; original source bytes keep their original bit patterns.
 

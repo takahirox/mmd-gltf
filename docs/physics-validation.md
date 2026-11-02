@@ -19,6 +19,63 @@ joint correction below. It is not evidence for the final stabilized runtime.
 
 ## Public real-model integration (Issue #77)
 
+### Replay work slicing revision (Issue #77)
+
+The seven public-physics failures in hosted run `41374803651` exceeded the existing
+150 ms slice budget after yielding only between complete pane operations. A local
+Chromium CPU profile of Gene Laugh at 0.5 s identified joint position stabilization
+as the largest simulation cost. The unsliced replay took 2719.8 ms of measured
+work, with a 55.5 ms maximum slice on this Mac; this faster environment did not
+reproduce the hosted budget failure. Sampling, native initialization and simulation
+now expose separate accumulated CPU, maximum checkpoint cost and call counts.
+
+The host yields after source sampling, native stepping and each complete
+stabilization iteration, in addition to pane initialization. It retains the same
+128-iteration cap, early convergence rule, numerical operations and source order.
+No source body/joint is omitted, no budget or accuracy assertion is relaxed, and
+partial ticks remain hidden. Generation checks after every awaited checkpoint
+prevent cancelled work from resuming against disposed or replacement worlds.
+Synchronous users drain the same generator without event waits. Temporary vectors,
+quaternions and the linear block matrix are reused within each joint row instead
+of allocating them on every iteration; all numerical operations retain their order.
+
+An initial sliced Gene profile reached On at frame 15: sampling 222.3 ms total /
+5.4 ms maximum checkpoint, three world initializations 38.7 / 19.8 ms, simulation
+2464.6 / 34.1 ms, and maximum slice 34.1 ms. Total work remained comparable
+(2725.6 ms); the improvement is bounded interruption opportunities, not a claim
+of faster simulation or realtime playback. Profiling used local Chromium with
+ANGLE SwiftShader and the dev build; hosted checks remain necessary after
+publication. These timings are observations, not universal device guarantees.
+
+A synthetic native regression compares sliced and synchronous poses and body
+transforms exactly at every tick, then interrupts inside stabilization and checks
+native cleanup. The existing real-model stale-initialization-error regression
+still replaces a request after native allocation, accounting for the new sampling
+checkpoint. All original real-model joint, replay, lifetime and browser assertions
+are retained.
+
+An additional 4× Chromium CPU-throttling stress check reached On for Gene Laugh
+at frame 15 (maximum slice 118.7 ms). Uka still exceeded the unchanged cap in the
+combined pre-physics/native-step portion (189.9 ms), recovered visibly to Off and
+released all native handles. Its maximum stabilization checkpoint was 7.1 ms;
+world initialization peaked at 83.6 ms and source sampling at 25.7 ms. Individual
+native operations remain synchronous and can exceed the device budget; this
+stress result does not establish Android performance or universal device support.
+
+Final local validation used Apple M4 Max / macOS Darwin 27.2.0, Node 26.12.1,
+Chromium 141.0.7390.37, Playwright 1.56.1 and one ANGLE SwiftShader worker.
+`npm run build` (existing large-chunk warning), `npm run typecheck`, all 185
+`npm test` cases, all 12 public/synthetic physics browser cases (766.0 seconds),
+529 link/anchor/built-asset checks and whitespace validation passed, with no
+failures or skips in the final runs. The full Uka/Gene lifecycle cases measured
+maximum slices of 45.3 / 30.3 ms; maximum stabilization checkpoints were 1.8 /
+1.1 ms. Browser assertions and timeouts are unchanged. Initial slicing-only
+browser attempts timed out on Uka's five-second IK-transition wait and were
+interrupted; scratch-object reuse preceded the successful full rerun.
+Hosted current-head browser shards and aggregation remain for downstream
+publication; this fix node does not push. Required physical Android post-merge
+verification remains pending.
+
 ### Continuation integration and device attempt (2026-11-02)
 
 The saved whole-clip gate was published, then integrated with main at `e880fcb`,

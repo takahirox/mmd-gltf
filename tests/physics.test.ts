@@ -254,6 +254,35 @@ test("mode-2 projection preserves authored offsets without feeding them back int
   assert.deepEqual(results[0],results[1],"mode only selects bone writeback; native forces, transforms and velocities stay identical");
 });
 
+test("sliced stabilization preserves every native tick and allows disposal between iterations", () => {
+  const {profile,solver}=base();
+  profile.bodies[0].mask=0;
+  profile.bodies.push({...structuredClone(profile.bodies[0]),index:1,bone:-1,mode:0,mass:0,translation:[0,1,0]});
+  profile.joints=[{index:0,name:'strained anchor',type:0,bodyA:0,bodyB:1,
+    frameA:{translation:[0,0,0],rotation:[0,0,0,1]},frameB:{translation:[0,0,0],rotation:[0,0,0,1]},
+    linearLower:[0,0,0],linearUpper:[0,0,0],angularLower:[-.1,-.1,-.1],angularUpper:[.1,.1,.1],
+    linearSpring:[0,0,0],angularSpring:[0,0,0]}];
+  const baseline=PhysicsWorld.allocations;
+  const sync=new PhysicsWorld(api,profile,solver,solver.bones,new Map(),{},undefined,128);
+  const sliced=new PhysicsWorld(api,profile,solver,solver.bones,new Map(),{},undefined,128);
+  try {
+    for(let tick=0;tick<10;tick++) {
+      const expected=sync.resolve(solver.bones,new Map(),tick!==0);
+      const work=sliced.resolveSteps(solver.bones,new Map(),tick!==0);
+      let result=work.next(),checkpoints=0;
+      while(!result.done) {checkpoints++;result=work.next();}
+      assert.ok(checkpoints>1,'stabilization yields inside a pane, not only after resolution');
+      assert.deepEqual(result.value,expected);
+      assert.deepEqual(sliced.bodyTransforms(),sync.bodyTransforms());
+    }
+    const interrupted=sliced.resolveSteps(solver.bones);
+    assert.equal(interrupted.next().done,false,'pre-physics and native stepping finish first');
+    assert.equal(interrupted.next().done,false,'cancel during stabilization');
+    interrupted.return(solver.bones);
+  } finally {sync.dispose();sliced.dispose();}
+  assert.equal(PhysicsWorld.allocations,baseline);
+});
+
 test("tick-zero disabled IK and player overrides initialize dynamic bodies from the controlled pose", async (t) => {
   const source = parsePMX(physicsPMX("box"));
   source.rigidBodies = [{

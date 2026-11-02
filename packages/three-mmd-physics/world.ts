@@ -231,6 +231,17 @@ export class PhysicsWorld {
     enabled: ReadonlyMap<number, boolean> = new Map(),
     step = true,
   ) {
+    const work=this.resolveSteps(raw,enabled,step);
+    let result=work.next();
+    while(!result.done)result=work.next();
+    return result.value;
+  }
+  /** Cancellable host work; callers must discard a world if resolution is interrupted. */
+  *resolveSteps(
+    raw: RestBone[],
+    enabled: ReadonlyMap<number, boolean> = new Map(),
+    step = true,
+  ):Generator<'step'|'projection',RestBone[]> {
     if (this.disposed) throw new Error("MMD_physics: disposed world");
     const pre = this.evaluate(raw, enabled, "pre"),
       animated = worlds(pre);
@@ -248,11 +259,12 @@ export class PhysicsWorld {
         0,
         this.profile.fixedStep,
       );
+    yield 'step';
     // The public real-model host opts into bounded position stabilization.
     // It changes neither source parameters nor Bullet's forces/velocities.
     if (this.projector) {
       const transforms = new Map([...this.bodies].map(([i,b]) => [i,this.read(b)]));
-      this.projector.project(transforms,this.jointProjectionIterations);
+      for(const _ of this.projector.projectSteps(transforms,this.jointProjectionIterations))yield 'projection';
       for (const b of this.profile.bodies) if (b.mode !== 0) {
         const body = this.bodies.get(b.index)!;
         this.write(body,transforms.get(b.index)!);
