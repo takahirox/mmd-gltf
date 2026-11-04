@@ -1,0 +1,831 @@
+{
+  "mergeCommit": "d1958dcc3c1666d4e5116c5f3a7461de1059a485",
+  "reviewedHead": "8ecd132f9f21b3ccc31520dd359ef26b7db451d6",
+  "deploymentRun": "https://github.com/takahirox/mmd-gltf/actions/runs/41924269865",
+  "origin": "https://takahirox.github.io/mmd-gltf/",
+  "startedAt": "2026-11-04T22:53:25.556Z",
+  "environment": "Headless desktop Chromium with SwiftShader; responsive viewports, not physical devices",
+  "layouts": [
+    {
+      "model": "uka",
+      "width": 1440,
+      "height": 900,
+      "expanded": false,
+      "pmx": {
+        "x": 29,
+        "y": 181,
+        "width": 691,
+        "height": 583
+      },
+      "gltf": {
+        "x": 720,
+        "y": 181,
+        "width": 691,
+        "height": 583
+      },
+      "renderedPixels": [
+        41569,
+        43104
+      ],
+      "screenshot": "uka-1440-collapsed.png"
+    },
+    {
+      "model": "uka",
+      "width": 1440,
+      "height": 900,
+      "expanded": true,
+      "pmx": {
+        "x": 29,
+        "y": 181,
+        "width": 546,
+        "height": 545
+      },
+      "gltf": {
+        "x": 575,
+        "y": 181,
+        "width": 546,
+        "height": 545
+      },
+      "renderedPixels": [
+        36221,
+        37717
+      ],
+      "screenshot": "uka-1440-expanded.png"
+    },
+    {
+      "model": "uka",
+      "width": 900,
+      "height": 900,
+      "expanded": false,
+      "pmx": {
+        "x": 17,
+        "y": 188.5,
+        "width": 866,
+        "height": 341
+      },
+      "gltf": {
+        "x": 17,
+        "y": 529.5,
+        "width": 866,
+        "height": 341
+      },
+      "renderedPixels": [
+        14495,
+        15028
+      ],
+      "screenshot": "uka-900-collapsed.png"
+    },
+    {
+      "model": "uka",
+      "width": 900,
+      "height": 900,
+      "expanded": true,
+      "pmx": {
+        "x": 17,
+        "y": 188.5,
+        "width": 866,
+        "height": 341
+      },
+      "gltf": {
+        "x": 17,
+        "y": 529.5,
+        "width": 866,
+        "height": 341
+      },
+      "renderedPixels": [
+        14495,
+        15028
+      ]
+    },
+    {
+      "model": "uka",
+      "width": 390,
+      "height": 844,
+      "expanded": false,
+      "pmx": {
+        "x": 17,
+        "y": 292,
+        "width": 356,
+        "height": 319.71875
+      },
+      "gltf": {
+        "x": 17,
+        "y": 611.71875,
+        "width": 356,
+        "height": 319.71875
+      },
+      "renderedPixels": [
+        12544,
+        13235
+      ],
+      "screenshot": "uka-390-collapsed.png"
+    },
+    {
+      "model": "uka",
+      "width": 390,
+      "height": 844,
+      "expanded": true,
+      "pmx": {
+        "x": 17,
+        "y": 292,
+        "width": 356,
+        "height": 319.71875
+      },
+      "gltf": {
+        "x": 17,
+        "y": 611.71875,
+        "width": 356,
+        "height": 319.71875
+      },
+      "renderedPixels": [
+        12544,
+        13235
+      ]
+    },
+    {
+      "model": "uka",
+      "width": 320,
+      "height": 844,
+      "expanded": false,
+      "pmx": {
+        "x": 17,
+        "y": 346,
+        "width": 286,
+        "height": 319.71875
+      },
+      "gltf": {
+        "x": 17,
+        "y": 665.71875,
+        "width": 286,
+        "height": 319.71875
+      },
+      "renderedPixels": [
+        12504,
+        13235
+      ],
+      "screenshot": "uka-320-collapsed.png"
+    },
+    {
+      "model": "uka",
+      "width": 320,
+      "height": 844,
+      "expanded": true,
+      "pmx": {
+        "x": 17,
+        "y": 346,
+        "width": 286,
+        "height": 319.71875
+      },
+      "gltf": {
+        "x": 17,
+        "y": 665.71875,
+        "width": 286,
+        "height": 319.71875
+      },
+      "renderedPixels": [
+        12504,
+        13235
+      ]
+    },
+    {
+      "model": "gene",
+      "width": 1440,
+      "height": 900,
+      "expanded": false,
+      "pmx": {
+        "x": 29,
+        "y": 181,
+        "width": 691,
+        "height": 583
+      },
+      "gltf": {
+        "x": 720,
+        "y": 181,
+        "width": 691,
+        "height": 583
+      },
+      "renderedPixels": [
+        36007,
+        35551
+      ],
+      "screenshot": "gene-1440-collapsed.png"
+    },
+    {
+      "model": "gene",
+      "width": 1440,
+      "height": 900,
+      "expanded": true,
+      "pmx": {
+        "x": 29,
+        "y": 181,
+        "width": 546,
+        "height": 545
+      },
+      "gltf": {
+        "x": 575,
+        "y": 181,
+        "width": 546,
+        "height": 545
+      },
+      "renderedPixels": [
+        31413,
+        31162
+      ]
+    },
+    {
+      "model": "gene",
+      "width": 900,
+      "height": 900,
+      "expanded": false,
+      "pmx": {
+        "x": 17,
+        "y": 188.5,
+        "width": 866,
+        "height": 341
+      },
+      "gltf": {
+        "x": 17,
+        "y": 529.5,
+        "width": 866,
+        "height": 341
+      },
+      "renderedPixels": [
+        12648,
+        12555
+      ],
+      "screenshot": "gene-900-collapsed.png"
+    },
+    {
+      "model": "gene",
+      "width": 900,
+      "height": 900,
+      "expanded": true,
+      "pmx": {
+        "x": 17,
+        "y": 188.5,
+        "width": 866,
+        "height": 341
+      },
+      "gltf": {
+        "x": 17,
+        "y": 529.5,
+        "width": 866,
+        "height": 341
+      },
+      "renderedPixels": [
+        12648,
+        12555
+      ]
+    },
+    {
+      "model": "gene",
+      "width": 390,
+      "height": 844,
+      "expanded": false,
+      "pmx": {
+        "x": 17,
+        "y": 292,
+        "width": 356,
+        "height": 319.71875
+      },
+      "gltf": {
+        "x": 17,
+        "y": 611.71875,
+        "width": 356,
+        "height": 319.71875
+      },
+      "renderedPixels": [
+        10803,
+        11055
+      ],
+      "screenshot": "gene-390-collapsed.png"
+    },
+    {
+      "model": "gene",
+      "width": 390,
+      "height": 844,
+      "expanded": true,
+      "pmx": {
+        "x": 17,
+        "y": 292,
+        "width": 356,
+        "height": 319.71875
+      },
+      "gltf": {
+        "x": 17,
+        "y": 611.71875,
+        "width": 356,
+        "height": 319.71875
+      },
+      "renderedPixels": [
+        10803,
+        11055
+      ]
+    },
+    {
+      "model": "gene",
+      "width": 320,
+      "height": 844,
+      "expanded": false,
+      "pmx": {
+        "x": 17,
+        "y": 346,
+        "width": 286,
+        "height": 319.71875
+      },
+      "gltf": {
+        "x": 17,
+        "y": 665.71875,
+        "width": 286,
+        "height": 319.71875
+      },
+      "renderedPixels": [
+        10759,
+        11053
+      ],
+      "screenshot": "gene-320-collapsed.png"
+    },
+    {
+      "model": "gene",
+      "width": 320,
+      "height": 844,
+      "expanded": true,
+      "pmx": {
+        "x": 17,
+        "y": 346,
+        "width": 286,
+        "height": 319.71875
+      },
+      "gltf": {
+        "x": 17,
+        "y": 665.71875,
+        "width": 286,
+        "height": 319.71875
+      },
+      "renderedPixels": [
+        10759,
+        11053
+      ]
+    }
+  ],
+  "models": [
+    {
+      "model": "uka",
+      "status": "Ready · WebGL2 · MMD toon",
+      "pmxStatus": "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+      "gltfStatus": "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+      "decodedReferenceTextures": 13,
+      "physicsNative": 0
+    },
+    {
+      "model": "gene",
+      "status": "Ready · WebGL2 · MMD toon",
+      "pmxStatus": "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+      "gltfStatus": "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+      "decodedReferenceTextures": 13,
+      "physicsNative": 0
+    }
+  ],
+  "errors": [],
+  "deployedArtifact": [
+    {
+      "path": "index.html",
+      "size": 19386,
+      "sha256": "c08919a408c5a9887bc96c1636ba5f0f48e489de6d8c73b58e306ca814ba6577",
+      "publicSha256": "c08919a408c5a9887bc96c1636ba5f0f48e489de6d8c73b58e306ca814ba6577"
+    },
+    {
+      "path": "assets/index-Bzzq0bP7.css",
+      "size": 7140,
+      "sha256": "2c380c75eda55042239f0f695de12e678f5a5180db80f845591a14c28fcf034d",
+      "publicSha256": "2c380c75eda55042239f0f695de12e678f5a5180db80f845591a14c28fcf034d"
+    },
+    {
+      "path": "assets/index-B26L1VtD.js",
+      "size": 4707,
+      "sha256": "651ca6a5166df2b0773645a642c0e9711e67f002ed96991ff6ba295dc15c9a0c",
+      "publicSha256": "651ca6a5166df2b0773645a642c0e9711e67f002ed96991ff6ba295dc15c9a0c"
+    },
+    {
+      "path": "assets/modulepreload-polyfill-B5Qt9EMX.js",
+      "size": 711,
+      "sha256": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0",
+      "publicSha256": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0"
+    },
+    {
+      "path": "assets/index-qOQiDd9b.js",
+      "size": 19063,
+      "sha256": "57b6b5e7c5d918eac59d7260f540ed301114d38bba90686f84ee913b16188933",
+      "publicSha256": "57b6b5e7c5d918eac59d7260f540ed301114d38bba90686f84ee913b16188933"
+    },
+    {
+      "path": "assets/world-KDIixAjE.js",
+      "size": 24281,
+      "sha256": "ccb51564801fc010783e8060d4e4872e96c7600e52e09d3f83dc31402288d58c",
+      "publicSha256": "ccb51564801fc010783e8060d4e4872e96c7600e52e09d3f83dc31402288d58c"
+    },
+    {
+      "path": "assets/OrbitControls-DSGFQRY-.js",
+      "size": 20330,
+      "sha256": "0a4095f1f9a8f57e192205d6fc03fbec91820bc47c17cddaf4918495ba0c7815",
+      "publicSha256": "0a4095f1f9a8f57e192205d6fc03fbec91820bc47c17cddaf4918495ba0c7815"
+    },
+    {
+      "path": "assets/index-BrzaTDkk.js",
+      "size": 37494,
+      "sha256": "524e69453579cf210bbbe2d24387cc53dce0fdac7b91335727d612b27ae3132c",
+      "publicSha256": "524e69453579cf210bbbe2d24387cc53dce0fdac7b91335727d612b27ae3132c"
+    },
+    {
+      "path": "assets/index-BD2HwvZw.js",
+      "size": 1034516,
+      "sha256": "89df399d3e4e0ebd309095dada253f899233753dcac8d3dfa3f721efe4424a01",
+      "publicSha256": "89df399d3e4e0ebd309095dada253f899233753dcac8d3dfa3f721efe4424a01"
+    },
+    {
+      "path": "assets/main-BRoOHGO3.js",
+      "size": 227182,
+      "sha256": "42c9611f687c6f41c3096b5e08d5f05908946cbf54ad9cbeaa779d5ce54c34ca",
+      "publicSha256": "42c9611f687c6f41c3096b5e08d5f05908946cbf54ad9cbeaa779d5ce54c34ca"
+    },
+    {
+      "path": "assets/source-Mz4_Cg9J.js",
+      "size": 3911,
+      "sha256": "48e74e31da175120745eed22c1c3d2b7cae4c6ae32d5853ac426b2fb6dd0fa8e",
+      "publicSha256": "48e74e31da175120745eed22c1c3d2b7cae4c6ae32d5853ac426b2fb6dd0fa8e"
+    }
+  ],
+  "assets": {
+    "responses": [
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/assets/index-Bzzq0bP7.css",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/assets/index-B26L1VtD.js",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/assets/modulepreload-polyfill-B5Qt9EMX.js",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/assets/index-qOQiDd9b.js",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/assets/world-KDIixAjE.js",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/assets/OrbitControls-DSGFQRY-.js",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/assets/index-BrzaTDkk.js",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/assets/index-BD2HwvZw.js",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/assets/main-BRoOHGO3.js",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/motion-22_apology.json",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/motion-02_laugh.json",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/motion/22_apology.vmd",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/motion/02_laugh.vmd",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/motion.json",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/motion/04_littlesmile.vmd",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/MS_Uka.pmx",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/model.gltf",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/iraira.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/FP.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/model.bin",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/face.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/eye.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/btm.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/top.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/body.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/acce.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/FP.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/iraira.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/FP.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/iraira.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/face.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/eye.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/body.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/face.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/eye.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/body.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/top.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/top.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/acce.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/btm.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/acce.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/btm.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/assets/source-Mz4_Cg9J.js",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/8be1cde8-d388-4521-8039-ba63ad9791f6",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/b79e6496-5f6b-4a4e-b1bb-f2cbf64cd228",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/24a24025-0a11-4240-ad01-57b284d5c3cb",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/motion-02_laugh.json",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/motion-22_apology.json",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/motion.json",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/motion/02_laugh.vmd",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/motion/01_happy.vmd",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/motion/22_apology.vmd",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/Gene_light.pmx",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/model.glb",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/light/pale.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/light/eye.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/light/hair2.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/light/iraira.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/light/extra.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/light/bottoms.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/light/top.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/light/face.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/light/eye2.png",
+        "status": 200
+      },
+      {
+        "url": "https://takahirox.github.io/mmd-gltf/gene-light/light/arm.png",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/8e67245e-c950-4581-8c1d-1fcd7946fb28",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/11e10c6b-1aad-4d89-8398-942e2d5f3404",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/b0802309-8419-409c-8870-9d7e8958b944",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/c9156239-f4ea-462a-8f51-ea229e94059e",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/6ecce204-e871-4842-9091-ae745b5fc2b8",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/8822f5ea-6c41-4a51-b5ec-e314e8b2dea6",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/5754c0af-45d5-4c76-a0da-88a833710e21",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/130b724d-b824-4697-97c4-259975f10e7d",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/8db5ba6b-56a9-48cd-a9f6-644bebd02727",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/05f3fd8d-4911-4c35-9155-b4ab48599f93",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/f45d4ced-f56a-48d8-9f56-2f812aa3682c",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/d53af6c3-c27e-4899-97c2-4bbf576d6b0d",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/11ef3e93-e4c6-484b-be35-8e1c7fdf8caf",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/1ed3d49c-26eb-4c08-955f-5a07952e25e3",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/4b2fdade-2b03-49c2-8201-0d62a3070c0b",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/5b472f11-b4cd-472e-be32-4fc8465bbf70",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/c8d9a6bb-bd47-400e-932e-da292d99fa1a",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/b5a89d08-6cdb-4f40-87b9-bf5026f435cc",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/c7fd9e6e-f1fb-41b5-a3f4-6487595bc520",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/177225ab-b4b3-4d04-95ff-301b65e8acf4",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/1b11ef1a-9d5a-44e3-90e0-12f0d3be2044",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/8584e486-4316-4561-b851-2dcda5788929",
+        "status": 200
+      },
+      {
+        "url": "blob:https://takahirox.github.io/9b81aeac-0be1-4a6a-91cd-43827a2aea65",
+        "status": 200
+      }
+    ],
+    "failures": [],
+    "ammoLoaded": false
+  },
+  "browser": "141.0.7390.37",
+  "result": "passed",
+  "finishedAt": "2026-11-04T22:54:15.568Z"
+}

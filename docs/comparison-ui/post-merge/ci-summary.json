@@ -1,0 +1,81 @@
+{
+  "commit": "d1958dcc3c1666d4e5116c5f3a7461de1059a485",
+  "status": "passed",
+  "errors": [],
+  "testCount": 113,
+  "attemptCount": 113,
+  "testStatuses": {
+    "passed": 111,
+    "skipped": 2
+  },
+  "shards": [
+    {
+      "shard": "1",
+      "status": "passed",
+      "testCount": 37,
+      "attemptCount": 37,
+      "statuses": {
+        "passed": 37
+      }
+    },
+    {
+      "shard": "2",
+      "status": "passed",
+      "testCount": 19,
+      "attemptCount": 19,
+      "statuses": {
+        "passed": 18,
+        "skipped": 1
+      }
+    },
+    {
+      "shard": "3",
+      "status": "passed",
+      "testCount": 25,
+      "attemptCount": 25,
+      "statuses": {
+        "passed": 24,
+        "skipped": 1
+      }
+    },
+    {
+      "shard": "4",
+      "status": "passed",
+      "testCount": 32,
+      "attemptCount": 32,
+      "statuses": {
+        "passed": 32
+      }
+    }
+  ],
+  "skips": [
+    {
+      "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgpu site",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Native WebGPU adapter unavailable; WebGL2 is tested separately.",
+          "location": {
+            "file": "/home/runner/work/mmd-gltf/mmd-gltf/tests/browser/example.spec.ts",
+            "line": 82,
+            "column": 12
+          }
+        }
+      ]
+    },
+    {
+      "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgpu",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Native WebGPU adapter unavailable; mandatory WebGL2 readbacks run independently.",
+          "location": {
+            "file": "/home/runner/work/mmd-gltf/mmd-gltf/tests/browser/outline.spec.ts",
+            "line": 9,
+            "column": 10
+          }
+        }
+      ]
+    }
+  ]
+}
