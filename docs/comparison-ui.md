@@ -8,7 +8,9 @@ are announced above the stage even with Details closed.
 
 **詳細** (Details) is a keyboard-operable disclosure button. On wide screens it
 opens a secondary panel beside the viewers; closing it restores both viewers'
-width. At 900px and below it opens below the viewers and timeline. It contains
+width. At 1200px and below it opens below the viewers and timeline. Above 900px,
+each viewer stays at least square to keep the full default model framing visible
+on tall windows; at 900px and below the viewers stack vertically. It contains
 model-specific camera reset, Outline, Uka's manual Rest-mode Expression selector,
 read-only binding/IK/Physics diagnostics and actual model/source downloads.
 Reset camera restores the selected model's initial shared orbit, target and zoom
@@ -128,3 +130,30 @@ The Uka long seek completed locally in **52,368 ms**, at tick 1188 and time 9.9,
 with no constraint failures or browser errors and zero native allocations after
 cleanup. A hosted CI rerun for this correction remains pending publication;
 this revision does not push or merge.
+
+### Tablet framing correction (2026-11-05)
+
+Details now opens below the timeline through 1200px. Above the 900px stacking
+breakpoint, the stage height is capped relative to its width so each pane stays
+at least square. This preserves Uka's complete default framing on tall tablets
+without changing the camera or resetting an existing orbit. Closing the desktop
+sidebar still restores the full viewer width.
+
+The layout regression now includes 901 × 900, 1024 × 1366, and both sides of the
+1200px sidebar breakpoint, with Details open and closed. It projects the full
+rest bounds into both actual render cameras and requires them to fit, preserving
+camera position and target across resizing and checking Reset at both reported
+tablet sizes. The original layout fails this check with Details open on a tall
+window. Captures: [901 × 900](comparison-ui/after-901-expanded.png) and
+[1024 × 1366](comparison-ui/after-1024-expanded.png).
+
+Revision validation: `npm ci`, `npm run build` plus the final CSS Vite rebuild,
+typecheck, all **186 Node tests**, Toon/Outline fixture checks, **555 link checks**
+and `git diff --check` passed. The focused `example`, `uka` and `unified-demo`
+browser suites passed **18 cases**, with one optional native-WebGPU skip (no
+adapter), zero failures and no retries, in 8.7 minutes. They used pinned Chromium
+141.0.7390.37, SwiftShader and `MMD_PREVIEW_PORT=43181`. All existing pixel,
+precision, controls and lifecycle assertions remain. The four full browser
+shards were not repeated for this CSS revision; hosted CI and the required
+post-merge Pages verification remain pending. Physical-device tests remain
+unperformed.

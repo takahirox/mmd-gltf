@@ -1,6 +1,7 @@
 import { openComparisonDetails } from './demo-controls';
 import { orbitComparison } from './comparison-camera';
 import { test, expect, type Page } from '@playwright/test';
+import { PerspectiveCamera, Vector3 } from 'three';
 
 test.use({ contextOptions: { reducedMotion: 'reduce' } });
 const preview = `http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
@@ -363,7 +364,7 @@ test('public layout: keyboard Details, responsive shared stage, framing and reso
   await page.locator('#comparison-camera-reset').click();
   await expect.poll(async () => (await state()).cameras[0].slice(0, 6)).toEqual(initialCamera);
 
-  for (const [width, height] of [[1440, 900], [900, 900], [390, 844], [320, 844]]) {
+  for (const [width, height] of [[1440, 900], [1201, 1366], [1200, 1366], [1024, 1366], [901, 900], [900, 900], [390, 844], [320, 844]]) {
     await page.setViewportSize({ width, height });
     for (const expanded of [false, true]) {
       if (await page.locator('#comparison-details-toggle').getAttribute('aria-expanded') !== String(expanded)) {
@@ -376,10 +377,12 @@ test('public layout: keyboard Details, responsive shared stage, framing and reso
       expect(pmx.width).toBeCloseTo(gltf.width, 0); expect(pmx.height).toBeCloseTo(gltf.height, 0);
       if (width <= 900) {
         expect(pmx.x).toBe(gltf.x); expect(gltf.y).toBeGreaterThanOrEqual(pmx.y + pmx.height);
-        if (expanded) expect((await page.locator('#comparison-details').boundingBox())!.y)
+      }
+      if (expanded) {
+        const details = (await page.locator('#comparison-details').boundingBox())!;
+        if (width <= 1200) expect(details.y)
           .toBeGreaterThan((await page.locator('.comparison-playback').boundingBox())!.y);
-      } else if (expanded) {
-        expect((await page.locator('#comparison-details').boundingBox())!.x).toBeGreaterThanOrEqual(gltf.x + gltf.width);
+        else expect(details.x).toBeGreaterThanOrEqual(gltf.x + gltf.width);
       }
       for (const id of ['demo-model', 'comparison-motion', 'material', 'comparison-ik', 'comparison-physics', 'comparison-details-toggle', 'comparison-time']) {
         const box = (await page.locator(`#${id}`).boundingBox())!;
@@ -389,6 +392,29 @@ test('public layout: keyboard Details, responsive shared stage, framing and reso
       expect((await page.locator('#comparison-time').boundingBox())!.width).toBeGreaterThan(width <= 900 ? 180 : 200);
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.evaluate(() => (window as any).captureMMDComparisonCanvas());
+      // The complete rest bounds (including hands) must fit both actual rendered
+      // frusta, even on tall tablets with Details open. Resizing must not refit
+      // the camera, and Reset must retain the same complete framing.
+      if (expanded && (width === 901 || width === 1024)) {
+        await page.locator('#comparison-camera-reset').click();
+        await page.evaluate(() => (window as any).captureMMDComparisonCanvas());
+      }
+      const current = await state();
+      for (const [index, bounds] of [current.reference.bounds, current.gltf.bounds].entries()) {
+        const values = current.cameras[index];
+        expect(values.slice(0, 6)).toEqual(initialCamera);
+        const camera = new PerspectiveCamera(values[7], values[6], .01, 100);
+        camera.position.fromArray(values);
+        camera.lookAt(new Vector3().fromArray(values, 3));
+        camera.updateMatrixWorld(true);
+        for (const x of [bounds.min[0], bounds.max[0]])
+          for (const y of [bounds.min[1], bounds.max[1]])
+            for (const z of [bounds.min[2], bounds.max[2]]) {
+              const point = new Vector3(x, y, z).project(camera);
+              expect(Math.abs(point.x), `${width}×${height}, Details ${expanded}, pane ${index}: horizontal framing`).toBeLessThan(.98);
+              expect(Math.abs(point.y), `${width}×${height}, Details ${expanded}, pane ${index}: vertical framing`).toBeLessThan(.98);
+            }
+      }
       await page.screenshot({ path: info.outputPath(`after-${width}-${expanded ? 'expanded' : 'collapsed'}.png`), fullPage: true });
     }
   }

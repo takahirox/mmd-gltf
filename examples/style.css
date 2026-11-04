@@ -367,8 +367,23 @@ a {
 .comparison-playback output { font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
 #about-demo { border-top:1px solid #e0e2e8; }
 
-@media(max-width:900px) {
+/* Keep each desktop pane at least square so the saved model framing also fits
+   horizontally on tall windows. Narrower screens retain the stacked stage. */
+@media(min-width:901px) {
+  #viewport {
+    width:100%;
+    aspect-ratio:2;
+    height:auto;
+    min-height:0;
+    max-height:clamp(440px,65vh,760px);
+  }
+}
+
+@media(max-width:1200px) {
   .comparison-layout:has(>aside:not([hidden])) { grid-template-columns:minmax(0,1fr); }
+}
+
+@media(max-width:900px) {
   .primary-toolbar { padding:12px; gap:10px; }
   #comparison-primary { display:contents; }
   .primary-toolbar > label:not(.toggle), #comparison-primary > label:not(.toggle) {
