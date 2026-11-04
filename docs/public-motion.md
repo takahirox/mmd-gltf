@@ -10,7 +10,8 @@ The downloadable core animations remain solver-free; optional public Physics exe
 Selection starts paused at frame zero. Play/Pause, Restart, arbitrary forward or
 backward seek and Loop use one absolute time in seconds (VMD frame / 30), derived
 from a monotonic epoch. Restart preserves the play/pause choice. Rest restores
-the base pose and enables Uka's manual blink/smile. All three pinned motions,
+the base pose and enables Uka's manual blink/smile in **詳細** (Details).
+The shared playback timeline sits below both viewers. All three pinned motions,
 PMX mixer clips and both glTF instances are prepared once per character. Selection
 stops the old action/players, restores the full original pose and zero weights,
 then selects the new action and retained players by animation name. It preserves
@@ -50,8 +51,8 @@ but these include the changing arms, shoulders and upper body. Gene's ten
 unbound bone tracks include nine full-width exact names and one absent name.
 Each selected generated `motion*.json` lists the precise bone/morph bindings,
 active omissions, source indices, preview target indices and execution policy.
-The toolbar summarizes bound/changing bones, active vertex expressions and
-active omitted morphs.
+**詳細** (Details) summarizes bound/changing bones, active vertex expressions
+and active omitted morphs, alongside the read-only IK/Physics diagnostics.
 
 Uka apology's active 困る and 口締め group morphs are deliberately omitted on
 **both** renderers. Its facial result therefore omits their contribution; this

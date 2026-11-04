@@ -9,3 +9,11 @@ export async function openRigDemo(page: Page, preview: string) {
     details.forEach(element => { (element as HTMLDetailsElement).open = true; });
   });
 }
+
+/** Exercise the same accessible disclosure as a public user. */
+export async function openComparisonDetails(page: Page) {
+  if (await page.locator('#comparison-details-toggle').getAttribute('aria-expanded') === 'false') {
+    await page.locator('#comparison-details-toggle').click();
+  }
+  await expect(page.locator('#comparison-details')).toBeVisible();
+}

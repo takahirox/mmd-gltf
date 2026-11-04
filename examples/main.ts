@@ -24,7 +24,7 @@ import { MMDToonPlugin, createToonLighting } from '../packages/three-mmd-toon';
 
 const status = document.querySelector<HTMLParagraphElement>('#gene-status')!;
 const select = document.querySelector<HTMLSelectElement>('#material')!;
-const outlines = document.querySelector<HTMLSelectElement>('#outlines')!;
+const outlines = document.querySelector<HTMLInputElement>('#outlines')!;
 const viewport = document.querySelector<HTMLElement>('#viewport')!;
 const panes = ['pmx', 'gltf'].map((id) => document.querySelector<HTMLElement>(`#${id}-pane`)!);
 const statuses = ['pmx', 'gltf'].map((id) => document.querySelector<HTMLElement>(`#${id}-status`)!);
@@ -45,6 +45,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
   let physics:ComparisonPhysics|undefined,physicsBusy=false,physicsEnabled=false,physicsRequest=0,physicsError='',requestedTime=0;
 
   const timeLabel = document.querySelector<HTMLOutputElement>('#comparison-time-label')!;
+  const cameraReset = document.querySelector<HTMLButtonElement>('#comparison-camera-reset')!;
+  cameraReset.disabled = true;
   const motionControls=[motionSelect,play,restart,timeline,loop];
   motionControls.forEach(c=>c.disabled=true);
   motionSelect.value=initialMotion;play.textContent='Play';timeline.value='0';loop.checked=false;
@@ -86,7 +88,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     for(const [key,value] of Object.entries(diagnostics??{}))
       if(Reflect.get(window,key)===value)Reflect.deleteProperty(window,key);
     diagnostics=undefined;
-    motionControls.forEach(c=>c.disabled=true);ikControl.disabled=true;
+    motionControls.forEach(c=>c.disabled=true);ikControl.disabled=true;cameraReset.disabled=true;
     mixer?.stopAllAction(); if(mixer)mixer.uncacheRoot(mixer.getRoot()); players.forEach(p=>p.dispose());
     previews.forEach(p=>p.dispose());
     blobURLs.forEach(url=>URL.revokeObjectURL(url));
@@ -111,7 +113,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     viewport.prepend(renderer.domElement);
     effects = [new ReferenceOutlineEffect(renderer), new MMDOutlineEffect(renderer)];
     const renderEffects = effects;
-    renderEffects.forEach(effect=>effect.enabled=outlines.value==='on');
+    renderEffects.forEach(effect=>effect.enabled=outlines.checked);
     const direction = new Vector3(-0.3, 0.8, 1).normalize();
     for (const scene of scenes) {
       scene.background = new Color(0xd0d0d0);
@@ -318,6 +320,16 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     orbit.target.copy(center);
     camera.position.copy(center).add(new Vector3(0, 0.04, 1).multiplyScalar(height * 1.95));
     orbit.update();
+    orbit.saveState();
+    cameraReset.disabled = false;
+    cameraReset.addEventListener('click', () => {
+      // Drain pending orbit/pan inertia before restoring the saved model framing.
+      const damping = orbit.enableDamping;
+      orbit.enableDamping = false;
+      orbit.update();
+      orbit.reset();
+      orbit.enableDamping = damping;
+    }, { signal: events.signal });
     function resize() {
       if (viewport.clientWidth > 0 && viewport.clientHeight > 0) renderer.setSize(viewport.clientWidth, viewport.clientHeight);
     }
@@ -338,7 +350,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       binding:bindingInfo(),
       preview:{targets:previews.map(p=>p.targets),bytes:previews.reduce((n,p)=>n+p.bytes,0)}, model, expression: 'rest', backend, frames: 0, mode: select.value, meshes: 0, ready: true,
       reference: { loader: 'MMDLoader', materials: reference.material.length, scale: reference.scale.x, bounds: describeBounds(reference),
-        outlines: outlines.value==='on', morphsActive: reference.morphTargetInfluences?.some((value) => value !== 0) ?? false },
+        outlines: outlines.checked, morphsActive: reference.morphTargetInfluences?.some((value) => value !== 0) ?? false },
       gltf: { bounds: describeBounds(toon.scene) }, cameras: [] as number[][] };
     toon.scene.traverse((object: Object3D) => { if ((object as Mesh).isMesh) info.meshes++; });
     // Read-only acceptance evidence: local/world bones plus skin-only positions.
@@ -540,14 +552,17 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
         if(element.textContent!==content)element.textContent=content;
         element.dataset.ready='true';
       });
+      const execution=document.querySelector('#comparison-execution')!;
+      const summary=`${text} · Physics ${info.execution.physicsState}${!ikAvailable?` · ${ikControl.title}`:''}`;
+      if(execution.textContent!==summary)execution.textContent=summary;
       const details=document.querySelector('#comparison-ik-diagnostics')!;
       const content=JSON.stringify({state:info.execution.ikState,panes:executing.map(s=>s.state),physics:{state:info.execution.physicsState,error:physicsError,stats:physics?.stats}},null,2);
       if(details.textContent!==content)details.textContent=content;
     }
     reportExecution();
     outlines.addEventListener('change', () => {
-      renderEffects.forEach(effect => { effect.enabled = outlines.value === 'on'; });
-      info.reference.outlines = outlines.value === 'on';
+      renderEffects.forEach(effect => { effect.enabled = outlines.checked; });
+      info.reference.outlines = outlines.checked;
     }, { signal: events.signal });
     select.addEventListener('change', () => {
       toon.scene.visible = select.value === 'toon';

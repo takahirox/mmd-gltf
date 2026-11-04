@@ -1,3 +1,4 @@
+import { openComparisonDetails } from './demo-controls';
 import { orbitComparison } from './comparison-camera';
 import { test, expect, type Page } from '@playwright/test';
 
@@ -131,7 +132,8 @@ test('one built page: both directions, every preset, contextual controls and ina
   expect((await rigState(page)).frames).toBe(paused.frames);
   expect((await rigState(page)).physics).toEqual(paused.physics);
   await page.locator('#material').selectOption('pbr');
-  await page.locator('#outlines').selectOption('off');
+  await openComparisonDetails(page);
+  await page.locator('#outlines').uncheck();
   await orbitComparison(page,2);
   await expect(page.locator('#gene-status')).toContainText('PBR fallback');
   await page.locator('#demo-model').selectOption('rig');
@@ -215,7 +217,7 @@ test('mobile viewport, keyboard disclosures, local error recovery and export', a
   expect(errors).toEqual([]);
 });
 
-test('comparison failure releases its canvas and can retry in place', async ({ page }) => {
+test('comparison failure releases its canvas and can retry in place', async ({ page }, info) => {
   const pageErrors: string[] = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   await page.route('**/gene-light/light/arm.png', route => route.fulfill({ status: 404, body: 'Missing test image' }));
@@ -224,6 +226,13 @@ test('comparison failure releases its canvas and can retry in place', async ({ p
   await page.locator('#demo-model').selectOption('gene');
   await expect(page.locator('#gene-status')).toContainText('Could not load/render the comparison', { timeout: 90000 });
   await expect(page.locator('#viewport canvas')).toHaveCount(0);
+  await expect(page.locator('#comparison-details')).toBeHidden();
+  await expect(page.locator('#gene-status')).toHaveAttribute('role','status');
+  await expect(page.locator('#gene-status')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Retry loading'})).toBeVisible();
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390);
+  await page.screenshot({path:info.outputPath('comparison-error-390.png'),fullPage:true});
   await page.unroute('**/gene-light/light/arm.png');
   await page.locator('#demo-retry').click();
   await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
@@ -322,4 +331,119 @@ test('motion finishing after a model switch stays paused in its own viewer', asy
       body: JSON.stringify({ resumeWaitMs, observed }), contentType: 'application/json',
     });
   }
+});
+
+test('public layout: keyboard Details, responsive shared stage, framing and resource continuity', async ({ page }, info) => {
+  test.setTimeout(300000);
+  const errors = errorsFrom(page), requests: string[] = [];
+  page.on('request', request => { if (/\/(uka|gene-light)\//.test(request.url())) requests.push(request.url()); });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(preview);
+  await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
+  const state = () => page.evaluate(() => (window as any).mmdExample);
+  await page.waitForFunction(() => (window as any).mmdExample.frames > 2);
+  const initialRequests = requests.length;
+  await page.locator('#viewport canvas').evaluate(canvas => { (window as any).originalComparisonCanvas = canvas; });
+  await expect(page.getByRole('checkbox', { name: 'IK', exact: true })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Physics', exact: true })).not.toBeChecked();
+  await expect(page.getByRole('group', { name: 'Playback', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('group', { name: 'Comparison controls', exact: true })).toHaveCount(1);
+  await expect(page.locator('#comparison-details')).toBeHidden();
+  await page.locator('#demo-model').focus();
+  for (const id of ['comparison-motion', 'material', 'comparison-ik', 'comparison-physics', 'comparison-details-toggle']) {
+    await page.keyboard.press('Tab');
+    await expect(page.locator(`#${id}`)).toBeFocused();
+  }
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#comparison-details-toggle')).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByRole('checkbox', { name: 'Outline', exact: true })).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Reset camera', exact: true })).toBeEnabled();
+  const initialCamera = (await state()).cameras[0].slice(0, 6);
+  await orbitComparison(page);
+  await page.locator('#comparison-camera-reset').click();
+  await expect.poll(async () => (await state()).cameras[0].slice(0, 6)).toEqual(initialCamera);
+
+  for (const [width, height] of [[1440, 900], [900, 900], [390, 844], [320, 844]]) {
+    await page.setViewportSize({ width, height });
+    for (const expanded of [false, true]) {
+      if (await page.locator('#comparison-details-toggle').getAttribute('aria-expanded') !== String(expanded)) {
+        await page.locator('#comparison-details-toggle').focus();
+        await page.keyboard.press('Space');
+      }
+      await expect(page.locator('#comparison-details-toggle')).toHaveAttribute('aria-expanded', String(expanded));
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+      const pmx = (await page.locator('#pmx-pane').boundingBox())!, gltf = (await page.locator('#gltf-pane').boundingBox())!;
+      expect(pmx.width).toBeCloseTo(gltf.width, 0); expect(pmx.height).toBeCloseTo(gltf.height, 0);
+      if (width <= 900) {
+        expect(pmx.x).toBe(gltf.x); expect(gltf.y).toBeGreaterThanOrEqual(pmx.y + pmx.height);
+        if (expanded) expect((await page.locator('#comparison-details').boundingBox())!.y)
+          .toBeGreaterThan((await page.locator('.comparison-playback').boundingBox())!.y);
+      } else if (expanded) {
+        expect((await page.locator('#comparison-details').boundingBox())!.x).toBeGreaterThanOrEqual(gltf.x + gltf.width);
+      }
+      for (const id of ['demo-model', 'comparison-motion', 'material', 'comparison-ik', 'comparison-physics', 'comparison-details-toggle', 'comparison-time']) {
+        const box = (await page.locator(`#${id}`).boundingBox())!;
+        expect(box.x).toBeGreaterThanOrEqual(0); expect(box.x + box.width).toBeLessThanOrEqual(width);
+        expect(box.height).toBeGreaterThanOrEqual(id === 'comparison-ik' || id === 'comparison-physics' ? 20 : 44);
+      }
+      expect((await page.locator('#comparison-time').boundingBox())!.width).toBeGreaterThan(width <= 900 ? 180 : 200);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.evaluate(() => (window as any).captureMMDComparisonCanvas());
+      await page.screenshot({ path: info.outputPath(`after-${width}-${expanded ? 'expanded' : 'collapsed'}.png`), fullPage: true });
+    }
+  }
+  await page.locator('#comparison-motion').selectOption('sample');
+  await page.screenshot({ path: info.outputPath('after-320-sample.png'), fullPage: true });
+  await page.locator('#comparison-motion').selectOption('rest');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const expandedWidth = (await page.locator('#viewport').boundingBox())!.width;
+  await page.locator('#comparison-details-toggle').click();
+  expect((await page.locator('#viewport').boundingBox())!.width).toBeGreaterThan(expandedWidth + 250);
+  await expect.poll(async () => (await state()).cameras[0].slice(0, 6)).toEqual(initialCamera);
+  await page.locator('#comparison-motion').selectOption('02_laugh');
+  await page.locator('#comparison-play').click();
+  await expect.poll(async () => (await state()).time).toBeGreaterThan(0);
+  await page.screenshot({ path: info.outputPath('after-desktop-playing.png'), fullPage: true });
+  await page.locator('#comparison-play').click();
+  await page.locator('#comparison-motion').selectOption('rest');
+  await openComparisonDetails(page);
+  await page.locator('#expression').selectOption('smile');
+  await page.locator('#material').selectOption('pbr');
+  await page.locator('#outlines').uncheck();
+  await expect.poll(async () => (await state()).reference.outlines).toBe(false);
+  expect(requests.length).toBe(initialRequests);
+  expect(await page.locator('#viewport canvas').evaluate(canvas => canvas === (window as any).originalComparisonCanvas)).toBe(true);
+  expect(await page.evaluate(() => (window as any).readMMDComparisonResources().physics.native)).toBe(0);
+  for (const model of ['gene', 'uka']) {
+    await page.locator('#demo-model').selectOption(model);
+    await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
+    await expect(page.locator('#outlines')).toBeChecked();
+    await expect(page.locator('#material')).toHaveValue('toon');
+    await expect(page.locator('#comparison-ik')).toBeChecked();
+    await expect(page.locator('#comparison-physics')).not.toBeChecked();
+    await expect(page.locator('#comparison-download-pmx')).toHaveAttribute('href', new RegExp(model === 'gene' ? 'Gene_light.pmx$' : 'MS_Uka.pmx$'));
+    await page.waitForFunction(() => (window as any).mmdExample.frames > 1);
+    const camera = (await state()).cameras[0].slice(0, 6);
+    await orbitComparison(page); await page.locator('#comparison-camera-reset').click();
+    await expect.poll(async () => (await state()).cameras[0].slice(0, 6)).toEqual(camera);
+    await expect(page.locator('#viewport canvas')).toHaveCount(1);
+  }
+  // The default damping preference can leave inertia after a real gesture.
+  // Reset must cancel that inertia as well as restore the saved position.
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.locator('#demo-model').selectOption('gene');
+  await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
+  await page.waitForFunction(() => (window as any).mmdExample.frames > 1);
+  const dampedInitial = (await state()).cameras[0].slice(0, 6);
+  const box = (await page.locator('#viewport canvas').boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 - 100, box.y + box.height / 2, { steps: 3 });
+  await page.mouse.up();
+  await expect.poll(async () => (await state()).cameras[0].slice(0, 6)).not.toEqual(dampedInitial);
+  await page.locator('#comparison-camera-reset').click();
+  await expect.poll(async () => (await state()).cameras[0].slice(0, 6)).toEqual(dampedInitial);
+  await page.evaluate(() => (window as any).captureMMDComparisonCanvas());
+  expect((await state()).cameras[0].slice(0, 6)).toEqual(dampedInitial);
+  expect(errors).toEqual([]);
 });

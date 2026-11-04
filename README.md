@@ -19,8 +19,8 @@ IK Off restores raw motion when Physics is Off. The adjacent Physics checkbox
 defaults Off; On runs the real Uka/Gene rigid bodies and joints in independent worlds.
 Gene Apology requires IK Off for Physics; with IK On, Physics is unavailable for
 the whole clip with a visible joint-accuracy diagnostic. The right
-pane also offers the independent PBR fallback. The Outline menu toggles both
-implementations; their different thickness laws are labeled in the example.
+pane also offers the independent PBR fallback. The Outline switch in **詳細**
+(Details) toggles both implementations; their different thickness laws are labeled in the example.
 
 Original-MMD fidelity is unverified. [Issue #13's research report](docs/original-mmd-research.md)
 records the inspected original 9.32 x64 distribution, unresolved shading rules,
@@ -117,14 +117,20 @@ deformation; ordinary loaders use an approximate BDEF2 fallback. See the
 [SDEF draft](extensions/MMD_skinning_sdef/README.md) and
 [runtime/export API](docs/pipeline.md#mixed-sdef-conversion-and-runtime).
 The [unified demo](examples/index.html) opens with the synchronized Uka
-comparison. The public **Model** picker offers only **Uka comparison** and
-**Gene Light comparison**, with Toon, PBR and Outline controls. **About & credits**
+comparison. The public **Model** picker offers only **Uka** and
+**Gene Light**. The compact toolbar selects Motion and glTF Display
+(Toon/PBR), with independent IK and Physics toggles. One timeline below the
+viewers provides Play/Pause, Restart, fractional seeking and Loop. **詳細**
+(Details) opens camera reset, Outline, Uka’s Rest-mode Expression selector,
+diagnostics and source downloads. It becomes a panel below the viewers on
+narrow screens; collapsing it restores viewer width on desktop. **About & credits**
 contains the character models' attribution, rights and comparison methodology.
 Synthetic box/wedge fixtures and their 24 technical presets are retained solely
 for automated conformance tests. The internal `?demo=rig` entry and legacy
 `rig.html` redirect preserve rig controls, diagnostics and viewer-switching
 coverage; they are not linked from public navigation. See the
-[UI validation record](docs/unified-demo.md).
+[UI validation record](docs/unified-demo.md) and the
+[minimal comparison layout and screenshots](docs/comparison-ui.md).
 
 Use `--mode qdef` with `MMDQDEFPlugin` for the bounded
 PMX 2.1 rigid dual-quaternion profile; see the [QDEF guide](docs/qdef.md) and

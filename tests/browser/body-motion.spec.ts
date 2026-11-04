@@ -46,7 +46,7 @@ for(const model of ['uka','gene'])test(`${model}: both official body clips defor
   await seek(.5);await page.locator('#comparison-motion').selectOption('rest');
   for(const clip of ['02_laugh','22_apology']) {
     const started=performance.now();
-    const preserved={cameras:(await state()).cameras,material:await page.locator('#material').inputValue(),outline:await page.locator('#outlines').inputValue()};
+    const preserved={cameras:(await state()).cameras,material:await page.locator('#material').inputValue(),outline:await page.locator('#outlines').isChecked()};
     await page.evaluate(()=>{(window as any).previousCapture=(window as any).captureMMDComparisonCanvas;});
     await page.locator('#comparison-motion').selectOption(clip);
     await expect.poll(async()=>({motion:(await state())?.motion,ready:await page.locator('#comparison-motion').isEnabled()}),{timeout:90000}).toEqual({motion:clip,ready:true});
@@ -61,7 +61,7 @@ for(const model of ['uka','gene'])test(`${model}: both official body clips defor
     const initial=await state();
     expect(initial.cameras).toEqual(preserved.cameras);
     expect(await page.locator('#material').inputValue()).toBe(preserved.material);
-    expect(await page.locator('#outlines').inputValue()).toBe(preserved.outline);
+    expect(await page.locator('#outlines').isChecked()).toBe(preserved.outline);
     expect(initial.execution).toMatchObject({ik:true,ikState:'on',grant:model==='gene',physics:false,helper:false,fallbackMixer:false});
     expect(initial.execution.chains.map((s:any)=>s.executed.length)).toEqual(model==='uka'?[10,10,10]:[6,6,6]);
     expect(initial.binding.changingBones).toContain('上半身');expect(initial.binding.changingBones).toContain('左腕');

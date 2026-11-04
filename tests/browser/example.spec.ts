@@ -1,3 +1,4 @@
+import { openComparisonDetails } from './demo-controls';
 import { orbitComparison } from './comparison-camera';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
 import { test, expect } from '@playwright/test';
@@ -82,10 +83,12 @@ for (const backend of ['webgl', 'webgpu']) {
     }
     await page.goto(`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/?demo=gene&backend=${backend}`);
     await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
+    await openComparisonDetails(page);
     await page.waitForFunction(() => (window as any).mmdExample?.frames > 4);
     await expect(page.locator('#viewport h2')).toHaveText(['MMD', 'glTF']);
     for (const label of ['MMD', 'glTF']) await expect(page.locator('#viewport').getByRole('heading', { name: label, exact: true })).toBeVisible();
-    await expect(page.locator('#uka-features p, footer > p.method-note')).toHaveCount(0);
+    await expect(page.locator('#uka-features')).toBeHidden();
+    await expect(page.locator('footer > p.method-note')).toHaveCount(0);
     for (const copy of [/Uka: compare the original PMX/, /Solver-free BDEF subset:/, /PMX is a secondary reference/]) {
       await expect(page.getByText(copy)).not.toBeVisible();
     }
@@ -158,14 +161,14 @@ for (const backend of ['webgl', 'webgpu']) {
     await orbitComparison(page,-2);
     await page.waitForTimeout(600);
     const outlineOn = await readComparisonBitmap(page);
-    await page.selectOption('#outlines', 'off');
+    await page.locator('#outlines').uncheck();
     await page.waitForTimeout(300);
     const outlineOff = await readComparisonBitmap(page);
     expectLightGrayBackground(outlineOff);
     // Require a visible contour change in each pane, excluding labels and hints.
     for (const half of [0, 1]) expect(silhouette(outlineOn, half).count).toBeGreaterThan(silhouette(outlineOff, half).count);
     expect(await page.evaluate(() => (window as any).mmdExample.reference.outlines)).toBe(false);
-    await page.selectOption('#outlines', 'on');
+    await page.locator('#outlines').check();
     await page.waitForTimeout(300);
     expect((await readComparisonBitmap(page)).equals(outlineOn)).toBe(true);
     const pmxBefore = comparisonHalf(await readComparisonBitmap(page),0);

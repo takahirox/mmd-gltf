@@ -3,6 +3,15 @@ const model = document.querySelector<HTMLSelectElement>('#demo-model')!;
 const requested = new URLSearchParams(location.search).get('demo');
 // Only explicit conformance entry points expose the internal fixture navigation.
 if (requested === 'rig') model.add(new Option('Synthetic rigs', 'rig'));
+const detailsToggle = document.querySelector<HTMLButtonElement>('#comparison-details-toggle')!;
+const details = document.querySelector<HTMLElement>('#comparison-details')!;
+detailsToggle.addEventListener('click', () => {
+  details.hidden = !details.hidden;
+  detailsToggle.setAttribute('aria-expanded', String(!details.hidden));
+});
+document.querySelector<HTMLAnchorElement>('.downloads a[href="#about-demo"]')!.addEventListener('click', () => {
+  document.querySelector<HTMLDetailsElement>('#about-demo')!.open = true;
+});
 const picker = document.querySelector<HTMLElement>('#preset-picker')!;
 const sections = {
   uka: document.querySelector<HTMLElement>('#gene-demo')!,
@@ -20,6 +29,7 @@ async function show(demo: Demo, motion: PublicMotion = 'rest') {
   current = demo;
   model.value = demo;
   picker.hidden = demo !== 'rig';
+  document.querySelector<HTMLElement>('#comparison-primary')!.hidden = demo === 'rig';
   sections.gene.hidden = demo === 'rig';
   sections.rig.hidden = demo !== 'rig';
   const status = document.querySelector<HTMLElement>(`#${demo === 'rig' ? 'rig' : 'gene'}-status`)!;
@@ -31,10 +41,18 @@ async function show(demo: Demo, motion: PublicMotion = 'rest') {
         const previous = demo === 'uka' ? 'gene' : 'uka';
         await viewers[previous]?.dispose?.();
         delete viewers[previous];
-        for (const id of ['material','outlines','expression']) {
+        for (const id of ['material','expression']) {
           const control = document.querySelector<HTMLSelectElement>(`#${id}`)!;
           control.selectedIndex = 0; control.disabled = true;
         }
+        const outline = document.querySelector<HTMLInputElement>('#outlines')!;
+        outline.checked = true; outline.disabled = true;
+        const assetBase = demo === 'uka' ? './uka/' : './gene-light/';
+        document.querySelector<HTMLAnchorElement>('#comparison-download-gltf')!.href = `${assetBase}model.${demo === 'uka' ? 'gltf' : 'glb'}`;
+        document.querySelector<HTMLAnchorElement>('#comparison-download-pmx')!.href = `${assetBase}${demo === 'uka' ? 'MS_Uka' : 'Gene_light'}.pmx`;
+        document.querySelector<HTMLAnchorElement>('#comparison-source')!.href = demo === 'uka'
+          ? 'https://github.com/mmdagent-ex/uka/tree/659f0d1a740fec68bb2817dc9c694a35e7a15f12'
+          : 'https://github.com/mmdagent-ex/gene/tree/c7eace43dffaccff6ad0597433ef85fa57c91e03';
         document.querySelector<HTMLElement>('#uka-features')!.hidden = demo !== 'uka';
         sections.gene.setAttribute('aria-label', `${demo === 'uka' ? 'Uka' : 'Gene Light'} comparison`);
         for (const pane of Array.from(document.querySelectorAll<HTMLElement>('.pane p'))) {
