@@ -154,6 +154,18 @@ browser suites passed **18 cases**, with one optional native-WebGPU skip (no
 adapter), zero failures and no retries, in 8.7 minutes. They used pinned Chromium
 141.0.7390.37, SwiftShader and `MMD_PREVIEW_PORT=43181`. All existing pixel,
 precision, controls and lifecycle assertions remain. The four full browser
-shards were not repeated for this CSS revision; hosted CI and the required
-post-merge Pages verification remain pending. Physical-device tests remain
-unperformed.
+shards were not repeated locally for this CSS revision; hosted verification is
+recorded below. Required post-merge Pages verification and physical-device tests
+remain unperformed.
+
+### Hosted CI verification (2026-11-05)
+
+The previously queued required
+[`build` gate for run 41872129359](https://github.com/takahirox/mmd-gltf/actions/runs/41872129359/job/126740578189)
+completed successfully for PR #84 head `fd523b72659143916699f3d1b3dc37cfb31f81a8`
+(tested PR merge commit `def59d35f1d92af42b0979100ca2fd69c3f89d65`). Its log
+confirms successful aggregation: **113/113 test IDs, 113 attempts, 111 passed,
+2 optional skips**. The final prerequisite check also passed with `prepare`,
+`typecheck`, `fast-checks` and all browser shards reporting success. No code or
+workflow correction was needed. This resolves the pending pre-merge CI finding
+for #83; required post-merge Pages verification remains pending.
