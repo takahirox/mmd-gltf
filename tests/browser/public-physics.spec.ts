@@ -51,9 +51,9 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
       if(enabled)expect(chain.executed.length).toBeGreaterThan(0);
       else expect(chain.executed).toEqual([]);
   };
-  const seek=async(t:number)=>{
+  const seek=async(t:number,timeout=90000)=>{
     await page.locator('#comparison-time').evaluate((e,t)=>{(e as HTMLInputElement).valueAsNumber=t;e.dispatchEvent(new Event('input',{bubbles:true}));},t);
-    await expect.poll(async()=>(await state()).time,{timeout:90000}).toBe(t);
+    await expect.poll(async()=>(await state()).time,{timeout}).toBe(t);
     await expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).not.toBe('simulating');
   };
   const evidence:any[]=[];
@@ -181,8 +181,13 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   await expect.poll(async()=>JSON.stringify((await state()).cameras)).not.toBe(JSON.stringify(cameras));
   await page.locator('#comparison-loop').check();
   const longSeekStarted=Date.now(),beforeLongSeek=(await state()).execution.physicsStats;
-  await seek(9.9);
-  const longSeek=(await state()).execution;
+  // This 1,188-tick replay across three native worlds took 113.65 seconds on
+  // hosted SwiftShader (run 41852145132), completing with no constraint failures.
+  // Give only this long seek more time; keep exact clocks and all physics gates.
+  await seek(9.9,180000);
+  const completedLongSeek=await state(),longSeek=completedLongSeek.execution;
+  expect(completedLongSeek.referenceTime).toBe(9.9);
+  expect(completedLongSeek.gltfTimes).toEqual([9.9,9.9]);
   expect(longSeek.physicsState).toBe('on');expect(longSeek.physicsStats.tick).toBe(1188);
   expect(longSeek.physicsStats.worldsCreated).toBe(beforeLongSeek.worldsCreated);
   expect(longSeek.physicsStats.constraintFailures).toEqual([]);

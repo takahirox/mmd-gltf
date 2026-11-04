@@ -102,3 +102,29 @@ final rebuild and restarted.
 Required post-merge verification remains pending: confirm the exact merged commit's
 Pages deployment, assets and both Ready panes. No deployment or remote write is
 performed by this implementation. Physical mobile-device tests are unperformed.
+
+### Physics replay CI correction (2026-11-05)
+
+[Hosted shard 4, run 41852145132](https://github.com/takahirox/mmd-gltf/actions/runs/41852145132/job/126651966753)
+failed because the Uka 9.9-second seek exceeded the test's 90-second poll. Its
+`physics-failure.json` artifact records a completed replay in **113,651.9 ms**:
+Physics On, tick **1188**, time **9.9**, no constraint failures, and a maximum
+work slice of **62.8 ms**, below the unchanged 150 ms device limit. This was a
+test wait-budget failure; the artifact does not show a stalled replay.
+
+Only that long seek now gets a 180-second poll. Ordinary seeks retain 90 seconds,
+the overall test retains 600 seconds, and all physics accuracy, pixel, world
+reuse, cancellation and teardown assertions remain. The completed long seek also
+checks the reference and both glTF clocks at exactly 9.9 seconds. No runtime,
+solver, replay step, shard assignment or publishing gate changes.
+
+Revision validation used the same local browser configuration above. `npm ci`,
+build, typecheck, all **186 Node tests**, Toon/Outline fixture checks, links and
+whitespace checks passed. All four required browser shard commands passed:
+**111 passed, 2 optional native-WebGPU skips, no failures or retries**. Aggregation
+passed with **113/113 unique test IDs**. Shards 1–4 took approximately 670, 649,
+610 and 885 seconds respectively; these are local timings, not hosted measurements.
+The Uka long seek completed locally in **52,368 ms**, at tick 1188 and time 9.9,
+with no constraint failures or browser errors and zero native allocations after
+cleanup. A hosted CI rerun for this correction remains pending publication;
+this revision does not push or merge.
