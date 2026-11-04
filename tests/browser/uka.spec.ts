@@ -1,3 +1,4 @@
+import { openComparisonDetails } from './demo-controls';
 import { orbitComparison } from './comparison-camera';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
 import { test, expect } from '@playwright/test';
@@ -53,10 +54,11 @@ test('default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outli
   await page.goto(preview);
   await expect(page.locator('#demo-model')).toHaveValue('uka');
   await expect(page.locator('#viewport h2')).toHaveText(['MMD','glTF']);
-  await expect(page.locator('#uka-features p, footer > p.method-note')).toHaveCount(0);
+  await expect(page.locator('footer > p.method-note')).toHaveCount(0);
   await expect(page.locator('#about-demo')).not.toHaveAttribute('open');
   await expect(page.locator('#about-demo > p').first()).toBeHidden();
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
+  await openComparisonDetails(page);
   await page.waitForFunction(()=>(window as any).mmdExample?.frames>3);
   await expect(page.locator('#expression')).toBeEnabled();
   await expect(page.locator('#expression option')).toHaveText(['Rest · A pose','Blink · まばたき','Smile · 笑い']);
@@ -90,10 +92,10 @@ test('default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outli
   expect((comparisonHalf(await readComparisonBitmap(page),1)).equals(toon)).toBe(false);
   const on=await capture();
   const outlined=[comparisonHalf(on,0),comparisonHalf(on,1)];
-  await page.locator('#outlines').selectOption('off');expect((await capture()).equals(on)).toBe(false);
+  await page.locator('#outlines').uncheck();expect((await capture()).equals(on)).toBe(false);
   const withoutOutline=await capture();
   for(const i of [0,1])expect(comparisonHalf(withoutOutline,i).equals(outlined[i])).toBe(false);
-  await page.locator('#outlines').selectOption('on');expect((await capture()).equals(on)).toBe(true);
+  await page.locator('#outlines').check();expect((await capture()).equals(on)).toBe(true);
   await page.locator('#expression').selectOption('rest');await page.locator('#material').selectOption('toon');
   expect((await capture()).equals(rest)).toBe(true);
   await orbitComparison(page);expect((await capture()).equals(rest)).toBe(false);

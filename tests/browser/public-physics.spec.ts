@@ -1,3 +1,4 @@
+import { openComparisonDetails } from './demo-controls';
 import { writeFile } from 'node:fs/promises';
 import { PerspectiveCamera, Vector3 } from 'three';
 import { jointBounds, jointViolations } from '../physics-joints';
@@ -23,6 +24,7 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   await page.setViewportSize({width:1200,height:1000});
   await page.goto(`${preview}?demo=${model}`);
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
+  await openComparisonDetails(page);
   const state=()=>page.evaluate(()=>(window as any).mmdExample);
   const pose=()=>page.evaluate(()=>(window as any).readMMDComparisonPose());
   const resources=()=>page.evaluate(()=>(window as any).readMMDComparisonResources());
@@ -49,9 +51,9 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
       if(enabled)expect(chain.executed.length).toBeGreaterThan(0);
       else expect(chain.executed).toEqual([]);
   };
-  const seek=async(t:number)=>{
+  const seek=async(t:number,timeout=90000)=>{
     await page.locator('#comparison-time').evaluate((e,t)=>{(e as HTMLInputElement).valueAsNumber=t;e.dispatchEvent(new Event('input',{bubbles:true}));},t);
-    await expect.poll(async()=>(await state()).time,{timeout:90000}).toBe(t);
+    await expect.poll(async()=>(await state()).time,{timeout}).toBe(t);
     await expect.poll(async()=>(await state()).execution.physicsState,{timeout:90000}).not.toBe('simulating');
   };
   const evidence:any[]=[];
@@ -64,6 +66,13 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
     await physicsOn();
     expect((await state()).time).toBe(time);
     const on=await pose(),pixelsOn=await readComparisonBitmap(page);
+    const allocated=(await resources()).physics.native;
+    await page.locator('#comparison-details-toggle').click();
+    await expect(page.locator('#comparison-details')).toBeHidden();
+    await openComparisonDetails(page);
+    expect((await resources()).physics.native).toBe(allocated);
+    expect(await pose()).toEqual(on);
+    await expect(page.locator('#viewport canvas')).toHaveCount(1);
     for(const half of [0,1])expect(comparisonHalf(pixelsOn,half).equals(comparisonHalf(pixelsOff,half))).toBe(false);
     const dynamic=Object.keys(on[0].bones).filter(name=>on[0].bones[name].rotation.some((v:number,k:number)=>Math.abs(v-off[0].bones[name].rotation[k])>1e-3));
     expect(dynamic.length).toBeGreaterThan(10);
@@ -163,8 +172,8 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   await seek(.5);const a=await pose();
   await page.locator('#comparison-motion').selectOption('02_laugh');await seek(.5);
   await page.locator('#comparison-motion').selectOption('22_apology');await seek(.5);expect(await pose()).toEqual(a);
-  await page.locator('#outlines').selectOption('off');await readComparisonBitmap(page);
-  await page.locator('#outlines').selectOption('on');
+  await page.locator('#outlines').uncheck();await readComparisonBitmap(page);
+  await page.locator('#outlines').check();
   const cameras=(await state()).cameras;
   const canvas=page.locator('#viewport canvas'),box=(await canvas.boundingBox())!;
   await page.mouse.move(box.x+box.width/3,box.y+box.height/2);await page.mouse.down();
@@ -172,8 +181,13 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   await expect.poll(async()=>JSON.stringify((await state()).cameras)).not.toBe(JSON.stringify(cameras));
   await page.locator('#comparison-loop').check();
   const longSeekStarted=Date.now(),beforeLongSeek=(await state()).execution.physicsStats;
-  await seek(9.9);
-  const longSeek=(await state()).execution;
+  // This 1,188-tick replay across three native worlds took 113.65 seconds on
+  // hosted SwiftShader (run 41852145132), completing with no constraint failures.
+  // Give only this long seek more time; keep exact clocks and all physics gates.
+  await seek(9.9,180000);
+  const completedLongSeek=await state(),longSeek=completedLongSeek.execution;
+  expect(completedLongSeek.referenceTime).toBe(9.9);
+  expect(completedLongSeek.gltfTimes).toEqual([9.9,9.9]);
   expect(longSeek.physicsState).toBe('on');expect(longSeek.physicsStats.tick).toBe(1188);
   expect(longSeek.physicsStats.worldsCreated).toBe(beforeLongSeek.worldsCreated);
   expect(longSeek.physicsStats.constraintFailures).toEqual([]);
@@ -202,7 +216,7 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   expect(errors).toEqual([]);
 });
 
-test('Gene Apology gates Physics for the full clip with IK On and restores availability on control transitions',async({page})=>{
+test('Gene Apology gates Physics for the full clip with IK On and restores availability on control transitions',async({page},info)=>{
   test.setTimeout(180000);
   let backendRequests=0,modelRequests=0;
   page.on('request',r=>{if(r.url().endsWith('/ammo.js'))backendRequests++;if(/\.(pmx|glb|gltf)(\?|$)/.test(r.url()))modelRequests++;});
@@ -219,11 +233,18 @@ test('Gene Apology gates Physics for the full clip with IK On and restores avail
     await expect(physics).toBeDisabled();await expect(physics).not.toBeChecked();
     await expect(page.locator('#comparison-physics-status')).toContainText('Gene Apology with IK On exceeds joint accuracy limits');
     await expect(page.locator('#comparison-physics-status')).toContainText('Turn IK Off or choose another motion');
+    await expect(page.locator('#comparison-physics-status')).toBeVisible();
+    await expect(physics).toHaveAccessibleDescription(/Gene Apology with IK On/);
     expect((await state()).execution.physicsState).toBe('unavailable');
     expect((await state()).execution.physics).toBe(false);
     expect((await resources()).physics.native).toBe(0);
   };
   await unavailable();
+  await expect(page.locator('#comparison-details')).toBeHidden();
+  await page.setViewportSize({width:320,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(320);
+  await page.screenshot({path:info.outputPath('gene-apology-unavailable-320.png'),fullPage:true});
+  await page.setViewportSize({width:1200,height:900});
   const seek=async(time:number)=>{
     const requested=await page.locator('#comparison-time').evaluate((e,t)=>{
       const input=e as HTMLInputElement;input.valueAsNumber=t;

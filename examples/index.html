@@ -5,37 +5,59 @@
   <title>MMD glTF · Interactive demos</title><link rel="stylesheet" href="./style.css">
 </head>
 <body><main>
-  <header><h1>MMD <span aria-hidden="true">→</span> glTF</h1>
-    <div class="menus selectors">
-      <label>Model <select id="demo-model"><option value="uka">Uka</option><option value="gene">Gene Light</option></select></label>
+  <header><h1 lang="ja">MMD / glTF <span>アニメーション比較デモ</span></h1></header>
+  <div class="primary-toolbar" role="group" aria-label="Comparison controls">
+    <label>Model <select id="demo-model"><option value="uka">Uka</option><option value="gene">Gene Light</option></select></label>
       <label id="preset-picker" hidden>Preset <select id="rig-model" disabled><optgroup label="Skinning"><option value="box" selected>BDEF box</option><option value="qdef-box">QDEF box · mixed</option><option value="qdef-wedge">QDEF wedge · mixed</option><option value="sdef-box">SDEF box · mixed</option><option value="sdef-wedge">SDEF wedge · mixed</option><option value="wedge">BDEF sheared wedge</option></optgroup><optgroup label="Morphs"><option value="bone-box">BDEF box · bone/mixed</option><option value="bone-wedge">BDEF wedge · bone/mixed</option><option value="bone-box-sdef">SDEF box · bone/mixed</option><option value="bone-wedge-qdef">QDEF wedge · bone/mixed</option><option value="group-box">BDEF box · vertex groups</option><option value="group-wedge">BDEF wedge · vertex groups</option></optgroup><optgroup label="IK / append"><option value="solver-box-bdef">BDEF box · IK/append</option><option value="solver-wedge-bdef">BDEF wedge · IK/append</option><option value="solver-box-sdef">SDEF box · IK/append</option><option value="solver-wedge-sdef">SDEF wedge · IK/append</option><option value="solver-box-qdef">QDEF box · IK/append</option><option value="solver-wedge-qdef">QDEF wedge · IK/append</option></optgroup><optgroup label="Physics"><option value="physics-box-bdef">BDEF box · physics</option><option value="physics-box-sdef">SDEF box · physics</option><option value="physics-box-qdef">QDEF box · physics</option><option value="physics-wedge-bdef">BDEF wedge · physics</option><option value="physics-wedge-sdef">SDEF wedge · physics</option><option value="physics-wedge-qdef">QDEF wedge · physics</option></optgroup></select></label>
-    </div>
-  </header>
-  <section id="gene-demo" aria-label="Uka comparison">
-    <div class="toolbar">
-      <label>glTF material <select id="material" disabled><option value="toon">MMD toon</option><option value="pbr">PBR fallback</option></select></label>
-      <label>Outline <select id="outlines" disabled><option value="on">On</option><option value="off">Off</option></select></label>
-    </div>
-    <div id="uka-features">
-      <label>Expression <select id="expression" disabled><option value="rest">Rest · A pose</option><option value="blink">Blink · まばたき</option><option value="smile">Smile · 笑い</option></select></label>
-    </div>
-    <div class="toolbar comparison-playback">
-      <label><input id="comparison-ik" type="checkbox" checked disabled> IK</label>
-      <label><input id="comparison-physics" type="checkbox" disabled> Physics</label>
-      <span id="comparison-physics-status" role="status"></span>
+    <div id="comparison-primary">
       <label>Motion <select id="comparison-motion" disabled><option value="rest">Rest / manual</option><option value="sample">Official sample</option><option value="02_laugh">Laugh · 02</option><option value="22_apology">Apology · 22</option></select></label>
-      <button id="comparison-play" disabled>Play</button><button id="comparison-restart" disabled>Restart</button>
-      <label>Time <input id="comparison-time" type="range" min="0" max="10" step="0.03333333333333333" value="0" disabled></label>
-      <output id="comparison-time-label" for="comparison-time">0.00 / 10.00 s</output>
-      <label><input id="comparison-loop" type="checkbox" disabled> Loop</label>
+      <label>Display <select id="material" disabled><option value="toon">MMD toon</option><option value="pbr">PBR fallback</option></select></label>
+      <label class="toggle"><input id="comparison-ik" type="checkbox" checked disabled aria-describedby="comparison-execution"> IK</label>
+      <label class="toggle"><input id="comparison-physics" type="checkbox" disabled aria-describedby="comparison-physics-status"> Physics</label>
+      <button id="comparison-details-toggle" aria-expanded="false" aria-controls="comparison-details" lang="ja">詳細</button>
     </div>
-    <p id="comparison-binding" class="help" aria-live="polite"></p>
-    <p id="gene-status" class="status" role="status">Loading PMX and converted glTF…</p>
-    <section id="viewport" aria-label="Synchronized PMX and glTF comparison">
-      <div id="pmx-pane" class="pane"><h2>MMD</h2><p id="pmx-status" role="status">Loading original PMX and images…</p></div>
-      <div id="gltf-pane" class="pane"><h2>glTF</h2><p id="gltf-status" role="status">Loading converted glTF…</p></div>
-      <div class="hint">Drag to orbit · Scroll to zoom · Synchronized views</div>
-    </section>
+  </div>
+  <section id="gene-demo" aria-label="Uka comparison">
+    <div class="announcements">
+      <p id="gene-status" class="status" role="status">Loading PMX and converted glTF…</p>
+      <p id="comparison-physics-status" role="status"></p>
+    </div>
+    <div class="comparison-layout">
+      <div class="viewer-column">
+        <section id="viewport" aria-label="Synchronized PMX and glTF comparison">
+          <div id="pmx-pane" class="pane"><h2>MMD</h2><p id="pmx-status" role="status">Loading original PMX and images…</p></div>
+          <div id="gltf-pane" class="pane"><h2>glTF</h2><p id="gltf-status" role="status">Loading converted glTF…</p></div>
+          <div class="hint">Drag to orbit · Scroll to zoom · Synchronized views</div>
+        </section>
+        <div class="comparison-playback" role="group" aria-label="Playback">
+          <button id="comparison-play" disabled>Play</button>
+          <button id="comparison-restart" disabled>Restart</button>
+          <label class="timeline">Time <input id="comparison-time" type="range" min="0" max="10" step="0.03333333333333333" value="0" disabled></label>
+          <output id="comparison-time-label" for="comparison-time">0.00 / 10.00 s</output>
+          <label class="toggle"><input id="comparison-loop" type="checkbox" disabled> Loop</label>
+        </div>
+      </div>
+      <aside id="comparison-details" aria-labelledby="comparison-details-heading" hidden>
+        <h2 id="comparison-details-heading" lang="ja">詳細</h2>
+        <div class="secondary-controls">
+          <button id="comparison-camera-reset" disabled>Reset camera</button>
+          <label class="toggle"><input id="outlines" type="checkbox" checked disabled> Outline</label>
+          <div id="uka-features">
+            <label>Expression <select id="expression" disabled aria-describedby="expression-help"><option value="rest">Rest · A pose</option><option value="blink">Blink · まばたき</option><option value="smile">Smile · 笑い</option></select></label>
+            <p id="expression-help" class="help">Manual expressions are available in Rest mode.</p>
+          </div>
+        </div>
+        <p id="comparison-execution" class="help"></p>
+        <p id="comparison-binding" class="help"></p>
+        <details><summary>IK &amp; Physics diagnostics</summary><pre id="comparison-ik-diagnostics"></pre></details>
+        <nav aria-label="Model downloads" class="downloads">
+          <a id="comparison-download-gltf" href="./uka/model.gltf" download>Converted glTF</a>
+          <a id="comparison-download-pmx" href="./uka/MS_Uka.pmx" download>Original PMX</a>
+          <a id="comparison-source" href="https://github.com/mmdagent-ex/uka/tree/659f0d1a740fec68bb2817dc9c694a35e7a15f12">Source &amp; images</a>
+          <a href="#about-demo">About &amp; credits</a>
+        </nav>
+      </aside>
+    </div>
   </section>
   <!-- Internal conformance fixture; entered only through the test deep link. -->
   <section id="rig-demo" aria-label="Synthetic rigs" hidden>
@@ -92,7 +114,6 @@
     <details id="about-demo"><summary>About &amp; credits</summary>
       <p>The MMD label denotes a direct PMX-rendering reference using <code>@takahirox/three-mmd</code>, not native MikuMikuDance. The glTF side uses converter-produced assets. Exact MMD visual/physics fidelity is unverified; supported solvers and physics use bounded profiles. The public comparisons play the same pinned VMD on one frame/30 clock using raw bone offsets and vertex expressions. IK evaluates all applicable source chains in both panes, following VMD controller switches. Models with unavailable chains disable IK with reasons in diagnostics. With Physics Off (default), only IK prerequisite grants execute while IK is On and no Ammo world is initialized. Physics On lazily loads the pinned Ammo/Bullet backend and runs all source rigid bodies/joints in independent PMX, Toon and PBR worlds, with fixed-axis twist projection and ordered source grants. IK remains independently controllable. Gene Apology with IK On makes Physics unavailable for the whole clip because joint accuracy limits are exceeded; turn IK Off or choose another motion. Source-consistent execution of that combination remains follow-up work. Fixed ticks share one VMD clock; backward seek/reset replays in cancellable batches. Device work limits can restore Off with a diagnostic. Original Windows MMD parity and physical Android Physics verification remain unverified. This comparison excludes material, group, bone and UV morph deformation, VMD visibility/camera/light/shadow execution and unresolved names. Laugh · 02 and Apology · 22 provide authored upper-body and arm animation. Uka Apology also activates two group morphs (困る and 口締め): their facial contribution is deliberately omitted on both sides and preserved in the source. Other selected active morphs are vertex expressions. Manual expressions are available in Rest mode. Exact retained glTF playback replaces its corresponding approximate core animation channels.</p>
       <p>Optional physics uses the pinned Ammo.js/Bullet backend; <a href="./runtime/ammo-LICENSE.txt">backend licence</a>. Simulation uses a project profile, not verified Windows MMD behavior. Joint stabilization has measured bounds; Gene’s coupled cloak retains some linear strain.</p>
-      <details><summary>IK &amp; Physics diagnostics</summary><pre id="comparison-ik-diagnostics"></pre></details>
       <h2>Uka · source &amp; rights</h2>
       <p class="credit">CG-CA Uka (c) 2023-2024 by Nagoya Institute of Technology, Moonshot R&amp;D Goal 1 Avatar Symbiotic Society</p>
       <p>Original PMX, selected motion, images and converted glTF: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Preserve the <a href="https://github.com/mmdagent-ex/uka/tree/659f0d1a740fec68bb2817dc9c694a35e7a15f12">source and full usage guidelines</a>. No endorsement is implied. Model assets have separate terms from repository code.</p>
