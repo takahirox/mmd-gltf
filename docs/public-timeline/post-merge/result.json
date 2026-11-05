@@ -1,0 +1,195 @@
+{
+  "verifiedAt": "2026-11-05T09:35:09.928Z",
+  "sourceIssue": {
+    "repository": "takahirox/mmd-gltf",
+    "number": 87,
+    "stateImmediatelyBeforeMerge": "open"
+  },
+  "pr": {
+    "number": 88,
+    "url": "https://github.com/takahirox/mmd-gltf/pull/88",
+    "head_sha": "11b93fbe5ab8ecedbb338b9e950222108bdc18dd"
+  },
+  "merged": true,
+  "retry": false,
+  "merge_commit": "ddd7afecefa01208eba2d92ef8d906fea2f680d7",
+  "mergeMethod": "merge",
+  "parents": [
+    "19b6881610a449b5445b13ae703dc0bab9b4b394",
+    "11b93fbe5ab8ecedbb338b9e950222108bdc18dd"
+  ],
+  "mergeGuard": "GitHub accepted the exact expected PR head SHA; the source Issue was read immediately before the attempt. No policy bypass was requested.",
+  "hostedCI": {
+    "run": 41997713528,
+    "url": "https://github.com/takahirox/mmd-gltf/actions/runs/41997713528",
+    "conclusion": "success",
+    "requiredBrowserShards": 4,
+    "optionalBrowserPerformance": "skipped"
+  },
+  "pages": {
+    "deploymentId": 7569979866,
+    "sha": "ddd7afecefa01208eba2d92ef8d906fea2f680d7",
+    "state": "success",
+    "url": "https://takahirox.github.io/mmd-gltf/",
+    "artifact": {
+      "name": "github-pages-attempt-1",
+      "id": 13400708535,
+      "run": 41997713528,
+      "servedBundlesMatchPublishedArtifact": true,
+      "bundles": [
+        {
+          "model": "uka",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/modulepreload-polyfill-B5Qt9EMX.js",
+          "sha256": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0"
+        },
+        {
+          "model": "uka",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/index-DW-aQXks.js",
+          "sha256": "93b1602e7dc0e84cae9f3d9b14be441d79c6207601db8756d043e834d51e38e6"
+        },
+        {
+          "model": "uka",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/OrbitControls-DSGFQRY-.js",
+          "sha256": "0a4095f1f9a8f57e192205d6fc03fbec91820bc47c17cddaf4918495ba0c7815"
+        },
+        {
+          "model": "uka",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/index-TKWDWmii.js",
+          "sha256": "3e950793f989066dd66f567cd1f853c4faf5ee76165bafb8ee505c51a80b6dec"
+        },
+        {
+          "model": "uka",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/index-qOQiDd9b.js",
+          "sha256": "57b6b5e7c5d918eac59d7260f540ed301114d38bba90686f84ee913b16188933"
+        },
+        {
+          "model": "uka",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/world-KDIixAjE.js",
+          "sha256": "ccb51564801fc010783e8060d4e4872e96c7600e52e09d3f83dc31402288d58c"
+        },
+        {
+          "model": "uka",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/index-BD2HwvZw.js",
+          "sha256": "89df399d3e4e0ebd309095dada253f899233753dcac8d3dfa3f721efe4424a01"
+        },
+        {
+          "model": "uka",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/main-CYKlBAfk.js",
+          "sha256": "53f2cf661691fab4419be5aac67fd68f3b17406bd107024459e8423f0de1780c"
+        },
+        {
+          "model": "uka",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/source-Mz4_Cg9J.js",
+          "sha256": "48e74e31da175120745eed22c1c3d2b7cae4c6ae32d5853ac426b2fb6dd0fa8e"
+        },
+        {
+          "model": "gene",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/modulepreload-polyfill-B5Qt9EMX.js",
+          "sha256": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0"
+        },
+        {
+          "model": "gene",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/index-DW-aQXks.js",
+          "sha256": "93b1602e7dc0e84cae9f3d9b14be441d79c6207601db8756d043e834d51e38e6"
+        },
+        {
+          "model": "gene",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/index-TKWDWmii.js",
+          "sha256": "3e950793f989066dd66f567cd1f853c4faf5ee76165bafb8ee505c51a80b6dec"
+        },
+        {
+          "model": "gene",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/index-qOQiDd9b.js",
+          "sha256": "57b6b5e7c5d918eac59d7260f540ed301114d38bba90686f84ee913b16188933"
+        },
+        {
+          "model": "gene",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/world-KDIixAjE.js",
+          "sha256": "ccb51564801fc010783e8060d4e4872e96c7600e52e09d3f83dc31402288d58c"
+        },
+        {
+          "model": "gene",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/main-CYKlBAfk.js",
+          "sha256": "53f2cf661691fab4419be5aac67fd68f3b17406bd107024459e8423f0de1780c"
+        },
+        {
+          "model": "gene",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/index-BD2HwvZw.js",
+          "sha256": "89df399d3e4e0ebd309095dada253f899233753dcac8d3dfa3f721efe4424a01"
+        },
+        {
+          "model": "gene",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/OrbitControls-DSGFQRY-.js",
+          "sha256": "0a4095f1f9a8f57e192205d6fc03fbec91820bc47c17cddaf4918495ba0c7815"
+        },
+        {
+          "model": "gene",
+          "url": "https://takahirox.github.io/mmd-gltf/assets/source-Mz4_Cg9J.js",
+          "sha256": "48e74e31da175120745eed22c1c3d2b7cae4c6ae32d5853ac426b2fb6dd0fa8e"
+        }
+      ]
+    }
+  },
+  "browser": {
+    "command": "node docs/public-timeline/post-merge/verification.mjs",
+    "result": "passed",
+    "observations": 18,
+    "models": [
+      "uka",
+      "gene"
+    ],
+    "motions": [
+      "sample",
+      "02_laugh",
+      "22_apology"
+    ],
+    "passes": [
+      "desktop cold cache",
+      "desktop warm cache",
+      "390px mobile"
+    ],
+    "checks": [
+      "all three Ready statuses",
+      "timeline max and final label are 10 seconds",
+      "selected source metadata and reference/retained-player durations are 10 seconds",
+      "duration provenance identifies original VMD frame 300 at 30 frames/s",
+      "independently cropped MMD and glTF pane pixels change between frames 299 and 300",
+      "exact synchronized clocks at seek and transport checkpoints",
+      "play reaches endpoint and stops; final clock holds",
+      "Restart returns to zero",
+      "Loop wraps; Pause holds time",
+      "warm reload has actual cache hits",
+      "no extra model, texture, motion or Ammo requests during selection and viewport changes",
+      "no mobile horizontal overflow; slider stays inside viewport"
+    ],
+    "screenshots": 18,
+    "details": "browser.json",
+    "scope": "Live published authentic assets with default Physics Off; existing pre-merge and required hosted suites cover synthetic durations and broader physics/UI behavior."
+  },
+  "outcome": "All six clips visibly animate through the final frame. Their source-derived 10-second range is correct; the deployed About & credits explains duration provenance.",
+  "evidence": {
+    "workflow": "workflow.json",
+    "deployment": "deployment.json",
+    "deploymentStatuses": "deployment-statuses.json",
+    "browser": "browser.json"
+  },
+  "localSetup": "npm ci passed. npm reported one low and one high dependency vulnerability; no dependency changes were made.",
+  "remainingRequiredPostMergeVerification": [],
+  "localChecks": {
+    "links": {
+      "result": "passed",
+      "count": 574,
+      "command": "npm run check:links",
+      "note": "The first attempt failed because dist/index.html was absent in the fresh merge worktree. Downloaded the successful merge workflow Pages artifact and extracted it to ignored dist; the rerun passed."
+    },
+    "whitespace": {
+      "tracked": "git diff --check passed",
+      "newEvidence": "JSON/MJS files checked for trailing whitespace and final newline"
+    },
+    "scriptSyntax": "node --check docs/public-timeline/post-merge/verification.mjs passed",
+    "screenshotReview": [
+      "uka-sample-mobile.png",
+      "gene-sample-cold.png"
+    ]
+  }
+}

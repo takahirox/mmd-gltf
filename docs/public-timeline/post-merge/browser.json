@@ -1,0 +1,2621 @@
+{
+  "url": "https://takahirox.github.io/mmd-gltf/",
+  "checkedAt": "2026-11-05T09:31:34.034Z",
+  "browser": "157.0.8103.38",
+  "observations": [
+    {
+      "model": "uka",
+      "motion": "sample",
+      "pass": "cold",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/04_littlesmile.vmd",
+        "sha256": "42cf0e2e2a6ca5b050ddeb0782ffb490d82e304d2299e4278ff456a0f67e0607"
+      },
+      "endpoint": {
+        "model": "uka",
+        "motion": "sample",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Little smile · 04: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "0324bb43428242bd5183e7ef63f5a684c1e49c18dab59c74fbe1a191c862831c"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "4b6ea18414dacd8512f12fb8b9282bced4ee0414fe4e1cbedc9527742bd07989"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "500ec9435468bb3d09bdd0f010460a6ef0790b31fb5e9b6fe481a98f58733c18"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "c8804a01e420dd99ae1dfe0ba3c2f2aca156d55ef92557277346aa784b2a8dd5"
+            }
+          ]
+        }
+      ],
+      "screenshot": "uka-sample-cold.png",
+      "cacheHits": 1,
+      "transport": {
+        "held": {
+          "model": "uka",
+          "motion": "sample",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Little smile · 04: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "uka",
+          "motion": "sample",
+          "duration": 10,
+          "time": 0.1609999999999996,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.1609999999999996,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.1609999999999996,
+            0.1609999999999996
+          ],
+          "max": "10",
+          "label": "0.16 / 10.00 s",
+          "provenance": "Little smile · 04: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "uka",
+      "motion": "02_laugh",
+      "pass": "cold",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/02_laugh.vmd",
+        "sha256": "714c04a833285aacc7b75039d872fc852c6df75025296bae0a707e5bbb3e159e"
+      },
+      "endpoint": {
+        "model": "uka",
+        "motion": "02_laugh",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "500ad390d583818b5a3aa3ea1aced00f6b784f386754254519cb5f92215d1da0"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "1ae0a49a1f504557c6a6cf5025ea3e1292892249a2d8c46fc22ca2b3cd745c06"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "f83a6ab58b8f24124f30689d9694d8975972a2d98b3e4f664ddcd6bd34116805"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "628a8134eb157dec5c51c5cf1bb378b6301116b00495762d063ecab82c02b097"
+            }
+          ]
+        }
+      ],
+      "screenshot": "uka-02_laugh-cold.png",
+      "cacheHits": 1,
+      "transport": {
+        "held": {
+          "model": "uka",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "uka",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 0.15800000000000125,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.15800000000000125,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.15800000000000125,
+            0.15800000000000125
+          ],
+          "max": "10",
+          "label": "0.16 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "uka",
+      "motion": "22_apology",
+      "pass": "cold",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/22_apology.vmd",
+        "sha256": "c9d1673a727c8d78954a3e69abe5ef109bc560e4ba9452918b753d647f0164e1"
+      },
+      "endpoint": {
+        "model": "uka",
+        "motion": "22_apology",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "ade9720a05dd507817b0f41741482d848931a73aa05672b979e5df7aca6c124b"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "fef11444de298858eebae6867794ef023f1ee4dfc31be14d064d223ac1b8d603"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "cc8b2e5d49c6f297f8db7704f91b4f7fbee253bac7da5c2909c79c3503e4e45b"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "780f4fba8d40ff9eee04ecc7cc4550eca7abe1c8dc1cd53d22324067cf710b45"
+            }
+          ]
+        }
+      ],
+      "screenshot": "uka-22_apology-cold.png",
+      "cacheHits": 1,
+      "transport": {
+        "held": {
+          "model": "uka",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "uka",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 0.1577000000476847,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.1577000000476847,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.1577000000476847,
+            0.1577000000476847
+          ],
+          "max": "10",
+          "label": "0.16 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "uka",
+      "motion": "sample",
+      "pass": "warm",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/04_littlesmile.vmd",
+        "sha256": "42cf0e2e2a6ca5b050ddeb0782ffb490d82e304d2299e4278ff456a0f67e0607"
+      },
+      "endpoint": {
+        "model": "uka",
+        "motion": "sample",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Little smile · 04: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "0324bb43428242bd5183e7ef63f5a684c1e49c18dab59c74fbe1a191c862831c"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "4b6ea18414dacd8512f12fb8b9282bced4ee0414fe4e1cbedc9527742bd07989"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "500ec9435468bb3d09bdd0f010460a6ef0790b31fb5e9b6fe481a98f58733c18"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "c8804a01e420dd99ae1dfe0ba3c2f2aca156d55ef92557277346aa784b2a8dd5"
+            }
+          ]
+        }
+      ],
+      "screenshot": "uka-sample-warm.png",
+      "cacheHits": 11,
+      "transport": {
+        "held": {
+          "model": "uka",
+          "motion": "sample",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Little smile · 04: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "uka",
+          "motion": "sample",
+          "duration": 10,
+          "time": 0.15239999997615783,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.15239999997615783,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.15239999997615783,
+            0.15239999997615783
+          ],
+          "max": "10",
+          "label": "0.15 / 10.00 s",
+          "provenance": "Little smile · 04: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "uka",
+      "motion": "02_laugh",
+      "pass": "warm",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/02_laugh.vmd",
+        "sha256": "714c04a833285aacc7b75039d872fc852c6df75025296bae0a707e5bbb3e159e"
+      },
+      "endpoint": {
+        "model": "uka",
+        "motion": "02_laugh",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "500ad390d583818b5a3aa3ea1aced00f6b784f386754254519cb5f92215d1da0"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "1ae0a49a1f504557c6a6cf5025ea3e1292892249a2d8c46fc22ca2b3cd745c06"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "f83a6ab58b8f24124f30689d9694d8975972a2d98b3e4f664ddcd6bd34116805"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "628a8134eb157dec5c51c5cf1bb378b6301116b00495762d063ecab82c02b097"
+            }
+          ]
+        }
+      ],
+      "screenshot": "uka-02_laugh-warm.png",
+      "cacheHits": 11,
+      "transport": {
+        "held": {
+          "model": "uka",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "uka",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 0.15329999995231702,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.15329999995231702,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.15329999995231702,
+            0.15329999995231702
+          ],
+          "max": "10",
+          "label": "0.15 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "uka",
+      "motion": "22_apology",
+      "pass": "warm",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/22_apology.vmd",
+        "sha256": "c9d1673a727c8d78954a3e69abe5ef109bc560e4ba9452918b753d647f0164e1"
+      },
+      "endpoint": {
+        "model": "uka",
+        "motion": "22_apology",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "ade9720a05dd507817b0f41741482d848931a73aa05672b979e5df7aca6c124b"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "fef11444de298858eebae6867794ef023f1ee4dfc31be14d064d223ac1b8d603"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "cc8b2e5d49c6f297f8db7704f91b4f7fbee253bac7da5c2909c79c3503e4e45b"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "780f4fba8d40ff9eee04ecc7cc4550eca7abe1c8dc1cd53d22324067cf710b45"
+            }
+          ]
+        }
+      ],
+      "screenshot": "uka-22_apology-warm.png",
+      "cacheHits": 11,
+      "transport": {
+        "held": {
+          "model": "uka",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "uka",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 0.1538000000715254,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.1538000000715254,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.1538000000715254,
+            0.1538000000715254
+          ],
+          "max": "10",
+          "label": "0.15 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "uka",
+      "motion": "sample",
+      "pass": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/04_littlesmile.vmd",
+        "sha256": "42cf0e2e2a6ca5b050ddeb0782ffb490d82e304d2299e4278ff456a0f67e0607"
+      },
+      "endpoint": {
+        "model": "uka",
+        "motion": "sample",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Little smile · 04: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "4a519ee5a816f37471d71aed591d3ece0153aa169f9037b3e7d4b3fb32dc319b"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "adccded9557019ab652f5fe152e3f2fe599107202360182d00ee2dcc8791bac6"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "6d619f6de3664514903c7bb5bf5d59dd09080c70cd37271811dae80cab88df33"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "cdcb3d633a9132f1816acbabec3f6a471d35f93b2644dd5fbec5ef3dc0108019"
+            }
+          ]
+        }
+      ],
+      "screenshot": "uka-sample-mobile.png",
+      "cacheHits": 0,
+      "transport": {
+        "held": {
+          "model": "uka",
+          "motion": "sample",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Little smile · 04: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "uka",
+          "motion": "sample",
+          "duration": 10,
+          "time": 0.2567000000476849,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.2567000000476849,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.2567000000476849,
+            0.2567000000476849
+          ],
+          "max": "10",
+          "label": "0.26 / 10.00 s",
+          "provenance": "Little smile · 04: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "uka",
+      "motion": "02_laugh",
+      "pass": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/02_laugh.vmd",
+        "sha256": "714c04a833285aacc7b75039d872fc852c6df75025296bae0a707e5bbb3e159e"
+      },
+      "endpoint": {
+        "model": "uka",
+        "motion": "02_laugh",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "9890cae729bfd1281204e8d53e31b10f8c027c44c576e69ced8f4b095e9a5a18"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "8e52ac8288d01f0337e300e6de495da5bd919dc7def61a3d4d5db12e48b73c27"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "048a0e4538a3afd685d0763f416bd8152014dc860f3b8c163df998f6f60cc2c3"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "3af82f3228c306a9629d87fe7f6204c261406771e15c52eb1e1638ad46719bcd"
+            }
+          ]
+        }
+      ],
+      "screenshot": "uka-02_laugh-mobile.png",
+      "cacheHits": 0,
+      "transport": {
+        "held": {
+          "model": "uka",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "uka",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 0.22900000000000098,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.22900000000000098,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.22900000000000098,
+            0.22900000000000098
+          ],
+          "max": "10",
+          "label": "0.23 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "uka",
+      "motion": "22_apology",
+      "pass": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/22_apology.vmd",
+        "sha256": "c9d1673a727c8d78954a3e69abe5ef109bc560e4ba9452918b753d647f0164e1"
+      },
+      "endpoint": {
+        "model": "uka",
+        "motion": "22_apology",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "48eb416c63b92b638ae606ca35a2a3c2725bb856b7f5c73e2fd33255502ce1d4"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "755aae209f612cd36c74bfb8de6a19aa1ce3b4762f469963d3ff81bfcb95140c"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "853a5ce60d87c867b8ecc6592973f1f15fa0fbceba8d8f33d5e74d178a244a93"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "55edeb280eb2cb9b8484a4ff29cb640c710dfa1a9461d02bad8ded5946dd2d30"
+            }
+          ]
+        }
+      ],
+      "screenshot": "uka-22_apology-mobile.png",
+      "cacheHits": 0,
+      "transport": {
+        "held": {
+          "model": "uka",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "uka",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 0.24710000002384191,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.24710000002384191,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.24710000002384191,
+            0.24710000002384191
+          ],
+          "max": "10",
+          "label": "0.25 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "gene",
+      "motion": "sample",
+      "pass": "cold",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/01_happy.vmd",
+        "sha256": "8da8b93dfc2dba19535246126558f82238c915ff8a90b2d05dfba17a333f903e"
+      },
+      "endpoint": {
+        "model": "gene",
+        "motion": "sample",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Happy · 01: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "a58362319df8612d42d51961231ecc2895635ccb3c9fe1a13e41b9ce8f68e27f"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "15ce4e5afa69c54b5fffd56c8f508877e1f16a1ebd738459300d6810fea9b2fe"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "647567dfd0f6f47083691e2da1e20b8841bf61f4296448cd8401d68bc4d58bb4"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "c1e16f9676b3cb66fcd2d39c6d829116752e27e8ca8258898b812a3128ee7cfe"
+            }
+          ]
+        }
+      ],
+      "screenshot": "gene-sample-cold.png",
+      "cacheHits": 1,
+      "transport": {
+        "held": {
+          "model": "gene",
+          "motion": "sample",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Happy · 01: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "gene",
+          "motion": "sample",
+          "duration": 10,
+          "time": 0.17279999995231599,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.17279999995231599,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.17279999995231599,
+            0.17279999995231599
+          ],
+          "max": "10",
+          "label": "0.17 / 10.00 s",
+          "provenance": "Happy · 01: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "gene",
+      "motion": "02_laugh",
+      "pass": "cold",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/02_laugh.vmd",
+        "sha256": "714c04a833285aacc7b75039d872fc852c6df75025296bae0a707e5bbb3e159e"
+      },
+      "endpoint": {
+        "model": "gene",
+        "motion": "02_laugh",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "9101f7595adcc0f1bedbd011aa901de5a3a51b3c23b1e1427852bc2ed5c7177c"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "67a50ba5600274d7c7a2a5f336e9e73f753a6d0890e7386839de9821d5a3167b"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "5f93b47705920ec2ecf66cb0193485cc85b41b7d3c2c678ea10b8d4624e96f0a"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "100e2fee0693594feb77419d900294e5c920bd25ae33306459241806333b9cb5"
+            }
+          ]
+        }
+      ],
+      "screenshot": "gene-02_laugh-cold.png",
+      "cacheHits": 1,
+      "transport": {
+        "held": {
+          "model": "gene",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "gene",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 0.17129999995231593,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.17129999995231593,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.17129999995231593,
+            0.17129999995231593
+          ],
+          "max": "10",
+          "label": "0.17 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "gene",
+      "motion": "22_apology",
+      "pass": "cold",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/22_apology.vmd",
+        "sha256": "65f02aabe34e5b7ef502e47ffbaf06068f523b3522a58ad2382de29b61daf282"
+      },
+      "endpoint": {
+        "model": "gene",
+        "motion": "22_apology",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "541460c631dac65fe6e1ef59681df7eaf9bc1ceaa9a2cc4eac96ca48cd6969e7"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "e75208f0f01c6ed96ad605ce547686d094d8510e326a942f254ce037f0006a6a"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "ac99bb0f363518207f4125e470a55ffbb72ddf81569dc0a1ffa129a153c585e9"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "9758e0bcf452b281d80cd10ef0ab891861f3720eeb63cb418ba1f314ef0cc429"
+            }
+          ]
+        }
+      ],
+      "screenshot": "gene-22_apology-cold.png",
+      "cacheHits": 1,
+      "transport": {
+        "held": {
+          "model": "gene",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "gene",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 0.17719999992847413,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.17719999992847413,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.17719999992847413,
+            0.17719999992847413
+          ],
+          "max": "10",
+          "label": "0.18 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "gene",
+      "motion": "sample",
+      "pass": "warm",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/01_happy.vmd",
+        "sha256": "8da8b93dfc2dba19535246126558f82238c915ff8a90b2d05dfba17a333f903e"
+      },
+      "endpoint": {
+        "model": "gene",
+        "motion": "sample",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Happy · 01: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "a58362319df8612d42d51961231ecc2895635ccb3c9fe1a13e41b9ce8f68e27f"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "15ce4e5afa69c54b5fffd56c8f508877e1f16a1ebd738459300d6810fea9b2fe"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "647567dfd0f6f47083691e2da1e20b8841bf61f4296448cd8401d68bc4d58bb4"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "c1e16f9676b3cb66fcd2d39c6d829116752e27e8ca8258898b812a3128ee7cfe"
+            }
+          ]
+        }
+      ],
+      "screenshot": "gene-sample-warm.png",
+      "cacheHits": 21,
+      "transport": {
+        "held": {
+          "model": "gene",
+          "motion": "sample",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Happy · 01: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "gene",
+          "motion": "sample",
+          "duration": 10,
+          "time": 0.1744000000953676,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.1744000000953676,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.1744000000953676,
+            0.1744000000953676
+          ],
+          "max": "10",
+          "label": "0.17 / 10.00 s",
+          "provenance": "Happy · 01: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "gene",
+      "motion": "02_laugh",
+      "pass": "warm",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/02_laugh.vmd",
+        "sha256": "714c04a833285aacc7b75039d872fc852c6df75025296bae0a707e5bbb3e159e"
+      },
+      "endpoint": {
+        "model": "gene",
+        "motion": "02_laugh",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "9101f7595adcc0f1bedbd011aa901de5a3a51b3c23b1e1427852bc2ed5c7177c"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "67a50ba5600274d7c7a2a5f336e9e73f753a6d0890e7386839de9821d5a3167b"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "5f93b47705920ec2ecf66cb0193485cc85b41b7d3c2c678ea10b8d4624e96f0a"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "100e2fee0693594feb77419d900294e5c920bd25ae33306459241806333b9cb5"
+            }
+          ]
+        }
+      ],
+      "screenshot": "gene-02_laugh-warm.png",
+      "cacheHits": 21,
+      "transport": {
+        "held": {
+          "model": "gene",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "gene",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 0.17310000002384207,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.17310000002384207,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.17310000002384207,
+            0.17310000002384207
+          ],
+          "max": "10",
+          "label": "0.17 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "gene",
+      "motion": "22_apology",
+      "pass": "warm",
+      "viewport": {
+        "width": 1200,
+        "height": 1000
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/22_apology.vmd",
+        "sha256": "65f02aabe34e5b7ef502e47ffbaf06068f523b3522a58ad2382de29b61daf282"
+      },
+      "endpoint": {
+        "model": "gene",
+        "motion": "22_apology",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "541460c631dac65fe6e1ef59681df7eaf9bc1ceaa9a2cc4eac96ca48cd6969e7"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "e75208f0f01c6ed96ad605ce547686d094d8510e326a942f254ce037f0006a6a"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 571,
+                "height": 569
+              },
+              "sha256": "ac99bb0f363518207f4125e470a55ffbb72ddf81569dc0a1ffa129a153c585e9"
+            },
+            {
+              "bounds": {
+                "x": 572,
+                "y": 0,
+                "width": 570,
+                "height": 569
+              },
+              "sha256": "9758e0bcf452b281d80cd10ef0ab891861f3720eeb63cb418ba1f314ef0cc429"
+            }
+          ]
+        }
+      ],
+      "screenshot": "gene-22_apology-warm.png",
+      "cacheHits": 21,
+      "transport": {
+        "held": {
+          "model": "gene",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "gene",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 0.1732000000476841,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.1732000000476841,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.1732000000476841,
+            0.1732000000476841
+          ],
+          "max": "10",
+          "label": "0.17 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "gene",
+      "motion": "sample",
+      "pass": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/01_happy.vmd",
+        "sha256": "8da8b93dfc2dba19535246126558f82238c915ff8a90b2d05dfba17a333f903e"
+      },
+      "endpoint": {
+        "model": "gene",
+        "motion": "sample",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Happy · 01: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "d4095b5fd07555c77a548786e353a741b92ea75d8fba877726316c54144080f1"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "c88655d943af4f592e51f61c2d4facb0b99e472cd0a44275b0a5d5a956949bc4"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "e5f3cb75c74bca9a3abcc21cd592a51dd8ed688b3344f7202e55145f5024a480"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "f05274827852c829e78c619f7ea6ae9fb773b5115252ed58ceb3cd7157963c47"
+            }
+          ]
+        }
+      ],
+      "screenshot": "gene-sample-mobile.png",
+      "cacheHits": 0,
+      "transport": {
+        "held": {
+          "model": "gene",
+          "motion": "sample",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Happy · 01: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "gene",
+          "motion": "sample",
+          "duration": 10,
+          "time": 0.2328999999761585,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.2328999999761585,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.2328999999761585,
+            0.2328999999761585
+          ],
+          "max": "10",
+          "label": "0.23 / 10.00 s",
+          "provenance": "Happy · 01: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "gene",
+      "motion": "02_laugh",
+      "pass": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/02_laugh.vmd",
+        "sha256": "714c04a833285aacc7b75039d872fc852c6df75025296bae0a707e5bbb3e159e"
+      },
+      "endpoint": {
+        "model": "gene",
+        "motion": "02_laugh",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "284015c3ad2fd1f9fd07706a38eaa5f0b9d7adf608e26383fc91d2fc2993afea"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "0e1f5eacc875f657c8b2531c3cd19e19d49cd4de0ae0e8abb99bec072c9f33a3"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "522285ba40524c3911eeff9137cd51ffc4d16b97d0a5c1fd592e86a759919b6c"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "9c43e331dd60ed0dfdfd90749e8c35264bbb80602ddd964a80a6613743849510"
+            }
+          ]
+        }
+      ],
+      "screenshot": "gene-02_laugh-mobile.png",
+      "cacheHits": 0,
+      "transport": {
+        "held": {
+          "model": "gene",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "gene",
+          "motion": "02_laugh",
+          "duration": 10,
+          "time": 0.23069999992847556,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.23069999992847556,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.23069999992847556,
+            0.23069999992847556
+          ],
+          "max": "10",
+          "label": "0.23 / 10.00 s",
+          "provenance": "Laugh · 02: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    },
+    {
+      "model": "gene",
+      "motion": "22_apology",
+      "pass": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metadata": {
+        "duration": 10,
+        "path": "motion/22_apology.vmd",
+        "sha256": "65f02aabe34e5b7ef502e47ffbaf06068f523b3522a58ad2382de29b61daf282"
+      },
+      "endpoint": {
+        "model": "gene",
+        "motion": "22_apology",
+        "duration": 10,
+        "time": 10,
+        "playing": false,
+        "referenceDuration": 10,
+        "referenceTime": 10,
+        "gltfDurations": [
+          10,
+          10
+        ],
+        "gltfTimes": [
+          10,
+          10
+        ],
+        "max": "10",
+        "label": "10.00 / 10.00 s",
+        "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+        "status": [
+          "Ready · WebGL2 · MMD toon",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+          "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+        ]
+      },
+      "samples": [
+        {
+          "time": 9.966666666666667,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "b6825a55b63461da73978688b6cbb1f1a8df51c89e5414cfda5739d4a00efa91"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "f34206caa8aa88635e45c41b1774dd0f887257aed611ba4309b89fd1b3e4278c"
+            }
+          ]
+        },
+        {
+          "time": 10,
+          "panes": [
+            {
+              "bounds": {
+                "x": 1,
+                "y": 319,
+                "width": 355,
+                "height": 319
+              },
+              "sha256": "cbe2f38d7f95dc4569e3ce336064af368cc4dc8848bdb83a66a421ebfa777662"
+            },
+            {
+              "bounds": {
+                "x": 1,
+                "y": 0,
+                "width": 355,
+                "height": 318
+              },
+              "sha256": "6cff18ebdf0f74e9fb9d3a02a137ba098417f8a61007aeeceb2deb7f3f6b90ab"
+            }
+          ]
+        }
+      ],
+      "screenshot": "gene-22_apology-mobile.png",
+      "cacheHits": 0,
+      "transport": {
+        "held": {
+          "model": "gene",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 10,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 10,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            10,
+            10
+          ],
+          "max": "10",
+          "label": "10.00 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "looped": {
+          "model": "gene",
+          "motion": "22_apology",
+          "duration": 10,
+          "time": 0.23020000004768448,
+          "playing": false,
+          "referenceDuration": 10,
+          "referenceTime": 0.23020000004768448,
+          "gltfDurations": [
+            10,
+            10
+          ],
+          "gltfTimes": [
+            0.23020000004768448,
+            0.23020000004768448
+          ],
+          "max": "10",
+          "label": "0.23 / 10.00 s",
+          "provenance": "Apology · 22: 10.00 s from the original VMD (last frame 300; 30 frames/s).",
+          "status": [
+            "Ready · WebGL2 · MMD toon",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+            "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+          ]
+        },
+        "restartTime": 0,
+        "pauseStable": true,
+        "finalPoseHeld": true
+      }
+    }
+  ],
+  "ukaBundles": {
+    "https://takahirox.github.io/mmd-gltf/assets/modulepreload-polyfill-B5Qt9EMX.js": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0",
+    "https://takahirox.github.io/mmd-gltf/assets/index-DW-aQXks.js": "93b1602e7dc0e84cae9f3d9b14be441d79c6207601db8756d043e834d51e38e6",
+    "https://takahirox.github.io/mmd-gltf/assets/OrbitControls-DSGFQRY-.js": "0a4095f1f9a8f57e192205d6fc03fbec91820bc47c17cddaf4918495ba0c7815",
+    "https://takahirox.github.io/mmd-gltf/assets/index-TKWDWmii.js": "3e950793f989066dd66f567cd1f853c4faf5ee76165bafb8ee505c51a80b6dec",
+    "https://takahirox.github.io/mmd-gltf/assets/index-qOQiDd9b.js": "57b6b5e7c5d918eac59d7260f540ed301114d38bba90686f84ee913b16188933",
+    "https://takahirox.github.io/mmd-gltf/assets/world-KDIixAjE.js": "ccb51564801fc010783e8060d4e4872e96c7600e52e09d3f83dc31402288d58c",
+    "https://takahirox.github.io/mmd-gltf/assets/index-BD2HwvZw.js": "89df399d3e4e0ebd309095dada253f899233753dcac8d3dfa3f721efe4424a01",
+    "https://takahirox.github.io/mmd-gltf/assets/main-CYKlBAfk.js": "53f2cf661691fab4419be5aac67fd68f3b17406bd107024459e8423f0de1780c",
+    "https://takahirox.github.io/mmd-gltf/assets/source-Mz4_Cg9J.js": "48e74e31da175120745eed22c1c3d2b7cae4c6ae32d5853ac426b2fb6dd0fa8e"
+  },
+  "geneBundles": {
+    "https://takahirox.github.io/mmd-gltf/assets/modulepreload-polyfill-B5Qt9EMX.js": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0",
+    "https://takahirox.github.io/mmd-gltf/assets/index-DW-aQXks.js": "93b1602e7dc0e84cae9f3d9b14be441d79c6207601db8756d043e834d51e38e6",
+    "https://takahirox.github.io/mmd-gltf/assets/index-TKWDWmii.js": "3e950793f989066dd66f567cd1f853c4faf5ee76165bafb8ee505c51a80b6dec",
+    "https://takahirox.github.io/mmd-gltf/assets/index-qOQiDd9b.js": "57b6b5e7c5d918eac59d7260f540ed301114d38bba90686f84ee913b16188933",
+    "https://takahirox.github.io/mmd-gltf/assets/world-KDIixAjE.js": "ccb51564801fc010783e8060d4e4872e96c7600e52e09d3f83dc31402288d58c",
+    "https://takahirox.github.io/mmd-gltf/assets/main-CYKlBAfk.js": "53f2cf661691fab4419be5aac67fd68f3b17406bd107024459e8423f0de1780c",
+    "https://takahirox.github.io/mmd-gltf/assets/index-BD2HwvZw.js": "89df399d3e4e0ebd309095dada253f899233753dcac8d3dfa3f721efe4424a01",
+    "https://takahirox.github.io/mmd-gltf/assets/OrbitControls-DSGFQRY-.js": "0a4095f1f9a8f57e192205d6fc03fbec91820bc47c17cddaf4918495ba0c7815",
+    "https://takahirox.github.io/mmd-gltf/assets/source-Mz4_Cg9J.js": "48e74e31da175120745eed22c1c3d2b7cae4c6ae32d5853ac426b2fb6dd0fa8e"
+  }
+}
