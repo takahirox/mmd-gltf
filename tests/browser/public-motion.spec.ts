@@ -4,6 +4,12 @@ import { writeFile } from 'node:fs/promises';
 import { test, expect } from '@playwright/test';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
 const preview=`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/`;
+type PaneBounds = {x:number;y:number;width:number;height:number};
+function panePixels(bytes:Buffer,bounds:PaneBounds) {
+  const png=PNG.sync.read(bytes),pane=new PNG({width:bounds.width,height:bounds.height});
+  PNG.bitblt(png,pane,bounds.x,bounds.y,bounds.width,bounds.height,0,0);
+  return pane.data;
+}
 
 for(const model of ['uka','gene'])test(`${model}: all three ten-second timelines include visible terminal motion on desktop and mobile`,async({page},testInfo)=>{
   test.setTimeout(300000);
@@ -30,10 +36,39 @@ for(const model of ['uka','gene'])test(`${model}: all three ten-second timelines
         expect(state.time).toBeCloseTo(time,12);
         pixels.push(await readComparisonBitmap(page));
       }
+      const bounds=await page.evaluate(()=>{
+        const viewport=document.querySelector<HTMLElement>('#viewport')!;
+        const canvas=viewport.querySelector('canvas')!;
+        const container=viewport.getBoundingClientRect();
+        const scaleX=canvas.width/viewport.clientWidth,scaleY=canvas.height/viewport.clientHeight;
+        return ['pmx','gltf'].map(id=>{
+          const rect=document.querySelector(`#${id}-pane`)!.getBoundingClientRect();
+          // Match the renderer's DOM-derived scissor rectangles. WebGL's Y
+          // origin is at the bottom; PNG rows start at the top.
+          const x=Math.max(0,Math.ceil((rect.left-container.left)*scaleX));
+          const y=Math.max(0,Math.ceil(canvas.height-(rect.bottom-container.top)*scaleY));
+          const right=Math.min(canvas.width,Math.floor((rect.right-container.left)*scaleX));
+          const bottom=Math.min(canvas.height,Math.floor(canvas.height-(rect.top-container.top)*scaleY));
+          return {x,y,width:right-x,height:bottom-y};
+        });
+      });
       // Independent raster proof: even the final frame changes both panes.
       // A repeated final morph value or an invisible-only key cannot pass this.
-      for(const half of [0,1])for(const earlier of pixels.slice(0,2))
-        expect(comparisonHalf(earlier,half).equals(comparisonHalf(pixels[2],half))).toBe(false);
+      for(const pane of bounds) {
+        expect(pane.width).toBeGreaterThan(0);expect(pane.height).toBeGreaterThan(0);
+        for(const earlier of pixels.slice(0,2))
+          expect(panePixels(earlier,pane).equals(panePixels(pixels[2],pane))).toBe(false);
+      }
+      // Negative controls: freeze either entire rendered pane while preserving
+      // terminal movement in the other. A left/right split of stacked mobile
+      // panes would incorrectly report movement in both and fail these checks.
+      for(const frozenPane of bounds) {
+        const earlier=PNG.sync.read(pixels[1]),frozen=PNG.sync.read(pixels[2]);
+        PNG.bitblt(earlier,frozen,frozenPane.x,frozenPane.y,frozenPane.width,frozenPane.height,frozenPane.x,frozenPane.y);
+        const endpoint=PNG.sync.write(frozen);
+        for(const pane of bounds)
+          expect(panePixels(pixels[1],pane).equals(panePixels(endpoint,pane))).toBe(pane===frozenPane);
+      }
       const endpoint=testInfo.outputPath(`${model}-${motion}-${width}-endpoint.png`);
       await page.screenshot({path:endpoint});
       await testInfo.attach('endpoint.png',{path:endpoint,contentType:'image/png'});
