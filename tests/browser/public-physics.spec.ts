@@ -1,3 +1,4 @@
+import { motionMetadata } from './motion-duration';
 import { openComparisonDetails } from './demo-controls';
 import { writeFile } from 'node:fs/promises';
 import { PerspectiveCamera, Vector3 } from 'three';
@@ -184,10 +185,11 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   // This 1,188-tick replay across three native worlds took 113.65 seconds on
   // hosted SwiftShader (run 41852145132), completing with no constraint failures.
   // Give only this long seek more time; keep exact clocks and all physics gates.
-  await seek(9.9,180000);
+  const metadata=await motionMetadata(model,'22_apology'),endSeek=metadata.duration-3/30;
+  await seek(endSeek,180000);
   const completedLongSeek=await state(),longSeek=completedLongSeek.execution;
-  expect(completedLongSeek.referenceTime).toBe(9.9);
-  expect(completedLongSeek.gltfTimes).toEqual([9.9,9.9]);
+  expect(completedLongSeek.referenceTime).toBe(endSeek);
+  expect(completedLongSeek.gltfTimes).toEqual([endSeek,endSeek]);
   expect(longSeek.physicsState).toBe('on');expect(longSeek.physicsStats.tick).toBe(1188);
   expect(longSeek.physicsStats.worldsCreated).toBe(beforeLongSeek.worldsCreated);
   expect(longSeek.physicsStats.constraintFailures).toEqual([]);
@@ -255,7 +257,8 @@ test('Gene Apology gates Physics for the full clip with IK On and restores avail
   };
   // The combination is unavailable at every authored frame, not only at known
   // failing poses. Include forward/backward seeks and the endpoint before Ammo.
-  for(let frame=0;frame<=300;frame++) {
+  const metadata=await motionMetadata('gene','22_apology');
+  for(let frame=0;frame<=metadata.duration*30;frame++) {
     await seek(frame/30);
     await expect(physics).toBeDisabled();
   }
@@ -266,7 +269,7 @@ test('Gene Apology gates Physics for the full clip with IK On and restores avail
   await expect.poll(async()=>(await state()).time).toBeGreaterThan(1.9);
   await page.locator('#comparison-play').click();await unavailable();
   await page.locator('#comparison-restart').click();expect((await state()).time).toBe(0);
-  await page.locator('#comparison-loop').check();await seek(9.9);
+  await page.locator('#comparison-loop').check();await seek(metadata.duration-3/30);
   await page.locator('#comparison-play').click();
   await expect.poll(async()=>(await state()).time).toBeLessThan(1);
   await page.locator('#comparison-play').click();await unavailable();
