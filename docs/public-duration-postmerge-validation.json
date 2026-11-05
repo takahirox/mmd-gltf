@@ -1,0 +1,553 @@
+{
+  "issue": 85,
+  "pr": 86,
+  "merge_commit": "19b6881610a449b5445b13ae703dc0bab9b4b394",
+  "workflow_run": "https://github.com/takahirox/mmd-gltf/actions/runs/41962115392",
+  "url": "https://takahirox.github.io/mmd-gltf/",
+  "artifact": {
+    "name": "github-pages-attempt-1",
+    "html_sha256": "a90ac6308f392355c0e006511b23708e269a10d5fa3d596524c8b3690c810b47",
+    "files": [
+      {
+        "path": "./assets/group-advanced-conformance-Pv5EYHFc.js",
+        "sha256": "898354ad9aa7af8eaaa81236a1910b3869597138db223a3416ee41c2445ba1a7"
+      },
+      {
+        "path": "./assets/source-Mz4_Cg9J.js",
+        "sha256": "48e74e31da175120745eed22c1c3d2b7cae4c6ae32d5853ac426b2fb6dd0fa8e"
+      },
+      {
+        "path": "./assets/sdef-conformance-JoOkzTCT.js",
+        "sha256": "0461147b1bcb6b67fb6eeb5ccce7e114dbad9376576f0d3d7f0922316fce66da"
+      },
+      {
+        "path": "./assets/morph-oracle-F8mqnOV9.js",
+        "sha256": "c2dfc7531e0f23488d105a9025809b0b583518e00033d91f1ae98ca92d89ef17"
+      },
+      {
+        "path": "./assets/sdef-oracle-CWxKYvhN.js",
+        "sha256": "da28cea518e314827534c9c47fd45399946ead7558e0e54b789f11f2ab183bfd"
+      },
+      {
+        "path": "./assets/exporter-fPXt8ecE.js",
+        "sha256": "55d7689c0f6504e2148d61dfb2769ebf5a5548ef59df8c25a5198016223168fa"
+      },
+      {
+        "path": "./assets/index-TKWDWmii.js",
+        "sha256": "3e950793f989066dd66f567cd1f853c4faf5ee76165bafb8ee505c51a80b6dec"
+      },
+      {
+        "path": "./assets/index-qOQiDd9b.js",
+        "sha256": "57b6b5e7c5d918eac59d7260f540ed301114d38bba90686f84ee913b16188933"
+      },
+      {
+        "path": "./assets/index-jCa541vQ.js",
+        "sha256": "55078b22ce162ecf4159dba62639dd64e36fcecf13ef89741b70191ed4f956e6"
+      },
+      {
+        "path": "./assets/modulepreload-polyfill-B5Qt9EMX.js",
+        "sha256": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0"
+      },
+      {
+        "path": "./assets/group-oracle-GwupO_2w.js",
+        "sha256": "3b4cb27997820b614f0a1d90b20ba6b8d4f70db8aaf26e0b4ab615b988b7f4c1"
+      },
+      {
+        "path": "./assets/physics-conformance-DS2a81KA.js",
+        "sha256": "7af46530fea46c04f000500219ef56c7515feeec9a812fc70a4441ad3601f2da"
+      },
+      {
+        "path": "./assets/exporter-5H-lFU48.js",
+        "sha256": "c970ee88335af27f36ce79c2ee67229079573290d40cf182b67f7749de6731c0"
+      },
+      {
+        "path": "./assets/rig--k0zm9JU.js",
+        "sha256": "0711db49a89ec5cd654020ad779615d58e0c2d22bbcd01f6752fd8f369cb72e9"
+      },
+      {
+        "path": "./assets/bone-morph-conformance-LVRmE74M.js",
+        "sha256": "b8386148a5c57a7030f36dc8ea9e32455534bb18b08a073fd27aa9236a61e968"
+      },
+      {
+        "path": "./assets/exporter-jHu_1yfW.js",
+        "sha256": "76fdc40e8fc976abb276d1227e137040763f03f3f5d55e6532060dcb5bd2fcc7"
+      },
+      {
+        "path": "./assets/exporter-Cd1yiHVH.js",
+        "sha256": "7c1e846456d755d71b2621f56eb350a2ebe0c1200e3f7b195251c54298030beb"
+      },
+      {
+        "path": "./assets/solver-oracle-CZU4RqTH.js",
+        "sha256": "7f617d9189323375fa8527a809e12ccb9b0758dcfc5da86dabb0264080e1ffb7"
+      },
+      {
+        "path": "./assets/index-UzzpLBI6.js",
+        "sha256": "397fb62991df57768bca74b86cf56c855f3587f0851847707767f0b14ad83df4"
+      },
+      {
+        "path": "./assets/qdef-oracle-kMb_Cor0.js",
+        "sha256": "66a958b8f16a6eaaf420720bedfd19ebe838e23c174f80c0b5fc4b6bdafb6adb"
+      },
+      {
+        "path": "./assets/index-Be9Qrhjb.js",
+        "sha256": "bd599cd7fee0091a409744345aa6d9833f3bfa0cb663b1cfd0be004020b5b2db"
+      },
+      {
+        "path": "./assets/bone-morph-oracle-B9L39uRo.js",
+        "sha256": "db1aa3a4235de810ec1ab4e6e1ab12b25c08780c0dbca7a5f35efbf5b5a8fb89"
+      },
+      {
+        "path": "./assets/vmd-conformance-CcUPLZpX.js",
+        "sha256": "1df3b33c8fda0591a5d05bfa7fa01bf0f0983ea098029c4e3589e0c3c213219c"
+      },
+      {
+        "path": "./assets/exporter-unlKV2G0.js",
+        "sha256": "d1259b8c66e1647372d4a1860073aeb6e464c6241f89202102f23e04922c2e0e"
+      },
+      {
+        "path": "./assets/main-C2-m-TAx.js",
+        "sha256": "dd981a94935923a2d9880837df521e867acc7d1229f10efe88adc3ce02b2b2a7"
+      },
+      {
+        "path": "./assets/vpd-oracle-BDQTY48a.js",
+        "sha256": "cec662467de0a062f7c42131a549bf326dc47fd582694b5ec7230a4c4b0b2760"
+      },
+      {
+        "path": "./assets/world-KDIixAjE.js",
+        "sha256": "ccb51564801fc010783e8060d4e4872e96c7600e52e09d3f83dc31402288d58c"
+      },
+      {
+        "path": "./assets/rig-sDxYOujy.js",
+        "sha256": "0b90edc8dc0b7cef9322484f63402daceb7a65061661c0edf680146b79d422d2"
+      },
+      {
+        "path": "./assets/GLTFExporter-DCMYgV8Y.js",
+        "sha256": "c292485571814c9eea33ae03da9fc63d9004b91d4fdd3f2859fc5d3017b0064c"
+      },
+      {
+        "path": "./assets/phase-timing-BLLpf-I8.js",
+        "sha256": "31d337dd23129a3eba1d586522990c28d7d847762b455031b2446a9aa0a6f27b"
+      },
+      {
+        "path": "./assets/vpd-conformance-DNgXgDDn.js",
+        "sha256": "f2218705b48c6ff5f86a1ce5fee5441835ddf209eef9ba8c1c3dfb612a6659f7"
+      },
+      {
+        "path": "./assets/bone-advanced-conformance-CzGuIs9c.js",
+        "sha256": "0e0fe3a35df11a4318e0e16567f3a20aebb83a24ad14d878324fbcc46201773f"
+      },
+      {
+        "path": "./assets/qdef-conformance-x-vKqDFG.js",
+        "sha256": "b0e3f2d1252bfee1f94d2d6ae8544435e36544d0fca5d083db183e9f8a9cf76e"
+      },
+      {
+        "path": "./assets/MMDPhysicsWorker-DjH8OIiz.js",
+        "sha256": "4118b007dd9a64c45103fc67dac21005e9c18688dc38418f052b168b7292640d"
+      },
+      {
+        "path": "./assets/OrbitControls-DSGFQRY-.js",
+        "sha256": "0a4095f1f9a8f57e192205d6fc03fbec91820bc47c17cddaf4918495ba0c7815"
+      },
+      {
+        "path": "./assets/index-BD2HwvZw.js",
+        "sha256": "89df399d3e4e0ebd309095dada253f899233753dcac8d3dfa3f721efe4424a01"
+      },
+      {
+        "path": "./assets/solver-conformance-DZIzQZKI.js",
+        "sha256": "86a7747bc75001ce569c771a76bae927b981dde105a08403b04d1df7cb72d609"
+      }
+    ]
+  },
+  "checked_at": "2026-11-05T03:54:50.013Z",
+  "models": [
+    {
+      "model": "uka",
+      "statuses": [
+        "Ready · WebGL2 · MMD toon",
+        "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+        "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+      ],
+      "rest": {
+        "label": "Rest / manual",
+        "sliderMax": "0",
+        "playDisabled": true
+      },
+      "motions": [
+        {
+          "motion": "sample",
+          "metadata": {
+            "animation": "04_littlesmile",
+            "duration": 10,
+            "sha256": "42cf0e2e2a6ca5b050ddeb0782ffb490d82e304d2299e4278ff456a0f67e0607",
+            "bytes": 40719
+          },
+          "start": {
+            "model": "uka",
+            "motion": "sample",
+            "time": 0,
+            "duration": 10,
+            "referenceTime": 0,
+            "gltfTimes": [
+              0,
+              0
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "end": {
+            "model": "uka",
+            "motion": "sample",
+            "time": 10,
+            "duration": 10,
+            "referenceTime": 10,
+            "gltfTimes": [
+              10,
+              10
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "label": "10.00 / 10.00 s"
+        },
+        {
+          "motion": "02_laugh",
+          "metadata": {
+            "animation": "02_laugh",
+            "duration": 10,
+            "sha256": "714c04a833285aacc7b75039d872fc852c6df75025296bae0a707e5bbb3e159e",
+            "bytes": 70076
+          },
+          "start": {
+            "model": "uka",
+            "motion": "02_laugh",
+            "time": 0,
+            "duration": 10,
+            "referenceTime": 0,
+            "gltfTimes": [
+              0,
+              0
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "end": {
+            "model": "uka",
+            "motion": "02_laugh",
+            "time": 10,
+            "duration": 10,
+            "referenceTime": 10,
+            "gltfTimes": [
+              10,
+              10
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "label": "10.00 / 10.00 s"
+        },
+        {
+          "motion": "22_apology",
+          "metadata": {
+            "animation": "22_apology",
+            "duration": 10,
+            "sha256": "c9d1673a727c8d78954a3e69abe5ef109bc560e4ba9452918b753d647f0164e1",
+            "bytes": 68546
+          },
+          "start": {
+            "model": "uka",
+            "motion": "22_apology",
+            "time": 0,
+            "duration": 10,
+            "referenceTime": 0,
+            "gltfTimes": [
+              0,
+              0
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "end": {
+            "model": "uka",
+            "motion": "22_apology",
+            "time": 10,
+            "duration": 10,
+            "referenceTime": 10,
+            "gltfTimes": [
+              10,
+              10
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "label": "10.00 / 10.00 s"
+        }
+      ]
+    },
+    {
+      "model": "gene",
+      "statuses": [
+        "Ready · WebGL2 · MMD toon",
+        "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+        "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+      ],
+      "rest": {
+        "label": "Rest / manual",
+        "sliderMax": "0",
+        "playDisabled": true
+      },
+      "motions": [
+        {
+          "motion": "sample",
+          "metadata": {
+            "animation": "01_happy",
+            "duration": 10,
+            "sha256": "8da8b93dfc2dba19535246126558f82238c915ff8a90b2d05dfba17a333f903e",
+            "bytes": 33008
+          },
+          "start": {
+            "model": "gene",
+            "motion": "sample",
+            "time": 0,
+            "duration": 10,
+            "referenceTime": 0,
+            "gltfTimes": [
+              0,
+              0
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "end": {
+            "model": "gene",
+            "motion": "sample",
+            "time": 10,
+            "duration": 10,
+            "referenceTime": 10,
+            "gltfTimes": [
+              10,
+              10
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "label": "10.00 / 10.00 s"
+        },
+        {
+          "motion": "02_laugh",
+          "metadata": {
+            "animation": "02_laugh",
+            "duration": 10,
+            "sha256": "714c04a833285aacc7b75039d872fc852c6df75025296bae0a707e5bbb3e159e",
+            "bytes": 70076
+          },
+          "start": {
+            "model": "gene",
+            "motion": "02_laugh",
+            "time": 0,
+            "duration": 10,
+            "referenceTime": 0,
+            "gltfTimes": [
+              0,
+              0
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "end": {
+            "model": "gene",
+            "motion": "02_laugh",
+            "time": 10,
+            "duration": 10,
+            "referenceTime": 10,
+            "gltfTimes": [
+              10,
+              10
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "label": "10.00 / 10.00 s"
+        },
+        {
+          "motion": "22_apology",
+          "metadata": {
+            "animation": "22_apology",
+            "duration": 10,
+            "sha256": "65f02aabe34e5b7ef502e47ffbaf06068f523b3522a58ad2382de29b61daf282",
+            "bytes": 89061
+          },
+          "start": {
+            "model": "gene",
+            "motion": "22_apology",
+            "time": 0,
+            "duration": 10,
+            "referenceTime": 0,
+            "gltfTimes": [
+              0,
+              0
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "end": {
+            "model": "gene",
+            "motion": "22_apology",
+            "time": 10,
+            "duration": 10,
+            "referenceTime": 10,
+            "gltfTimes": [
+              10,
+              10
+            ],
+            "referenceDuration": 10,
+            "gltfDurations": [
+              10,
+              10
+            ],
+            "playing": false
+          },
+          "label": "10.00 / 10.00 s"
+        }
+      ]
+    }
+  ],
+  "page_errors": [],
+  "status": "passed",
+  "workflow": {
+    "conclusion": "success",
+    "databaseId": 41962115392,
+    "headSha": "19b6881610a449b5445b13ae703dc0bab9b4b394",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "prepare",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "typecheck",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "fast-checks",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "browser (2)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "browser (3)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "browser (4)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "browser (1)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "name": "browser-performance",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "deploy",
+        "status": "completed"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/takahirox/mmd-gltf/actions/runs/41962115392"
+  },
+  "merge": {
+    "method": "merge",
+    "expected_head_sha": "027938ee9d86f1f96490d7efc8e07246fae25417",
+    "parents": [
+      "d1958dcc3c1666d4e5116c5f3a7461de1059a485",
+      "027938ee9d86f1f96490d7efc8e07246fae25417"
+    ],
+    "source_issue_confirmed_open_immediately_before_merge": true
+  },
+  "initial_html": {
+    "slider_max": "0",
+    "slider_disabled": true,
+    "label": "Loading…"
+  },
+  "environment": {
+    "browser": "Chrome 157.0.8103.38",
+    "renderer": "ANGLE SwiftShader",
+    "desktop": {
+      "width": 1200,
+      "height": 1000
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "mobile": {
+    "models": [
+      "uka",
+      "gene"
+    ],
+    "document_width": 390,
+    "horizontal_overflow": false
+  }
+}
