@@ -1,0 +1,23 @@
+{
+  "source": "Original generated durationVMD(91), routed with matching retained glTF, source bytes and metadata; no changed duration fields.",
+  "state": {
+    "model": "uka",
+    "motion": "sample",
+    "duration": 3.033333333333333,
+    "time": 3.033333333333333,
+    "referenceDuration": 3.033333333333333,
+    "referenceTime": 3.033333333333333,
+    "gltfDurations": [
+      3.033333333333333,
+      3.033333333333333
+    ],
+    "gltfTimes": [
+      3.033333333333333,
+      3.033333333333333
+    ],
+    "playing": false
+  },
+  "max": "3.033333333333333",
+  "label": "3.03 / 3.03 s",
+  "provenance": "Little smile · 04: 3.03 s from the original VMD (last frame 91; 30 frames/s)."
+}

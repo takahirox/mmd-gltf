@@ -63,6 +63,115 @@ reference-clip duration are checked against the source for each clip:
 
 These six sources contain no camera, light or self-shadow records; each retains
 one display/IK record at frame zero.
+
+### Meaningful motion investigation (Issue #87)
+
+**Ten seconds is correct for all six clips.** Last-key time alone did not establish
+this. The [value-change audit](public-timeline-audit.json) inspects every track's
+consecutive values, binding eligibility, final three keys and repeated terminal
+keys. It records the last unequal value's endpoint separately from the last key.
+Reproduce it with `npx tsx tools/audit-public-timeline.ts` after `npm run build`.
+Constant tracks are counted in the family summaries; changing tracks include
+their byte-name identity and terminal values. No assets or metadata are rewritten.
+
+| Model / clip | Last changing bound bone frame | Last changing bound vertex-morph frame | Example executed morph: held weight → final zero |
+| --- | ---: | ---: | --- |
+| Uka Little smile | None (frame-zero pose) | 300 | にこり: 0.4 at 285 → 0 at 300 |
+| Uka Laugh | 300 | 300 | にこり: 0.6 at 135 → 0 at 300 |
+| Uka Apology | 300 | 300 | 真面目: 0.2 at 285 → 0 at 300 |
+| Gene Happy | None (frame-zero pose) | 300 | にこり: 1 at 285 → 0 at 300 |
+| Gene Laugh | 300 | 300 | にこり: 0.6 at 135 → 0 at 300 |
+| Gene Apology | 300 | 300 | 真面目: 0.2 at 285 → 0 at 300 |
+
+Weights in the table are readable decimal approximations; the audit preserves
+the actual float32 values. Vertex-morph weights interpolate linearly: the last
+key is a real return to neutral, not repeated-value padding. In the smile/happy
+clips, frames 15–285 hold an expression, followed by a half-second fade. Laugh's
+example fades over frames 135–300. The body clips also have bone value changes
+ending at frame 300. Bone translation uses destination-key Bezier curves and
+rotation uses normalized shortest-path interpolation; equal transform endpoints
+(including opposite quaternion signs) do not produce motion merely because their
+interpolation bytes differ. The audit uses exact value comparisons without a
+visual epsilon and makes no claim about perceived significance or physics settling.
+The original binding audit's `changing` tolerance is unchanged.
+
+Repeated final values do exist on other tracks. For bones / morphs respectively,
+the audit counts 0 / 151 trailing repeated keys for Uka Little smile, 123 / 202
+for Uka Laugh, 43 / 162 for Uka Apology, 2 / 221 for Gene Happy, 123 / 202 for Gene
+Laugh and 180 / 201 for Gene Apology. These counts include unexecuted tracks;
+they cannot justify cutting off a different, still-changing bound expression.
+For example, Gene Apology's 頬全消し repeats zero at frames 286 and 300, while
+真面目 and other executed expressions still transition to their final values at
+300. A redundant endpoint on one track does not make the clip's tail inactive.
+Display/IK has no later switch in these files. Camera, light and shadow are absent.
+Unresolved bone names, unsupported morph families (including Uka Apology's two
+active group morphs), visibility, camera, light and shadow data stay retained
+without execution. Source IK switches govern applicable chains when UI IK is
+enabled. Neither retained omissions nor the initial IK record explain away the
+final executed vertex deformation.
+
+**Playback policy:** preserve the entire source interval, including held poses
+between visible transitions. An effective active-motion range would be a separate
+preview concept, never a replacement name for source duration. None is introduced:
+there is no objectively inactive terminal tail across the executed tracks of any
+selected authentic clip. Removing the interior hold would change authored timing;
+shortening the endpoint would remove the return to neutral. Unbound or unexecuted
+keys still extend source duration in other inputs, as the existing generated
+fixtures demonstrate. Physics can also continue after the last animated input;
+this value audit is not a physics trimming algorithm.
+
+About & credits now explains this policy and displays the selected animation's
+source duration and last frame. The timeline, reference clip, retained player,
+seek clamp, endpoint hold, Restart and Loop continue using the same exact source
+duration. No `previewDuration`, runtime heuristic or model whitelist is added.
+
+The current Pages investigation used
+[`?demo=uka`](https://takahirox.github.io/mmd-gltf/?demo=uka) and
+[`?demo=gene`](https://takahirox.github.io/mmd-gltf/?demo=gene), cold then warm in
+the same browser context per model. It observed all six labels and slider maxima
+at 10 seconds, synchronized player/reference times, and different pixels in both
+panes at 9 / 9.9 seconds versus 10 seconds. The served entry bundles matched the
+unchanged upstream build byte for byte; their controller URL was
+`assets/main-C2-m-TAx.js`. The successful Pages
+[run 41962115392](https://github.com/takahirox/mmd-gltf/actions/runs/41962115392)
+deployed `19b6881610a449b5445b13ae703dc0bab9b4b394`. This was current code, not a
+stale hardcoded-duration bundle. Exact URLs, hashes, clocks, labels and twelve
+screenshots are in the [deployment observations](public-timeline/deployed.json).
+Reproduce browser observations with
+`npx tsx tools/verify-deployed-timeline.ts [site-url] [output-directory]`;
+the default output is ignored `.cache/deployed-timeline`. Deployment identity
+must be checked separately against the successful Pages workflow.
+
+Screenshots show the real label and range at the selected endpoint (all six are
+`10.00 / 10.00 s`). Desktop images are deployed observations; mobile images are
+the local implementation under test. Warm desktop counterparts and pre-end
+mobile canvas captures are alongside these files.
+
+| Clip | Deployed desktop | Local 390px |
+| --- | --- | --- |
+| Uka Little smile | [Desktop](public-timeline/uka-sample-cold.png) | [Mobile](public-timeline/local-uka-sample-390-endpoint.png) |
+| Uka Laugh | [Desktop](public-timeline/uka-02_laugh-cold.png) | [Mobile](public-timeline/local-uka-02_laugh-390-endpoint.png) |
+| Uka Apology | [Desktop](public-timeline/uka-22_apology-cold.png) | [Mobile](public-timeline/local-uka-22_apology-390-endpoint.png) |
+| Gene Happy | [Desktop](public-timeline/gene-sample-cold.png) | [Mobile](public-timeline/local-gene-sample-390-endpoint.png) |
+| Gene Laugh | [Desktop](public-timeline/gene-02_laugh-cold.png) | [Mobile](public-timeline/local-gene-02_laugh-390-endpoint.png) |
+| Gene Apology | [Desktop](public-timeline/gene-22_apology-cold.png) | [Mobile](public-timeline/local-gene-22_apology-390-endpoint.png) |
+
+The [genuine 91-frame fixture](public-timeline/local-non10-mobile.png) displays
+`3.03 / 3.03 s` while preserving the exact `91/30` slider maximum and all three
+player/reference clocks ([recorded state](public-timeline/non10.json)). The
+[new About & credits text](public-timeline/local-source-details-mobile.png)
+explains the ten-second source timing without changing the assets.
+
+New Node regressions distinguish held terminal keys from changing final morphs,
+quaternion sign equivalence, different family endpoints and unbound/scene-only
+source extensions. Browser regressions require different pixels in **each pane**
+at frame 299 versus 300 for every authentic clip, both 1200px and 390px, alongside
+the label, range, synchronized clock and source-provenance text. They also verify
+that motion switches reuse models and textures and never load Ammo with Physics
+Off. Existing non-10, transport, failure/Retry, Rest, Loading, loop and final-pose
+tests remain intact. See [Issue #87 validation](public-timeline-validation.json)
+for actual results and pending hosted/post-merge verification.
+
 Regression fixtures generate VMDs ending at frames 91, 1 and 0, including a
 retained camera key after the last visible bound key. Browser routes supply the
 matching source, SHA-256/size metadata and regenerated glTF together, exercising
@@ -70,8 +179,9 @@ the production validation path. Node checks cover duration contributions from
 every retained section. The real-motion, IK and Physics checks keep their existing
 pose, source integrity and device-budget requirements.
 
-See the [local duration validation results](public-duration-validation.json) for
-actual check outcomes and the pending hosted CI and post-merge checks.
+The earlier [Issue #85 local duration validation](public-duration-validation.json)
+records its original pre-merge checks and then-pending hosted/deployment work.
+Current deployed behavior and Issue #87 validation are recorded above.
 
 ## Source and binding audit
 
