@@ -9,7 +9,7 @@ function ammoBackend() {
 }
 import { AnimationMixer, LoopOnce, type SkinnedMesh, type AnimationClip, type AnimationAction } from 'three';
 import { MMDVMDPlugin, getVMDPlayers, parseVMD, type VMDPlayer } from '../packages/three-mmd-vmd';
-import { bindMotion, evaluateMotion } from '../packages/mmd-vmd';
+import { bindMotion, evaluateMotion, vmdDuration } from '../packages/mmd-vmd';
 import { comparisonIK, comparisonIKCompatible } from './comparison-ik';
 import { motionPreview } from './motion-preview';
 import { disposeScene } from './scene-resources';
@@ -49,7 +49,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
   cameraReset.disabled = true;
   const motionControls=[motionSelect,play,restart,timeline,loop];
   motionControls.forEach(c=>c.disabled=true);
-  motionSelect.value=initialMotion;play.textContent='Play';timeline.value='0';loop.checked=false;
+  motionSelect.value=initialMotion;play.textContent='Play';timeline.max='0';timeline.value='0';timeLabel.value='Loading…';loop.checked=false;
   const previews: ReturnType<typeof motionPreview>[]=[];
   const players: VMDPlayer[]=[];
   let mixer: AnimationMixer | undefined;
@@ -89,6 +89,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       if(Reflect.get(window,key)===value)Reflect.deleteProperty(window,key);
     diagnostics=undefined;
     motionControls.forEach(c=>c.disabled=true);ikControl.disabled=true;cameraReset.disabled=true;
+    timeline.max='0';timeline.value='0';timeLabel.value='Loading…';play.textContent='Play';
     mixer?.stopAllAction(); if(mixer)mixer.uncacheRoot(mixer.getRoot()); players.forEach(p=>p.dispose());
     previews.forEach(p=>p.dispose());
     blobURLs.forEach(url=>URL.revokeObjectURL(url));
@@ -155,6 +156,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
       if(bytes.byteLength!==metadata.bytes || digest!==metadata.sha256)throw new Error('VMD: pinned hash/size mismatch');
       const source=parseVMD(new Uint8Array(bytes));
+      if(metadata.duration!==vmdDuration(source))throw new Error('VMD: metadata duration differs from retained source');
       if(!metadata.morphs.some(t=>t.active && t.status==='matched' && t.type===1))throw new Error('VMD: no useful bound vertex tracks');
       if(metadata.morphs.some(t=>t.active && t.status==='matched' && t.type===1 && !metadata.preview.some(p=>p.name===t.name)))
         throw new Error('Motion preview: missing active vertex track');
@@ -349,9 +351,9 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       execution:{ik:false,ikState:'off',chains:ikSolvers.map(s=>s.state),grant:false,physics:false,physicsState:physics?'off':'unavailable',physicsUnavailableReason:physicsError,physicsStats:physics?.stats,physicsChains:physics?.adapters.map(a=>a.state),helper:false,fallbackMixer:false},
       binding:bindingInfo(),
       preview:{targets:previews.map(p=>p.targets),bytes:previews.reduce((n,p)=>n+p.bytes,0)}, model, expression: 'rest', backend, frames: 0, mode: select.value, meshes: 0, ready: true,
-      reference: { loader: 'MMDLoader', materials: reference.material.length, scale: reference.scale.x, bounds: describeBounds(reference),
+      reference: { duration: action.getClip().duration, loader: 'MMDLoader', materials: reference.material.length, scale: reference.scale.x, bounds: describeBounds(reference),
         outlines: outlines.checked, morphsActive: reference.morphTargetInfluences?.some((value) => value !== 0) ?? false },
-      gltf: { bounds: describeBounds(toon.scene) }, cameras: [] as number[][] };
+      gltf: { durations: activePlayers.map(p=>p.duration), bounds: describeBounds(toon.scene) }, cameras: [] as number[][] };
     toon.scene.traverse((object: Object3D) => { if ((object as Mesh).isMesh) info.meshes++; });
     // Read-only acceptance evidence: local/world bones plus skin-only positions.
     // Start from base POSITION, deliberately excluding all facial morph weights.
@@ -392,10 +394,11 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     let anchor=0, anchorTime=0;
     function updateControls() {
       const hasMotion=motionSelect.value!=='rest';
-      play.disabled=restart.disabled=timeline.disabled=loop.disabled=!hasMotion;
+      play.disabled=restart.disabled=timeline.disabled=loop.disabled=!hasMotion || duration===0;
       expression.disabled=!isUka || hasMotion;
       play.textContent=info.playing?'Pause':'Play';
-      timeline.value=String(info.time);timeLabel.value=`${info.time.toFixed(2)} / ${duration.toFixed(2)} s`;
+      timeline.max=String(duration);timeline.value=String(info.time);
+      timeLabel.value=hasMotion?`${info.time.toFixed(2)} / ${duration.toFixed(2)} s`:'Rest / manual';
     }
     function sampleRaw(time:number) {
       if(physicsEnabled || info.motion==='rest')referenceRest.forEach(({bone,position,rotation,scale})=>{bone.position.copy(position);bone.quaternion.copy(rotation);bone.scale.copy(scale);});
@@ -469,7 +472,14 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       updatePhysicsAvailability();
     }
     function pause() {info.playing=false;anchorTime=info.time;if(physicsBusy){resetPhysics();void applyTime(info.time);}updateControls();}
-    function seek(time:number) {anchor=performance.now();anchorTime=Math.max(0,Math.min(duration,time));if(physicsBusy && requestedTime===anchorTime)return;if(physicsBusy)resetPhysics();void applyTime(anchorTime);}
+    function seek(time:number) {
+      // Native ranges serialize fractional maxima to about 15 significant digits.
+      // Recover the exact source endpoint from that floating-point roundoff.
+      if(Math.abs(time-duration)<=32*Number.EPSILON*Math.max(1,duration))time=duration;
+      anchor=performance.now();anchorTime=Math.max(0,Math.min(duration,time));
+      if(physicsBusy && requestedTime===anchorTime)return;
+      if(physicsBusy)resetPhysics();void applyTime(anchorTime);
+    }
     function manualExpression() {
       for(const [i,root] of [reference,toon.scene,fallback.scene].entries())root.traverse(object=>{
         const mesh=object as Mesh;if(!mesh.isMesh || !mesh.morphTargetInfluences)return;
@@ -512,7 +522,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       const motion=motions.find(m=>m.id===info.motion) ?? motions[0];
       metadata=motion.metadata;action=actions.get(motion.id)!;
       activePlayers=retained.map(list=>list.find(p=>p.name===metadata.animation)!);
-      duration=activePlayers[0].duration;info.duration=duration;timeline.max=String(duration);
+      duration=info.motion==='rest'?0:activePlayers[0].duration;info.duration=duration;
+      info.reference.duration=action.getClip().duration;info.gltf.durations=activePlayers.map(p=>p.duration);
       info.binding=bindingInfo();describeBinding();
       info.time=info.referenceTime=0;info.gltfTimes=activePlayers.map(()=>0);
       reference.updateMatrixWorld(true);
@@ -523,7 +534,6 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       if(info.playing)pause();else {if(info.time>=duration)seek(0);anchor=performance.now();anchorTime=info.time;info.playing=true;updateControls();}
     },{signal:events.signal});
     restart.addEventListener('click',()=>seek(0),{signal:events.signal});
-    timeline.max=String(duration);
     timeline.addEventListener('input',()=>seek(Number(timeline.value)),{signal:events.signal});
     loop.addEventListener('change',()=>{info.loop=loop.checked;},{signal:events.signal});
     motionSelect.disabled=false;

@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { motionMetadata, expectMotionDuration } from './motion-duration';
 import { PNG } from 'pngjs';
 import { test, expect } from '@playwright/test';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
@@ -19,10 +19,9 @@ for(const model of ['uka','gene'])test(`${model}: both official body clips defor
   const state=()=>page.evaluate(()=>(window as any).mmdExample);
   const poses=()=>page.evaluate(()=>((window as any).readMMDComparisonPose() as Pose[]));
   const rest=await poses();
-  const metadataByMotion=new Map(await Promise.all(['sample','02_laugh','22_apology'].map(async id=>[id,JSON.parse(await readFile(`public/${model==='uka'?'uka':'gene-light'}/${id==='sample'?'motion':`motion-${id}`}.json`,'utf8'))] as const)));
+  const metadataByMotion=new Map(await Promise.all(['sample','02_laugh','22_apology'].map(async id=>[id,await motionMetadata(model,id)] as const)));
   const seek=async(time:number)=>{
-    // Native range sanitization handles non-terminating frame/30 values;
-    // Playwright fill rejects some valid frame positions as a step mismatch.
+    // Assign exact seconds, including non-terminating frame/30 values.
     await page.locator('#comparison-time').evaluate((element,time)=>{
       (element as HTMLInputElement).valueAsNumber=time;
       element.dispatchEvent(new Event('input',{bubbles:true}));
@@ -58,6 +57,8 @@ for(const model of ['uka','gene'])test(`${model}: both official body clips defor
     switches.push({clip,roundTripMilliseconds:performance.now()-started,actionMilliseconds:await page.evaluate(()=>(window as any).motionSwitchMilliseconds)});
     expect((await resource()).roots).toEqual(before.roots);
     expect((await state()).time).toBe(0);expect((await state()).playing).toBe(false);
+    const metadata=metadataByMotion.get(clip);
+    await expectMotionDuration(page,metadata);
     const initial=await state();
     expect(initial.cameras).toEqual(preserved.cameras);
     expect(await page.locator('#material').inputValue()).toBe(preserved.material);
@@ -116,11 +117,11 @@ for(const model of ['uka','gene'])test(`${model}: both official body clips defor
     await page.locator('#comparison-play').click();
     const paused=await poses(), pausedTime=(await state()).time;
     await page.waitForTimeout(150);expect(await poses()).toEqual(paused);expect((await state()).time).toBe(pausedTime);
-    await page.locator('#comparison-loop').check();await seek(9.9);await page.locator('#comparison-play').click();
-    await expect.poll(async()=>(await state()).time,{timeout:30000}).toBeLessThan(9);
+    await page.locator('#comparison-loop').check();await seek(Math.max(0,metadata.duration-.1));await page.locator('#comparison-play').click();
+    await expect.poll(async()=>(await state()).time,{timeout:30000}).toBeLessThan(metadata.duration/2);
     await page.locator('#comparison-play').click();
-    await page.locator('#comparison-loop').uncheck();await seek(9.9);await page.locator('#comparison-play').click();
-    await expect.poll(async()=>(await state()).playing,{timeout:30000}).toBe(false);expect((await state()).time).toBe(10);
+    await page.locator('#comparison-loop').uncheck();await seek(Math.max(0,metadata.duration-.1));await page.locator('#comparison-play').click();
+    await expect.poll(async()=>(await state()).playing,{timeout:30000}).toBe(false);expect((await state()).time).toBe(metadata.duration);
     await page.locator('#material').selectOption('pbr');await seek(times[0]);const pbr=await readComparisonBitmap(page);
     await seek(times[1]);expect(comparisonHalf(await readComparisonBitmap(page),1).equals(comparisonHalf(pbr,1))).toBe(false);
     await testInfo.attach(`${model}-${clip}-pose.json`,{body:JSON.stringify({times,initial,a,b}),contentType:'application/json'});

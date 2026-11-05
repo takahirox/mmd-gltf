@@ -20,6 +20,59 @@ canvas, model or GPU layout. A model change rebuilds the character, restores Res
 Missing/corrupt/binding-incompatible inputs fail preload with disabled controls
 and an in-place Retry. Preload settles all requests before releasing failed resources.
 
+## Timeline duration
+
+The timeline uses the selected VMD's **source duration**, calculated by
+`vmdDuration`: the largest retained frame number across bones, morphs, cameras,
+lights, self-shadows and display/IK records, divided by the VMD timebase of 30 fps.
+Unbound keys and unexecuted scene controls count even when they have no visible
+effect. No source keys are trimmed, and no padding is added. The audit and generated
+`motion*.json` use this same function. Preload verifies source hash/size, metadata
+duration and both retained players' source identity and duration before enabling
+selection. The reference PMX clip holds its final bound pose through that same
+source endpoint, including when its filtered tracks finish earlier.
+
+The selected validated retained player supplies the host's duration. Slider max,
+current/total label, seek clamping, Restart, non-looping endpoint and Loop all use
+that one value. Selection resets time to zero and pauses; Loop remains selected.
+The range accepts arbitrary seconds (`step="any"`), so fractional frame/30
+endpoints remain reachable without step rounding. Native range serialization
+roundoff at the endpoint is resolved back to the exact source duration. Labels
+round to two decimal places for reading; the underlying endpoint remains exact. Without Loop, playback
+stops at the endpoint and holds the final pose. With Loop, positive-duration clips
+wrap modulo their own duration on the same shared clock.
+
+Initial HTML and model loading show **Loading…** with disabled playback and a zero
+range. Rest / manual shows that mode name without a fictional total duration and
+keeps playback disabled. A valid zero-duration motion shows `0.00 / 0.00 s`, samples
+its frame-zero pose and disables playback, seek, Restart and Loop; it cannot start
+a zero-length loop. Positive one-frame motions remain playable.
+
+All six currently selected source clips happen to end at frame 300 (10 seconds).
+This is source evidence, not a playback default. Metadata, retained-player and
+reference-clip duration are checked against the source for each clip:
+
+| Character | Motion | Last bone frame | Last morph frame | Source / metadata / retained / reference seconds |
+| --- | --- | ---: | ---: | ---: |
+| Uka | `04_littlesmile` | 0 | 300 | 10 |
+| Uka | `02_laugh` | 300 | 300 | 10 |
+| Uka | `22_apology` | 300 | 300 | 10 |
+| Gene Light | `01_happy` | 0 | 300 | 10 |
+| Gene Light | `02_laugh` | 300 | 300 | 10 |
+| Gene Light | `22_apology` | 300 | 300 | 10 |
+
+These six sources contain no camera, light or self-shadow records; each retains
+one display/IK record at frame zero.
+Regression fixtures generate VMDs ending at frames 91, 1 and 0, including a
+retained camera key after the last visible bound key. Browser routes supply the
+matching source, SHA-256/size metadata and regenerated glTF together, exercising
+the production validation path. Node checks cover duration contributions from
+every retained section. The real-motion, IK and Physics checks keep their existing
+pose, source integrity and device-budget requirements.
+
+See the [local duration validation results](public-duration-validation.json) for
+actual check outcomes and the pending hosted CI and post-merge checks.
+
 ## Source and binding audit
 
 The [pinned inventory](public-motion-audit.json) enumerates all 40 VMDs in each

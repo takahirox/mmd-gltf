@@ -1,3 +1,4 @@
+import { motionMetadata, expectMotionDuration } from './motion-duration';
 import { PNG } from 'pngjs';
 import { test, expect } from '@playwright/test';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
@@ -26,6 +27,8 @@ for(const model of ['uka','gene'])test(`${model}: pinned real VMD, shared absolu
   expect(initial.preview.targets.flat().every((n:number)=>n<=10)).toBe(true);
   await expect(page.locator('#comparison-play')).toBeDisabled();
   await page.locator('#comparison-motion').selectOption('sample');
+  const metadata=await motionMetadata(model);
+  await expectMotionDuration(page,metadata);
   await expect(page.locator('#expression')).toBeDisabled();
   const seek=async(time:number)=>{
     await page.locator('#comparison-time').fill(String(time));await page.locator('#comparison-time').dispatchEvent('input');
@@ -47,18 +50,20 @@ for(const model of ['uka','gene'])test(`${model}: pinned real VMD, shared absolu
   const paused=await state(),pixels=await readComparisonBitmap(page);
   await page.waitForTimeout(250);expect((await state()).time).toBe(paused.time);
   expect((await readComparisonBitmap(page)).equals(pixels)).toBe(true);
-  await page.locator('#comparison-loop').uncheck();await seek(9.9);
+  await page.locator('#comparison-loop').uncheck();await seek(Math.max(0,metadata.duration-.1));
   await page.locator('#comparison-play').evaluate(b=>(b as HTMLButtonElement).click());
-  await expect.poll(async()=>(await state()).time,{timeout:30000}).toBe(10);
+  await expect.poll(async()=>(await state()).time,{timeout:30000}).toBe(metadata.duration);
   expect((await state()).playing).toBe(false);
-  await page.locator('#comparison-loop').check();await seek(9.9);await page.locator('#comparison-play').click();
-  await expect.poll(async()=>(await state()).time,{timeout:30000}).toBeLessThan(9);
+  await page.locator('#comparison-loop').check();await seek(Math.max(0,metadata.duration-.1));await page.locator('#comparison-play').click();
+  await expect.poll(async()=>(await state()).time,{timeout:30000}).toBeLessThan(metadata.duration/2);
   await page.locator('#comparison-play').click();
   const looped=await state();expect(looped.gltfTimes).toEqual([looped.time,looped.time]);
   await seek(.4);await page.locator('#material').selectOption('pbr');
   const pbr=await readComparisonBitmap(page);await seek(.1);
   expect(comparisonHalf(await readComparisonBitmap(page),1).equals(comparisonHalf(pbr,1))).toBe(false);
   await page.locator('#comparison-motion').selectOption('rest');
+  await expect(page.locator('#comparison-time-label')).toHaveText('Rest / manual');
+  await expect(page.locator('#comparison-time')).toHaveAttribute('max','0');
   if(model==='uka')await expect(page.locator('#expression')).toBeEnabled();
   await page.locator('#material').selectOption('toon');
   const restored=PNG.sync.read(await readComparisonBitmap(page)),restPNG=PNG.sync.read(rest);
@@ -91,16 +96,98 @@ for(const model of ['uka','gene'])test(`${model}: pinned real VMD, shared absolu
   expect(errors).toEqual([]);expect(ammo).toEqual([]);
 });
 
-for(const failure of ['missing','corrupt','unmatched'])test(`VMD ${failure}: fail closed and retry`,async({page})=>{
-  if(failure==='unmatched')await page.route('**/uka/motion.json',async route=>{
-    const response=await route.fetch();const metadata=await response.json();metadata.morphs=[];
+for(const failure of ['missing','corrupt','unmatched','duration'])test(`VMD ${failure}: fail closed and retry`,async({page})=>{
+  if(failure==='unmatched' || failure==='duration')await page.route('**/uka/motion.json',async route=>{
+    const response=await route.fetch();const metadata=await response.json();if(failure==='duration')metadata.duration+=1;else metadata.morphs=[];
     await route.fulfill({response,json:metadata});
   });
   else await page.route('**/uka/motion/04_littlesmile.vmd',route=>route.fulfill({status:failure==='missing'?404:200,body:'invalid VMD'}));
   await page.goto(preview);
-  await expect(page.locator('#gene-status')).toContainText(failure==='missing'?'VMD unavailable':failure==='corrupt'?'hash/size mismatch':'no useful bound',{timeout:90000});
+  await expect(page.locator('#gene-status')).toContainText(failure==='missing'?'VMD unavailable':failure==='corrupt'?'hash/size mismatch':failure==='duration'?'metadata duration differs':'no useful bound',{timeout:90000});
   await expect(page.locator('#comparison-play')).toBeDisabled();await expect(page.locator('#viewport canvas')).toHaveCount(0);
   await page.unrouteAll();await page.locator('#demo-retry').click();
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   await page.locator('#comparison-motion').selectOption('sample');await expect(page.locator('#comparison-play')).toBeEnabled();
+});
+
+// This case uses source-generated VMDs, not altered duration fields: pinned bytes,
+// hash/size, retained payload identity and player duration all still validate.
+test('source durations: fractional endpoint, short/zero clips, loop and rapid handoff',async({page},testInfo)=>{
+  test.setTimeout(300000);
+  const {publicDurationFixture}=await import('./duration-fixture');
+  const fixture=await publicDurationFixture();
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  let release!:()=>void;
+  const loading=new Promise<void>(resolve=>{release=resolve;});
+  await page.route('**/uka/**',async route=>{
+    const path=new URL(route.request().url()).pathname.split('/uka/')[1];
+    const body=fixture.files.get(path);
+    if(!body)return route.continue();
+    if(path==='motion.json')await loading;
+    await route.fulfill({body,contentType:path.endsWith('.json')?'application/json':'application/octet-stream'});
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(preview);
+  await expect(page.locator('#comparison-time-label')).toHaveText('Loading…');
+  await expect(page.locator('#comparison-time')).toHaveAttribute('max','0');
+  for(const id of ['comparison-time','comparison-play','comparison-restart','comparison-loop'])await expect(page.locator(`#${id}`)).toBeDisabled();
+  release();
+  await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
+  await expect(page.locator('#comparison-time-label')).toHaveText('Rest / manual');
+  const state=()=>page.evaluate(()=>(window as any).mmdExample);
+  const roots=await page.evaluate(()=>(window as any).readMMDComparisonResources().roots);
+  const seek=async(time:number)=>{
+    await page.locator('#comparison-time').evaluate((element,time)=>{
+      const input=element as HTMLInputElement;input.valueAsNumber=time;input.dispatchEvent(new Event('input',{bubbles:true}));
+    },time);
+  };
+  const clickPlay=()=>page.locator('#comparison-play').evaluate(e=>(e as HTMLButtonElement).click());
+  const [long,short,zero]=fixture.metadata;
+  await page.locator('#comparison-motion').selectOption('sample');
+  await expectMotionDuration(page,long);
+  await page.locator('#comparison-time').press('End');
+  await expectMotionDuration(page,long,long.duration);
+  expect(await page.locator('#comparison-time').evaluate(e=>(e as HTMLInputElement).validity.stepMismatch)).toBe(false);
+  const finalPose=await page.evaluate(()=>(window as any).readMMDComparisonPose());
+  await seek(long.duration+1);await expectMotionDuration(page,long,long.duration);
+  await seek(-1);await expectMotionDuration(page,long);
+  await seek(long.duration-.1);await clickPlay();
+  await expect.poll(async()=>(await state()).playing,{timeout:30000}).toBe(false);
+  await expectMotionDuration(page,long,long.duration);
+  expect(await page.evaluate(()=>(window as any).readMMDComparisonPose())).toEqual(finalPose);
+  await page.locator('#comparison-restart').click();await expectMotionDuration(page,long);
+  await clickPlay();await expect.poll(async()=>(await state()).time).toBeGreaterThan(0);
+  await clickPlay();const paused=(await state()).time;
+  await page.waitForTimeout(150);await expectMotionDuration(page,long,paused);
+  await page.locator('#comparison-loop').check();await seek(long.duration-.1);await clickPlay();
+  await expect.poll(async()=>(await state()).time,{timeout:30000}).toBeLessThan(long.duration/2);
+  expect((await state()).playing).toBe(true);
+  await page.locator('#comparison-restart').evaluate(e=>(e as HTMLButtonElement).click());
+  expect((await state()).playing).toBe(true);
+  await clickPlay();
+  // Longer → shorter → longer, with Loop retained and the old clock near its end.
+  await seek(long.duration-1/30);
+  for(const [id,metadata] of [['02_laugh',short],['sample',long],['02_laugh',short],['sample',long]] as const) {
+    await page.locator('#comparison-motion').selectOption(id);await expectMotionDuration(page,metadata);
+    expect((await state()).playing).toBe(false);await expect(page.locator('#comparison-loop')).toBeChecked();
+  }
+  await page.locator('#comparison-motion').selectOption('02_laugh');await expectMotionDuration(page,short);
+  await seek(short.duration);await expectMotionDuration(page,short,short.duration);
+  await page.locator('#comparison-loop').uncheck();await page.locator('#comparison-restart').click();await clickPlay();
+  await expect.poll(async()=>(await state()).playing).toBe(false);await expectMotionDuration(page,short,short.duration);
+  await page.locator('#comparison-loop').check();await clickPlay();
+  await page.waitForTimeout(150);expect((await state()).playing).toBe(true);expect((await state()).time).toBeLessThan(short.duration);
+  await page.locator('#comparison-motion').selectOption('22_apology');await expectMotionDuration(page,zero);
+  await expect(page.locator('#comparison-play')).toBeDisabled();
+  await page.waitForTimeout(100);expect((await state()).playing).toBe(false);
+  await page.locator('#comparison-motion').selectOption('rest');
+  await expect(page.locator('#comparison-time-label')).toHaveText('Rest / manual');
+  expect((await state()).duration).toBe(0);expect((await state()).time).toBe(0);
+  expect(await page.evaluate(()=>(window as any).readMMDComparisonResources().roots)).toEqual(roots);
+  await expect(page.locator('#viewport canvas')).toHaveCount(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390);
+  const slider=(await page.locator('#comparison-time').boundingBox())!;
+  expect(slider.width).toBeGreaterThan(80);expect(slider.x+slider.width).toBeLessThanOrEqual(390);
+  await testInfo.attach('duration-evidence.json',{body:JSON.stringify({metadata:fixture.metadata.map(m=>({animation:m.animation,duration:m.duration,sha256:m.sha256,bytes:m.bytes})),state:await state()}),contentType:'application/json'});
+  expect(errors).toEqual([]);
 });

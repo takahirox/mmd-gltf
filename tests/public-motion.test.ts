@@ -1,10 +1,11 @@
+import { durationVMD } from './duration-fixture';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { parsePMX } from '../tools/pmx-to-gltf';
 import { auditMotion } from '../tools/audit-public-motions';
-import { parseVMD } from '../packages/mmd-vmd';
+import { parseVMD, vmdDuration } from '../packages/mmd-vmd';
 import { validateString, validateBytes } from 'gltf-validator';
 import { BufferGeometry, Float32BufferAttribute, Mesh, MeshBasicMaterial } from 'three';
 import { motionPreview } from '../examples/motion-preview';
@@ -17,6 +18,7 @@ for(const [id,pmx,bones,morphs] of [['uka','MS_Uka.pmx',301,82],['gene-light','G
     assert.equal(createHash('sha256').update(bytes).digest('hex'),metadata.sha256);
     const source=parseVMD(bytes),model=parsePMX(await readFile(`public/${id}/${pmx}`));
     const audited=auditMotion(model,source);
+    assert.equal(metadata.duration,vmdDuration(source));assert.equal(audited.duration,metadata.duration);
     assert.deepEqual(metadata.bones,audited.bones);assert.deepEqual(metadata.morphs,audited.morphs);
     assert.equal(metadata.bones.filter((t:any)=>t.status==='matched').length,bones);
     const active=audited.morphs.filter(t=>t.active && t.status==='matched');
@@ -31,6 +33,7 @@ for(const [id,pmx,bones,morphs] of [['uka','MS_Uka.pmx',301,82],['gene-light','G
     assert.ok(!json.extensions?.MMD_skeleton_solver);assert.ok(!json.extensions?.MMD_physics);
     const retained=json.animations.find((a:any)=>a.name===metadata.animation).extensions.MMD_animation_vmd;
     assert.equal(json.scenes.length,1);assert.equal(json.skins.length,1);assert.equal(json.meshes.length,1);assert.equal(json.animations.length,3);
+    assert.equal(vmdDuration(parseVMD(decodeSource(retained.source))),metadata.duration);
     assert.equal(retained.version,6);assert.equal(retained.tracks.length,bones);
     assert.equal((retained.controls?.tracks ?? retained.morphs[0].tracks).length,morphs);
     assert.ok(!retained.solver);
@@ -48,6 +51,7 @@ for(const [id,pmx] of [['uka','MS_Uka.pmx'],['gene-light','Gene_light.pmx']] as 
       assert.equal(bytes.length,metadata.bytes);
       assert.equal(createHash('sha256').update(bytes).digest('hex'),metadata.sha256);
       const source=parseVMD(bytes), audited=auditMotion(model,source);
+      assert.equal(metadata.duration,vmdDuration(source));assert.equal(audited.duration,metadata.duration);
       assert.deepEqual(metadata.bones,audited.bones);assert.deepEqual(metadata.morphs,audited.morphs);
       for(const name of ['上半身','左腕','右腕'])assert.ok(audited.bones.some(t=>t.name===name && t.status==='matched' && t.changing));
       assert.ok(audited.bones.filter(t=>t.status==='matched' && t.changing).length>=48);
@@ -57,6 +61,7 @@ for(const [id,pmx] of [['uka','MS_Uka.pmx'],['gene-light','Gene_light.pmx']] as 
       assert.equal(report.issues.numErrors,0,JSON.stringify(report.issues.messages));
       const retained=json.animations.find((a:any)=>a.name===metadata.animation).extensions.MMD_animation_vmd;
       assert.equal(json.scenes.length,1);assert.equal(json.skins.length,1);assert.equal(json.meshes.length,1);assert.equal(json.animations.length,3);
+      assert.equal(vmdDuration(parseVMD(decodeSource(retained.source))),metadata.duration);
       assert.deepEqual(retained.rest,json.animations[0].extensions.MMD_animation_vmd.rest);
       for(const animation of json.animations)assert.deepEqual(animation.extensions.MMD_animation_vmd.owned,animation.channels.map((c:any)=>c.target));
       assert.deepEqual(Buffer.from(decodeSource(retained.source)),bytes);
@@ -99,4 +104,25 @@ test('preview preserves CPU identities and refuses to hide an animated target',(
   projection.dispose();assert.equal(disposed,1);
   assert.equal(geometry.morphAttributes.position.length,3);
   geometry.dispose();mesh.material.dispose();
+});
+
+
+test('duration audit includes every retained section, even unbound and unexecuted last keys',()=>{
+  for(const lastFrame of [0,1,47,91]) {
+    const source=parseVMD(durationVMD(lastFrame));
+    const inventory={bones:[],morphs:[]} as unknown as Parameters<typeof auditMotion>[0];
+    // No binding eligibility may shorten the source duration.
+    assert.equal(auditMotion(inventory,source).duration,lastFrame/30);
+    assert.equal(vmdDuration(source),lastFrame/30);
+  }
+  const source=parseVMD(durationVMD(1));
+  for(const section of ['bones','morphs','cameras','lights','shadows','displays'] as const) {
+    const motion=structuredClone(source);
+    const record={...(motion[section][0]??{}),frame:137};
+    // These audit-only records need only frame; byte parsing is covered above.
+    (motion[section] as {frame:number}[]).push(record);
+    if(section==='bones' || section==='morphs')Object.assign(record,source[section][0]);
+    record.frame=137;
+    assert.equal(auditMotion({bones:[],morphs:[]} as any,motion).duration,137/30,section);
+  }
 });

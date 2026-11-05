@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { parsePMX, type PMXModel } from './pmx-to-gltf';
-import { parseVMD, byteName, type VMD } from '../packages/mmd-vmd';
+import { parseVMD, byteName, vmdDuration, type VMD } from '../packages/mmd-vmd';
 import uka from './uka-manifest.json';
 import gene from './gene-light-manifest.json';
 
@@ -36,7 +36,7 @@ export function auditMotion(model: PMXModel, motion: VMD) {
     terminatedBindings:values.filter(t=>t.status==='matched').length,
     fullWidthExact:values.filter(t=>t.matches.length===1 && !t.terminated).length,
   }]));
-  return { coverage, modelName: motion.modelName.text, duration: Math.max(0,...[motion.bones,motion.morphs,motion.displays].flatMap(s=>s.map(r=>r.frame/30))),
+  return { coverage, modelName: motion.modelName.text, duration: vmdDuration(motion),
     bones, morphs };
 }
 
