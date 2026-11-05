@@ -45,6 +45,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
   let physics:ComparisonPhysics|undefined,physicsBusy=false,physicsEnabled=false,physicsRequest=0,physicsError='',requestedTime=0;
 
   const timeLabel = document.querySelector<HTMLOutputElement>('#comparison-time-label')!;
+  const durationDetails = document.querySelector<HTMLElement>('#comparison-duration-details')!;
+  durationDetails.textContent='Loading source duration…';
   const cameraReset = document.querySelector<HTMLButtonElement>('#comparison-camera-reset')!;
   cameraReset.disabled = true;
   const motionControls=[motionSelect,play,restart,timeline,loop];
@@ -399,6 +401,8 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       play.textContent=info.playing?'Pause':'Play';
       timeline.max=String(duration);timeline.value=String(info.time);
       timeLabel.value=hasMotion?`${info.time.toFixed(2)} / ${duration.toFixed(2)} s`:'Rest / manual';
+      const provenance=hasMotion?`${motionSelect.selectedOptions[0].text}: ${duration.toFixed(2)} s from the original VMD (last frame ${metadata.duration*30}; 30 frames/s).`:'Rest / manual: no animation timeline.';
+      if(durationDetails.textContent!==provenance)durationDetails.textContent=provenance;
     }
     function sampleRaw(time:number) {
       if(physicsEnabled || info.motion==='rest')referenceRest.forEach(({bone,position,rotation,scale})=>{bone.position.copy(position);bone.quaternion.copy(rotation);bone.scale.copy(scale);});

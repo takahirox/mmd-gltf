@@ -94,7 +94,7 @@ for (const backend of ['webgl', 'webgpu']) {
     }
     await expect(page.locator('#viewport .hint')).toBeVisible();
     await expect(page.locator('#about-demo')).not.toHaveAttribute('open');
-    const accuracy = page.locator('#about-demo > p').first();
+    const accuracy = page.locator('#about-demo > p').filter({hasText:'direct PMX-rendering reference'});
     await expect(accuracy).toContainText('direct PMX-rendering reference');
     await expect(accuracy).toContainText('@takahirox/three-mmd');
     await expect(accuracy).toContainText('not native MikuMikuDance');
