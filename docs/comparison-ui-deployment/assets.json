@@ -1,0 +1,458 @@
+{
+  "checkedAt": "2026-11-06T08:39:39.667869+00:00",
+  "workflowRun": 42184766045,
+  "artifact": "github-pages-attempt-1",
+  "sha": "5c8428acedfafe4762aafabda76110bdf7e258b8",
+  "results": [
+    {
+      "path": "assets/group-advanced-conformance-Pv5EYHFc.js",
+      "bytes": 3598,
+      "sha256": "898354ad9aa7af8eaaa81236a1910b3869597138db223a3416ee41c2445ba1a7",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/group-advanced-conformance-Pv5EYHFc.js",
+      "status": 200,
+      "observedBytes": 3598,
+      "observedSha256": "898354ad9aa7af8eaaa81236a1910b3869597138db223a3416ee41c2445ba1a7",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/source-Mz4_Cg9J.js",
+      "bytes": 3911,
+      "sha256": "48e74e31da175120745eed22c1c3d2b7cae4c6ae32d5853ac426b2fb6dd0fa8e",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/source-Mz4_Cg9J.js",
+      "status": 200,
+      "observedBytes": 3911,
+      "observedSha256": "48e74e31da175120745eed22c1c3d2b7cae4c6ae32d5853ac426b2fb6dd0fa8e",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/sdef-conformance-JoOkzTCT.js",
+      "bytes": 9518,
+      "sha256": "0461147b1bcb6b67fb6eeb5ccce7e114dbad9376576f0d3d7f0922316fce66da",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/sdef-conformance-JoOkzTCT.js",
+      "status": 200,
+      "observedBytes": 9518,
+      "observedSha256": "0461147b1bcb6b67fb6eeb5ccce7e114dbad9376576f0d3d7f0922316fce66da",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/morph-oracle-F8mqnOV9.js",
+      "bytes": 3239,
+      "sha256": "c2dfc7531e0f23488d105a9025809b0b583518e00033d91f1ae98ca92d89ef17",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/morph-oracle-F8mqnOV9.js",
+      "status": 200,
+      "observedBytes": 3239,
+      "observedSha256": "c2dfc7531e0f23488d105a9025809b0b583518e00033d91f1ae98ca92d89ef17",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/sdef-oracle-CWxKYvhN.js",
+      "bytes": 2412,
+      "sha256": "da28cea518e314827534c9c47fd45399946ead7558e0e54b789f11f2ab183bfd",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/sdef-oracle-CWxKYvhN.js",
+      "status": 200,
+      "observedBytes": 2412,
+      "observedSha256": "da28cea518e314827534c9c47fd45399946ead7558e0e54b789f11f2ab183bfd",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/exporter-fPXt8ecE.js",
+      "bytes": 525,
+      "sha256": "55d7689c0f6504e2148d61dfb2769ebf5a5548ef59df8c25a5198016223168fa",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/exporter-fPXt8ecE.js",
+      "status": 200,
+      "observedBytes": 525,
+      "observedSha256": "55d7689c0f6504e2148d61dfb2769ebf5a5548ef59df8c25a5198016223168fa",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/index-TKWDWmii.js",
+      "bytes": 37502,
+      "sha256": "3e950793f989066dd66f567cd1f853c4faf5ee76165bafb8ee505c51a80b6dec",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/index-TKWDWmii.js",
+      "status": 200,
+      "observedBytes": 37502,
+      "observedSha256": "3e950793f989066dd66f567cd1f853c4faf5ee76165bafb8ee505c51a80b6dec",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/index-DNA89RTD.js",
+      "bytes": 4378,
+      "sha256": "af8cdb47e9123136a07fff325054d9848e602bf0fcaf1fed6872770e2a3a4308",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/index-DNA89RTD.js",
+      "status": 200,
+      "observedBytes": 4378,
+      "observedSha256": "af8cdb47e9123136a07fff325054d9848e602bf0fcaf1fed6872770e2a3a4308",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/index-qOQiDd9b.js",
+      "bytes": 19063,
+      "sha256": "57b6b5e7c5d918eac59d7260f540ed301114d38bba90686f84ee913b16188933",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/index-qOQiDd9b.js",
+      "status": 200,
+      "observedBytes": 19063,
+      "observedSha256": "57b6b5e7c5d918eac59d7260f540ed301114d38bba90686f84ee913b16188933",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/index-jCa541vQ.js",
+      "bytes": 9971,
+      "sha256": "55078b22ce162ecf4159dba62639dd64e36fcecf13ef89741b70191ed4f956e6",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/index-jCa541vQ.js",
+      "status": 200,
+      "observedBytes": 9971,
+      "observedSha256": "55078b22ce162ecf4159dba62639dd64e36fcecf13ef89741b70191ed4f956e6",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/modulepreload-polyfill-B5Qt9EMX.js",
+      "bytes": 711,
+      "sha256": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/modulepreload-polyfill-B5Qt9EMX.js",
+      "status": 200,
+      "observedBytes": 711,
+      "observedSha256": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/group-oracle-GwupO_2w.js",
+      "bytes": 516,
+      "sha256": "3b4cb27997820b614f0a1d90b20ba6b8d4f70db8aaf26e0b4ab615b988b7f4c1",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/group-oracle-GwupO_2w.js",
+      "status": 200,
+      "observedBytes": 516,
+      "observedSha256": "3b4cb27997820b614f0a1d90b20ba6b8d4f70db8aaf26e0b4ab615b988b7f4c1",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/physics-conformance-DS2a81KA.js",
+      "bytes": 7570,
+      "sha256": "7af46530fea46c04f000500219ef56c7515feeec9a812fc70a4441ad3601f2da",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/physics-conformance-DS2a81KA.js",
+      "status": 200,
+      "observedBytes": 7570,
+      "observedSha256": "7af46530fea46c04f000500219ef56c7515feeec9a812fc70a4441ad3601f2da",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/exporter-5H-lFU48.js",
+      "bytes": 1634,
+      "sha256": "c970ee88335af27f36ce79c2ee67229079573290d40cf182b67f7749de6731c0",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/exporter-5H-lFU48.js",
+      "status": 200,
+      "observedBytes": 1634,
+      "observedSha256": "c970ee88335af27f36ce79c2ee67229079573290d40cf182b67f7749de6731c0",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/rig--k0zm9JU.js",
+      "bytes": 181,
+      "sha256": "0711db49a89ec5cd654020ad779615d58e0c2d22bbcd01f6752fd8f369cb72e9",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/rig--k0zm9JU.js",
+      "status": 200,
+      "observedBytes": 181,
+      "observedSha256": "0711db49a89ec5cd654020ad779615d58e0c2d22bbcd01f6752fd8f369cb72e9",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/bone-morph-conformance-LVRmE74M.js",
+      "bytes": 7463,
+      "sha256": "b8386148a5c57a7030f36dc8ea9e32455534bb18b08a073fd27aa9236a61e968",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/bone-morph-conformance-LVRmE74M.js",
+      "status": 200,
+      "observedBytes": 7463,
+      "observedSha256": "b8386148a5c57a7030f36dc8ea9e32455534bb18b08a073fd27aa9236a61e968",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/exporter-jHu_1yfW.js",
+      "bytes": 4032,
+      "sha256": "76fdc40e8fc976abb276d1227e137040763f03f3f5d55e6532060dcb5bd2fcc7",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/exporter-jHu_1yfW.js",
+      "status": 200,
+      "observedBytes": 4032,
+      "observedSha256": "76fdc40e8fc976abb276d1227e137040763f03f3f5d55e6532060dcb5bd2fcc7",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/exporter-Cd1yiHVH.js",
+      "bytes": 901,
+      "sha256": "7c1e846456d755d71b2621f56eb350a2ebe0c1200e3f7b195251c54298030beb",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/exporter-Cd1yiHVH.js",
+      "status": 200,
+      "observedBytes": 901,
+      "observedSha256": "7c1e846456d755d71b2621f56eb350a2ebe0c1200e3f7b195251c54298030beb",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/solver-oracle-CZU4RqTH.js",
+      "bytes": 4437,
+      "sha256": "7f617d9189323375fa8527a809e12ccb9b0758dcfc5da86dabb0264080e1ffb7",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/solver-oracle-CZU4RqTH.js",
+      "status": 200,
+      "observedBytes": 4437,
+      "observedSha256": "7f617d9189323375fa8527a809e12ccb9b0758dcfc5da86dabb0264080e1ffb7",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/index-UzzpLBI6.js",
+      "bytes": 102,
+      "sha256": "397fb62991df57768bca74b86cf56c855f3587f0851847707767f0b14ad83df4",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/index-UzzpLBI6.js",
+      "status": 200,
+      "observedBytes": 102,
+      "observedSha256": "397fb62991df57768bca74b86cf56c855f3587f0851847707767f0b14ad83df4",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/qdef-oracle-kMb_Cor0.js",
+      "bytes": 1854,
+      "sha256": "66a958b8f16a6eaaf420720bedfd19ebe838e23c174f80c0b5fc4b6bdafb6adb",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/qdef-oracle-kMb_Cor0.js",
+      "status": 200,
+      "observedBytes": 1854,
+      "observedSha256": "66a958b8f16a6eaaf420720bedfd19ebe838e23c174f80c0b5fc4b6bdafb6adb",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/bone-morph-oracle-B9L39uRo.js",
+      "bytes": 4846,
+      "sha256": "db1aa3a4235de810ec1ab4e6e1ab12b25c08780c0dbca7a5f35efbf5b5a8fb89",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/bone-morph-oracle-B9L39uRo.js",
+      "status": 200,
+      "observedBytes": 4846,
+      "observedSha256": "db1aa3a4235de810ec1ab4e6e1ab12b25c08780c0dbca7a5f35efbf5b5a8fb89",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/vmd-conformance-CcUPLZpX.js",
+      "bytes": 7407,
+      "sha256": "1df3b33c8fda0591a5d05bfa7fa01bf0f0983ea098029c4e3589e0c3c213219c",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/vmd-conformance-CcUPLZpX.js",
+      "status": 200,
+      "observedBytes": 7407,
+      "observedSha256": "1df3b33c8fda0591a5d05bfa7fa01bf0f0983ea098029c4e3589e0c3c213219c",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/exporter-unlKV2G0.js",
+      "bytes": 746,
+      "sha256": "d1259b8c66e1647372d4a1860073aeb6e464c6241f89202102f23e04922c2e0e",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/exporter-unlKV2G0.js",
+      "status": 200,
+      "observedBytes": 746,
+      "observedSha256": "d1259b8c66e1647372d4a1860073aeb6e464c6241f89202102f23e04922c2e0e",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/vpd-oracle-BDQTY48a.js",
+      "bytes": 1665,
+      "sha256": "cec662467de0a062f7c42131a549bf326dc47fd582694b5ec7230a4c4b0b2760",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/vpd-oracle-BDQTY48a.js",
+      "status": 200,
+      "observedBytes": 1665,
+      "observedSha256": "cec662467de0a062f7c42131a549bf326dc47fd582694b5ec7230a4c4b0b2760",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/index-B6dygJ3D.css",
+      "bytes": 6560,
+      "sha256": "26a0e96ef4cbdadeefe45eded286f6b2f6b4e9569ba28621db77d5bef1e891b3",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/index-B6dygJ3D.css",
+      "status": 200,
+      "observedBytes": 6560,
+      "observedSha256": "26a0e96ef4cbdadeefe45eded286f6b2f6b4e9569ba28621db77d5bef1e891b3",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/world-KDIixAjE.js",
+      "bytes": 24281,
+      "sha256": "ccb51564801fc010783e8060d4e4872e96c7600e52e09d3f83dc31402288d58c",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/world-KDIixAjE.js",
+      "status": 200,
+      "observedBytes": 24281,
+      "observedSha256": "ccb51564801fc010783e8060d4e4872e96c7600e52e09d3f83dc31402288d58c",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/rig-sDxYOujy.js",
+      "bytes": 19055,
+      "sha256": "0b90edc8dc0b7cef9322484f63402daceb7a65061661c0edf680146b79d422d2",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/rig-sDxYOujy.js",
+      "status": 200,
+      "observedBytes": 19055,
+      "observedSha256": "0b90edc8dc0b7cef9322484f63402daceb7a65061661c0edf680146b79d422d2",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/GLTFExporter-DCMYgV8Y.js",
+      "bytes": 37459,
+      "sha256": "c292485571814c9eea33ae03da9fc63d9004b91d4fdd3f2859fc5d3017b0064c",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/GLTFExporter-DCMYgV8Y.js",
+      "status": 200,
+      "observedBytes": 37459,
+      "observedSha256": "c292485571814c9eea33ae03da9fc63d9004b91d4fdd3f2859fc5d3017b0064c",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/main-stXbtI3p.js",
+      "bytes": 228476,
+      "sha256": "2ff2f5c458c03d2bb68a4c4f6e268cac144783999fd3602e8fc0bafa9752d12f",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/main-stXbtI3p.js",
+      "status": 200,
+      "observedBytes": 228476,
+      "observedSha256": "2ff2f5c458c03d2bb68a4c4f6e268cac144783999fd3602e8fc0bafa9752d12f",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/phase-timing-BLLpf-I8.js",
+      "bytes": 712,
+      "sha256": "31d337dd23129a3eba1d586522990c28d7d847762b455031b2446a9aa0a6f27b",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/phase-timing-BLLpf-I8.js",
+      "status": 200,
+      "observedBytes": 712,
+      "observedSha256": "31d337dd23129a3eba1d586522990c28d7d847762b455031b2446a9aa0a6f27b",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/vpd-conformance-DNgXgDDn.js",
+      "bytes": 4851,
+      "sha256": "f2218705b48c6ff5f86a1ce5fee5441835ddf209eef9ba8c1c3dfb612a6659f7",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/vpd-conformance-DNgXgDDn.js",
+      "status": 200,
+      "observedBytes": 4851,
+      "observedSha256": "f2218705b48c6ff5f86a1ce5fee5441835ddf209eef9ba8c1c3dfb612a6659f7",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/bone-advanced-conformance-CzGuIs9c.js",
+      "bytes": 2063,
+      "sha256": "0e0fe3a35df11a4318e0e16567f3a20aebb83a24ad14d878324fbcc46201773f",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/bone-advanced-conformance-CzGuIs9c.js",
+      "status": 200,
+      "observedBytes": 2063,
+      "observedSha256": "0e0fe3a35df11a4318e0e16567f3a20aebb83a24ad14d878324fbcc46201773f",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/qdef-conformance-x-vKqDFG.js",
+      "bytes": 11969,
+      "sha256": "b0e3f2d1252bfee1f94d2d6ae8544435e36544d0fca5d083db183e9f8a9cf76e",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/qdef-conformance-x-vKqDFG.js",
+      "status": 200,
+      "observedBytes": 11969,
+      "observedSha256": "b0e3f2d1252bfee1f94d2d6ae8544435e36544d0fca5d083db183e9f8a9cf76e",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/MMDPhysicsWorker-DjH8OIiz.js",
+      "bytes": 168090,
+      "sha256": "4118b007dd9a64c45103fc67dac21005e9c18688dc38418f052b168b7292640d",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/MMDPhysicsWorker-DjH8OIiz.js",
+      "status": 200,
+      "observedBytes": 168090,
+      "observedSha256": "4118b007dd9a64c45103fc67dac21005e9c18688dc38418f052b168b7292640d",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/OrbitControls-DSGFQRY-.js",
+      "bytes": 20330,
+      "sha256": "0a4095f1f9a8f57e192205d6fc03fbec91820bc47c17cddaf4918495ba0c7815",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/OrbitControls-DSGFQRY-.js",
+      "status": 200,
+      "observedBytes": 20330,
+      "observedSha256": "0a4095f1f9a8f57e192205d6fc03fbec91820bc47c17cddaf4918495ba0c7815",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/index-BD2HwvZw.js",
+      "bytes": 1034516,
+      "sha256": "89df399d3e4e0ebd309095dada253f899233753dcac8d3dfa3f721efe4424a01",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/index-BD2HwvZw.js",
+      "status": 200,
+      "observedBytes": 1034516,
+      "observedSha256": "89df399d3e4e0ebd309095dada253f899233753dcac8d3dfa3f721efe4424a01",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "assets/solver-conformance-DZIzQZKI.js",
+      "bytes": 10349,
+      "sha256": "86a7747bc75001ce569c771a76bae927b981dde105a08403b04d1df7cb72d609",
+      "url": "https://takahirox.github.io/mmd-gltf/assets/solver-conformance-DZIzQZKI.js",
+      "status": 200,
+      "observedBytes": 10349,
+      "observedSha256": "86a7747bc75001ce569c771a76bae927b981dde105a08403b04d1df7cb72d609",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "gene-light/source-manifest.json",
+      "bytes": 3259,
+      "sha256": "bc4ef15d28b1eeebfd5df46980a80673b87d63f68a8613f780414cb519adee70",
+      "url": "https://takahirox.github.io/mmd-gltf/gene-light/source-manifest.json",
+      "status": 200,
+      "observedBytes": 3259,
+      "observedSha256": "bc4ef15d28b1eeebfd5df46980a80673b87d63f68a8613f780414cb519adee70",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "gene-light/conversion.json",
+      "bytes": 16911,
+      "sha256": "7cd6c360a80ace920560b0a52e6f5589dc9278667b911f0a9f9e5ac93914922d",
+      "url": "https://takahirox.github.io/mmd-gltf/gene-light/conversion.json",
+      "status": 200,
+      "observedBytes": 16911,
+      "observedSha256": "7cd6c360a80ace920560b0a52e6f5589dc9278667b911f0a9f9e5ac93914922d",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "gene-light/model.glb",
+      "bytes": 15187172,
+      "sha256": "72afa73cb9f76ce538b19ab319521fd4613117b5d067c630f12f9e8e5adb80f2",
+      "url": "https://takahirox.github.io/mmd-gltf/gene-light/model.glb",
+      "status": 200,
+      "observedBytes": 15187172,
+      "observedSha256": "72afa73cb9f76ce538b19ab319521fd4613117b5d067c630f12f9e8e5adb80f2",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "index.html",
+      "bytes": 19281,
+      "sha256": "6588f7576937f4ee902b97b8c356fbd0d3e0a59502990f4fcc06c979d672041a",
+      "url": "https://takahirox.github.io/mmd-gltf/index.html",
+      "status": 200,
+      "observedBytes": 19281,
+      "observedSha256": "6588f7576937f4ee902b97b8c356fbd0d3e0a59502990f4fcc06c979d672041a",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "uka/model.gltf",
+      "bytes": 11193880,
+      "sha256": "32f4a0382b28a87d0f48d9e008483f1d5ce62d36cc3b955f6e59497a63ef5d8c",
+      "url": "https://takahirox.github.io/mmd-gltf/uka/model.gltf",
+      "status": 200,
+      "observedBytes": 11193880,
+      "observedSha256": "32f4a0382b28a87d0f48d9e008483f1d5ce62d36cc3b955f6e59497a63ef5d8c",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "uka/source-manifest.json",
+      "bytes": 2515,
+      "sha256": "d328f14eb9787897b306c0cf96e756e9edba748a0d87c6b1530ebcf9922e8525",
+      "url": "https://takahirox.github.io/mmd-gltf/uka/source-manifest.json",
+      "status": 200,
+      "observedBytes": 2515,
+      "observedSha256": "d328f14eb9787897b306c0cf96e756e9edba748a0d87c6b1530ebcf9922e8525",
+      "matchesPreparedArtifact": true
+    },
+    {
+      "path": "uka/conversion.json",
+      "bytes": 16543,
+      "sha256": "9542821c3cce7465cfabda4de7cfe309ded18b00962a759c2bd48548d285c9fb",
+      "url": "https://takahirox.github.io/mmd-gltf/uka/conversion.json",
+      "status": 200,
+      "observedBytes": 16543,
+      "observedSha256": "9542821c3cce7465cfabda4de7cfe309ded18b00962a759c2bd48548d285c9fb",
+      "matchesPreparedArtifact": true
+    }
+  ]
+}

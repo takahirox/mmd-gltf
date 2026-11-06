@@ -1,0 +1,1261 @@
+{
+  "schemaVersion": 1,
+  "commit": "5c8428acedfafe4762aafabda76110bdf7e258b8",
+  "status": "passed",
+  "errors": [],
+  "testCount": 118,
+  "attemptCount": 118,
+  "testStatuses": {
+    "passed": 116,
+    "skipped": 2
+  },
+  "browserWallMs": 2063189.175,
+  "browserRunnerMs": 4626063.645,
+  "shards": [
+    {
+      "shard": "1",
+      "status": "passed",
+      "durationMs": 683566.445,
+      "testCount": 37,
+      "attemptCount": 37,
+      "statuses": {
+        "passed": 37
+      }
+    },
+    {
+      "shard": "2",
+      "status": "passed",
+      "durationMs": 822930.013,
+      "testCount": 19,
+      "attemptCount": 19,
+      "statuses": {
+        "passed": 18,
+        "skipped": 1
+      }
+    },
+    {
+      "shard": "3",
+      "status": "passed",
+      "durationMs": 1056378.0119999999,
+      "testCount": 26,
+      "attemptCount": 26,
+      "statuses": {
+        "passed": 25,
+        "skipped": 1
+      }
+    },
+    {
+      "shard": "4",
+      "status": "passed",
+      "durationMs": 2063189.175,
+      "testCount": 36,
+      "attemptCount": 36,
+      "statuses": {
+        "passed": 36
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "6a0a99a2b4fc086ad37d-fa37111e54adedc5680f",
+      "title": "gene-ik.spec.ts / Gene six-chain ordered grant/IK: three independent skins, original motions, pixels, raw restoration and lifecycle",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 91679,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "6a0a99a2b4fc086ad37d-947385fe193ff8d667f3",
+      "title": "gene-ik.spec.ts / PMX/glTF grant mismatch disables complete public IK set",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 24204,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "6a0a99a2b4fc086ad37d-f7b411928befd950b745",
+      "title": "gene-ik.spec.ts / PMX/glTF missing grant source disables complete public IK set",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 24572,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "fffb772da385012f6740-84dd9b67d301d45b2a31",
+      "title": "group.spec.ts / built group Demo: group-box / group-a / bytes",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 28156,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "fffb772da385012f6740-5efe5f14565ec2407270",
+      "title": "group.spec.ts / built group Demo: group-wedge / group-b / glb + gltf",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 48064,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "fffb772da385012f6740-2c22555b6f041b2cf95e",
+      "title": "group.spec.ts / built group Demo acknowledges fractional state and appearance only after rendering",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 5801,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "fffb772da385012f6740-0f9758763029ae789021",
+      "title": "group.spec.ts / built group conformance: independent scalar rasters and applied GLB/glTF export round trips",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 17336,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "fffb772da385012f6740-ea0100ac5fb1fc9d8b1e",
+      "title": "group.spec.ts / built group targets precede actual SDEF/QDEF GPU positions and normals",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 5765,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "68fc7ba252337690d54a-f9ca3f2f6d81b8f1c936",
+      "title": "sdef.spec.ts / SDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 26261,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "68fc7ba252337690d54a-02449a886892c9efbe5f",
+      "title": "sdef.spec.ts / built SDEF Demo: sdef-box / combined-a / bytes",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 28998,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "68fc7ba252337690d54a-87d540be4347c15506fa",
+      "title": "sdef.spec.ts / built SDEF Demo: sdef-wedge / combined-b / glb + gltf",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 47826,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "68fc7ba252337690d54a-3f779f31a04716175238",
+      "title": "sdef.spec.ts / built SDEF Demo acknowledges fractional state and appearance only after rendering",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 6230,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-72c31351ccd1fa11a4ee",
+      "title": "solver.spec.ts / built Demo keeps IK and rig replacement locked during a delayed motion load",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 3665,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-3f916567a4af6b5c90e1",
+      "title": "solver.spec.ts / built extension-only solver skins validate and reload GLB/glTF exports without PMX extras",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 464,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-be1417a9eb9424b4c170",
+      "title": "solver.spec.ts / built Demo resets IK override on bytes player replacement",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 4502,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-dab6247677bbd3ef40fa",
+      "title": "solver.spec.ts / built Demo resets IK override on glb player replacement",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 4279,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-8a7931321271a85043e4",
+      "title": "solver.spec.ts / built Demo resets IK override on gltf player replacement",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 4404,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-bd622add993d81b8e864",
+      "title": "solver.spec.ts / built Demo marks retained bytes IK controls inactive through VPD and resets",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 11671,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-d2e4a7632351617710e2",
+      "title": "solver.spec.ts / built Demo marks retained glb IK controls inactive through VPD and resets",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 11984,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-4230a8809dff41438af2",
+      "title": "solver.spec.ts / built Demo marks retained gltf IK controls inactive through VPD and resets",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 11974,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-3c96606df4d3f06812d3",
+      "title": "solver.spec.ts / built Demo restores legacy pose and motion presets after solver rig replacement",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 7636,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-83f6377b6a48567a8553",
+      "title": "solver.spec.ts / built solver bdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 4918,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-b492a5b241371eff188a",
+      "title": "solver.spec.ts / built solver bdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 5179,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-b5fc9fea3b6a9d8c2377",
+      "title": "solver.spec.ts / built solver bdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 4675,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-3a5d1d6759fc70a1a3b1",
+      "title": "solver.spec.ts / built solver bdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 4876,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-b92cc531dee68931e408",
+      "title": "solver.spec.ts / built solver sdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 7573,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-ab576b193cfe2d1fdc8d",
+      "title": "solver.spec.ts / built solver sdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 8034,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-14963407ee2a254994bf",
+      "title": "solver.spec.ts / built solver sdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 7272,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-e08b996937129e44e640",
+      "title": "solver.spec.ts / built solver sdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 7798,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-9d20be8b3d92480911d2",
+      "title": "solver.spec.ts / built solver qdef/box/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 15672,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-26296167e3a90a733ea3",
+      "title": "solver.spec.ts / built solver qdef/box/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 16265,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-d163a2d41658009853dd",
+      "title": "solver.spec.ts / built solver qdef/wedge/toon: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 15396,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-99b586ade969dfbc0572",
+      "title": "solver.spec.ts / built solver qdef/wedge/pbr: independent CPU/GPU and Toon/PBR/Outline, bytes/GLB/glTF and applied exports",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 15843,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-9f6c829f642de1ec3517",
+      "title": "solver.spec.ts / built solver Demo box/a: both poses, controls, transport, load recovery and disposal",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 37659,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-fa83d8d93cb788680eab",
+      "title": "solver.spec.ts / built solver Demo box/b: both poses, controls, transport, load recovery and disposal",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 38754,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-952274b01de099079b73",
+      "title": "solver.spec.ts / built solver Demo wedge/a: both poses, controls, transport, load recovery and disposal",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 38268,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "f584bb5c461b4c83f689-eb0510dfea160b0e27fe",
+      "title": "solver.spec.ts / built solver Demo wedge/b: both poses, controls, transport, load recovery and disposal",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 37175,
+      "shard": "1",
+      "annotations": []
+    },
+    {
+      "id": "88e6e9354bd772156ba7-5b90ddce4029f4f1c7eb",
+      "title": "body-motion.spec.ts / uka: both official body clips deform both skins on the shared clock",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 134728,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "88e6e9354bd772156ba7-05b28f17180bafb1353c",
+      "title": "body-motion.spec.ts / gene: both official body clips deform both skins on the shared clock",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 113193,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "88e6e9354bd772156ba7-d3354ff6209c4a4881d7",
+      "title": "body-motion.spec.ts / body selection missing: fails preload and retries the character",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 28232,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "88e6e9354bd772156ba7-fa31b171586691a04eeb",
+      "title": "body-motion.spec.ts / body selection corrupt: fails preload and retries the character",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 29260,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "88e6e9354bd772156ba7-5ea576380a3cf4483aed",
+      "title": "body-motion.spec.ts / body selection binding: fails preload and retries the character",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 29003,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "88e6e9354bd772156ba7-2d715e6e5791fb6e1eb7",
+      "title": "body-motion.spec.ts / body selection retained: fails preload and retries the character",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 46985,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "a30a6eba6312f6b87ea5-ad1db50a72e81664412d",
+      "title": "example.spec.ts / production TSL graph matches independent numerical fixtures on WebGL2",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 2092,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "a30a6eba6312f6b87ea5-21e0e0defb8a19e47296",
+      "title": "example.spec.ts / built comparison keeps the light-gray fallback while assets load",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 13632,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "a30a6eba6312f6b87ea5-51b1e984255a2540cafb",
+      "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgl site",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 92683,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "a30a6eba6312f6b87ea5-22b04c60710df456a00c",
+      "title": "example.spec.ts / matched PMX and glTF load, render, navigate and toggle on built webgpu site",
+      "status": "skipped",
+      "expectedStatus": "skipped",
+      "retry": 0,
+      "durationMs": 749,
+      "shard": "2",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Native WebGPU adapter unavailable; WebGL2 is tested separately.",
+          "location": {
+            "file": "tests/browser/example.spec.ts",
+            "line": 85,
+            "column": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": "a30a6eba6312f6b87ea5-cc565e6639b65e1b0d36",
+      "title": "example.spec.ts / missing PMX image reports the reference failure clearly",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 5673,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "2b3027ae5b09f8d6926b-a5e3a855b09fd54e7aa1",
+      "title": "physics.spec.ts / physics GPU bdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 8094,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "2b3027ae5b09f8d6926b-96c5dc85fd92bf6ad29c",
+      "title": "physics.spec.ts / physics GPU sdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 11648,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "2b3027ae5b09f8d6926b-a0f2720db7db143dfc1b",
+      "title": "physics.spec.ts / physics GPU qdef: independent resolved palettes, normals, Toon/PBR, outline and snapshot export",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 23071,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "2b3027ae5b09f8d6926b-24d196615079abf79a21",
+      "title": "physics.spec.ts / built Demo physics: two rigs, motions, bytes/GLB/glTF, VPD handoffs, transport, controls and recovery",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 91330,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "ce99b18dbc6a784b8cd5-ae1105da71f5aa24f842",
+      "title": "qdef.spec.ts / QDEF actual GPU positions/normals, independent rasters, VMD/VPD and serialized reloads",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 77076,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "ce99b18dbc6a784b8cd5-4133631fc0726297586d",
+      "title": "qdef.spec.ts / built QDEF Demo: qdef-box / combined-a / bytes",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 38506,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "ce99b18dbc6a784b8cd5-e5cfad83cc48a04d5fd8",
+      "title": "qdef.spec.ts / built QDEF Demo: qdef-wedge / combined-b / glb + gltf",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 64666,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "ce99b18dbc6a784b8cd5-aff9691b1cfbb9c0aefd",
+      "title": "qdef.spec.ts / built QDEF Demo acknowledges fractional state and appearance only after rendering",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 9211,
+      "shard": "2",
+      "annotations": []
+    },
+    {
+      "id": "4acd037814e08b041e13-1394045d3439a631b880",
+      "title": "bdef.spec.ts / converted PMX skins match analytic surface and outline predictions through pinned GLTFLoader",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 1866,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "2436148ae45b15c6d431-7c830f344b465e3fa6fb",
+      "title": "bone-morph.spec.ts / built bone Demo: bone-box / bone-a / bytes",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 38682,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "2436148ae45b15c6d431-8d3d897155e74227be99",
+      "title": "bone-morph.spec.ts / built bone Demo: bone-wedge / bone-b / glb + gltf",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 62565,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "2436148ae45b15c6d431-b61a4dcd9c82c3d12e72",
+      "title": "bone-morph.spec.ts / built bone morph raster and exports: both rigs/motions, bytes/GLB/glTF, Toon/PBR, Outline and both VPD handoffs",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 65904,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "2436148ae45b15c6d431-7bb31f3d6b9e56f2f025",
+      "title": "bone-morph.spec.ts / bone morph actual SDEF/QDEF GPU positions and normals",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 7664,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "b2cf18066d84210d8614-7ae742842a3a0426ed7a",
+      "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgl",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 5661,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "b2cf18066d84210d8614-537f20d3ad164baeec87",
+      "title": "outline.spec.ts / production outline equation, encoded compositing, depth, loader and viewport conformance on webgpu",
+      "status": "skipped",
+      "expectedStatus": "skipped",
+      "retry": 0,
+      "durationMs": 399,
+      "shard": "3",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Native WebGPU adapter unavailable; mandatory WebGL2 readbacks run independently.",
+          "location": {
+            "file": "tests/browser/outline.spec.ts",
+            "line": 9,
+            "column": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "3339332555aef4dd0048-d7b5270fd9a8b0bb2640",
+      "title": "public-assets.spec.ts / uka: ordinary GLTFLoader reads three named core fallback clips on one real skin",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 2049,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "3339332555aef4dd0048-9b66aad6ba5f9f9148ab",
+      "title": "public-assets.spec.ts / gene-light: ordinary GLTFLoader reads three named core fallback clips on one real skin",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 1105,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "124eb5129820cb5b0fe8-62da12f44fd673ee4599",
+      "title": "uka.spec.ts / pinned Uka cold/warm loads decode direct PMX images at canonical request URLs",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 56768,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "124eb5129820cb5b0fe8-0271d352af7e8ab6d885",
+      "title": "uka.spec.ts / default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outline and shared camera",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 113936,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "124eb5129820cb5b0fe8-11417d7a49ab0e52737c",
+      "title": "uka.spec.ts / missing Uka texture fails visibly and retry recovers",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 45000,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "124eb5129820cb5b0fe8-5b2f6ef52ac6f3a29b62",
+      "title": "uka.spec.ts / corrupt Uka texture fails visibly and retry recovers",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 45509,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "124eb5129820cb5b0fe8-0f723386d906ded55a9e",
+      "title": "uka.spec.ts / request Uka texture fails visibly and retry recovers",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 44971,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "124eb5129820cb5b0fe8-19ca52ae73bc9cc19c8d",
+      "title": "uka.spec.ts / unsafe path Uka texture fails visibly and retry recovers",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 44814,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "91534a3e3c1b5ad07bc5-901797ad05a8fa673551",
+      "title": "unified-demo.spec.ts / public character picker and credits exclude fixtures; explicit rig entry retains the harness",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 54282,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "91534a3e3c1b5ad07bc5-658c98f067139919e3f8",
+      "title": "unified-demo.spec.ts / one built page: both directions, every preset, contextual controls and inactive viewer cleanup",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 78136,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "91534a3e3c1b5ad07bc5-41b13164e5f9ddfeecc8",
+      "title": "unified-demo.spec.ts / mobile viewport, keyboard disclosures, local error recovery and export",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 19334,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "91534a3e3c1b5ad07bc5-f9bbdb93e24a3a00080f",
+      "title": "unified-demo.spec.ts / comparison failure releases its canvas and can retry in place",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 19026,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "91534a3e3c1b5ad07bc5-7209817703b736e28105",
+      "title": "unified-demo.spec.ts / legacy rig URL preserves backend and selects the unified rig view",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 2917,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "91534a3e3c1b5ad07bc5-86b112c1a8d690c50c27",
+      "title": "unified-demo.spec.ts / failed rig loads can retry and failed replacement preserves the current rig",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 6094,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "91534a3e3c1b5ad07bc5-4f9f485f6ac33f3e4a05",
+      "title": "unified-demo.spec.ts / motion finishing after a model switch stays paused in its own viewer",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 17298,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "91534a3e3c1b5ad07bc5-151b9803e349e5816b3f",
+      "title": "unified-demo.spec.ts / public layout: keyboard controls, full-width shared stage, framing and resource continuity",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 201904,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "91534a3e3c1b5ad07bc5-e9bef8f04ace0dafbf09",
+      "title": "unified-demo.spec.ts / mobile touch comparison / touch orbit, pinch and in-place reset preserve both synchronized panes",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 61839,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "4f147d8b342e946f0e54-1baba914f326e5c64b3c",
+      "title": "vpd.spec.ts / built VPD surfaces/outlines match independent scalar predictions for both rigs/poses through runtime and GLB/glTF reloads",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 21626,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "4f147d8b342e946f0e54-356e55df5b33e7884e92",
+      "title": "vpd.spec.ts / built VPD demo: both rigs/poses, repeat/reset, encoding, local errors and recovery, Toon/PBR and outlines",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 33567,
+      "shard": "3",
+      "annotations": []
+    },
+    {
+      "id": "016a6f85115aa452af6c-f03f408fea2c806252e2",
+      "title": "bfcache.spec.ts / cached gene viewer resumes after repeated Back navigation",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 29294,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "016a6f85115aa452af6c-aaa51cbde73129566d17",
+      "title": "bfcache.spec.ts / cached rig viewer resumes after repeated Back navigation",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 25601,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "6cdf8d2a1789c1fbf801-f626c584c8b95189fbc7",
+      "title": "demo-loading.spec.ts / binding map failure after rig replacement keeps asset, controls and diagnostics consistent",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 4936,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "124ee33b5292dd634212-a52c361846af76dbe75a",
+      "title": "mmd-resource-path.spec.ts / PMD sphere URL queries/fragments preserve material roles and actual request URLs",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 586,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "124ee33b5292dd634212-e4527c945cd2f98696cb",
+      "title": "mmd-resource-path.spec.ts / absolute TGA URLs retain queries in requests and decode using the pathname",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 319,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "124ee33b5292dd634212-47ee1e753d530c11f36a",
+      "title": "mmd-resource-path.spec.ts / direct MMDLoader requests canonical texture URLs before handler/cache lookup",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 337,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "124ee33b5292dd634212-9f6cee1218ad11a7eae1",
+      "title": "mmd-resource-path.spec.ts / canonical request failure retains diagnostics for HTTP 404",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 307,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "124ee33b5292dd634212-6ff1310ba6a13ba6ae67",
+      "title": "mmd-resource-path.spec.ts / canonical request failure retains diagnostics for HTTP 200 with corrupt image",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 305,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "124ee33b5292dd634212-f2b298ac2ba6cf585834",
+      "title": "mmd-resource-path.spec.ts / browser request errors report the canonical resource URL",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 320,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "73a25286508ae7e6cd73-b023ccc247f5e18144b5",
+      "title": "public-motion.spec.ts / uka: all three ten-second timelines include visible terminal motion on desktop and mobile",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 90735,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "73a25286508ae7e6cd73-143462be2f7a5e4f237c",
+      "title": "public-motion.spec.ts / gene: all three ten-second timelines include visible terminal motion on desktop and mobile",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 59622,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "73a25286508ae7e6cd73-dcc7623002033305bfb3",
+      "title": "public-motion.spec.ts / uka: pinned real VMD, shared absolute seek, pixels, pause, loop and cleanup",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 94324,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "73a25286508ae7e6cd73-ca51c124fb7aefc6f727",
+      "title": "public-motion.spec.ts / gene: pinned real VMD, shared absolute seek, pixels, pause, loop and cleanup",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 85532,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "73a25286508ae7e6cd73-c151d7ac145274ee4674",
+      "title": "public-motion.spec.ts / VMD missing: fail closed and retry",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 28745,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "73a25286508ae7e6cd73-9060dfa032a854e074b2",
+      "title": "public-motion.spec.ts / VMD corrupt: fail closed and retry",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 28114,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "73a25286508ae7e6cd73-f6d14db048b04e329e2e",
+      "title": "public-motion.spec.ts / VMD unmatched: fail closed and retry",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 30043,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "73a25286508ae7e6cd73-3772660d28021847e740",
+      "title": "public-motion.spec.ts / VMD duration: fail closed and retry",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 30850,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "73a25286508ae7e6cd73-9868462182e471d0b461",
+      "title": "public-motion.spec.ts / source durations: fractional endpoint, short/zero clips, loop and rapid handoff",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 55407,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "65a7cf1de634272f3ba3-34a6f67b460033b4ea78",
+      "title": "public-physics.spec.ts / uka: independent real physics, synchronized controls and native lifetime",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 439537,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "65a7cf1de634272f3ba3-9b1f587f61a15797bdf0",
+      "title": "public-physics.spec.ts / gene: independent real physics, synchronized controls and native lifetime",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 320557,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "65a7cf1de634272f3ba3-da0690c905599c9d608c",
+      "title": "public-physics.spec.ts / Gene Apology gates Physics for the full clip with IK On and restores availability on control transitions",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 54329,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "65a7cf1de634272f3ba3-27e9d878444248fc58aa",
+      "title": "public-physics.spec.ts / public physics backend missing: recover Off, retry, and unload",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 30520,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "65a7cf1de634272f3ba3-c154bfe1785e15d7d88c",
+      "title": "public-physics.spec.ts / public physics backend corrupt: recover Off, retry, and unload",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 28909,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "65a7cf1de634272f3ba3-5e75c827b6b589f2439e",
+      "title": "public-physics.spec.ts / public physics backend wasm-missing: recover Off, retry, and unload",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 29448,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "65a7cf1de634272f3ba3-7c062798dc0e92baa4ad",
+      "title": "public-physics.spec.ts / public physics backend wasm-corrupt: recover Off, retry, and unload",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 29255,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "65a7cf1de634272f3ba3-bcd9dceda7dad75cb074",
+      "title": "public-physics.spec.ts / pending backend enable can be cancelled without stale worlds or checked state",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 16411,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "65a7cf1de634272f3ba3-5f0aaf593f2fd67f4062",
+      "title": "public-physics.spec.ts / uka: PBR cloth and hair pixels respond to physics in both clips",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 62458,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "65a7cf1de634272f3ba3-baacbc942ccd42f327ae",
+      "title": "public-physics.spec.ts / gene: PBR cloth and hair pixels respond to physics in both clips",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 39769,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "bea11fd337d3126347fc-7160414b53d9b8402021",
+      "title": "sleeve-motion.spec.ts / real Uka: full IK A/B restores follow in both independent skins without changing authored arms",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 144964,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "d65ce1f68b239abbbace-614b81572488091b963f",
+      "title": "source-transport.spec.ts / browser retains unsupported source and exact VMD while ordinary channels remain playable",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 1896,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "0900bd1635d688961b3a-f15b7c65537465dadd6e",
+      "title": "vmd.spec.ts / built VMD conformance: both motions/rigs, direct bytes + GLB/glTF, independent scalar skin/normal oracle, Toon/PBR + outlines",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 7605,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "0900bd1635d688961b3a-b06ada56953a4e150b6e",
+      "title": "vmd.spec.ts / built Demo VMD lifecycle: box, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 58766,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "0900bd1635d688961b3a-ac9df14bdb24bb2565a2",
+      "title": "vmd.spec.ts / built Demo VMD lifecycle: wedge, both motions/sources, fractional seek, playback/loop, VPD handoff, local failure recovery and cleanup",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 60716,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "0900bd1635d688961b3a-69710ea6353e94ab8de8",
+      "title": "vmd.spec.ts / built morph conformance: combined weights and morph-before-BDEF predictions through Toon/PBR and Outline",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 7752,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "0900bd1635d688961b3a-21571223be2619c64202",
+      "title": "vmd.spec.ts / built Demo morph controls and combined lifecycle on both rigs, local motion recovery and morph-only source",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 114638,
+      "shard": "4",
+      "annotations": []
+    },
+    {
+      "id": "0900bd1635d688961b3a-99a120ffe1698a32e2d9",
+      "title": "vmd.spec.ts / built Demo delayed real frames retain crossing/render/canvas evidence and isolate ownership",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "retry": 0,
+      "durationMs": 44017,
+      "shard": "4",
+      "annotations": []
+    }
+  ],
+  "uniqueTestIds": 118
+}

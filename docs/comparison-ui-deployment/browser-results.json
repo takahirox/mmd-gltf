@@ -1,0 +1,106 @@
+{
+  "url": "https://takahirox.github.io/mmd-gltf/",
+  "deploymentSha": "5c8428acedfafe4762aafabda76110bdf7e258b8",
+  "stats": {
+    "startTime": "2026-11-06T08:39:35.785Z",
+    "duration": 218767.928,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "errors": [],
+  "tests": [
+    {
+      "title": "public layout: keyboard controls, full-width shared stage, framing and resource continuity",
+      "ok": true,
+      "status": "expected",
+      "expectedStatus": "passed",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 131403,
+          "retry": 0,
+          "startTime": "2026-11-06T08:39:36.087Z",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "deployed Gene Apology exposes actionable Physics status outside collapsed credits",
+      "ok": true,
+      "status": "expected",
+      "expectedStatus": "passed",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 18740,
+          "retry": 0,
+          "startTime": "2026-11-06T08:42:55.705Z",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "touch orbit, pinch and in-place reset preserve both synchronized panes",
+      "ok": true,
+      "status": "expected",
+      "expectedStatus": "passed",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 67695,
+          "retry": 0,
+          "startTime": "2026-11-06T08:41:48.005Z",
+          "errors": []
+        }
+      ]
+    }
+  ],
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v26.12.1",
+    "playwright": "1.56.1",
+    "chromium": "141.0.7390.37",
+    "renderer": "ANGLE SwiftShader",
+    "mobile": "390px browser and touch emulation; not a physical device"
+  },
+  "coverage": {
+    "widths": [
+      1440,
+      1201,
+      1200,
+      1024,
+      901,
+      900,
+      390,
+      320
+    ],
+    "models": [
+      "uka",
+      "gene"
+    ],
+    "checks": [
+      "No public Details button/sidebar DOM",
+      "Full available stage width; responsive stacking and no overflow",
+      "Keyboard control order and accessible descriptions",
+      "Rendered bounds fit both synchronized cameras through resizing",
+      "Pointer orbit, wheel, pan and pointer/keyboard Reset",
+      "Touch orbit, pinch and tap Reset for both models",
+      "Contextual Uka Rest/manual Expression",
+      "Material and Outline rendering state",
+      "Playback and source duration provenance",
+      "About disclosures, diagnostics and both models\u2019 pinned resource links",
+      "Single-canvas continuity and no redundant asset fetches",
+      "Physics off by default with zero native allocations",
+      "Gene Apology actionable Physics restriction visible outside collapsed credits"
+    ]
+  },
+  "method": {
+    "source": "tests/browser/unified-demo.spec.ts at a48780b29598a875069bb0cba7a226f1a0407266",
+    "adaptation": "Reused the existing public layout and mobile touch test bodies unchanged, with the preview URL targeting the published site and no local web servers. Added one focused Gene Apology visibility check and final-state screenshot hooks. No retries.",
+    "command": "npx playwright test --config .cache/comparison-deployment/playwright.config.ts",
+    "ephemeralSpecSha256": "1807f0ae7e3e83ee6a6835ed4138b027bb0e5d40d50354b1f8dfc289f3d267e1"
+  }
+}

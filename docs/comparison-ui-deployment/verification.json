@@ -1,0 +1,193 @@
+{
+  "repository": "takahirox/mmd-gltf",
+  "issue": 89,
+  "pullRequest": {
+    "number": 90,
+    "url": "https://github.com/takahirox/mmd-gltf/pull/90",
+    "head_sha": "a48780b29598a875069bb0cba7a226f1a0407266"
+  },
+  "sourceIssueImmediatelyBeforeMerge": "open",
+  "merged": true,
+  "mergeCommit": "5c8428acedfafe4762aafabda76110bdf7e258b8",
+  "mergeParents": [
+    "ddd7afecefa01208eba2d92ef8d906fea2f680d7",
+    "a48780b29598a875069bb0cba7a226f1a0407266"
+  ],
+  "method": "merge",
+  "requiredChecksBypassed": false,
+  "preMerge": {
+    "review": "approved by upstream review node at the same PR head; no blocking findings",
+    "githubReviews": [],
+    "workflowRun": 42180362065,
+    "requiredChecks": "prepare, typecheck, fast-checks, browser (1\u20134), build all succeeded; deploy and optional browser-performance skipped for PR"
+  },
+  "postMerge": {
+    "workflowRun": 42184766045,
+    "workflowUrl": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045",
+    "deployment": {
+      "status": "success",
+      "id": 7595929542,
+      "sha": "5c8428acedfafe4762aafabda76110bdf7e258b8",
+      "succeededAt": "2026-11-06T08:39:16Z",
+      "url": "https://takahirox.github.io/mmd-gltf/",
+      "job": 127796720338
+    },
+    "browser": {
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "evidence": "browser-results.json",
+      "screenshots": [
+        "browser-artifacts/deployed-deployed-Gene-Apo-6f862-s-outside-collapsed-credits/completed-physics-status.png",
+        "browser-artifacts/deployed-deployed-Gene-Apo-6f862-s-outside-collapsed-credits/gene-apology-status-390.png",
+        "browser-artifacts/deployed-mobile-touch-comp-31bbb-rve-both-synchronized-panes/completed-touch.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/after-320-sample.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/after-desktop-playing.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/completed-desktop.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/sidebar-free-1024.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/sidebar-free-1200.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/sidebar-free-1201.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/sidebar-free-1440.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/sidebar-free-320.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/sidebar-free-390.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/sidebar-free-900.png",
+        "browser-artifacts/deployed-public-layout-key-f366e-ing-and-resource-continuity/sidebar-free-901.png"
+      ]
+    },
+    "fastChecks": {
+      "job": 127782951096,
+      "conclusion": "success",
+      "browserSmokePassed": 5,
+      "nodeTestsPassed": 189,
+      "nodeTestsFailed": 0,
+      "nodeTestsSkipped": 0,
+      "linksChecked": 577
+    },
+    "workflowConclusion": "success",
+    "jobs": [
+      {
+        "databaseId": 127782366179,
+        "name": "typecheck",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T08:01:46Z",
+        "completedAt": "2026-11-06T08:02:04Z",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045/job/127782366179"
+      },
+      {
+        "databaseId": 127782366450,
+        "name": "prepare",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T08:01:46Z",
+        "completedAt": "2026-11-06T08:03:18Z",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045/job/127782366450"
+      },
+      {
+        "databaseId": 127782951096,
+        "name": "fast-checks",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T08:03:20Z",
+        "completedAt": "2026-11-06T08:08:49Z",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045/job/127782951096"
+      },
+      {
+        "databaseId": 127782951156,
+        "name": "browser (3)",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T08:03:20Z",
+        "completedAt": "2026-11-06T08:21:40Z",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045/job/127782951156"
+      },
+      {
+        "databaseId": 127782951181,
+        "name": "browser (1)",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T08:03:20Z",
+        "completedAt": "2026-11-06T08:15:14Z",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045/job/127782951181"
+      },
+      {
+        "databaseId": 127782951197,
+        "name": "browser (4)",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T08:03:20Z",
+        "completedAt": "2026-11-06T08:38:40Z",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045/job/127782951197"
+      },
+      {
+        "databaseId": 127782951308,
+        "name": "browser (2)",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T08:03:20Z",
+        "completedAt": "2026-11-06T08:17:45Z",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045/job/127782951308"
+      },
+      {
+        "databaseId": 127782953357,
+        "name": "browser-performance",
+        "status": "completed",
+        "conclusion": "skipped",
+        "startedAt": "2026-11-06T08:03:19Z",
+        "completedAt": "2026-11-06T08:03:18Z",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045/job/127782953357"
+      },
+      {
+        "databaseId": 127796605066,
+        "name": "build",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T08:38:42Z",
+        "completedAt": "2026-11-06T08:38:58Z",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045/job/127796605066"
+      },
+      {
+        "databaseId": 127796720338,
+        "name": "deploy",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T08:39:01Z",
+        "completedAt": "2026-11-06T08:39:15Z",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42184766045/job/127796720338"
+      }
+    ],
+    "hostedBrowser": {
+      "status": "passed",
+      "testCount": 118,
+      "uniqueTestIds": 118,
+      "attemptCount": 118,
+      "passed": 116,
+      "skipped": 2,
+      "failed": 0,
+      "skipReason": "Native WebGPU adapter unavailable; mandatory WebGL2 tests passed.",
+      "evidence": "hosted-aggregate/browser-aggregate.json"
+    },
+    "assets": {
+      "status": "passed",
+      "checked": 45,
+      "matched": 45,
+      "evidence": "assets.json",
+      "sourceArtifact": "github-pages-attempt-1",
+      "sourceRun": 42184766045
+    },
+    "visualInspection": "Inspected published Uka and Gene desktop/mobile captures: Ready synchronized views, complete model framing, relocated controls, no public sidebar, contextual Expression, collapsed About & credits, and visible actionable Gene Apology Physics status."
+  },
+  "limitations": [
+    "Browser checks use Chromium with SwiftShader on macOS and mobile/touch emulation. No physical-device or original Windows MMD result is claimed."
+  ],
+  "mergedAt": "2026-11-06T08:01:41Z",
+  "lastUpdated": "2026-11-06T08:43:47.195725+00:00",
+  "remainingRequiredIssue89Work": [],
+  "artifactChecks": {
+    "jsonParse": "passed",
+    "whitespace": "passed",
+    "runtimeSourceChanges": "none"
+  }
+}
