@@ -1316,6 +1316,9 @@ original-MMD measurement limits remain explicit in that evidence.
 
 ## Issue #78: consume published three-mmd 0.1.3
 
+Historical 2026-11-01 validation; current package and upgrade checks are in the
+[Issue #91 record](three-mmd-0.1.4.md).
+
 The demo pins the official npm-published `@takahirox/three-mmd@0.1.3` and uses
 ordinary `new MMDLoader(manager)`. The 0.1.2 compatibility factory, duplicate
 resolver and candidate patch are removed. The [integration record](pmx-resource-paths.md)
