@@ -1,7 +1,9 @@
 # Public synchronized VMD comparison (Issues #63, #65, #67 and #69)
 
 Uka and Gene Light compare direct PMX rendering from
-`@takahirox/three-mmd@0.1.3` against a BDEF skinned glTF conversion.
+`@takahirox/three-mmd@0.1.4` against a BDEF skinned glTF conversion.
+The [0.1.4 upgrade record](three-mmd-0.1.4.md) explains the upstream ambient-lighting
+changes and matched captures; independent shading implementations can differ in brightness.
 Both characters offer Rest / manual, their original facial sample, Laugh · 02
 and Apology · 22. The facial samples have skeletal keys only at frame zero;
 the two added clips animate authored arms, shoulders and upper body over time.

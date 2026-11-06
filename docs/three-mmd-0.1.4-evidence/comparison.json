@@ -1,0 +1,332 @@
+{
+  "beforeVersion": "0.1.3",
+  "afterVersion": "0.1.4",
+  "browser": "141.0.7390.37",
+  "viewport": {
+    "width": 1000,
+    "height": 800
+  },
+  "renderer": "ANGLE SwiftShader",
+  "rows": [
+    {
+      "name": "uka-rest-toon-surface",
+      "changedReferencePixels": 28141,
+      "foregroundPixels": 28492,
+      "meanForegroundRGB": [
+        81.54638728999953,
+        85.83789601759558
+      ],
+      "foregroundPixelsWith255": [
+        0,
+        930
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "c3086d94b041c8e58bf063114cc94aa7c285c1f0ffc00c2931b536bd4530d2a5",
+      "cameraSHA256": "89ad2aaf9310b4fc7b54f57843dc30bb9555bfbae9a0905fe2c034e90d3c89ec",
+      "executionSHA256": "6f680386d8e48bcb0ab1b9b289c52802bc26779b5655b7b6554ea068a302b61d",
+      "textureInventorySHA256": "09a89b6fe41ee17f8508082de2575b653f87d0cd9bed504e067a5a2b5a8b9444",
+      "beforeSHA256": "5a97c87df887d27ed2fbe31b8b610aa313b9b80a3ec79f0243183c0428216592",
+      "afterSHA256": "ebae83b507f044545522a1f997ae9924640cb5c6eed0f3329ebe4d0fb31943c7"
+    },
+    {
+      "name": "uka-rest-toon-outline",
+      "changedReferencePixels": 28005,
+      "foregroundPixels": 29122,
+      "meanForegroundRGB": [
+        85.50194583705331,
+        89.5705766545338
+      ],
+      "foregroundPixelsWith255": [
+        0,
+        885
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "c3086d94b041c8e58bf063114cc94aa7c285c1f0ffc00c2931b536bd4530d2a5",
+      "cameraSHA256": "89ad2aaf9310b4fc7b54f57843dc30bb9555bfbae9a0905fe2c034e90d3c89ec",
+      "executionSHA256": "6f680386d8e48bcb0ab1b9b289c52802bc26779b5655b7b6554ea068a302b61d",
+      "textureInventorySHA256": "09a89b6fe41ee17f8508082de2575b653f87d0cd9bed504e067a5a2b5a8b9444",
+      "beforeSHA256": "6600833d3306ea94b17e45dec0e412854f697c7cb75e8ef28187e38adc84c3fc",
+      "afterSHA256": "4bbd5945e20b9ac6636ead852f6ac056b3a1dae0a9f7b105a5c958fc8e46a466"
+    },
+    {
+      "name": "uka-rest-pbr-surface",
+      "changedReferencePixels": 28141,
+      "foregroundPixels": 28492,
+      "meanForegroundRGB": [
+        81.54638728999953,
+        85.83789601759558
+      ],
+      "foregroundPixelsWith255": [
+        0,
+        930
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "c3086d94b041c8e58bf063114cc94aa7c285c1f0ffc00c2931b536bd4530d2a5",
+      "cameraSHA256": "89ad2aaf9310b4fc7b54f57843dc30bb9555bfbae9a0905fe2c034e90d3c89ec",
+      "executionSHA256": "6f680386d8e48bcb0ab1b9b289c52802bc26779b5655b7b6554ea068a302b61d",
+      "textureInventorySHA256": "09a89b6fe41ee17f8508082de2575b653f87d0cd9bed504e067a5a2b5a8b9444",
+      "beforeSHA256": "ce8fc73f2d038dc7e2d95eb92dd87ee1d3aa1567c32499d9ddddc64b2e287d93",
+      "afterSHA256": "9b9a9012c56db22568e06a99c5daaad04101b2ee2dad5bda8cccd7abab5ccc93"
+    },
+    {
+      "name": "uka-rest-pbr-outline",
+      "changedReferencePixels": 28005,
+      "foregroundPixels": 29122,
+      "meanForegroundRGB": [
+        85.50194583705331,
+        89.5705766545338
+      ],
+      "foregroundPixelsWith255": [
+        0,
+        885
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "c3086d94b041c8e58bf063114cc94aa7c285c1f0ffc00c2931b536bd4530d2a5",
+      "cameraSHA256": "89ad2aaf9310b4fc7b54f57843dc30bb9555bfbae9a0905fe2c034e90d3c89ec",
+      "executionSHA256": "6f680386d8e48bcb0ab1b9b289c52802bc26779b5655b7b6554ea068a302b61d",
+      "textureInventorySHA256": "09a89b6fe41ee17f8508082de2575b653f87d0cd9bed504e067a5a2b5a8b9444",
+      "beforeSHA256": "47e47bdbd9162a67fab1e645d3bf1aa4cfb7ba8de29dd316f92be3fb0ed07b64",
+      "afterSHA256": "fe447ba1a7f836b8950cc93ce57cbd006de8c1e5ddaa789305b5555d70278ce9"
+    },
+    {
+      "name": "uka-22_apology-toon-surface",
+      "changedReferencePixels": 24606,
+      "foregroundPixels": 25285,
+      "meanForegroundRGB": [
+        90.1751631402017,
+        94.9050952475117
+      ],
+      "foregroundPixelsWith255": [
+        0,
+        1442
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "f790fd5e284d41c8d6d6183bb7e2a593d580e0939a256da4005f2ce793a1b8da",
+      "cameraSHA256": "89ad2aaf9310b4fc7b54f57843dc30bb9555bfbae9a0905fe2c034e90d3c89ec",
+      "executionSHA256": "a61270916d12029c6cdafb11226702a310e3e81f598b87769e90729716de879f",
+      "textureInventorySHA256": "09a89b6fe41ee17f8508082de2575b653f87d0cd9bed504e067a5a2b5a8b9444",
+      "beforeSHA256": "dfa03bfb7cec59a648e05220c3246ab3edd27481d7c67133176635743297daf5",
+      "afterSHA256": "33528d79319163bb38e4e22021e55b8336ba4992a29575e97c7d1846e553ba84"
+    },
+    {
+      "name": "uka-22_apology-toon-outline",
+      "changedReferencePixels": 24849,
+      "foregroundPixels": 25718,
+      "meanForegroundRGB": [
+        94.12075848303394,
+        98.66504653031599
+      ],
+      "foregroundPixelsWith255": [
+        0,
+        1411
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "f790fd5e284d41c8d6d6183bb7e2a593d580e0939a256da4005f2ce793a1b8da",
+      "cameraSHA256": "89ad2aaf9310b4fc7b54f57843dc30bb9555bfbae9a0905fe2c034e90d3c89ec",
+      "executionSHA256": "a61270916d12029c6cdafb11226702a310e3e81f598b87769e90729716de879f",
+      "textureInventorySHA256": "09a89b6fe41ee17f8508082de2575b653f87d0cd9bed504e067a5a2b5a8b9444",
+      "beforeSHA256": "9a63f1f03cb49a1c04518c0500292238e93514ef035ad9ec73083d7cdcf052e9",
+      "afterSHA256": "3e3695d94e0072f3b0684c8b392fc7c569e3b751d3b0272b6d65bca620773f9c"
+    },
+    {
+      "name": "uka-22_apology-pbr-surface",
+      "changedReferencePixels": 24606,
+      "foregroundPixels": 25285,
+      "meanForegroundRGB": [
+        90.1751631402017,
+        94.9050952475117
+      ],
+      "foregroundPixelsWith255": [
+        0,
+        1442
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "f790fd5e284d41c8d6d6183bb7e2a593d580e0939a256da4005f2ce793a1b8da",
+      "cameraSHA256": "89ad2aaf9310b4fc7b54f57843dc30bb9555bfbae9a0905fe2c034e90d3c89ec",
+      "executionSHA256": "a61270916d12029c6cdafb11226702a310e3e81f598b87769e90729716de879f",
+      "textureInventorySHA256": "09a89b6fe41ee17f8508082de2575b653f87d0cd9bed504e067a5a2b5a8b9444",
+      "beforeSHA256": "264962ec6977af4389d9142e6dc4bd335f914bf4418455ec68a6b02517691d72",
+      "afterSHA256": "d61bec7dd46ce8dfc0b9cfa4b7cdbbffc4890c76b94e76476c1a2ad0eeac7dde"
+    },
+    {
+      "name": "uka-22_apology-pbr-outline",
+      "changedReferencePixels": 24849,
+      "foregroundPixels": 25718,
+      "meanForegroundRGB": [
+        94.12075848303394,
+        98.66504653031599
+      ],
+      "foregroundPixelsWith255": [
+        0,
+        1411
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "f790fd5e284d41c8d6d6183bb7e2a593d580e0939a256da4005f2ce793a1b8da",
+      "cameraSHA256": "89ad2aaf9310b4fc7b54f57843dc30bb9555bfbae9a0905fe2c034e90d3c89ec",
+      "executionSHA256": "a61270916d12029c6cdafb11226702a310e3e81f598b87769e90729716de879f",
+      "textureInventorySHA256": "09a89b6fe41ee17f8508082de2575b653f87d0cd9bed504e067a5a2b5a8b9444",
+      "beforeSHA256": "8508c3fb5db3a1e2776fb72a4161883d7c4ec6c10dafd222994ad82de04e8b9b",
+      "afterSHA256": "dca2c55194053806ac23c6453eaa0f07d6c66d38bdea675c2c2a96c47d825697"
+    },
+    {
+      "name": "gene-rest-toon-surface",
+      "changedReferencePixels": 19956,
+      "foregroundPixels": 23985,
+      "meanForegroundRGB": [
+        153.60296018344798,
+        161.65357515113612
+      ],
+      "foregroundPixelsWith255": [
+        5314,
+        9771
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "fbe23ad5fd91c5649c14ec83c5448ddc2e8cdb8c3a113694582c301c0ad15d4a",
+      "cameraSHA256": "fc7c3cdf2def86d4c53c97161ba31dbd184f4e042110ad771e79a68e41e0db44",
+      "executionSHA256": "5e923da7ec3fcd1bf1fcea33eff5030f65f3a0c5cf0ac06f8d117bd1cd9e9100",
+      "textureInventorySHA256": "f24b9c2f000c4677e017cd85e296dc2334ff2d5375d1810fe57b329eed47b520",
+      "beforeSHA256": "21e463a21120da049026d9f84fbb946551ebd3de8cf425bc0b1c06411f25d0cd",
+      "afterSHA256": "c4835c3a35bb7adce8e6db15fef381e58988d3cfefc8233d50b0bd80fd96db2f"
+    },
+    {
+      "name": "gene-rest-toon-outline",
+      "changedReferencePixels": 19804,
+      "foregroundPixels": 24658,
+      "meanForegroundRGB": [
+        150.76816178657367,
+        158.60268472706628
+      ],
+      "foregroundPixelsWith255": [
+        5212,
+        9518
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "fbe23ad5fd91c5649c14ec83c5448ddc2e8cdb8c3a113694582c301c0ad15d4a",
+      "cameraSHA256": "fc7c3cdf2def86d4c53c97161ba31dbd184f4e042110ad771e79a68e41e0db44",
+      "executionSHA256": "5e923da7ec3fcd1bf1fcea33eff5030f65f3a0c5cf0ac06f8d117bd1cd9e9100",
+      "textureInventorySHA256": "f24b9c2f000c4677e017cd85e296dc2334ff2d5375d1810fe57b329eed47b520",
+      "beforeSHA256": "c8d15aff4460b1f3397d80301a654db9feeddc1941ac22195eb828ffdb3f4922",
+      "afterSHA256": "31acff5442a01aac52c8ef6c0ffc2ea50f3a88e3c4e60b02786ed34b6b4d3a0f"
+    },
+    {
+      "name": "gene-rest-pbr-surface",
+      "changedReferencePixels": 19956,
+      "foregroundPixels": 23985,
+      "meanForegroundRGB": [
+        153.60296018344798,
+        161.65357515113612
+      ],
+      "foregroundPixelsWith255": [
+        5314,
+        9771
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "fbe23ad5fd91c5649c14ec83c5448ddc2e8cdb8c3a113694582c301c0ad15d4a",
+      "cameraSHA256": "fc7c3cdf2def86d4c53c97161ba31dbd184f4e042110ad771e79a68e41e0db44",
+      "executionSHA256": "5e923da7ec3fcd1bf1fcea33eff5030f65f3a0c5cf0ac06f8d117bd1cd9e9100",
+      "textureInventorySHA256": "f24b9c2f000c4677e017cd85e296dc2334ff2d5375d1810fe57b329eed47b520",
+      "beforeSHA256": "237f8c9ca5219b0b780556920b7a50b59a01249e6682b9f704d18233ca4efc0a",
+      "afterSHA256": "4d00a9510bc16559cfc3ec196295d45c53055058cad166b49c0b9218b1a1fa68"
+    },
+    {
+      "name": "gene-rest-pbr-outline",
+      "changedReferencePixels": 19804,
+      "foregroundPixels": 24658,
+      "meanForegroundRGB": [
+        150.76816178657367,
+        158.60268472706628
+      ],
+      "foregroundPixelsWith255": [
+        5212,
+        9518
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "fbe23ad5fd91c5649c14ec83c5448ddc2e8cdb8c3a113694582c301c0ad15d4a",
+      "cameraSHA256": "fc7c3cdf2def86d4c53c97161ba31dbd184f4e042110ad771e79a68e41e0db44",
+      "executionSHA256": "5e923da7ec3fcd1bf1fcea33eff5030f65f3a0c5cf0ac06f8d117bd1cd9e9100",
+      "textureInventorySHA256": "f24b9c2f000c4677e017cd85e296dc2334ff2d5375d1810fe57b329eed47b520",
+      "beforeSHA256": "d549d72050f56d018807afb2e6bf74d5676831279b7d6e2fa32e0a1ec08c4fe3",
+      "afterSHA256": "31025b6ee299a09a4fbd8239d58ae9be01966a21f3d68ea38783d12fc1257a2a"
+    },
+    {
+      "name": "gene-22_apology-toon-surface",
+      "changedReferencePixels": 16233,
+      "foregroundPixels": 22637,
+      "meanForegroundRGB": [
+        169.9125178542504,
+        177.0949330741706
+      ],
+      "foregroundPixelsWith255": [
+        8233,
+        10986
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "da9e4a0ef6354051e19b34bcedd1785f4cf594b310e7a2154a9c6ed87dbf73f2",
+      "cameraSHA256": "fc7c3cdf2def86d4c53c97161ba31dbd184f4e042110ad771e79a68e41e0db44",
+      "executionSHA256": "813a4d18535632274ce2ade444b77a51a0e1149731d81bdda8968901edd1f014",
+      "textureInventorySHA256": "f24b9c2f000c4677e017cd85e296dc2334ff2d5375d1810fe57b329eed47b520",
+      "beforeSHA256": "dd365222ff436598224ee9ee70c0611e4b36bf3db25cb1394641d71ec0eb8197",
+      "afterSHA256": "a87171d14f1252ff5b9b6f711b9e977eeb79cb339d2b1a3dca412ad87a16d572"
+    },
+    {
+      "name": "gene-22_apology-toon-outline",
+      "changedReferencePixels": 16086,
+      "foregroundPixels": 23088,
+      "meanForegroundRGB": [
+        166.2593121968122,
+        173.2732877107877
+      ],
+      "foregroundPixelsWith255": [
+        8100,
+        10627
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "da9e4a0ef6354051e19b34bcedd1785f4cf594b310e7a2154a9c6ed87dbf73f2",
+      "cameraSHA256": "fc7c3cdf2def86d4c53c97161ba31dbd184f4e042110ad771e79a68e41e0db44",
+      "executionSHA256": "813a4d18535632274ce2ade444b77a51a0e1149731d81bdda8968901edd1f014",
+      "textureInventorySHA256": "f24b9c2f000c4677e017cd85e296dc2334ff2d5375d1810fe57b329eed47b520",
+      "beforeSHA256": "3e5623fd9b16e0eb319ea714cfc7810ab7a28847caa7fdde55f856e53cb4d1a4",
+      "afterSHA256": "f75d0a2be6c626b8ba65e5cc98e442d052ee50a881714509795f1dcb0147d1df"
+    },
+    {
+      "name": "gene-22_apology-pbr-surface",
+      "changedReferencePixels": 16233,
+      "foregroundPixels": 22637,
+      "meanForegroundRGB": [
+        169.9125178542504,
+        177.0949330741706
+      ],
+      "foregroundPixelsWith255": [
+        8233,
+        10986
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "da9e4a0ef6354051e19b34bcedd1785f4cf594b310e7a2154a9c6ed87dbf73f2",
+      "cameraSHA256": "fc7c3cdf2def86d4c53c97161ba31dbd184f4e042110ad771e79a68e41e0db44",
+      "executionSHA256": "813a4d18535632274ce2ade444b77a51a0e1149731d81bdda8968901edd1f014",
+      "textureInventorySHA256": "f24b9c2f000c4677e017cd85e296dc2334ff2d5375d1810fe57b329eed47b520",
+      "beforeSHA256": "47d3e68ae557af331bec145084113ef0201ed3becb78f6cb88da4869648e02b3",
+      "afterSHA256": "d78b6cc50f4143c56bb6c6851c03cb738d6c4172d59222f09dc8a47f48beb637"
+    },
+    {
+      "name": "gene-22_apology-pbr-outline",
+      "changedReferencePixels": 16086,
+      "foregroundPixels": 23088,
+      "meanForegroundRGB": [
+        166.2593121968122,
+        173.2732877107877
+      ],
+      "foregroundPixelsWith255": [
+        8100,
+        10627
+      ],
+      "gltfChangedPixels": 0,
+      "poseSHA256": "da9e4a0ef6354051e19b34bcedd1785f4cf594b310e7a2154a9c6ed87dbf73f2",
+      "cameraSHA256": "fc7c3cdf2def86d4c53c97161ba31dbd184f4e042110ad771e79a68e41e0db44",
+      "executionSHA256": "813a4d18535632274ce2ade444b77a51a0e1149731d81bdda8968901edd1f014",
+      "textureInventorySHA256": "f24b9c2f000c4677e017cd85e296dc2334ff2d5375d1810fe57b329eed47b520",
+      "beforeSHA256": "f0567e05c8c105ea601f0b6f78848dcad9cc0770af3d6f20f80abcb38dd5379f",
+      "afterSHA256": "9e005e986713211e4c264de88f4b41bc51818703a7f8990d39634f5699f64001"
+    }
+  ]
+}

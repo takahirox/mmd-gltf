@@ -1,5 +1,10 @@
 # Direct MMD texture paths (Issues #73 and #78)
 
+Historical record of the 2026-11-01 published 0.1.3 integration and earlier
+0.1.2 incident. Package availability, validation and deployment plans below
+describe that work at the time; the demo now uses published 0.1.4. See the
+[0.1.4 upgrade record](three-mmd-0.1.4.md) for current package and validation evidence.
+
 The pinned Uka PMX contains the exact texture entry `tex\hair_s01.png` at index
 7. Eight of its nine raw entries use Windows separators; the inventory normalizes
 them and therefore cannot establish the original spelling. The raw parser

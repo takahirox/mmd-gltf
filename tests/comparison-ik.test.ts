@@ -185,7 +185,7 @@ test('Gene: all three pinned motions match independent ordered PMX oracle; grant
     }
     assert.ok(materialEffect>.001,`grant ablation must visibly move effector 37, measured ${materialEffect} m`);
     if(process.env.MMD_IK_EVIDENCE)await writeFile('docs/gene-grant-node-evidence.json',JSON.stringify({
-      oracle:'@takahirox/three-mmd@0.1.3 MMDAnimationHelper._animatePMXMesh + GrantSolver + CCDIKSolver, physics=false; all source grants',
+      oracle:'@takahirox/three-mmd@0.1.4 MMDAnimationHelper._animatePMXMesh + GrantSolver + CCDIKSolver, physics=false; all source grants',
       policy:'Adapter executes only grant 35; oracle executes all grants. IK dependency poses agree.',materialEffect,samples:[...new Map(samples.map(s=>[s.clip,s])).values()]},null,2)+'\n');
   } finally {f.dispose();reference.dispose();without.dispose();}
 });
