@@ -1,22 +1,96 @@
-# Public comparison layout (Issue #83)
+# Public comparison layout (Issues #83 and #89)
 
 The public page prioritizes the real MMD/glTF comparison. Model, Motion, Display,
-IK and Physics share one toolbar. Playback uses one timeline below the shared
-canvas, with Play/Pause, Restart, time, fractional seeking and Loop. Physics stays
-Off until explicitly enabled; the Gene Apology + IK On restriction and failures
-are announced above the stage even with Details closed.
+Outline, IK and Physics share one toolbar. Uka's Expression selector appears
+beside Motion only in Rest / manual mode and stays disabled until loading finishes.
+Playback uses one timeline below the shared canvas, with Play/Pause, Restart,
+time, fractional seeking and Loop. Reset camera sits at the viewer's top right;
+only the button receives pointer events, leaving orbit, pan, zoom and touch
+available on the surrounding canvas. It restores the selected model's initial
+shared orbit, target and zoom without replacing its renderer.
 
-**詳細** (Details) is a keyboard-operable disclosure button. On wide screens it
-opens a secondary panel beside the viewers; closing it restores both viewers'
-width. At 1200px and below it opens below the viewers and timeline. Above 900px,
-each viewer stays at least square to keep the full default model framing visible
-on tall windows; at 900px and below the viewers stack vertically. It contains
-model-specific camera reset, Outline, Uka's manual Rest-mode Expression selector,
-read-only binding/IK/Physics diagnostics and actual model/source downloads.
-Reset camera restores the selected model's initial shared orbit, target and zoom
-without replacing its renderer. About & credits starts collapsed and retains the
-complete source, rights, backend-license, conversion and fidelity qualifications.
-The internal rig deep link and all its controls remain available to tests.
+There is no Details button or sidebar. Above 900px the two panes share the full
+available width; each stays at least square to retain complete model framing on
+tall windows. At 900px and below the viewers stack vertically. The existing
+collapsed About & credits contains model-specific downloads and source links,
+a nested collapsed Technical diagnostics disclosure, duration provenance and all
+source, rights, backend-license, conversion and fidelity qualifications. Physics
+loading, simulation, unavailability and failure messages, IK execution failures
+and loading Retry remain above the viewer. Physics stays Off until explicitly
+enabled, including the Gene Apology + IK On restriction. Diagnostic DOM IDs and
+programmatic state remain available even while the disclosures are closed.
+The internal rig deep link and its controls are unchanged.
+
+## Sidebar removal (Issue #89)
+
+The focused layout test checks full-width geometry, complete model framing,
+keyboard controls, About/resources/diagnostics and no overflow from 1440px down
+to 320px. Real pointer orbit/pan/wheel, mobile-emulated touch orbit/pinch and
+keyboard/pointer/touch Reset check synchronization and gesture handling. Existing
+rendering, expression, material, Outline, physics and resource-lifetime assertions
+remain. Responsive desktop-browser captures (Chromium/SwiftShader, reduced motion):
+
+| Viewport | Sidebar-free comparison |
+| --- | --- |
+| 1440 × 900 | [Desktop](comparison-ui/sidebar-free-1440.png) |
+| 900 × 900 | [Tablet](comparison-ui/sidebar-free-900.png) |
+| 390 × 844 | [Mobile](comparison-ui/sidebar-free-390.png) |
+| 320 × 844 | [Narrow mobile](comparison-ui/sidebar-free-320.png) |
+
+These images retain Uka's original copyright and license; see the notices below.
+They are browser emulation, not physical-device results.
+
+### Local validation (2026-11-06)
+
+Validation used macOS (Darwin 27.2.0), Apple M4 Max, Node 26.12.1,
+Playwright 1.56.1, pinned Chromium 141.0.7390.37 and SwiftShader WebGL2,
+one worker per shard.
+
+- `npm ci`: passed.
+- `npm run build`: passed, including pinned source verification and fixture
+  generation. The existing large-chunk warning remains.
+- `npm run typecheck`: passed.
+- `npm test`: **189 passed**, zero failures/skips, plus Toon/Outline fixture checks.
+- Focused layout and touch checks: **2 passed**, zero failures/skips.
+- All four required browser shards: **116 passed, 2 optional native-WebGPU skips,
+  zero failures or retries**.
+- Unfiltered manifest aggregation: **118/118 test IDs exactly once**, 118 attempts,
+  no missing or duplicate cases; passed.
+- `npm run check:links`: **577** local documentation, anchor and built-asset links passed.
+- `git diff --check`: passed.
+
+| Required shard | Passed | Optional skips | Local elapsed |
+| --- | --- | --- | --- |
+| 1 | 37 | 0 | 759.9 s |
+| 2 | 18 | 1 | 725.9 s |
+| 3 | 25 | 1 | 713.3 s |
+| 4 | 36 | 0 | 1116.4 s |
+
+Full shard commands used `BROWSER_SHARD=1` through `4`,
+`PLAYWRIGHT_CHROMIUM_CHANNEL=chromium`, `MMD_PREVIEW_PORT=43181` and
+`npm run test:browser`. The unfiltered `--list` manifest and all four summaries
+passed `npx tsx tools/browser-aggregate.ts .cache/issue89`. Shards ran sequentially
+locally; these times are not hosted CI performance measurements. No workflow,
+shard assignment, numerical/raster threshold or optional-skip policy changed.
+
+The only skips were the public comparison and Outline native-WebGPU cases,
+both reporting that no native WebGPU adapter was available. Required WebGL2
+checks ran independently. Public rendering, expression, Outline, camera,
+keyboard/touch, source-duration, IK/Physics, failure/retry, cache restoration and
+rig conformance checks all passed. The Gene Apology + IK On test confirms a
+visible, accessible Physics restriction with About closed; backend loading and
+failure cases also check visible status outside About.
+
+Hosted GitHub Actions validation is not claimed for this worktree-only node.
+No push, PR, merge or deployment was performed. Required post-merge verification
+remains pending: confirm the exact merged Pages deployment SHA, assets and Ready
+desktop/mobile panes. Physical-device and original Windows MMD verification
+remain unperformed.
+
+## Historical evidence for Issue #83
+
+The following captures and validation record describe the earlier sidebar design,
+which Issue #89 supersedes; they are retained as historical evidence.
 
 ## Layout evidence
 

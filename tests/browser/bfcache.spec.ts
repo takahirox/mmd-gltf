@@ -1,4 +1,3 @@
-import { openComparisonDetails } from './demo-controls';
 import { test, expect } from '@playwright/test';
 
 // Playwright disables the cache by default. Exercise real history restoration.
@@ -24,7 +23,6 @@ for (const demo of ['gene', 'rig']) {
     await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });
     await page.locator('#demo-model').selectOption('gene');
     await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
-    await openComparisonDetails(page);
     await page.locator('#material').selectOption('pbr');
     await page.locator('#demo-model').selectOption('rig');
     await expect(page.locator('#rig-model')).toBeEnabled({ timeout: 30000 });

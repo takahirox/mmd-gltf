@@ -326,27 +326,19 @@ a {
 }
 .primary-toolbar label { display:flex; align-items:center; gap:8px; min-width:0; }
 #comparison-primary { flex:1; min-width:0; }
-#comparison-details-toggle { margin-left:auto; color:#58418f; }
-#comparison-details-toggle[aria-expanded=true] { background:#eeebf8; border-color:#6950ad; }
 .toggle { display:flex; align-items:center; gap:8px; min-height:44px; cursor:pointer; }
 .announcements { padding:8px 4px; font-size:12px; color:#596276; }
 .announcements p { margin:0; min-height:0; }
-#comparison-physics-status:not(:empty) { margin-top:6px; color:#793e12; overflow-wrap:anywhere; }
-.comparison-layout { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; align-items:start; }
-.comparison-layout:has(>aside:not([hidden])) { grid-template-columns:minmax(0,1fr) 272px; }
+#comparison-physics-status:not(:empty), #comparison-execution-status:not(:empty) { margin-top:6px; color:#793e12; overflow-wrap:anywhere; }
 .viewer-column { min-width:0; }
-#comparison-details {
-  background:#fff;
-  border:1px solid #e0e2e8;
-  border-radius:14px;
-  padding:18px;
-  min-width:0;
+#comparison-camera-reset {
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:1;
   font-size:12px;
+  background:#ffffffed;
 }
-#comparison-details h2 { margin:0 0 12px; font-size:14px; }
-.secondary-controls { display:grid; gap:8px; }
-#uka-features label { display:grid; gap:6px; }
-#comparison-details .help { margin:12px 0; }
 #comparison-ik-diagnostics { max-width:100%; white-space:pre-wrap; overflow-wrap:anywhere; font-size:11px; }
 .downloads { display:grid; gap:4px; }
 .downloads a { padding:8px 0; }
@@ -377,10 +369,6 @@ a {
     min-height:0;
     max-height:clamp(440px,65vh,760px);
   }
-}
-
-@media(max-width:1200px) {
-  .comparison-layout:has(>aside:not([hidden])) { grid-template-columns:minmax(0,1fr); }
 }
 
 @media(max-width:900px) {

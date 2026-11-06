@@ -1,4 +1,3 @@
-import { openComparisonDetails } from './demo-controls';
 import { orbitComparison } from './comparison-camera';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
 import { test, expect } from '@playwright/test';
@@ -60,6 +59,10 @@ test('built comparison keeps the light-gray fallback while assets load', async (
     await page.goto(`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/?demo=gene&backend=webgl`);
     await expect(page.locator('canvas')).toBeVisible();
     await expect(page.locator('#viewport')).toHaveCSS('background-color', 'rgb(208, 208, 208)');
+    await expect(page.locator('#uka-features')).toBeHidden();
+    for (const id of ['material', 'outlines', 'expression', 'comparison-camera-reset']) {
+      await expect(page.locator(`#${id}`)).toBeDisabled();
+    }
     for (const id of ['pmx', 'gltf']) await expect(page.locator(`#${id}-status`)).toContainText('Loading');
     expectLightGrayBackground(await page.locator('#viewport').screenshot());
     await page.setViewportSize({ width: 600, height: 1000 });
@@ -83,7 +86,6 @@ for (const backend of ['webgl', 'webgpu']) {
     }
     await page.goto(`http://127.0.0.1:${process.env.MMD_PREVIEW_PORT || 43180}/mmd-gltf/?demo=gene&backend=${backend}`);
     await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });
-    await openComparisonDetails(page);
     await page.waitForFunction(() => (window as any).mmdExample?.frames > 4);
     await expect(page.locator('#viewport h2')).toHaveText(['MMD', 'glTF']);
     for (const label of ['MMD', 'glTF']) await expect(page.locator('#viewport').getByRole('heading', { name: label, exact: true })).toBeVisible();

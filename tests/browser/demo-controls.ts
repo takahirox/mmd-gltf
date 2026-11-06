@@ -10,10 +10,13 @@ export async function openRigDemo(page: Page, preview: string) {
   });
 }
 
-/** Exercise the same accessible disclosure as a public user. */
-export async function openComparisonDetails(page: Page) {
-  if (await page.locator('#comparison-details-toggle').getAttribute('aria-expanded') === 'false') {
-    await page.locator('#comparison-details-toggle').click();
+/** Open the existing footer disclosures only when inspecting diagnostics. */
+export async function openComparisonDiagnostics(page: Page) {
+  for (const id of ['about-demo', 'comparison-diagnostics']) {
+    const details = page.locator(`#${id}`);
+    if (!await details.evaluate(element => (element as HTMLDetailsElement).open)) {
+      await details.locator(':scope > summary').click();
+    }
   }
-  await expect(page.locator('#comparison-details')).toBeVisible();
+  await expect(page.locator('#comparison-ik-diagnostics')).toBeVisible();
 }

@@ -1,4 +1,3 @@
-import { openComparisonDetails } from './demo-controls';
 import { orbitComparison } from './comparison-camera';
 import { readComparisonBitmap, comparisonHalf } from './comparison-bitmap';
 import { test, expect } from '@playwright/test';
@@ -58,7 +57,6 @@ test('default Uka: real PMX/converter glTF, visible expressions, Toon/PBR, Outli
   await expect(page.locator('#about-demo')).not.toHaveAttribute('open');
   await expect(page.locator('#about-demo > p').first()).toBeHidden();
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
-  await openComparisonDetails(page);
   await page.waitForFunction(()=>(window as any).mmdExample?.frames>3);
   await expect(page.locator('#expression')).toBeEnabled();
   await expect(page.locator('#expression option')).toHaveText(['Rest · A pose','Blink · まばたき','Smile · 笑い']);
@@ -141,6 +139,11 @@ test(`${failure} Uka texture fails visibly and retry recovers`, async ({ page })
   await expect(page.locator('#gene-status')).toContainText(failure === 'unsafe path'
     ? 'Unsafe relative texture path' : 'PMX resource failed:');
   await expect(page.locator('#viewport canvas')).toHaveCount(0);
+  for (const id of ['expression', 'material', 'outlines', 'comparison-camera-reset']) {
+    await expect(page.locator(`#${id}`)).toBeDisabled();
+  }
+  await expect(page.locator('#demo-retry')).toBeVisible();
+  await expect(page.locator('#about-demo')).not.toHaveAttribute('open');
   await page.unroute(route);
   await page.locator('#demo-retry').click();
   await expect(page.locator('#gene-status')).toContainText('Ready', { timeout: 90000 });

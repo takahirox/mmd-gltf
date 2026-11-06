@@ -1,5 +1,5 @@
+import { openComparisonDiagnostics } from './demo-controls';
 import { motionMetadata } from './motion-duration';
-import { openComparisonDetails } from './demo-controls';
 import { writeFile } from 'node:fs/promises';
 import { PerspectiveCamera, Vector3 } from 'three';
 import { jointBounds, jointViolations } from '../physics-joints';
@@ -25,7 +25,6 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
   await page.setViewportSize({width:1200,height:1000});
   await page.goto(`${preview}?demo=${model}`);
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
-  await openComparisonDetails(page);
   const state=()=>page.evaluate(()=>(window as any).mmdExample);
   const pose=()=>page.evaluate(()=>(window as any).readMMDComparisonPose());
   const resources=()=>page.evaluate(()=>(window as any).readMMDComparisonResources());
@@ -65,12 +64,15 @@ for(const model of ['uka','gene'])test(`${model}: independent real physics, sync
     const off=await pose(),pixelsOff=await readComparisonBitmap(page),time=(await state()).time;
     await page.locator('#comparison-physics').check();
     await physicsOn();
+    await expect(page.locator('#comparison-physics-status')).toBeVisible();
     expect((await state()).time).toBe(time);
     const on=await pose(),pixelsOn=await readComparisonBitmap(page);
     const allocated=(await resources()).physics.native;
-    await page.locator('#comparison-details-toggle').click();
-    await expect(page.locator('#comparison-details')).toBeHidden();
-    await openComparisonDetails(page);
+    await openComparisonDiagnostics(page);
+    await expect(page.locator('#comparison-execution')).toContainText('Physics on');
+    await page.locator('#about-demo > summary').click();
+    await expect(page.locator('#comparison-ik-diagnostics')).toBeHidden();
+    await expect(page.locator('#comparison-physics-status')).toHaveText('Physics on');
     expect((await resources()).physics.native).toBe(allocated);
     expect(await pose()).toEqual(on);
     await expect(page.locator('#viewport canvas')).toHaveCount(1);
@@ -242,7 +244,7 @@ test('Gene Apology gates Physics for the full clip with IK On and restores avail
     expect((await resources()).physics.native).toBe(0);
   };
   await unavailable();
-  await expect(page.locator('#comparison-details')).toBeHidden();
+  await expect(page.locator('#comparison-details-toggle, #comparison-details')).toHaveCount(0);
   await page.setViewportSize({width:320,height:844});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(320);
   await page.screenshot({path:info.outputPath('gene-apology-unavailable-320.png'),fullPage:true});
@@ -301,6 +303,8 @@ for(const failure of ['missing','corrupt','wasm-missing','wasm-corrupt'])test(`p
   await page.locator('#comparison-motion').selectOption('02_laugh');
   await page.locator('#comparison-physics').check();
   await expect(page.locator('#comparison-physics-status')).toContainText('Physics off:',{timeout:20000});
+  await expect(page.locator('#comparison-physics-status')).toBeVisible();
+  await expect(page.locator('#about-demo')).not.toHaveAttribute('open');
   await expect(page.locator('#comparison-physics')).not.toBeChecked();
   expect(await page.evaluate(()=>(window as any).badAmmoExecuted)).toBeUndefined();
   expect(await page.evaluate(()=>(window as any).readMMDComparisonResources().physics.native)).toBe(0);
@@ -327,6 +331,8 @@ test('pending backend enable can be cancelled without stale worlds or checked st
   await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   await page.locator('#comparison-physics').check();
   await expect(page.locator('#comparison-physics-status')).toContainText('Loading');
+  await expect(page.locator('#comparison-physics-status')).toBeVisible();
+  await expect(page.locator('#about-demo')).not.toHaveAttribute('open');
   await page.locator('#comparison-motion').selectOption('22_apology');
   await expect(page.locator('#comparison-physics')).not.toBeChecked();
   await expect(page.locator('#comparison-physics')).toBeDisabled();
