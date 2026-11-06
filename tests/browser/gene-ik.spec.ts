@@ -107,6 +107,9 @@ for(const invalid of [false,true])test(`PMX/glTF ${invalid?'missing grant source
   await page.goto(preview);await expect(page.locator('#gene-status')).toContainText('Ready',{timeout:90000});
   await expect(page.locator('#comparison-ik')).toBeDisabled();await expect(page.locator('#comparison-ik')).not.toBeChecked();
   await expect(page.locator('#comparison-ik')).toHaveAttribute('title',/mismatch/);
+  await expect(page.locator('#about-demo')).not.toHaveAttribute('open');
+  await expect(page.locator('#comparison-execution-status')).toBeVisible();
+  await expect(page.locator('#comparison-execution-status')).toContainText('IK unavailable:');
   await page.locator('#comparison-motion').selectOption('02_laugh');
   const execution=await page.evaluate(()=>(window as any).mmdExample.execution);
   expect(execution.ikState).toBe('unavailable');for(const c of execution.chains)expect(c.executed).toEqual([]);

@@ -110,6 +110,7 @@ for(const model of ['uka','gene'])test(`${model}: pinned real VMD, shared absolu
   const metadata=await motionMetadata(model);
   await expectMotionDuration(page,metadata);
   await expect(page.locator('#expression')).toBeDisabled();
+  await expect(page.locator('#uka-features')).toBeHidden();
   const seek=async(time:number)=>{
     await page.locator('#comparison-time').fill(String(time));await page.locator('#comparison-time').dispatchEvent('input');
     const s=await state();expect(s.referenceTime).toBe(s.time);expect(s.gltfTimes).toEqual([s.time,s.time]);
@@ -144,7 +145,10 @@ for(const model of ['uka','gene'])test(`${model}: pinned real VMD, shared absolu
   await page.locator('#comparison-motion').selectOption('rest');
   await expect(page.locator('#comparison-time-label')).toHaveText('Rest / manual');
   await expect(page.locator('#comparison-time')).toHaveAttribute('max','0');
-  if(model==='uka')await expect(page.locator('#expression')).toBeEnabled();
+  if(model==='uka') {
+    await expect(page.locator('#expression')).toBeEnabled();
+    await expect(page.locator('#expression')).toBeVisible();
+  }
   await page.locator('#material').selectOption('toon');
   const restored=PNG.sync.read(await readComparisonBitmap(page)),restPNG=PNG.sync.read(rest);
   // Rest/core node roundoff can affect a few edge samples. VMD Restart above is bit-exact.

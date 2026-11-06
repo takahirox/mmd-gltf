@@ -19,8 +19,8 @@ IK Off restores raw motion when Physics is Off. The adjacent Physics checkbox
 defaults Off; On runs the real Uka/Gene rigid bodies and joints in independent worlds.
 Gene Apology requires IK Off for Physics; with IK On, Physics is unavailable for
 the whole clip with a visible joint-accuracy diagnostic. The right
-pane also offers the independent PBR fallback. The Outline switch in **詳細**
-(Details) toggles both implementations; their different thickness laws are labeled in the example.
+pane also offers the independent PBR fallback. The Outline switch beside Display
+toggles both implementations; their different thickness laws are labeled in the example.
 
 Original-MMD fidelity is unverified. [Issue #13's research report](docs/original-mmd-research.md)
 records the inspected original 9.32 x64 distribution, unresolved shading rules,
@@ -119,12 +119,13 @@ deformation; ordinary loaders use an approximate BDEF2 fallback. See the
 The [unified demo](examples/index.html) opens with the synchronized Uka
 comparison. The public **Model** picker offers only **Uka** and
 **Gene Light**. The compact toolbar selects Motion and glTF Display
-(Toon/PBR), with independent IK and Physics toggles. One timeline below the
-viewers provides Play/Pause, Restart, fractional seeking and Loop. **詳細**
-(Details) opens camera reset, Outline, Uka’s Rest-mode Expression selector,
-diagnostics and source downloads. It becomes a panel below the viewers on
-narrow screens; collapsing it restores viewer width on desktop. **About & credits**
-contains the character models' attribution, rights and comparison methodology.
+(Toon/PBR), with visible Outline, IK and Physics toggles. Uka’s Expression selector
+appears beside Motion only in Rest / manual mode. One timeline below the
+full-width viewers provides Play/Pause, Restart, fractional seeking and Loop.
+Reset camera sits at the top right of the viewer. Collapsed **About & credits**
+contains model downloads, source links, technical diagnostics, attribution,
+rights and comparison methodology. Operational errors and Physics status remain
+visible above the stage. The viewers stack at 900px and below.
 Synthetic box/wedge fixtures and their 24 technical presets are retained solely
 for automated conformance tests. The internal `?demo=rig` entry and legacy
 `rig.html` redirect preserve rig controls, diagnostics and viewer-switching

@@ -72,6 +72,12 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     return value;
   }
   const expression = document.querySelector<HTMLSelectElement>('#expression')!;
+  const expressionControl = document.querySelector<HTMLElement>('#uka-features')!;
+  expressionControl.hidden = !isUka || initialMotion !== 'rest';
+  const executionStatus = document.querySelector<HTMLElement>('#comparison-execution-status')!;
+  executionStatus.textContent='';
+  document.querySelector('#comparison-execution')!.textContent='';
+  document.querySelector('#comparison-ik-diagnostics')!.textContent='';
   expression.value='rest';
   [expression,select,outlines].forEach(control=>control.disabled=true);
   document.querySelector('#comparison-binding')!.textContent='';
@@ -91,6 +97,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       if(Reflect.get(window,key)===value)Reflect.deleteProperty(window,key);
     diagnostics=undefined;
     motionControls.forEach(c=>c.disabled=true);ikControl.disabled=true;cameraReset.disabled=true;
+    [expression,select,outlines].forEach(control=>control.disabled=true);
     timeline.max='0';timeline.value='0';timeLabel.value='Loading…';play.textContent='Play';
     mixer?.stopAllAction(); if(mixer)mixer.uncacheRoot(mixer.getRoot()); players.forEach(p=>p.dispose());
     previews.forEach(p=>p.dispose());
@@ -397,6 +404,7 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
     function updateControls() {
       const hasMotion=motionSelect.value!=='rest';
       play.disabled=restart.disabled=timeline.disabled=loop.disabled=!hasMotion || duration===0;
+      expressionControl.hidden=!isUka || hasMotion;
       expression.disabled=!isUka || hasMotion;
       play.textContent=info.playing?'Pause':'Play';
       timeline.max=String(duration);timeline.value=String(info.time);
@@ -434,9 +442,10 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       if(physicsEnabled && physics) {
         if(physicsBusy)return;
         const token=++physicsRequest;requestedTime=time;physicsBusy=true;info.execution.physicsState='simulating';
+        physicsStatus.textContent='Simulating physics…';
         try {
           if(await physics.seek(time,sampleRaw) && token===physicsRequest && !disposed) {
-            info.execution.physics=true;info.execution.physicsState='on';publishTime(time);
+            info.execution.physics=true;info.execution.physicsState='on';physicsStatus.textContent='Physics on';publishTime(time);
             if(info.playing) {anchor=performance.now();anchorTime=time;}
           }
         } catch(error) {
@@ -559,6 +568,9 @@ export async function startComparison(model: 'uka' | 'gene' = 'gene', initialMot
       info.execution.grant=executing.some(s=>s.state.appliedGrants.length>0);
       info.execution.ik=executing.some(s=>s.state.executed.length>0);
       info.execution.ikState=!ikAvailable || ikSolvers.some(s=>s.state.error)?'unavailable':ikControl.checked?'on':'off';
+      const failure=executing.find(s=>s.state.error)?.state.error;
+      const operationalStatus=failure?`IK execution failed: ${failure}`:!ikAvailable?`IK unavailable: ${ikControl.title}`:'';
+      if(executionStatus.textContent!==operationalStatus)executionStatus.textContent=operationalStatus;
       const text=info.execution.ikState==='unavailable'?'IK unavailable':ikControl.checked?'IK on':'IK off';
       statuses.forEach((element,i)=>{
         const state=executing[i].state;
