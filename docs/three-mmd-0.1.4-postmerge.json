@@ -1,0 +1,490 @@
+{
+  "issue": 91,
+  "pr": {
+    "number": 92,
+    "url": "https://github.com/takahirox/mmd-gltf/pull/92",
+    "head_sha": "2a2896548484e7f947166c5d2bb6a36aeecd7204"
+  },
+  "merge": {
+    "sha": "a22f6ac9bb8528c374ad0d5240074c8a6cf18cf7",
+    "method": "merge",
+    "sourceIssueConfirmedOpenImmediatelyBeforeAttempt": true,
+    "parents": [
+      "5c8428acedfafe4762aafabda76110bdf7e258b8",
+      "2a2896548484e7f947166c5d2bb6a36aeecd7204"
+    ]
+  },
+  "mainWorkflow": {
+    "id": 42231822533,
+    "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533",
+    "headSha": "a22f6ac9bb8528c374ad0d5240074c8a6cf18cf7",
+    "status": "completed",
+    "pagesArtifact": {
+      "id": 13509826223,
+      "name": "github-pages-attempt-1",
+      "digest": "sha256:03aa07877a1cf7252c2fadec5730b0585248f7895695b6057d8d405c08bd4b68",
+      "downloadedDigestMatches": true
+    },
+    "conclusion": "success",
+    "createdAt": "2026-11-06T14:12:16Z",
+    "completedAt": "2026-11-06T14:44:25Z",
+    "jobs": [
+      {
+        "name": "prepare",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127939347579"
+      },
+      {
+        "name": "typecheck",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127939348051"
+      },
+      {
+        "name": "fast-checks",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127940723834"
+      },
+      {
+        "name": "browser (3)",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127940723989"
+      },
+      {
+        "name": "browser-performance",
+        "conclusion": "skipped",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127940724023"
+      },
+      {
+        "name": "browser (4)",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127940724151"
+      },
+      {
+        "name": "browser (2)",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127940724155"
+      },
+      {
+        "name": "browser (1)",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127940724441"
+      },
+      {
+        "name": "build",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127955398320"
+      },
+      {
+        "name": "deploy",
+        "conclusion": "success",
+        "url": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127955557914"
+      }
+    ],
+    "browserAggregation": {
+      "artifactId": 13512181490,
+      "digest": "sha256:020e18a331d25b55c3b00f8d66ef6a58bc93e12283694b1f827e16f0edbee0df",
+      "downloadedDigestMatches": true,
+      "commit": "a22f6ac9bb8528c374ad0d5240074c8a6cf18cf7",
+      "status": "passed",
+      "errors": [],
+      "testCount": 118,
+      "attemptCount": 118,
+      "testStatuses": {
+        "passed": 116,
+        "skipped": 2
+      },
+      "shards": [
+        {
+          "shard": "1",
+          "status": "passed",
+          "testCount": 37,
+          "statuses": {
+            "passed": 37
+          }
+        },
+        {
+          "shard": "2",
+          "status": "passed",
+          "testCount": 19,
+          "statuses": {
+            "passed": 18,
+            "skipped": 1
+          }
+        },
+        {
+          "shard": "3",
+          "status": "passed",
+          "testCount": 26,
+          "statuses": {
+            "passed": 25,
+            "skipped": 1
+          }
+        },
+        {
+          "shard": "4",
+          "status": "passed",
+          "testCount": 36,
+          "statuses": {
+            "passed": 36
+          }
+        }
+      ],
+      "optionalSkipReason": "Two optional native-WebGPU tests skipped because no adapter was available; mandatory WebGL2 checks passed."
+    }
+  },
+  "publishedDemo": {
+    "url": "https://takahirox.github.io/mmd-gltf/",
+    "status": "verified_with_http2_delivery_failures",
+    "initialProbe": {
+      "status": "timed_out",
+      "timeoutSeconds": 120,
+      "model": "uka",
+      "paneState": "Loading PMX and converted glTF…",
+      "followUpDiagnostic": "30-second network trace: no browser errors, HTTP 200 for PMX/glTF and original textures; large texture transfers remained in flight.",
+      "finalProbeTimeoutSeconds": 300,
+      "checkerCorrection": "Read Ready text without requiring pane status-label visibility; the UI intentionally hides these labels after loading."
+    },
+    "deployedFiles": [
+      {
+        "path": "index.html",
+        "sha256": "f5798829befde7ae332ad86013efed41dba13c5146bd30a111266e4ac734e293",
+        "matchesPagesArtifact": true
+      },
+      {
+        "path": "assets/index-BBbMtqtx.js",
+        "sha256": "3ed9eb643ceea8586d40ae90f8307cbabadc7db3c320e0c13e7030b0bcf1d9c2",
+        "matchesPagesArtifact": true
+      },
+      {
+        "path": "assets/modulepreload-polyfill-B5Qt9EMX.js",
+        "sha256": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0",
+        "matchesPagesArtifact": true
+      },
+      {
+        "path": "assets/index-B6dygJ3D.css",
+        "sha256": "26a0e96ef4cbdadeefe45eded286f6b2f6b4e9569ba28621db77d5bef1e891b3",
+        "matchesPagesArtifact": true
+      }
+    ],
+    "directColdLoad": {
+      "model": "uka",
+      "status": "failed",
+      "timeoutSeconds": 300,
+      "ready": false,
+      "verifiedOriginalFileCount": 8,
+      "expectedOriginalFileCount": 10,
+      "statuses": [
+        "Could not load/render the comparison: Error: PMX resource failed: /mmd-gltf/uka/tex/body.png (request or image decode failed; inspect the network response) Retry loading",
+        "Load failed: Error: PMX resource failed: /mmd-gltf/uka/tex/body.png (request or image decode failed; inspect the network response)",
+        "Loaded"
+      ],
+      "failedResourcePaths": [
+        "/mmd-gltf/uka/tex/body.png",
+        "/mmd-gltf/uka/tex/top.png"
+      ],
+      "transportError": "net::ERR_HTTP2_PROTOCOL_ERROR",
+      "retryControlDisplayed": true
+    },
+    "checkedAt": "2026-11-06T14:58:17.297Z",
+    "completedAt": "2026-11-06T15:09:23.722Z",
+    "browser": "141.0.7390.37",
+    "renderer": "Chromium / ANGLE SwiftShader",
+    "viewport": {
+      "width": 1000,
+      "height": 800,
+      "deviceScaleFactor": 1
+    },
+    "verificationMethod": "Published URL in Chromium; DOM and runtime assertions for both panes, decoded images, synchronized cameras and independent scene roots; original response-body SHA-256 comparisons against the pinned source manifests. Entry HTML and its linked JS/CSS matched the exact merge-run Pages artifact.",
+    "models": [
+      {
+        "model": "gene",
+        "status": "ready",
+        "attempts": [
+          {
+            "phase": "cold",
+            "status": "ready",
+            "elapsedMs": 14894,
+            "statuses": [
+              "Ready · WebGL2 · MMD toon",
+              "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off",
+              "Ready · Raw VMD / BDEF · IK on · 6/6 chains · physics off"
+            ],
+            "events": []
+          }
+        ],
+        "backend": "WebGL2",
+        "independentSceneRoots": 3,
+        "synchronizedCamera": true,
+        "decodedTextures": [
+          {
+            "sourceName": "light/hair2.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/arm.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/bottoms.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/face.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/eye.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/extra.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/eye2.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/top.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/extra.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/pale.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/extra.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/extra.png",
+            "width": 1024,
+            "height": 1024
+          },
+          {
+            "sourceName": "light/iraira.png",
+            "width": 1024,
+            "height": 1024
+          }
+        ],
+        "originalFiles": [
+          {
+            "path": "/mmd-gltf/gene-light/Gene_light.pmx",
+            "sha256": "7ce1902e0c834a79db7070c50dcb6444d73d734f6725cad35ea25aa2dbeca4b3",
+            "bytes": 2814276,
+            "status": 200,
+            "requestType": "fetch"
+          },
+          {
+            "path": "/mmd-gltf/gene-light/light/arm.png",
+            "sha256": "f0e877599fc6a95c0acfbce15298a55698651306643b66540fdb5fe03b6f10f0",
+            "bytes": 407020,
+            "status": 200,
+            "requestType": "image"
+          },
+          {
+            "path": "/mmd-gltf/gene-light/light/hair2.png",
+            "sha256": "525530c116b784b43c96c2941841739bd90024f2581ad529ca59203b63993ca3",
+            "bytes": 745049,
+            "status": 200,
+            "requestType": "image"
+          },
+          {
+            "path": "/mmd-gltf/gene-light/light/bottoms.png",
+            "sha256": "02d6ac23a8be586b008aba314b9f8c1d32d013f467ce1038301b78f78a5a19bc",
+            "bytes": 557989,
+            "status": 200,
+            "requestType": "image"
+          },
+          {
+            "path": "/mmd-gltf/gene-light/light/face.png",
+            "sha256": "d30fa6fef9d261bbc09564b374f0fb8f2220e02bace4cae09b74950afc623406",
+            "bytes": 375790,
+            "status": 200,
+            "requestType": "image"
+          },
+          {
+            "path": "/mmd-gltf/gene-light/light/eye.png",
+            "sha256": "905d0c73fb5863559947af8166324f1371b57b2bedb07fa50f7640aada9321d8",
+            "bytes": 362902,
+            "status": 200,
+            "requestType": "image"
+          },
+          {
+            "path": "/mmd-gltf/gene-light/light/extra.png",
+            "sha256": "e225077191671f9a92539f4548d90d56ebf609e7f1673879eb8f877042d61a5e",
+            "bytes": 186248,
+            "status": 200,
+            "requestType": "image"
+          },
+          {
+            "path": "/mmd-gltf/gene-light/light/pale.png",
+            "sha256": "fe28decbd5cac41f99e9789796f166a6c0e60060c07082e20721cf43718429a7",
+            "bytes": 15878,
+            "status": 200,
+            "requestType": "image"
+          },
+          {
+            "path": "/mmd-gltf/gene-light/light/iraira.png",
+            "sha256": "b286c96debf7b1e482cd5ebab9a740560be490c284f38759c0edc291d9009390",
+            "bytes": 48406,
+            "status": 200,
+            "requestType": "image"
+          },
+          {
+            "path": "/mmd-gltf/gene-light/light/eye2.png",
+            "sha256": "e6e50b6fc355e5d8f4b4db4fb7d067957adb8923c9710095150121e7720528a0",
+            "bytes": 474362,
+            "status": 200,
+            "requestType": "image"
+          },
+          {
+            "path": "/mmd-gltf/gene-light/light/top.png",
+            "sha256": "60fc47dbd91667b7e9b82bfab8ff2bdc583a2fe5ba7fa4a33351afa77324ef7f",
+            "bytes": 382693,
+            "status": 200,
+            "requestType": "image"
+          }
+        ],
+        "errors": []
+      },
+      {
+        "model": "uka",
+        "status": "ready_after_retry",
+        "attempts": [
+          {
+            "phase": "cold",
+            "status": "failed",
+            "elapsedMs": 161551,
+            "statuses": [
+              "Could not load/render the comparison: Error: PMX resource failed: /mmd-gltf/uka/tex/top.png (request or image decode failed; inspect the network response) Retry loading",
+              "Load failed: Error: PMX resource failed: /mmd-gltf/uka/tex/top.png (request or image decode failed; inspect the network response)",
+              "Loaded"
+            ],
+            "events": [
+              {
+                "phase": 0,
+                "type": "requestfailed",
+                "path": "/mmd-gltf/uka/tex/top.png",
+                "message": "net::ERR_HTTP2_PROTOCOL_ERROR"
+              },
+              {
+                "phase": 0,
+                "type": "console",
+                "message": "Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR"
+              }
+            ]
+          },
+          {
+            "phase": "retry",
+            "status": "ready",
+            "elapsedMs": 237995,
+            "statuses": [
+              "Ready · WebGL2 · MMD toon",
+              "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off",
+              "Ready · Raw VMD / BDEF · IK on · 10/10 chains · physics off"
+            ],
+            "events": [
+              {
+                "phase": 1,
+                "type": "requestfailed",
+                "path": "/mmd-gltf/uka/tex/hair_s01.png",
+                "message": "net::ERR_HTTP2_PROTOCOL_ERROR"
+              },
+              {
+                "phase": 1,
+                "type": "console",
+                "message": "Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR"
+              }
+            ]
+          }
+        ],
+        "backend": "WebGL2",
+        "independentSceneRoots": 3,
+        "synchronizedCamera": true,
+        "allReferenceTextureDimensionsPositive": true,
+        "originalWindowsSeparatorHairTextureDecoded": true,
+        "sourceHashVerification": {
+          "manifest": "tools/uka-manifest.json",
+          "observedMatchingFiles": 10,
+          "expectedFiles": 10,
+          "allMatched": true
+        },
+        "errors": [
+          {
+            "phase": 0,
+            "type": "requestfailed",
+            "path": "/mmd-gltf/uka/tex/top.png",
+            "message": "net::ERR_HTTP2_PROTOCOL_ERROR"
+          },
+          {
+            "phase": 0,
+            "type": "console",
+            "message": "Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR"
+          },
+          {
+            "phase": 1,
+            "type": "requestfailed",
+            "path": "/mmd-gltf/uka/tex/hair_s01.png",
+            "message": "net::ERR_HTTP2_PROTOCOL_ERROR"
+          },
+          {
+            "phase": 1,
+            "type": "console",
+            "message": "Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR"
+          }
+        ],
+        "diagnosticCleanup": {
+          "reason": "After all Ready/runtime assertions passed and all ten original file hashes matched, pending response-body reads from the failed load held the optional capture step open. The owned browser was intentionally closed.",
+          "optionalCapture": "not_saved",
+          "resultingCaptureError": "Error: page.evaluate: Target page, context or browser has been closed"
+        }
+      }
+    ],
+    "transportDiagnostic": {
+      "client": "curl --http2",
+      "url": "https://takahirox.github.io/mmd-gltf/uka/tex/hair_s01.png",
+      "sha256": "bb9b7f41c96d1ea39da9f200961071d3169e08a833ad1d1344132aac1935fd72",
+      "matchesPinnedOriginal": true
+    },
+    "interpretation": "Both published comparisons reached Ready with original textures. Gene passed on its cold load. Uka required Retry after actual HTTP/2 texture-transfer failures; these failures are retained rather than reported as a clean cold-load pass. No application, asset, renderer, lighting or regression-test changes were made by this merge node.",
+    "finalProvenanceRecheckAt": "2026-11-06T15:09:55.459Z"
+  },
+  "limits": [
+    "Post-merge browser verification uses Chromium/ANGLE SwiftShader.",
+    "Native GPU/WebGPU and physical Android are not established by this run.",
+    "The published Uka cold load was not clean in this environment: original PNG transfers produced net::ERR_HTTP2_PROTOCOL_ERROR. Both panes subsequently reached Ready through the public Retry control.",
+    "Original Windows MMD behavior was not tested."
+  ],
+  "package": {
+    "version": "0.1.4",
+    "resolved": "https://registry.npmjs.org/@takahirox/three-mmd/-/three-mmd-0.1.4.tgz",
+    "integrity": "sha512-r663JzXNf3iMMmEY5bXRI8YzDnT/FrjgeJx+KL/cRVcbSNx1uZbTfv+wxFqX8RDjamoNYL2LEFOZ/KvCH5WWQw==",
+    "mergedLockfileVerifiedViaGitHub": true
+  },
+  "deployment": {
+    "id": 7602833660,
+    "sha": "a22f6ac9bb8528c374ad0d5240074c8a6cf18cf7",
+    "environment": "github-pages",
+    "state": "success",
+    "completedAt": "2026-11-06T14:44:25Z",
+    "url": "https://takahirox.github.io/mmd-gltf/",
+    "jobUrl": "https://github.com/takahirox/mmd-gltf/actions/runs/42231822533/job/127955557914"
+  },
+  "sourceIssueStateAfterMerge": "closed"
+}
