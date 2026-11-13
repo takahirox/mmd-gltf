@@ -29,8 +29,16 @@ whitespace, and consistency; unrelated runtime tests or new tooling are not requ
 List genuinely required checks possible only after merge and mark them pending
 until performed, or state "None required." Do not treat these as pre-merge approval
 conditions or infer deployment/publication success from pre-merge checks.
+After merge and Issue closure, follow the
+[merge and follow-up lifecycle](../docs/development-flow.md#5-merge-and-follow-up)
+to record actual evidence or pending/environment-blocked checks and track discovered
+defects in a new or equivalent linked Issue, without reopening the original solely
+for follow-up. Closure does not claim pending checks passed.
 
 ## Related Issues
 
-Link the source Issue and other relevant Issues. Use `Closes #<number>` only when
-the implementation fully resolves that Issue; describe partial scope explicitly.
+Link the source Issue and other relevant Issues. Use and preserve `Closes #<number>`
+when the implementation fully resolves that Issue and applicable mandatory
+pre-merge checks are satisfied, even if post-merge-only verification is pending.
+For intentional partial work, describe remaining scope and use a non-closing
+reference such as `Related to #<number>`.
