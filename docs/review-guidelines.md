@@ -15,8 +15,10 @@ Check both directions:
 
 - **No missing work:** verify every requirement and pre-merge acceptance criterion
   the PR claims to resolve is implemented and appropriately validated. Do not
-  approve it as closing the Issue while required work remains. An intentionally
-  partial PR must identify remaining work and leave the Issue open.
+  approve it as closing the Issue while implementation or mandatory pre-merge
+  acceptance remains incomplete. An intentionally partial PR must identify
+  remaining work and leave the Issue open. Pending post-merge-only verification
+  does not make an otherwise complete implementation partial.
 - **No unnecessary work:** reject unnecessary abstractions, speculative
   extensibility, unrelated refactoring, frameworks/subsystems, or extra policies
   and configuration without a demonstrated need tied to the Issue.
@@ -54,8 +56,11 @@ Record genuinely necessary checks possible only after merge separately as pendin
 they must not block pre-merge approval. For example, publication from a
 merge-triggered deployment is verified after merge. Pre-merge validation does not
 prove deployment/publication succeeded. This distinction does not waive required
-implementation or applicable pre-merge checks. Do not add post-merge work routinely;
-none is required for the collaboration templates and guidance in Issue #1.
+implementation, mandatory pre-merge tests, required protections, or genuinely
+necessary pre-merge human acceptance. Do not add post-merge work routinely;
+documentation/template work needs no unrelated manual approval, physical-device
+checks, heavyweight model downloads, or deployment gates. None is required for the
+collaboration templates and guidance in Issues #1 and #93.
 
 ## Choose the review outcome
 
@@ -73,8 +78,20 @@ none is required for the collaboration templates and guidance in Issue #1.
   human questions remain. Merge according to the workflow's authorization.
 
 Pending required post-merge checks do not prevent approval when these conditions
-hold. After merge, perform those checks and record their actual results, including
-failures and follow-up work. Keep them pending until performed.
+hold. Preserve `Closes #N`; do not request its removal, keep the source Issue open,
+or withhold approval solely for pending post-merge-only verification. ProjectWeave
+publication adds that reference and its merge/close stages close the source Issue;
+requesting the opposite creates repeated Review → Fix → Publish → Review loops.
+
+After successful merge, close the original Issue and follow the
+[merge and follow-up lifecycle](development-flow.md#5-merge-and-follow-up): perform
+required checks, record accurate evidence in the merged PR, closed Issue, or linked
+validation report, and use a new linked Issue for an actual defect after checking
+for an existing equivalent Issue. Do not reopen the original solely for follow-up.
+Keep unperformed or environment-blocked checks pending; closure does not mean they
+passed, and an unavailable environment alone does not establish a product defect.
+This lifecycle supersedes older keep-open instructions for implemented Issues
+awaiting post-merge verification; preserve historical results and evidence.
 
 ## Browser CI changes (Issue #81)
 

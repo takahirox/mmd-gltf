@@ -15,7 +15,10 @@ conflicting secondary ambient paths and supplies synthetic PMX/GLB probes.
 Original-renderer execution, scene settings, state traces and measured pixels
 are still unavailable. Normative shading and the glTF side remain unchanged
 pending that evidence; there is no corrected-MMD capture to report. Issue #13
-must remain open. Historical captures below retain their original provenance.
+remains open for the [unimplemented normative corrections and related work](original-mmd-research.md#completion-and-follow-up),
+rather than solely for pending post-merge verification; see the current
+[merge and follow-up lifecycle](development-flow.md#5-merge-and-follow-up).
+Historical captures below retain their original provenance.
 
 ## Outline pipeline (Issue #21)
 

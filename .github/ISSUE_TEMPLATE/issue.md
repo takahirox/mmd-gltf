@@ -21,7 +21,9 @@ Describe what should be true when the Issue is resolved.
 
 Add relevant context, examples, logs, or related Issues. For reproducible problems,
 include steps, expected results, and actual results. State when reproduction does
-not apply.
+not apply. For a defect found after merge, check for an equivalent Issue first;
+use it or file a new Issue with the affected revision and links to the original
+Issue/PR, following the lifecycle below.
 
 ## Pre-merge acceptance criteria
 
@@ -45,4 +47,8 @@ state that none are needed.
 Record genuinely necessary checks possible only after merge, or state that none
 are required. Do not add post-merge work routinely. Report these checks as pending
 until performed; pre-merge validation does not prove deployment or publication
-succeeded. See the [review guidelines](https://github.com/takahirox/mmd-gltf/blob/main/docs/review-guidelines.md).
+succeeded. Close a fully implemented Issue after successful merge and pre-merge
+acceptance; pending post-merge-only verification does not make it partial.
+Follow the [merge and follow-up lifecycle](https://github.com/takahirox/mmd-gltf/blob/main/docs/development-flow.md#5-merge-and-follow-up)
+for honest evidence recording and linked defect Issues without reopening the
+original solely for follow-up.

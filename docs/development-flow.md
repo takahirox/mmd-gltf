@@ -1,7 +1,8 @@
 # Development flow
 
 The flow for mmd-gltf is: Issue → implementation → PR → review → revision as
-needed → merge. Perform post-merge verification only when the Issue requires it.
+needed → merge and close the source Issue → required post-merge verification.
+Perform post-merge verification only when the actual change requires it.
 The default branch is `main`.
 
 ## Collaboration language
@@ -62,8 +63,9 @@ verify relative links and heading anchors, and check consistency across the
 templates, README, and guidance. Use available tooling without adding dependencies
 solely for these checks. Check whitespace with `git diff --check` (or
 `git diff --cached --check` for staged changes). Review the complete diff, including
-new files. No unrelated runtime suites, hardware/device checks, or deployed-site
-verification are required for a templates/documentation-only change.
+new files. No unrelated runtime suites, routine manual approval, hardware/device
+checks, heavyweight model downloads, or deployed-site verification are required
+for a templates/documentation-only change.
 
 ## 3. Open a PR for the Issue
 
@@ -73,10 +75,12 @@ behavior, focused changes, related Issues, and validation actually performed.
 Report failures, skipped checks, and unperformed checks accurately, with reasons.
 Separate mandatory checks, optional validation, and pending post-merge verification.
 
-Claim to close an Issue only when the implementation fully addresses it. If the
-change intentionally addresses part of the Issue, state the remaining scope and
-leave the Issue open. Required checks possible only after merge can remain pending
-without making an otherwise complete implementation partial.
+Use and preserve the normal `Closes #N` reference when the implementation fully
+addresses the Issue and applicable mandatory pre-merge checks are satisfied. If
+the change intentionally addresses part of the Issue, state the remaining scope,
+use a non-closing reference such as `Related to #N`, and leave the parent Issue
+open. Required checks possible only after merge can remain pending without making
+an otherwise complete implementation partial.
 
 ## 4. Review and revise
 
@@ -93,12 +97,32 @@ fixes for a decision that requires human input.
 
 Approve and merge when the implementation is complete, mandatory pre-merge checks
 are sufficient and pass, and no blocking review findings or necessary human
-questions remain. Follow the workflow's merge authorization.
+questions remain. Missing implementation, mandatory pre-merge tests, required
+protections, and genuinely necessary pre-merge human acceptance remain blockers.
+Follow the workflow's merge authorization without bypassing checks or reviews.
 
-Record required post-merge checks separately as pending until performed, then
-report actual results, failures, and follow-up work. Pre-merge validation does not
-prove deployment or publication succeeded. No post-merge verification is required
-for the collaboration templates and guidance introduced by Issue #1.
+Close the original Issue after successful merge, then perform genuinely required
+post-merge checks. Record accurate evidence in the merged PR, closed Issue, or a
+linked validation report, including the affected revision, check/environment,
+actual results, and remaining work. Mark unperformed, pending, or
+environment-blocked checks honestly until performed. Issue closure does not claim
+they passed; pre-merge validation does not prove deployment or publication
+succeeded. An unavailable test environment alone is not evidence of a product
+defect.
+
+If verification finds an actual defect, check for an existing equivalent Issue
+first. Use it or create a new linked Issue with reproduction steps, affected
+revision, expected and actual behavior, and links to the original Issue and PR.
+Do not keep or reopen the original Issue solely for post-merge follow-up.
+
+This lifecycle supersedes older instructions to keep an implemented Issue open
+solely for post-merge verification. Preserve historical test outcomes and evidence;
+do not rewrite them as passing or complete. Review must not remove `Closes #N`,
+keep the source Issue open, or withhold approval solely for pending post-merge-only
+checks: ProjectWeave publication restores the closing reference and merge/close
+stages close the Issue, so such requests cause repeated Review → Fix → Publish →
+Review loops. No post-merge verification is required for this documentation and
+template change (Issue #93), or the guidance introduced by Issue #1.
 
 ## Browser CI changes (Issue #81)
 
